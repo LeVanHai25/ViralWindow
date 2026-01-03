@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký - Hệ thống quản lý cửa nhôm kính</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .register-card {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+    </style>
+</head>
+
+<body class="flex items-center justify-center p-4 py-8">
+    <div class="register-card rounded-2xl shadow-2xl w-full max-w-2xl p-8">
+        <!-- Logo/Header -->
+        <div class="text-center mb-8">
+            <div class="w-20 h-20 bg-blue-400 rounded-lg flex items-center justify-center mx-auto mb-4 overflow-hidden" id="companyLogoContainer">
+                <img id="companyLogo" src="" alt="Logo" class="hidden w-full h-full object-contain">
+                <svg id="companyLogoIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-10 h-10 text-white">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                </svg>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-800 mb-2" id="companyName">ViralWindow</h1>
+            <p class="text-gray-600 mb-4">Đăng ký tài khoản mới</p>
+        </div>
+
+        <!-- Error/Success Messages -->
+        <div id="alertMessage" class="hidden mb-4 p-4 rounded-lg"></div>
+
+        <!-- Register Form -->
+        <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="fullName" class="block text-sm font-medium text-gray-700 mb-2">
+                        Họ và tên <span class="text-red-500">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="fullName" 
+                        name="full_name" 
+                        required
+                        placeholder="Nhập họ và tên"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                    <p id="fullNameError" class="text-red-500 text-sm mt-1 hidden"></p>
+                </div>
+
+                <div>
+                    <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
+                        Số điện thoại <span class="text-red-500">*</span>
+                    </label>
+                    <input 
+                        type="tel" 
+                        id="phone" 
+                        name="phone" 
+                        required
+                        placeholder="Nhập số điện thoại"
+                        pattern="[0-9]{10,11}"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                    <p id="phoneError" class="text-red-500 text-sm mt-1 hidden"></p>
+                </div>
+            </div>
+
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                    Email <span class="text-red-500">*</span>
+                </label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    required
+                    placeholder="Nhập email của bạn"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                <p id="emailError" class="text-red-500 text-sm mt-1 hidden"></p>
+            </div>
+
+            <div>
+                <label for="address" class="block text-sm font-medium text-gray-700 mb-2">
+                    Địa chỉ
+                </label>
+                <textarea 
+                    id="address" 
+                    name="address" 
+                    rows="2"
+                    placeholder="Nhập địa chỉ (tùy chọn)"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                ></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                        Mật khẩu <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            required
+                            minlength="6"
+                            placeholder="Tối thiểu 6 ký tự"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                        <button 
+                            type="button" 
+                            onclick="togglePasswordVisibility('password')"
+                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                        >
+                            <svg id="eyeIconPassword" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <p id="passwordError" class="text-red-500 text-sm mt-1 hidden"></p>
+                </div>
+
+                <div>
+                    <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-2">
+                        Xác nhận mật khẩu <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            id="confirmPassword" 
+                            name="confirm_password" 
+                            required
+                            placeholder="Nhập lại mật khẩu"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                        <button 
+                            type="button" 
+                            onclick="togglePasswordVisibility('confirmPassword')"
+                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                        >
+                            <svg id="eyeIconConfirmPassword" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <p id="confirmPasswordError" class="text-red-500 text-sm mt-1 hidden"></p>
+                </div>
+            </div>
+
+            <div>
+                <label for="userType" class="block text-sm font-medium text-gray-700 mb-2">
+                    Loại tài khoản <span class="text-red-500">*</span>
+                </label>
+                <select 
+                    id="userType" 
+                    name="user_type" 
+                    required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                    <option value="user">Người dùng</option>
+                    <option value="admin">Quản trị viên</option>
+                </select>
+            </div>
+
+            <div class="flex items-center">
+                <input 
+                    type="checkbox" 
+                    id="agreeTerms" 
+                    required
+                    class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                >
+                <label for="agreeTerms" class="ml-2 text-sm text-gray-700">
+                    Tôi đồng ý với <a href="#" class="text-blue-600 hover:text-blue-800">Điều khoản sử dụng</a> và <a href="#" class="text-blue-600 hover:text-blue-800">Chính sách bảo mật</a>
+                </label>
+            </div>
+
+            <button 
+                type="submit" 
+                id="registerButton"
+                class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200"
+            >
+                <span id="registerButtonText">Đăng ký</span>
+                <span id="registerButtonLoader" class="hidden">
+                    <svg class="animate-spin h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </span>
+            </button>
+        </form>
+
+        <div class="mt-6 text-center">
+            <p class="text-gray-600">
+                Đã có tài khoản? 
+                <a href="login.html" class="text-blue-600 font-semibold hover:text-blue-800">Đăng nhập ngay</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3001/api';
+
+        function togglePasswordVisibility(fieldId) {
+            const passwordInput = document.getElementById(fieldId);
+            const eyeIcon = document.getElementById(`eyeIcon${fieldId.charAt(0).toUpperCase() + fieldId.slice(1)}`);
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                `;
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                `;
+            }
+        }
+
+        function showAlert(message, type = 'error') {
+            const alertDiv = document.getElementById('alertMessage');
+            alertDiv.className = `mb-4 p-4 rounded-lg ${type === 'error' ? 'bg-red-50 text-red-800 border border-red-200' : 'bg-green-50 text-green-800 border border-green-200'}`;
+            alertDiv.textContent = message;
+            alertDiv.classList.remove('hidden');
+            
+            setTimeout(() => {
+                alertDiv.classList.add('hidden');
+            }, 5000);
+        }
+
+        function validateForm() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const phone = document.getElementById('phone').value;
+            const email = document.getElementById('email').value;
+
+            let isValid = true;
+
+            // Validate password match
+            if (password !== confirmPassword) {
+                document.getElementById('confirmPasswordError').textContent = 'Mật khẩu xác nhận không khớp';
+                document.getElementById('confirmPasswordError').classList.remove('hidden');
+                isValid = false;
+            } else {
+                document.getElementById('confirmPasswordError').classList.add('hidden');
+            }
+
+            // Validate password length
+            if (password.length < 6) {
+                document.getElementById('passwordError').textContent = 'Mật khẩu phải có ít nhất 6 ký tự';
+                document.getElementById('passwordError').classList.remove('hidden');
+                isValid = false;
+            } else {
+                document.getElementById('passwordError').classList.add('hidden');
+            }
+
+            // Validate phone
+            if (phone && !/^[0-9]{10,11}$/.test(phone)) {
+                document.getElementById('phoneError').textContent = 'Số điện thoại không hợp lệ';
+                document.getElementById('phoneError').classList.remove('hidden');
+                isValid = false;
+            } else {
+                document.getElementById('phoneError').classList.add('hidden');
+            }
+
+            // Validate email
+            if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                document.getElementById('emailError').textContent = 'Email không hợp lệ';
+                document.getElementById('emailError').classList.remove('hidden');
+                isValid = false;
+            } else {
+                document.getElementById('emailError').classList.add('hidden');
+            }
+
+            return isValid;
+        }
+
+        async function handleRegister(event) {
+            event.preventDefault();
+
+            if (!validateForm()) {
+                return;
+            }
+
+            const formData = {
+                full_name: document.getElementById('fullName').value,
+                phone: document.getElementById('phone').value,
+                email: document.getElementById('email').value,
+                address: document.getElementById('address').value || null,
+                password: document.getElementById('password').value,
+                user_type: document.getElementById('userType').value
+            };
+
+            // Show loading
+            const registerButton = document.getElementById('registerButton');
+            const registerButtonText = document.getElementById('registerButtonText');
+            const registerButtonLoader = document.getElementById('registerButtonLoader');
+            
+            registerButton.disabled = true;
+            registerButtonText.classList.add('hidden');
+            registerButtonLoader.classList.remove('hidden');
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert('Đăng ký thành công! Đang chuyển đến trang đăng nhập...', 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } else {
+                    showAlert(result.message || 'Đăng ký thất bại. Vui lòng thử lại.');
+                    registerButton.disabled = false;
+                    registerButtonText.classList.remove('hidden');
+                    registerButtonLoader.classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Lỗi:', error);
+                showAlert('Lỗi kết nối server. Vui lòng thử lại sau.');
+                registerButton.disabled = false;
+                registerButtonText.classList.remove('hidden');
+                registerButtonLoader.classList.add('hidden');
+            }
+        }
+
+        // Real-time validation
+        document.getElementById('confirmPassword').addEventListener('input', function() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = this.value;
+            
+            if (confirmPassword && password !== confirmPassword) {
+                document.getElementById('confirmPasswordError').textContent = 'Mật khẩu xác nhận không khớp';
+                document.getElementById('confirmPasswordError').classList.remove('hidden');
+            } else {
+                document.getElementById('confirmPasswordError').classList.add('hidden');
+            }
+        });
+
+        // Load company logo and name
+        async function loadCompanyLogo() {
+            try {
+                const response = await fetch(`${API_BASE}/company-settings`);
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    const companyNameEl = document.getElementById('companyName');
+                    const companyLogoImg = document.getElementById('companyLogo');
+                    const companyLogoIcon = document.getElementById('companyLogoIcon');
+                    const companyLogoContainer = document.getElementById('companyLogoContainer');
+
+                    if (companyNameEl && result.data.company_name) {
+                        companyNameEl.textContent = result.data.company_name;
+                    }
+
+                    if (result.data.logo_path && companyLogoImg) {
+                        companyLogoImg.src = result.data.logo_path;
+                        companyLogoImg.classList.remove('hidden');
+                        if (companyLogoIcon) companyLogoIcon.classList.add('hidden');
+                        if (companyLogoContainer) {
+                            companyLogoContainer.classList.remove('bg-blue-400');
+                            companyLogoContainer.classList.add('bg-white');
+                        }
+                    } else {
+                        if (companyLogoImg) companyLogoImg.classList.add('hidden');
+                        if (companyLogoIcon) companyLogoIcon.classList.remove('hidden');
+                        if (companyLogoContainer) {
+                            companyLogoContainer.classList.add('bg-blue-400');
+                            companyLogoContainer.classList.remove('bg-white');
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Lỗi load logo:', error);
+            }
+        }
+
+        // Check if already logged in and load company logo
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+            if (token) {
+                window.location.href = 'index.html';
+            }
+            loadCompanyLogo();
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phiếu Yêu Cầu Vật Tư - ViralWindow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="css/success-notification.css">
+    <script src="js/success-notification.js"></script>
+    <style>
+        .tab-btn {
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            border-bottom: 3px solid #f97316;
+            color: #f97316;
+            background: #fff7ed;
+        }
+
+        .form-input {
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            border-color: #f97316;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+    <!-- HEADER -->
+    <div class="bg-white shadow-sm border-b border-gray-200 no-print">
+        <div class="px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <a href="design-new.html" class="text-gray-600 hover:text-gray-900" title="Quay lại">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                    </a>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Phiếu Yêu Cầu Vật Tư</h1>
+                        <p class="text-sm text-gray-500">Tạo phiếu yêu cầu vật tư cho công trình</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="printForm()"
+                        class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                        </svg>
+                        In phiếu
+                    </button>
+                    <button onclick="exportCurrentTab()"
+                        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Xuất Excel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto p-6">
+        <!-- Project Info Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <span class="text-2xl">📋</span> Thông tin công trình
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Công trình</label>
+                    <input type="text" id="projectName"
+                        class="form-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none"
+                        placeholder="Tên công trình">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Mã đơn hàng</label>
+                    <input type="text" id="orderCode"
+                        class="form-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none"
+                        placeholder="VD: VR57">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Chủng loại</label>
+                    <input type="text" id="productType"
+                        class="form-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none"
+                        placeholder="Viralwindow" value="Viralwindow">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Màu sắc</label>
+                    <input type="text" id="color"
+                        class="form-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none"
+                        placeholder="Xám Sần Metalic">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Địa chỉ giao hàng</label>
+                    <input type="text" id="deliveryAddress"
+                        class="form-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none"
+                        placeholder="Địa chỉ giao hàng">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Ngày tạo</label>
+                    <input type="date" id="createdDate"
+                        class="form-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="flex border-b border-gray-200 no-print">
+                <button onclick="switchTab('nhom')"
+                    class="tab-btn active flex-1 px-6 py-4 text-center font-medium flex items-center justify-center gap-2"
+                    data-tab="nhom">
+                    <span class="text-xl">🔩</span> Nhôm
+                </button>
+                <button onclick="switchTab('vattu')"
+                    class="tab-btn flex-1 px-6 py-4 text-center font-medium text-gray-600 flex items-center justify-center gap-2"
+                    data-tab="vattu">
+                    <span class="text-xl">🔧</span> Vật tư phụ
+                </button>
+                <button onclick="switchTab('phukien')"
+                    class="tab-btn flex-1 px-6 py-4 text-center font-medium text-gray-600 flex items-center justify-center gap-2"
+                    data-tab="phukien">
+                    <span class="text-xl">🔗</span> Phụ kiện
+                </button>
+                <button onclick="switchTab('kinh')"
+                    class="tab-btn flex-1 px-6 py-4 text-center font-medium text-gray-600 flex items-center justify-center gap-2"
+                    data-tab="kinh">
+                    <span class="text-xl">🪟</span> Kính
+                </button>
+            </div>
+
+            <!-- Tab Content: NHÔM -->
+            <div id="tabNhom" class="tab-content p-6">
+                <div class="flex justify-between items-center mb-4 no-print">
+                    <h3 class="text-lg font-semibold text-blue-600">PHIẾU YÊU CẦU VẬT TƯ - NHÔM</h3>
+                    <button onclick="addRow('nhom')"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Thêm dòng
+                    </button>
+                </div>
+                <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                    <table class="w-full text-sm" id="tableNhom">
+                        <thead class="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+                            <tr>
+                                <th class="px-3 py-3 text-center w-12">TT</th>
+                                <th class="px-3 py-3 text-left">Tên vật tư</th>
+                                <th class="px-3 py-3 text-center w-28">Mã vật tư</th>
+                                <th class="px-3 py-3 text-center w-24">Tỷ trọng</th>
+                                <th class="px-3 py-3 text-center w-20">Mét (M)</th>
+                                <th class="px-3 py-3 text-center w-20">ĐVT</th>
+                                <th class="px-3 py-3 text-center w-24">Số lượng</th>
+                                <th class="px-3 py-3 text-center w-28">Khối lượng</th>
+                                <th class="px-3 py-3 text-left w-32">Ghi chú</th>
+                                <th class="px-3 py-3 text-center w-16 no-print">Xóa</th>
+                            </tr>
+                        </thead>
+                        <tbody id="nhomTableBody" class="divide-y divide-gray-200 bg-white">
+                            <!-- Rows will be added here -->
+                        </tbody>
+                        <tfoot class="bg-blue-50 font-semibold">
+                            <tr>
+                                <td colspan="6" class="px-4 py-3 text-right">TỔNG CỘNG:</td>
+                                <td class="px-4 py-3 text-center text-blue-600" id="nhomTotalQty">0</td>
+                                <td class="px-4 py-3 text-center text-blue-600" id="nhomTotalWeight">0.00</td>
+                                <td colspan="2"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab Content: VẬT TƯ PHỤ -->
+            <div id="tabVattu" class="tab-content p-6 hidden">
+                <div class="flex justify-between items-center mb-4 no-print">
+                    <h3 class="text-lg font-semibold text-amber-600">PHIẾU YÊU CẦU VẬT TƯ - VẬT TƯ PHỤ</h3>
+                    <button onclick="addRow('vattu')"
+                        class="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Thêm dòng
+                    </button>
+                </div>
+                <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                    <table class="w-full text-sm" id="tableVattu">
+                        <thead class="bg-gradient-to-r from-amber-500 to-orange-500 text-white">
+                            <tr>
+                                <th class="px-3 py-3 text-center w-12">TT</th>
+                                <th class="px-3 py-3 text-center w-28">Mã VT</th>
+                                <th class="px-3 py-3 text-left">Tên vật tư</th>
+                                <th class="px-3 py-3 text-center w-20">ĐVT</th>
+                                <th class="px-3 py-3 text-center w-24">Số lượng</th>
+                                <th class="px-3 py-3 text-center w-16 no-print">Xóa</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vattuTableBody" class="divide-y divide-gray-200 bg-white">
+                            <!-- Rows will be added here -->
+                        </tbody>
+                        <tfoot class="bg-amber-50 font-semibold">
+                            <tr>
+                                <td colspan="4" class="px-4 py-3 text-right">TỔNG CỘNG:</td>
+                                <td class="px-4 py-3 text-center text-amber-600" id="vattuTotalQty">0</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab Content: PHỤ KIỆN -->
+            <div id="tabPhukien" class="tab-content p-6 hidden">
+                <div class="flex justify-between items-center mb-4 no-print">
+                    <h3 class="text-lg font-semibold text-purple-600">PHIẾU YÊU CẦU VẬT TƯ - PHỤ KIỆN</h3>
+                    <div class="flex gap-2">
+                        <button onclick="addGroupRow('phukien')"
+                            class="px-4 py-2 bg-purple-100 text-purple-700 border border-purple-300 rounded-lg hover:bg-purple-200 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                            </svg>
+                            Thêm nhóm
+                        </button>
+                        <button onclick="addRow('phukien')"
+                            class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4" />
+                            </svg>
+                            Thêm dòng
+                        </button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                    <table class="w-full text-sm" id="tablePhukien">
+                        <thead class="bg-gradient-to-r from-purple-500 to-indigo-500 text-white">
+                            <tr>
+                                <th class="px-3 py-3 text-center w-12">TT</th>
+                                <th class="px-3 py-3 text-center w-32">Mã VT</th>
+                                <th class="px-3 py-3 text-left">Tên vật tư</th>
+                                <th class="px-3 py-3 text-center w-20">ĐVT</th>
+                                <th class="px-3 py-3 text-center w-24">Số lượng</th>
+                                <th class="px-3 py-3 text-center w-16 no-print">Xóa</th>
+                            </tr>
+                        </thead>
+                        <tbody id="phukienTableBody" class="divide-y divide-gray-200 bg-white">
+                            <!-- Rows will be added here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab Content: KÍNH -->
+            <div id="tabKinh" class="tab-content p-6 hidden">
+                <div class="flex justify-between items-center mb-4 no-print">
+                    <h3 class="text-lg font-semibold text-cyan-600">PHIẾU YÊU CẦU VẬT TƯ - KÍNH</h3>
+                    <button onclick="addRow('kinh')"
+                        class="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Thêm dòng
+                    </button>
+                </div>
+                <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                    <table class="w-full text-sm" id="tableKinh">
+                        <thead class="bg-gradient-to-r from-cyan-500 to-teal-500 text-white">
+                            <tr>
+                                <th class="px-3 py-3 text-center w-12">TT</th>
+                                <th class="px-3 py-3 text-center w-36">Mã Kính</th>
+                                <th class="px-3 py-3 text-left">Loại kính</th>
+                                <th class="px-3 py-3 text-center w-24">Rộng (mm)</th>
+                                <th class="px-3 py-3 text-center w-24">Cao (mm)</th>
+                                <th class="px-3 py-3 text-center w-20">ĐVT</th>
+                                <th class="px-3 py-3 text-center w-20">Số tấm</th>
+                                <th class="px-3 py-3 text-center w-28">Diện tích (m²)</th>
+                                <th class="px-3 py-3 text-center w-16 no-print">Xóa</th>
+                            </tr>
+                        </thead>
+                        <tbody id="kinhTableBody" class="divide-y divide-gray-200 bg-white">
+                            <!-- Rows will be added here -->
+                        </tbody>
+                        <tfoot class="bg-cyan-50 font-semibold">
+                            <tr>
+                                <td colspan="6" class="px-4 py-3 text-right">TỔNG:</td>
+                                <td class="px-4 py-3 text-center text-cyan-600" id="kinhTotalPanels">0</td>
+                                <td class="px-4 py-3 text-center text-cyan-600" id="kinhTotalArea">0.00</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="mt-6 flex justify-between items-center no-print">
+            <a href="design-new.html"
+                class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Quay lại
+            </a>
+            <div class="flex gap-3">
+                <button onclick="saveAllForms()"
+                    class="px-6 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                    </svg>
+                    Lưu tất cả phiếu
+                </button>
+                <button onclick="exportAllToExcel()"
+                    class="px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Xuất tất cả Excel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =============================================
+        // DATA & STATE
+        // =============================================
+        let currentTab = 'nhom';
+        let projectData = null;
+        let bocTachData = null;
+
+        const tableData = {
+            nhom: [],
+            vattu: [],
+            phukien: [],
+            kinh: []
+        };
+
+        // Row counter for each table
+        let rowCounters = {
+            nhom: 0,
+            vattu: 0,
+            phukien: 0,
+            kinh: 0
+        };
+
+        // =============================================
+        // INITIALIZATION
+        // =============================================
+        document.addEventListener('DOMContentLoaded', function () {
+            // Set default date
+            document.getElementById('createdDate').valueAsDate = new Date();
+
+            // Load data from sessionStorage if available
+            loadDataFromSession();
+        });
+
+        function loadDataFromSession() {
+            try {
+                // Load project data
+                const projectStr = sessionStorage.getItem('purchaseRequest_project');
+                if (projectStr) {
+                    projectData = JSON.parse(projectStr);
+                    populateProjectInfo(projectData);
+                }
+
+                // Load boc tach data (shortage materials)
+                const bocTachStr = sessionStorage.getItem('purchaseRequest_bocTach');
+                if (bocTachStr) {
+                    bocTachData = JSON.parse(bocTachStr);
+                    populateBocTachData(bocTachData);
+                }
+            } catch (e) {
+                console.error('Error loading data from session:', e);
+            }
+        }
+
+        function populateProjectInfo(project) {
+            if (!project) return;
+
+            document.getElementById('projectName').value = project.name || project.project_name || '';
+            document.getElementById('orderCode').value = project.order_code || '';
+            document.getElementById('deliveryAddress').value = project.location || project.address || '';
+        }
+
+        function populateBocTachData(data) {
+            if (!data) return;
+
+            // Populate Nhom (Aluminum)
+            if (data.nhom && data.nhom.length > 0) {
+                data.nhom.forEach(item => {
+                    addRow('nhom', {
+                        name: item.material_name || item.ten_vat_tu,
+                        code: item.material_code || item.ma_vat_tu,
+                        density: item.density || item.ty_trong || 0,
+                        length: item.length || item.length_m || 6,
+                        unit: item.unit || 'cây',
+                        quantity: item.quantity || item.so_luong || 0,
+                        weight: item.weight || item.khoi_luong || 0,
+                        note: item.note || item.ghi_chu || ''
+                    });
+                });
+            }
+
+            // Populate Vattu (Consumables)
+            if (data.vattu && data.vattu.length > 0) {
+                data.vattu.forEach(item => {
+                    addRow('vattu', {
+                        code: item.material_code || item.ma_vat_tu,
+                        name: item.material_name || item.ten_vat_tu,
+                        unit: item.unit || 'cái',
+                        quantity: item.quantity || item.so_luong || 0
+                    });
+                });
+            }
+
+            // Populate Kinh (Glass)
+            if (data.kinh && data.kinh.length > 0) {
+                data.kinh.forEach(item => {
+                    addRow('kinh', {
+                        code: item.glass_code || item.ma_kinh,
+                        type: item.glass_type || item.loai_kinh,
+                        width: item.width || item.chieu_rong || 0,
+                        height: item.height || item.chieu_cao || 0,
+                        unit: 'tấm',
+                        panels: item.panels || item.so_tam || 0,
+                        area: item.area || item.dien_tich || 0
+                    });
+                });
+            }
+        }
+
+        // =============================================
+        // TAB SWITCHING
+        // =============================================
+        function switchTab(tab) {
+            currentTab = tab;
+
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.tab === tab) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+
+            const tabMap = {
+                'nhom': 'tabNhom',
+                'vattu': 'tabVattu',
+                'phukien': 'tabPhukien',
+                'kinh': 'tabKinh'
+            };
+
+            document.getElementById(tabMap[tab]).classList.remove('hidden');
+        }
+
+        // =============================================
+        // TABLE ROW OPERATIONS
+        // =============================================
+        function addRow(type, data = null) {
+            rowCounters[type]++;
+            const stt = rowCounters[type];
+            let html = '';
+
+            if (type === 'nhom') {
+                html = `
+                    <tr data-index="${stt}">
+                        <td class="px-3 py-2 text-center">${stt}</td>
+                        <td class="px-3 py-2"><input type="text" class="w-full px-2 py-1 border rounded" value="${data?.name || ''}" onchange="updateData('nhom', ${stt}, 'name', this.value)"></td>
+                        <td class="px-3 py-2"><input type="text" class="w-full px-2 py-1 border rounded text-center" value="${data?.code || ''}" onchange="updateData('nhom', ${stt}, 'code', this.value)"></td>
+                        <td class="px-3 py-2"><input type="number" step="0.001" class="w-full px-2 py-1 border rounded text-center" value="${data?.density || ''}" onchange="updateData('nhom', ${stt}, 'density', this.value); calculateNhomWeight(${stt})"></td>
+                        <td class="px-3 py-2"><input type="number" step="0.1" class="w-full px-2 py-1 border rounded text-center" id="nhomLength${stt}" value="${data?.length || '6'}" onchange="updateData('nhom', ${stt}, 'length', this.value); calculateNhomWeight(${stt})"></td>
+                        <td class="px-3 py-2"><input type="text" class="w-16 px-2 py-1 border rounded text-center" value="${data?.unit || 'cây'}" onchange="updateData('nhom', ${stt}, 'unit', this.value)"></td>
+                        <td class="px-3 py-2"><input type="number" class="w-full px-2 py-1 border rounded text-center" value="${data?.quantity || ''}" onchange="updateData('nhom', ${stt}, 'quantity', this.value); calculateNhomWeight(${stt}); calculateNhomTotals()"></td>
+                        <td class="px-3 py-2"><input type="number" step="0.01" class="w-full px-2 py-1 border rounded text-center" id="nhomWeight${stt}" value="${data?.weight || ''}" readonly></td>
+                        <td class="px-3 py-2"><input type="text" class="w-full px-2 py-1 border rounded" value="${data?.note || ''}" onchange="updateData('nhom', ${stt}, 'note', this.value)"></td>
+                        <td class="px-3 py-2 text-center no-print">
+                            <button onclick="deleteRow('nhom', ${stt})" class="text-red-500 hover:text-red-700">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tableData.nhom.push({ stt, length: data?.length || 6, ...data });
+            } else if (type === 'vattu') {
+                html = `
+                    <tr data-index="${stt}">
+                        <td class="px-3 py-2 text-center">${stt}</td>
+                        <td class="px-3 py-2"><input type="text" class="w-full px-2 py-1 border rounded text-center" value="${data?.code || ''}" onchange="updateData('vattu', ${stt}, 'code', this.value)"></td>
+                        <td class="px-3 py-2"><input type="text" class="w-full px-2 py-1 border rounded" value="${data?.name || ''}" onchange="updateData('vattu', ${stt}, 'name', this.value)"></td>
+                        <td class="px-3 py-2"><input type="text" class="w-16 px-2 py-1 border rounded text-center" value="${data?.unit || 'cái'}" onchange="updateData('vattu', ${stt}, 'unit', this.value)"></td>
+                        <td class="px-3 py-2"><input type="number" class="w-full px-2 py-1 border rounded text-center" value="${data?.quantity || ''}" onchange="updateData('vattu', ${stt}, 'quantity', this.value); calculateVattuTotals()"></td>
+                        <td class="px-3 py-2 text-center no-print">
+                            <button onclick="deleteRow('vattu', ${stt})" class="text-red-500 hover:text-red-700">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tableData.vattu.push({ stt, ...data });
+            } else if (type === 'phukien') {
+                html = `
+                    <tr data-index="${stt}">
+                        <td class="px-3 py-2 text-center">${stt}</td>
+                        <td class="px-3 py-2"><input type="text" class="w-full px-2 py-1 border rounded text-center" value="${data?.code || ''}" onchange="updateData('phukien', ${stt}, 'code', this.value)"></td>
+                        <td class="px-3 py-2"><input type="text" class="w-full px-2 py-1 border rounded" value="${data?.name || ''}" onchange="updateData('phukien', ${stt}, 'name', this.value)"></td>
+                        <td class="px-3 py-2"><input type="text" class="w-16 px-2 py-1 border rounded text-center" value="${data?.unit || 'chiếc'}" onchange="updateData('phukien', ${stt}, 'unit', this.value)"></td>
+                        <td class="px-3 py-2"><input type="number" class="w-full px-2 py-1 border rounded text-center" value="${data?.quantity || ''}" onchange="updateData('phukien', ${stt}, 'quantity', this.value)"></td>
+                        <td class="px-3 py-2 text-center no-print">
+                            <button onclick="deleteRow('phukien', ${stt})" class="text-red-500 hover:text-red-700">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tableData.phukien.push({ stt, ...data });
+            } else if (type === 'kinh') {
+                html = `
+                    <tr data-index="${stt}">
+                        <td class="px-3 py-2 text-center">${stt}</td>
+                        <td class="px-3 py-2"><input type="text" class="w-full px-2 py-1 border rounded text-center" value="${data?.code || ''}" onchange="updateData('kinh', ${stt}, 'code', this.value)"></td>
+                        <td class="px-3 py-2"><input type="text" class="w-full px-2 py-1 border rounded" value="${data?.type || ''}" onchange="updateData('kinh', ${stt}, 'type', this.value)"></td>
+                        <td class="px-3 py-2"><input type="number" class="w-full px-2 py-1 border rounded text-center" value="${data?.width || ''}" onchange="updateData('kinh', ${stt}, 'width', this.value); calculateKinhArea(${stt})"></td>
+                        <td class="px-3 py-2"><input type="number" class="w-full px-2 py-1 border rounded text-center" value="${data?.height || ''}" onchange="updateData('kinh', ${stt}, 'height', this.value); calculateKinhArea(${stt})"></td>
+                        <td class="px-3 py-2"><input type="text" class="w-16 px-2 py-1 border rounded text-center" value="${data?.unit || 'tấm'}" onchange="updateData('kinh', ${stt}, 'unit', this.value)"></td>
+                        <td class="px-3 py-2"><input type="number" class="w-full px-2 py-1 border rounded text-center" value="${data?.panels || ''}" onchange="updateData('kinh', ${stt}, 'panels', this.value); calculateKinhArea(${stt})"></td>
+                        <td class="px-3 py-2"><input type="number" step="0.0001" class="w-full px-2 py-1 border rounded text-center" id="kinhArea${stt}" value="${data?.area || ''}" onchange="updateData('kinh', ${stt}, 'area', this.value); calculateKinhTotals()"></td>
+                        <td class="px-3 py-2 text-center no-print">
+                            <button onclick="deleteRow('kinh', ${stt})" class="text-red-500 hover:text-red-700">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tableData.kinh.push({ stt, ...data });
+            }
+
+            document.getElementById(`${type}TableBody`).insertAdjacentHTML('beforeend', html);
+        }
+
+        function addGroupRow(type) {
+            const groupName = prompt('Nhập tên nhóm (VD: CỬA ĐI MỞ QUAY 1 CÁNH : VRA 55)');
+            if (!groupName) return;
+
+            const html = `
+                <tr class="bg-purple-100 font-semibold">
+                    <td class="px-3 py-2"></td>
+                    <td colspan="5" class="px-3 py-2 text-purple-800">${escapeHtml(groupName)}</td>
+                    <td class="px-3 py-2 no-print">
+                        <button onclick="this.closest('tr').remove()" class="text-red-500 hover:text-red-700 text-xs">Xóa</button>
+                    </td>
+                </tr>
+            `;
+            document.getElementById(`${type}TableBody`).insertAdjacentHTML('beforeend', html);
+        }
+
+        function deleteRow(type, index) {
+            const row = document.querySelector(`#${type}TableBody tr[data-index="${index}"]`);
+            if (row) {
+                row.remove();
+                tableData[type] = tableData[type].filter(item => item.stt !== index);
+
+                // Recalculate totals
+                if (type === 'nhom') calculateNhomTotals();
+                if (type === 'vattu') calculateVattuTotals();
+                if (type === 'kinh') calculateKinhTotals();
+            }
+        }
+
+        function updateData(type, index, field, value) {
+            const item = tableData[type].find(item => item.stt === index);
+            if (item) {
+                item[field] = value;
+            }
+        }
+
+        // =============================================
+        // CALCULATIONS
+        // =============================================
+        function calculateNhomWeight(rowIndex) {
+            const row = document.querySelector(`#nhomTableBody tr[data-index="${rowIndex}"]`);
+            if (!row) return;
+
+            const density = parseFloat(row.querySelector('input[onchange*="density"]').value) || 0;
+            const length = parseFloat(document.getElementById(`nhomLength${rowIndex}`).value) || 0;
+            const quantity = parseFloat(row.querySelector('input[onchange*="quantity"]').value) || 0;
+
+            // Khối lượng = Tỷ trọng * Mét * Số lượng
+            const weight = density * length * quantity;
+            document.getElementById(`nhomWeight${rowIndex}`).value = weight.toFixed(2);
+            updateData('nhom', rowIndex, 'weight', weight.toFixed(2));
+        }
+
+        function calculateNhomTotals() {
+            let totalQty = 0;
+            let totalWeight = 0;
+
+            tableData.nhom.forEach(item => {
+                totalQty += parseFloat(item.quantity) || 0;
+                totalWeight += parseFloat(item.weight) || 0;
+            });
+
+            document.getElementById('nhomTotalQty').textContent = totalQty;
+            document.getElementById('nhomTotalWeight').textContent = totalWeight.toFixed(2);
+        }
+
+        function calculateVattuTotals() {
+            let totalQty = 0;
+
+            tableData.vattu.forEach(item => {
+                totalQty += parseInt(item.quantity) || 0;
+            });
+
+            document.getElementById('vattuTotalQty').textContent = totalQty;
+        }
+
+        function calculateKinhArea(rowIndex) {
+            const row = document.querySelector(`#kinhTableBody tr[data-index="${rowIndex}"]`);
+            if (!row) return;
+
+            const width = parseFloat(row.querySelector('input[onchange*="width"]').value) || 0;
+            const height = parseFloat(row.querySelector('input[onchange*="height"]').value) || 0;
+            const panels = parseFloat(row.querySelector('input[onchange*="panels"]').value) || 1;
+
+            const area = (width / 1000) * (height / 1000) * panels;
+            document.getElementById(`kinhArea${rowIndex}`).value = area.toFixed(6);
+            updateData('kinh', rowIndex, 'area', area.toFixed(6));
+            calculateKinhTotals();
+        }
+
+        function calculateKinhTotals() {
+            let totalPanels = 0;
+            let totalArea = 0;
+
+            tableData.kinh.forEach(item => {
+                totalPanels += parseInt(item.panels) || 0;
+                totalArea += parseFloat(item.area) || 0;
+            });
+
+            document.getElementById('kinhTotalPanels').textContent = totalPanels;
+            document.getElementById('kinhTotalArea').textContent = totalArea.toFixed(6);
+        }
+
+        // =============================================
+        // PRINT & EXPORT
+        // =============================================
+        function printForm() {
+            window.print();
+        }
+
+        async function exportCurrentTab() {
+            const projectName = document.getElementById('projectName').value || 'Công trình';
+            const API_BASE = 'http://localhost:3001/api';
+
+            try {
+                const projectInfo = {
+                    projectName: document.getElementById('projectName').value || '',
+                    orderCode: document.getElementById('orderCode').value || '',
+                    productType: document.getElementById('productType').value || '',
+                    color: document.getElementById('color').value || '',
+                    deliveryAddress: document.getElementById('deliveryAddress').value || ''
+                };
+
+                const response = await fetch(`${API_BASE}/bom-export/purchase-request`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        type: currentTab,
+                        data: tableData[currentTab],
+                        projectInfo: projectInfo
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Lỗi khi xuất Excel');
+                }
+
+                const contentDisposition = response.headers.get('Content-Disposition');
+                let filename = `Phieu_Yeu_Cau_${currentTab}.xlsx`;
+                if (contentDisposition) {
+                    const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                    if (filenameMatch && filenameMatch[1]) {
+                        filename = filenameMatch[1].replace(/['"]/g, '');
+                    }
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = decodeURIComponent(filename);
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } catch (error) {
+                console.error('Error exporting Excel:', error);
+                alert('Lỗi khi xuất Excel: ' + error.message);
+            }
+        }
+
+        async function exportAllToExcel() {
+            const projectName = document.getElementById('projectName').value || 'Công trình';
+            const API_BASE = 'http://localhost:3001/api';
+
+            const projectInfo = {
+                projectName: document.getElementById('projectName').value || '',
+                orderCode: document.getElementById('orderCode').value || '',
+                productType: document.getElementById('productType').value || '',
+                color: document.getElementById('color').value || '',
+                deliveryAddress: document.getElementById('deliveryAddress').value || ''
+            };
+
+            // Export each tab that has data
+            for (const type of ['nhom', 'vattu', 'phukien', 'kinh']) {
+                if (tableData[type] && tableData[type].length > 0) {
+                    try {
+                        const response = await fetch(`${API_BASE}/bom-export/purchase-request`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                type: type,
+                                data: tableData[type],
+                                projectInfo: projectInfo
+                            })
+                        });
+
+                        if (response.ok) {
+                            const contentDisposition = response.headers.get('Content-Disposition');
+                            let filename = `Phieu_Yeu_Cau_${type}.xlsx`;
+                            if (contentDisposition) {
+                                const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                                if (filenameMatch && filenameMatch[1]) {
+                                    filename = filenameMatch[1].replace(/['"]/g, '');
+                                }
+                            }
+
+                            const blob = await response.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = decodeURIComponent(filename);
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                            document.body.removeChild(a);
+
+                            // Wait a bit before next download
+                            await new Promise(resolve => setTimeout(resolve, 500));
+                        }
+                    } catch (error) {
+                        console.error(`Error exporting ${type}:`, error);
+                    }
+                }
+            }
+        }
+
+        function createWorksheet(type) {
+            const projectName = document.getElementById('projectName').value || '';
+            const orderCode = document.getElementById('orderCode').value || '';
+            const productType = document.getElementById('productType').value || '';
+            const color = document.getElementById('color').value || '';
+            const deliveryAddress = document.getElementById('deliveryAddress').value || '';
+            const createdDate = document.getElementById('createdDate').value || '';
+
+            // Format date
+            const dateObj = new Date(createdDate);
+            const day = dateObj.getDate();
+            const month = dateObj.getMonth() + 1;
+            const year = dateObj.getFullYear();
+
+            const data = [];
+
+            // Header rows
+            const titles = {
+                'nhom': 'PHIẾU YÊU CẦU VẬT TƯ- PHỤ KIỆN (NHÔM)',
+                'vattu': 'PHIẾU YÊU CẦU VẬT TƯ',
+                'phukien': 'PHIẾU YÊU CẦU VẬT TƯ- PHỤ KIỆN ĐI CÔNG TRÌNH',
+                'kinh': 'PHIẾU YÊU CẦU VẬT TƯ KÍNH'
+            };
+
+            data.push([`  ${titles[type]}`]);
+            data.push([null, ` Ngày ..${day}..tháng ..${month}.. năm ${year}`]);
+            data.push([`Công trình : ${projectName}`]);
+            data.push([`Mã Đơn Hàng : ${orderCode}`]);
+            data.push([`Chủng loại phụ kiện : ${productType}`]);
+            data.push([`Màu sắc : ${color}`]);
+            data.push([`Địa chỉ giao hàng : ${deliveryAddress}`]);
+            data.push([]);
+
+            // Determine header row index and column count
+            let headerRowIndex = data.length;
+            let colCount = 0;
+            let dataStartRow = 0;
+            let dataEndRow = 0;
+
+            // Table headers and data based on type
+            if (type === 'nhom') {
+                data.push(['TT', 'Tên vật tư', 'Mã vật tư', 'Tỷ trọng', 'Mét (M)', 'Đơn vị', 'Số lượng', 'Khối lượng', 'Ghi chú']);
+                colCount = 9;
+                dataStartRow = data.length;
+                tableData.nhom.forEach(item => {
+                    data.push([item.stt, item.name, item.code, item.density, item.length || 6, item.unit, item.quantity, item.weight, item.note]);
+                });
+                // Total row
+                let totalQty = 0, totalWeight = 0;
+                tableData.nhom.forEach(item => {
+                    totalQty += parseFloat(item.quantity) || 0;
+                    totalWeight += parseFloat(item.weight) || 0;
+                });
+                dataEndRow = data.length;
+                data.push([null, 'TỔNG CỘNG', null, null, null, null, totalQty, totalWeight.toFixed(2)]);
+            } else if (type === 'vattu') {
+                data.push(['TT', 'Mã VT', 'Tên vật tư', 'Đơn vị', 'Số lượng']);
+                colCount = 5;
+                dataStartRow = data.length;
+                tableData.vattu.forEach(item => {
+                    data.push([item.stt, item.code, item.name, item.unit, item.quantity]);
+                });
+                dataEndRow = data.length;
+            } else if (type === 'phukien') {
+                data.push(['TT', 'Mã VT', 'Tên vật tư', 'Đơn vị', 'Số lượng']);
+                colCount = 5;
+                dataStartRow = data.length;
+                tableData.phukien.forEach(item => {
+                    data.push([item.stt, item.code, item.name, item.unit, item.quantity]);
+                });
+                dataEndRow = data.length;
+            } else if (type === 'kinh') {
+                data.push(['TT', 'Mã Kính', 'Loại kính', 'Chiều rộng', 'Chiều cao', 'ĐVT', 'Số tấm', 'Diện tích']);
+                colCount = 8;
+                dataStartRow = data.length;
+                tableData.kinh.forEach(item => {
+                    data.push([item.stt, item.code, item.type, item.width, item.height, item.unit, item.panels, item.area]);
+                });
+                // Total row
+                let totalPanels = 0, totalArea = 0;
+                tableData.kinh.forEach(item => {
+                    totalPanels += parseInt(item.panels) || 0;
+                    totalArea += parseFloat(item.area) || 0;
+                });
+                dataEndRow = data.length;
+                data.push([null, 'TỔNG', null, null, null, null, totalPanels, totalArea.toFixed(6)]);
+            }
+
+            // Add date and location
+            data.push([]);
+            data.push([null, null, `          Hà Nội, Ngày ${day} tháng ${month} năm ${year}`]);
+            data.push([]);
+
+            // Add signature section
+            const signatureRow1 = data.length;
+            data.push([' Người lập', 'Kiểm tra', 'Kế toán', 'Vật tư', 'Người nhận', 'Duyệt']);
+            const signatureRow2 = data.length;
+            data.push(['  (Ký, họ tên)', '  (Ký, họ tên)', '  (Ký, họ tên)', '  (Ký, họ tên)', '  (Ký, họ tên)', '  (Ký, họ tên)']);
+
+            // Create worksheet
+            const ws = XLSX.utils.aoa_to_sheet(data);
+
+            // Apply styles
+            const range = XLSX.utils.decode_range(ws['!ref']);
+
+            // Style title row (row 0) - Bold
+            const titleCell = XLSX.utils.encode_cell({ r: 0, c: 0 });
+            if (!ws[titleCell]) ws[titleCell] = { t: 's', v: data[0][0] };
+            ws[titleCell].s = {
+                font: { bold: true, sz: 14 },
+                alignment: { horizontal: 'center', vertical: 'center' }
+            };
+
+            // Style header row - Bold and border
+            for (let c = 0; c < colCount; c++) {
+                const cell = XLSX.utils.encode_cell({ r: headerRowIndex, c: c });
+                if (!ws[cell]) ws[cell] = { t: 's', v: data[headerRowIndex][c] || '' };
+                ws[cell].s = {
+                    font: { bold: true },
+                    border: {
+                        top: { style: 'thin', color: { rgb: '000000' } },
+                        bottom: { style: 'thin', color: { rgb: '000000' } },
+                        left: { style: 'thin', color: { rgb: '000000' } },
+                        right: { style: 'thin', color: { rgb: '000000' } }
+                    },
+                    alignment: { horizontal: 'center', vertical: 'center' },
+                    fill: { fgColor: { rgb: 'E0E0E0' } }
+                };
+            }
+
+            // Style data rows - Border
+            for (let r = dataStartRow; r < dataEndRow; r++) {
+                for (let c = 0; c < colCount; c++) {
+                    const cell = XLSX.utils.encode_cell({ r: r, c: c });
+                    if (!ws[cell]) ws[cell] = { t: 's', v: data[r][c] || '' };
+                    if (!ws[cell].s) ws[cell].s = {};
+                    ws[cell].s.border = {
+                        top: { style: 'thin', color: { rgb: '000000' } },
+                        bottom: { style: 'thin', color: { rgb: '000000' } },
+                        left: { style: 'thin', color: { rgb: '000000' } },
+                        right: { style: 'thin', color: { rgb: '000000' } }
+                    };
+                }
+            }
+
+            // Style total row - Bold and border
+            const totalRowIndex = dataEndRow;
+            for (let c = 0; c < colCount; c++) {
+                const cell = XLSX.utils.encode_cell({ r: totalRowIndex, c: c });
+                if (!ws[cell]) ws[cell] = { t: 's', v: data[totalRowIndex][c] || '' };
+                if (!ws[cell].s) ws[cell].s = {};
+                ws[cell].s.font = { bold: true };
+                ws[cell].s.border = {
+                    top: { style: 'thin', color: { rgb: '000000' } },
+                    bottom: { style: 'thin', color: { rgb: '000000' } },
+                    left: { style: 'thin', color: { rgb: '000000' } },
+                    right: { style: 'thin', color: { rgb: '000000' } }
+                };
+                ws[cell].s.fill = { fgColor: { rgb: 'E0E0E0' } };
+            }
+
+            // Style signature rows - Bold
+            for (let c = 0; c < 6; c++) {
+                const cell1 = XLSX.utils.encode_cell({ r: signatureRow1, c: c });
+                if (!ws[cell1]) ws[cell1] = { t: 's', v: data[signatureRow1][c] || '' };
+                ws[cell1].s = {
+                    font: { bold: true },
+                    alignment: { horizontal: 'center', vertical: 'center' }
+                };
+
+                const cell2 = XLSX.utils.encode_cell({ r: signatureRow2, c: c });
+                if (!ws[cell2]) ws[cell2] = { t: 's', v: data[signatureRow2][c] || '' };
+                ws[cell2].s = {
+                    alignment: { horizontal: 'center', vertical: 'center' }
+                };
+            }
+
+            return ws;
+        }
+
+        // =============================================
+        // SAVE
+        // =============================================
+        async function saveAllForms() {
+            const projectName = document.getElementById('projectName').value;
+            if (!projectName) {
+                alert('Vui lòng nhập tên công trình!');
+                return;
+            }
+
+            const payload = {
+                projectName: projectName,
+                orderCode: document.getElementById('orderCode').value,
+                productType: document.getElementById('productType').value,
+                color: document.getElementById('color').value,
+                deliveryAddress: document.getElementById('deliveryAddress').value,
+                createdDate: document.getElementById('createdDate').value,
+                nhom: tableData.nhom,
+                vattu: tableData.vattu,
+                phukien: tableData.phukien,
+                kinh: tableData.kinh
+            };
+
+            // For now, just save to localStorage
+            localStorage.setItem(`purchaseRequest_${projectName}`, JSON.stringify(payload));
+            showSuccessNotification('Đã lưu phiếu yêu cầu vật tư thành công!');
+        }
+
+        // =============================================
+        // UTILITIES
+        // =============================================
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông báo - ViralWindow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .header-gradient {
+            background: linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .notification-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .notification-card:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .notification-card.unread {
+            background: linear-gradient(90deg, #f0f9ff 0%, #ffffff 100%);
+            border-left-color: #3b82f6;
+        }
+
+        .notification-card.read {
+            background: white;
+            opacity: 0.8;
+        }
+
+        .notification-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .badge-new {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .filter-btn {
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- HEADER -->
+    <div class="header-gradient text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-6 py-5">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <a href="javascript:void(0)" onclick="history.back()" title="Quay lại trang trước"
+                        class="p-2 bg-white/20 rounded-lg hover:bg-white/30 transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                    </a>
+                    <div>
+                        <h1 class="text-2xl font-bold">Thông báo</h1>
+                        <p class="text-blue-100 text-sm">Theo dõi tất cả hoạt động và cập nhật</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button onclick="markAllAsRead()"
+                        class="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition">
+                        ✓ Đánh dấu đã đọc tất cả
+                    </button>
+                    <button onclick="deleteAllRead()"
+                        class="px-4 py-2 bg-red-500/80 hover:bg-red-600 rounded-lg text-sm font-medium transition">
+                        🗑️ Xóa đã đọc
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATS BAR -->
+    <div class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="grid grid-cols-4 gap-6">
+                <div class="text-center">
+                    <p class="text-sm text-gray-600 mb-1">Tổng thông báo</p>
+                    <p class="text-2xl font-bold text-gray-900" id="statTotal">0</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-sm text-gray-600 mb-1">Chưa đọc</p>
+                    <p class="text-2xl font-bold text-blue-600" id="statUnread">0</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-sm text-gray-600 mb-1">Hôm nay</p>
+                    <p class="text-2xl font-bold text-purple-600" id="statToday">0</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-sm text-gray-600 mb-1">Quan trọng</p>
+                    <p class="text-2xl font-bold text-red-600" id="statImportant">0</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-6 py-3">
+            <div class="flex items-center gap-3 overflow-x-auto">
+                <button onclick="filterNotifications('all')" id="filterAll"
+                    class="filter-btn active px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap">
+                    Tất cả
+                </button>
+                <button onclick="filterNotifications('unread')" id="filterUnread"
+                    class="filter-btn px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap bg-gray-100">
+                    Chưa đọc
+                </button>
+                <button onclick="filterNotifications('project')" id="filterProject"
+                    class="filter-btn px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap bg-gray-100">
+                    🏗️ Dự án
+                </button>
+                <button onclick="filterNotifications('quotation')" id="filterQuotation"
+                    class="filter-btn px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap bg-gray-100">
+                    📄 Báo giá
+                </button>
+                <button onclick="filterNotifications('production')" id="filterProduction"
+                    class="filter-btn px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap bg-gray-100">
+                    🏭 Sản xuất
+                </button>
+                <button onclick="filterNotifications('inventory')" id="filterInventory"
+                    class="filter-btn px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap bg-gray-100">
+                    📦 Kho hàng
+                </button>
+                <button onclick="filterNotifications('finance')" id="filterFinance"
+                    class="filter-btn px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap bg-gray-100">
+                    💰 Tài chính
+                </button>
+                <button onclick="filterNotifications('system')" id="filterSystem"
+                    class="filter-btn px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap bg-gray-100">
+                    ⚙️ Hệ thống
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTIFICATIONS LIST -->
+    <div class="max-w-7xl mx-auto px-6 py-6">
+        <div id="notificationsList" class="space-y-3">
+            <!-- Notifications will be loaded here -->
+            <div class="text-center py-12 text-gray-500">
+                <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                <p class="text-lg font-medium">Đang tải thông báo...</p>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div id="paginationContainer" class="mt-6 flex justify-center gap-2 hidden">
+            <!-- Pagination buttons -->
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3001/api';
+        let allNotifications = [];
+        let currentFilter = 'all';
+        let currentPage = 1;
+        const perPage = 20;
+
+        // Load notifications on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadNotifications();
+            
+            // Auto refresh every 30 seconds
+            setInterval(loadNotifications, 30000);
+        });
+
+        async function loadNotifications() {
+            try {
+                const response = await fetch(`${API_BASE}/notifications`);
+                
+                if (!response.ok) {
+                    console.warn('API not available, using demo data');
+                    loadDemoNotifications();
+                    return;
+                }
+
+                const result = await response.json();
+
+                if (result.success && result.data && result.data.length > 0) {
+                    allNotifications = result.data;
+                    updateStats();
+                    filterNotifications(currentFilter);
+                } else {
+                    // No data from API, show demo
+                    console.log('No notifications from API, showing demo data');
+                    loadDemoNotifications();
+                }
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+                // Show demo data
+                loadDemoNotifications();
+            }
+        }
+
+        function loadDemoNotifications() {
+            allNotifications = [
+                {
+                    id: 1,
+                    type: 'project',
+                    title: 'Dự án mới được tạo',
+                    message: 'Dự án "Nhà S10-Anh Triệu" vừa được tạo bởi Admin',
+                    link: 'projects.html',
+                    icon: '🏗️',
+                    color: 'blue',
+                    is_read: false,
+                    created_at: new Date().toISOString(),
+                    priority: 'normal'
+                },
+                {
+                    id: 2,
+                    type: 'quotation',
+                    title: 'Báo giá mới chờ duyệt',
+                    message: 'Báo giá BG2025-001 cho khách hàng "Anh Triệu" đang chờ phê duyệt',
+                    link: 'sales.html',
+                    icon: '📄',
+                    color: 'yellow',
+                    is_read: false,
+                    created_at: new Date(Date.now() - 3600000).toISOString(),
+                    priority: 'high'
+                },
+                {
+                    id: 3,
+                    type: 'inventory',
+                    title: '⚠️ Vật tư sắp hết',
+                    message: 'Thanh nhôm Y6501 còn 5 cây, dưới mức tồn kho tối thiểu',
+                    link: 'inventory.html',
+                    icon: '📦',
+                    color: 'red',
+                    is_read: false,
+                    created_at: new Date(Date.now() - 7200000).toISOString(),
+                    priority: 'urgent'
+                },
+                {
+                    id: 4,
+                    type: 'production',
+                    title: 'Lệnh sản xuất hoàn thành',
+                    message: 'LSX-2025-001 đã hoàn thành 100%, sẵn sàng lắp đặt',
+                    link: 'production.html',
+                    icon: '🏭',
+                    color: 'green',
+                    is_read: true,
+                    created_at: new Date(Date.now() - 86400000).toISOString(),
+                    priority: 'normal'
+                },
+                {
+                    id: 5,
+                    type: 'finance',
+                    title: 'Công nợ quá hạn',
+                    message: 'Khách hàng "Công ty ABC" có khoản nợ 50.000.000đ quá hạn 7 ngày',
+                    link: 'finance-debt.html',
+                    icon: '💰',
+                    color: 'orange',
+                    is_read: false,
+                    created_at: new Date(Date.now() - 172800000).toISOString(),
+                    priority: 'high'
+                },
+                {
+                    id: 6,
+                    type: 'project',
+                    title: 'Dự án gần deadline',
+                    message: 'Dự án "Nhà Cẩm Ly" cần hoàn thành trong 3 ngày',
+                    link: 'projects.html',
+                    icon: '⏰',
+                    color: 'red',
+                    is_read: false,
+                    created_at: new Date(Date.now() - 259200000).toISOString(),
+                    priority: 'urgent'
+                },
+                {
+                    id: 7,
+                    type: 'system',
+                    title: 'Thiết kế hoàn thành',
+                    message: 'Dự án "Biệt thự Hải" đã hoàn thành bóc tách vật tư',
+                    link: 'design-new.html',
+                    icon: '✅',
+                    color: 'green',
+                    is_read: true,
+                    created_at: new Date(Date.now() - 345600000).toISOString(),
+                    priority: 'normal'
+                }
+            ];
+
+            updateStats();
+            filterNotifications(currentFilter);
+        }
+
+        function renderNotifications(notifications) {
+            const container = document.getElementById('notificationsList');
+
+            if (notifications.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-16">
+                        <svg class="w-20 h-20 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                        </svg>
+                        <p class="text-lg font-medium text-gray-600">Không có thông báo</p>
+                        <p class="text-sm text-gray-400 mt-2">Bạn đã xem hết tất cả thông báo</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Pagination
+            const start = (currentPage - 1) * perPage;
+            const end = start + perPage;
+            const paginatedNotifications = notifications.slice(start, end);
+
+            container.innerHTML = paginatedNotifications.map(notif => {
+                const timeAgo = getTimeAgo(new Date(notif.created_at));
+                const iconColors = {
+                    blue: 'bg-blue-100 text-blue-600',
+                    green: 'bg-green-100 text-green-600',
+                    red: 'bg-red-100 text-red-600',
+                    yellow: 'bg-yellow-100 text-yellow-600',
+                    orange: 'bg-orange-100 text-orange-600',
+                    purple: 'bg-purple-100 text-purple-600'
+                };
+
+                const priorityBadges = {
+                    urgent: '<span class="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">🚨 Khẩn cấp</span>',
+                    high: '<span class="px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">⚡ Quan trọng</span>',
+                    normal: ''
+                };
+
+                return `
+                    <div class="notification-card ${notif.is_read ? 'read' : 'unread'} bg-white rounded-xl shadow-sm p-4 cursor-pointer"
+                         onclick="openNotification(${notif.id})">
+                        <div class="flex items-start gap-4">
+                            <div class="notification-icon ${iconColors[notif.color] || iconColors.blue}">
+                                ${notif.icon || '📢'}
+                            </div>
+                            
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-start justify-between mb-1">
+                                    <h3 class="font-semibold text-gray-900 ${!notif.is_read ? 'text-blue-600' : ''}">
+                                        ${notif.title}
+                                        ${!notif.is_read ? '<span class="ml-2 inline-block w-2 h-2 bg-blue-600 rounded-full badge-new"></span>' : ''}
+                                    </h3>
+                                    <div class="flex items-center gap-2">
+                                        ${priorityBadges[notif.priority] || ''}
+                                        <button onclick="deleteNotification(${notif.id}, event)" 
+                                                class="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition"
+                                                title="Xóa thông báo">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <p class="text-gray-600 text-sm mb-2">${notif.message}</p>
+                                
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-gray-400">${timeAgo}</span>
+                                    ${notif.link ? `
+                                        <a href="${notif.link}" onclick="event.stopPropagation()" 
+                                           class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                            Xem chi tiết →
+                                        </a>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            renderPagination(notifications.length);
+        }
+
+        function renderPagination(total) {
+            const totalPages = Math.ceil(total / perPage);
+            const container = document.getElementById('paginationContainer');
+
+            if (totalPages <= 1) {
+                container.classList.add('hidden');
+                return;
+            }
+
+            container.classList.remove('hidden');
+            let html = '';
+
+            for (let i = 1; i <= totalPages; i++) {
+                html += `
+                    <button onclick="goToPage(${i})" 
+                            class="px-4 py-2 rounded-lg font-medium ${i === currentPage ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}">
+                        ${i}
+                    </button>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            filterNotifications(currentFilter);
+        }
+
+        function filterNotifications(type) {
+            currentFilter = type;
+            currentPage = 1;
+
+            // Update filter buttons
+            ['all', 'unread', 'project', 'quotation', 'production', 'inventory', 'finance', 'system'].forEach(f => {
+                const btn = document.getElementById(`filter${f.charAt(0).toUpperCase() + f.slice(1)}`);
+                if (btn) {
+                    if (f === type) {
+                        btn.className = 'filter-btn active px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap';
+                    } else {
+                        btn.className = 'filter-btn px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap bg-gray-100';
+                    }
+                }
+            });
+
+            // Filter notifications
+            let filtered = allNotifications;
+
+            if (type === 'unread') {
+                filtered = allNotifications.filter(n => !n.is_read);
+            } else if (type !== 'all') {
+                filtered = allNotifications.filter(n => n.type === type);
+            }
+
+            renderNotifications(filtered);
+        }
+
+        function updateStats() {
+            const total = allNotifications.length;
+            const unread = allNotifications.filter(n => !n.is_read).length;
+            const today = allNotifications.filter(n => {
+                const notifDate = new Date(n.created_at);
+                const todayDate = new Date();
+                return notifDate.toDateString() === todayDate.toDateString();
+            }).length;
+            const important = allNotifications.filter(n => n.priority === 'urgent' || n.priority === 'high').length;
+
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statUnread').textContent = unread;
+            document.getElementById('statToday').textContent = today;
+            document.getElementById('statImportant').textContent = important;
+        }
+
+        async function openNotification(id) {
+            const notif = allNotifications.find(n => n.id === id);
+            if (!notif) return;
+
+            // Mark as read
+            if (!notif.is_read) {
+                await markAsRead(id);
+            }
+
+            // Navigate to link if available
+            if (notif.link) {
+                window.location.href = notif.link;
+            }
+        }
+
+        async function markAsRead(id) {
+            try {
+                await fetch(`${API_BASE}/notifications/${id}/read`, {
+                    method: 'PUT'
+                });
+
+                // Update local data
+                const notif = allNotifications.find(n => n.id === id);
+                if (notif) {
+                    notif.is_read = true;
+                }
+
+                updateStats();
+                filterNotifications(currentFilter);
+            } catch (error) {
+                console.error('Error marking as read:', error);
+            }
+        }
+
+        async function markAllAsRead() {
+            if (!confirm('Đánh dấu tất cả thông báo là đã đọc?')) return;
+
+            try {
+                await fetch(`${API_BASE}/notifications/mark-all-read`, {
+                    method: 'PUT'
+                });
+
+                allNotifications.forEach(n => n.is_read = true);
+                updateStats();
+                filterNotifications(currentFilter);
+                showToast('Đã đánh dấu tất cả là đã đọc', 'success');
+            } catch (error) {
+                console.error('Error marking all as read:', error);
+            }
+        }
+
+        async function deleteNotification(id, event) {
+            event.stopPropagation();
+            
+            if (!confirm('Xóa thông báo này?')) return;
+
+            try {
+                await fetch(`${API_BASE}/notifications/${id}`, {
+                    method: 'DELETE'
+                });
+
+                allNotifications = allNotifications.filter(n => n.id !== id);
+                updateStats();
+                filterNotifications(currentFilter);
+                showToast('Đã xóa thông báo', 'success');
+            } catch (error) {
+                console.error('Error deleting notification:', error);
+            }
+        }
+
+        async function deleteAllRead() {
+            const readNotifications = allNotifications.filter(n => n.is_read);
+            
+            if (readNotifications.length === 0) {
+                alert('Không có thông báo đã đọc để xóa');
+                return;
+            }
+
+            if (!confirm(`Xóa ${readNotifications.length} thông báo đã đọc?`)) return;
+
+            try {
+                await fetch(`${API_BASE}/notifications/delete-read`, {
+                    method: 'DELETE'
+                });
+
+                allNotifications = allNotifications.filter(n => !n.is_read);
+                updateStats();
+                filterNotifications(currentFilter);
+                showToast(`Đã xóa ${readNotifications.length} thông báo`, 'success');
+            } catch (error) {
+                console.error('Error deleting notifications:', error);
+            }
+        }
+
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            
+            if (seconds < 60) return 'Vừa xong';
+            if (seconds < 3600) return Math.floor(seconds / 60) + ' phút trước';
+            if (seconds < 86400) return Math.floor(seconds / 3600) + ' giờ trước';
+            if (seconds < 604800) return Math.floor(seconds / 86400) + ' ngày trước';
+            
+            return date.toLocaleDateString('vi-VN');
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            const bgColors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500'
+            };
+            
+            toast.className = `fixed top-4 right-4 ${bgColors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+</body>
+</html>
+

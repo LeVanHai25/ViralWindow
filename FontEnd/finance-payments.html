@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phiếu chi - ViralWindow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="finance-styles.css">
+    <script src="finance-date-range-picker.js"></script>
+    <style>
+        /* Modern gradient background - đồng bộ với phần mềm */
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        /* Modern header with gradient */
+        .header-gradient {
+            background: linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 100;
+        }
+
+        /* Filter bar modern */
+        .filter-bar-modern {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: visible;
+            z-index: 10;
+        }
+
+        /* Table modern */
+        .table-modern {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .table-modern thead {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+
+        .table-modern tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        .table-modern tbody tr:hover {
+            background: #f8fafc;
+            transform: scale(1.01);
+        }
+
+        /* Button modern */
+        .btn-modern {
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .btn-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Modal modern */
+        .modal-modern {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Fade in animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .icon-square {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- HEADER -->
+    <div class="bg-white shadow p-5 flex justify-between items-center header-gradient backdrop-blur-sm"
+        style="position: relative; z-index: 1000;">
+        <div class="flex items-center gap-4">
+            <a href="javascript:void(0)" onclick="history.back()" title="Quay lại trang trước"
+                class="icon-square bg-white text-blue-600 overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-all duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+            </a>
+            <div>
+                <h1 class="text-2xl font-bold text-white">Phiếu chi</h1>
+                <p class="text-blue-100 text-sm">Quản lý các phiếu chi tiền</p>
+            </div>
+        </div>
+        <button onclick="openPaymentModal()"
+            class="px-6 py-2.5 bg-white text-blue-600 rounded-lg font-semibold flex items-center gap-2 hover:bg-blue-50 transition-all btn-modern shadow-md">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Tạo phiếu chi
+        </button>
+    </div>
+
+    <div class="p-6">
+        <!-- TABS -->
+        <div class="bg-white rounded-xl shadow-sm mb-6 p-2 fade-in">
+            <div class="flex gap-2 border-b border-gray-200">
+                <button onclick="switchTab('all')" id="tab-all" class="tab-button px-6 py-3 text-sm font-medium text-gray-700 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600 transition-all">
+                    Tất cả
+                </button>
+                <button onclick="switchTab('draft')" id="tab-draft" class="tab-button px-6 py-3 text-sm font-medium text-gray-700 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600 transition-all">
+                    Nháp
+                </button>
+                <button onclick="switchTab('posted')" id="tab-posted" class="tab-button px-6 py-3 text-sm font-medium text-gray-700 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600 transition-all">
+                    Đã ghi sổ
+                </button>
+                <button onclick="switchTab('cancelled')" id="tab-cancelled" class="tab-button px-6 py-3 text-sm font-medium text-gray-700 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600 transition-all">
+                    Đã hủy
+                </button>
+            </div>
+        </div>
+
+        <!-- FILTERS -->
+        <div class="filter-bar-modern p-5 mb-6 fade-in">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Thời gian</label>
+                    <div id="dateRangePicker"></div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nhà cung cấp</label>
+                    <input type="text" id="filterSupplier" class="form-input w-full" placeholder="Tìm nhà cung cấp..."
+                        onchange="loadPayments()">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Dự án</label>
+                    <select id="filterProject" class="form-select w-full" onchange="loadPayments()">
+                        <option value="">Tất cả</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Loại chi</label>
+                    <select id="filterExpenseType" class="form-select w-full" onchange="loadPayments()">
+                        <option value="">Tất cả</option>
+                        <option value="material">Vật tư</option>
+                        <option value="labor">Nhân công</option>
+                        <option value="other">Khác</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
+                    <select id="filterStatus" class="form-select w-full" onchange="onStatusFilterChange()">
+                        <option value="">Tất cả</option>
+                        <option value="draft">Nháp</option>
+                        <option value="posted">Đã ghi sổ</option>
+                        <option value="cancelled">Đã hủy</option>
+                    </select>
+                </div>
+                <div>
+                    <button onclick="resetFilters()"
+                        class="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-all btn-modern">
+                        Xóa bộ lọc
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABLE -->
+        <div class="table-modern fade-in" style="animation-delay: 0.1s;">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr>
+                            <th
+                                class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                Số PC</th>
+                            <th
+                                class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                Ngày</th>
+                            <th
+                                class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                Nhà cung cấp</th>
+                            <th
+                                class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                Dự án</th>
+                            <th
+                                class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                Loại chi</th>
+                            <th
+                                class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                Số tiền</th>
+                            <th
+                                class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                Hình thức</th>
+                            <th
+                                class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                Trạng thái</th>
+                            <th
+                                class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentsTable" class="divide-y divide-gray-100">
+                        <tr>
+                            <td colspan="9" class="px-6 py-12 text-center text-gray-500">
+                                <div class="flex flex-col items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-300 mb-3"
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    </svg>
+                                    <p>Đang tải dữ liệu...</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Create/Edit Payment -->
+    <div id="paymentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center"
+        style="display: none; z-index: 99999 !important;">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden mx-4" style="z-index: 100000 !important; position: relative;">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-4 flex items-center justify-between">
+                <h2 class="text-xl font-bold text-white" id="paymentModalTitle">Tạo phiếu chi</h2>
+                <button type="button" onclick="closePaymentModal()" class="text-white hover:text-gray-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Body - Scrollable -->
+            <div class="p-6 overflow-y-auto" style="max-height: 60vh;">
+                <form id="paymentForm" onsubmit="savePayment(event)">
+                    <!-- Row 1: Số phiếu + Ngày -->
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Số phiếu</label>
+                            <input type="text" id="paymentCode"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100" readonly
+                                placeholder="Tự động tạo">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Ngày chi <span
+                                    class="text-red-500">*</span></label>
+                            <input type="date" id="paymentDate"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Tài khoản tiền -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tài khoản tiền <span
+                                class="text-red-500">*</span></label>
+                        <select id="paymentAccount" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
+                            <option value="cash">Tiền mặt</option>
+                            <option value="bank_transfer">Chuyển khoản</option>
+                        </select>
+                    </div>
+
+                    <!-- Row 3: Nhà cung cấp + Dự án -->
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nhà cung cấp <span
+                                    class="text-red-500">*</span></label>
+                            <input type="text" id="paymentSupplier"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg" required
+                                placeholder="Nhập tên nhà cung cấp">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Dự án</label>
+                            <select id="paymentProject" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                                <option value="">-- Chọn dự án --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Row 4: Khoản chi -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Khoản chi <span
+                                class="text-red-500">*</span></label>
+                        <select id="paymentExpenseType" class="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                            required>
+                            <option value="">-- Chọn khoản chi --</option>
+                            <option value="material">Vật tư</option>
+                            <option value="labor">Nhân công</option>
+                            <option value="other">Khác</option>
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">Lưu ý: Vật tư chỉ đi qua Xuất kho, không nhập ở đây
+                        </p>
+                    </div>
+
+                    <!-- Divider -->
+                    <hr class="my-4 border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">Chi tiết</h3>
+
+                    <!-- Row 5: Số tiền -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Số tiền <span
+                                class="text-red-500">*</span></label>
+                        <input type="number" id="paymentAmount"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg" step="1000" min="0" required
+                            placeholder="Nhập số tiền">
+                    </div>
+
+                    <!-- Row 6: Diễn giải -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Diễn giải</label>
+                        <textarea id="paymentDescription"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg resize-none" rows="2"
+                            placeholder="Ghi chú thêm..."></textarea>
+                    </div>
+
+                    <!-- Total -->
+                    <div class="bg-gray-100 rounded-lg p-4 flex justify-between items-center">
+                        <span class="text-base font-semibold text-gray-700">Tổng tiền:</span>
+                        <span class="text-2xl font-bold text-red-600" id="paymentTotal">0 ₫</span>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Footer -->
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
+                <button type="button" onclick="closePaymentModal()"
+                    class="px-5 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300">
+                    Hủy
+                </button>
+                <button type="button" onclick="savePaymentDraft()"
+                    class="px-5 py-2 bg-blue-100 text-blue-700 rounded-lg font-medium hover:bg-blue-200"
+                    id="saveDraftBtn">
+                    Lưu nháp
+                </button>
+                <button type="button" onclick="document.getElementById('paymentForm').requestSubmit()"
+                    class="px-5 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700"
+                    id="postPaymentBtn">
+                    Ghi sổ
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="finance-common.js"></script>
+    <script>
+        let currentPaymentId = null;
+        let dateRangePicker = null;
+        let currentTab = 'all';
+
+        // Switch tab
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('text-blue-600', 'border-blue-600', 'font-semibold');
+                btn.classList.add('text-gray-700', 'border-transparent');
+            });
+            
+            const activeTab = document.getElementById(`tab-${tab}`);
+            if (activeTab) {
+                activeTab.classList.remove('text-gray-700', 'border-transparent');
+                activeTab.classList.add('text-blue-600', 'border-blue-600', 'font-semibold');
+            }
+            
+            // Update filter status to match tab
+            document.getElementById('filterStatus').value = tab === 'all' ? '' : tab;
+            
+            // Reload payments
+            loadPayments();
+        }
+
+        // Handle status filter change
+        function onStatusFilterChange() {
+            const statusValue = document.getElementById('filterStatus').value;
+            // Update currentTab to match filter
+            if (statusValue === '') {
+                currentTab = 'all';
+            } else {
+                currentTab = statusValue;
+                // Update tab button
+                switchTab(statusValue);
+                return; // switchTab will call loadPayments
+            }
+            // Update tab button
+            switchTab('all');
+        }
+
+        // Load payments
+        async function loadPayments() {
+            try {
+                const params = new URLSearchParams();
+                const range = dateRangePicker ? dateRangePicker.getRange() : { startDate: null, endDate: null };
+                const supplier = document.getElementById('filterSupplier').value;
+                const projectId = document.getElementById('filterProject').value;
+                const expenseType = document.getElementById('filterExpenseType').value;
+                // Use currentTab if filterStatus is empty, otherwise use filterStatus
+                const status = document.getElementById('filterStatus').value || (currentTab !== 'all' ? currentTab : '');
+
+                if (range.startDate) params.append('startDate', range.startDate);
+                if (range.endDate) params.append('endDate', range.endDate);
+                if (supplier) params.append('supplier', supplier);
+                if (projectId) params.append('projectId', projectId);
+                if (expenseType) params.append('expense_type', expenseType);
+                if (status) params.append('status', status);
+                params.append('type', 'expense');
+
+                const token = localStorage.getItem('token');
+                const res = await fetch(`${API_BASE}/financial/transactions?${params}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+
+                const tbody = document.getElementById('paymentsTable');
+                if (!data.success || !data.data || data.data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="9" class="text-center py-8 text-gray-500">Chưa có phiếu chi nào</td></tr>';
+                    return;
+                }
+
+                if (data.data.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="9" class="px-6 py-12 text-center text-gray-500">
+                                <div class="flex flex-col items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    </svg>
+                                    <p class="text-lg font-medium">Chưa có phiếu chi nào</p>
+                                    <p class="text-sm text-gray-400 mt-1">Nhấn "Tạo phiếu chi" để bắt đầu</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = data.data.map(payment => {
+                    const status = payment.status || 'draft';
+                    return `
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 text-sm font-medium text-gray-900">${escapeHtml(payment.transaction_code || 'N/A')}</td>
+                            <td class="px-6 py-4 text-sm text-gray-700">${formatDate(payment.transaction_date)}</td>
+                            <td class="px-6 py-4 text-sm text-gray-900">${escapeHtml(payment.supplier || 'N/A')}</td>
+                            <td class="px-6 py-4 text-sm text-gray-700">${escapeHtml(payment.project_name || 'N/A')}</td>
+                            <td class="px-6 py-4 text-sm text-gray-700">${formatExpenseType(payment.expense_type)}</td>
+                            <td class="px-6 py-4 text-sm font-semibold text-red-600">${formatCurrency(payment.amount)}</td>
+                            <td class="px-6 py-4 text-sm text-gray-700">${formatPaymentMethod(payment.payment_method)}</td>
+                            <td class="px-6 py-4">${getStatusBadge(status)}</td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-2">
+                                    <button onclick="viewPayment(${payment.id})" class="px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                                        Xem
+                                    </button>
+                                    ${status === 'draft' ? `
+                                        <button onclick="editPayment(${payment.id})" class="px-3 py-1.5 text-xs font-medium text-green-600 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
+                                            Sửa
+                                        </button>
+                                        <button onclick="postPayment(${payment.id})" class="px-3 py-1.5 text-xs font-medium text-purple-600 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
+                                            Ghi sổ
+                                        </button>
+                                        <button onclick="cancelPayment(${payment.id})" class="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+                                            Hủy
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error loading payments:', error);
+                document.getElementById('paymentsTable').innerHTML = '<tr><td colspan="9" class="text-center py-8 text-red-500">Lỗi khi tải dữ liệu</td></tr>';
+            }
+        }
+
+        // Open payment modal
+        async function openPaymentModal(id = null) {
+            currentPaymentId = id;
+            document.getElementById('paymentModalTitle').textContent = id ? 'Sửa phiếu chi' : 'Tạo phiếu chi';
+            const modal = document.getElementById('paymentModal');
+            modal.classList.remove('hidden');
+            modal.style.display = 'flex';
+            document.getElementById('paymentDate').value = new Date().toISOString().split('T')[0];
+
+            await loadProjects(document.getElementById('paymentProject'));
+
+            if (id) {
+                await loadPaymentData(id);
+            } else {
+                resetForm(document.getElementById('paymentForm'));
+                document.getElementById('paymentCode').value = '';
+            }
+
+            document.getElementById('paymentAmount').addEventListener('input', updatePaymentTotal);
+        }
+
+        // Load payment data
+        async function loadPaymentData(id) {
+            try {
+                const res = await fetch(`${API_BASE}/financial/transactions/${id}`);
+                const data = await res.json();
+
+                if (data.success) {
+                    const payment = data.data;
+                    document.getElementById('paymentCode').value = payment.transaction_code || '';
+                    document.getElementById('paymentDate').value = payment.transaction_date.split('T')[0];
+                    document.getElementById('paymentAccount').value = payment.payment_method || 'cash';
+                    document.getElementById('paymentSupplier').value = payment.supplier || '';
+                    document.getElementById('paymentProject').value = payment.project_id || '';
+                    document.getElementById('paymentExpenseType').value = payment.expense_type || '';
+                    document.getElementById('paymentAmount').value = payment.amount || 0;
+                    document.getElementById('paymentDescription').value = payment.description || '';
+
+                    updatePaymentTotal();
+
+                    if (payment.status === 'posted') {
+                        document.getElementById('paymentForm').querySelectorAll('input, select, textarea').forEach(el => {
+                            el.disabled = true;
+                        });
+                        document.getElementById('saveDraftBtn').classList.add('hidden');
+                        document.getElementById('postPaymentBtn').classList.add('hidden');
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading payment:', error);
+                showAlert('Lỗi khi tải dữ liệu phiếu chi');
+            }
+        }
+
+        // Update payment total
+        function updatePaymentTotal() {
+            const amount = parseFloat(document.getElementById('paymentAmount').value) || 0;
+            document.getElementById('paymentTotal').textContent = formatCurrency(amount);
+        }
+
+        // Close payment modal
+        function closePaymentModal() {
+            const modal = document.getElementById('paymentModal');
+            modal.classList.add('hidden');
+            modal.style.display = 'none';
+            resetForm(document.getElementById('paymentForm'));
+            currentPaymentId = null;
+            document.getElementById('paymentForm').querySelectorAll('input, select, textarea').forEach(el => {
+                el.disabled = false;
+            });
+            document.getElementById('saveDraftBtn').classList.remove('hidden');
+            document.getElementById('postPaymentBtn').classList.remove('hidden');
+        }
+
+        // Save payment (post)
+        async function savePayment(event) {
+            event.preventDefault();
+            await savePaymentData(false);
+        }
+
+        // Save payment draft
+        async function savePaymentDraft() {
+            await savePaymentData(true);
+        }
+
+        // Save payment data
+        async function savePaymentData(draft = false) {
+            if (!validateForm(document.getElementById('paymentForm'))) {
+                showAlert('Vui lòng điền đầy đủ thông tin bắt buộc');
+                return;
+            }
+
+            const data = {
+                transaction_date: document.getElementById('paymentDate').value,
+                transaction_type: 'expense',
+                expense_type: document.getElementById('paymentExpenseType').value,
+                supplier: document.getElementById('paymentSupplier').value,
+                amount: parseFloat(document.getElementById('paymentAmount').value),
+                description: document.getElementById('paymentDescription').value || null,
+                project_id: document.getElementById('paymentProject').value || null,
+                payment_method: document.getElementById('paymentAccount').value,
+                status: draft ? 'draft' : 'posted'
+            };
+
+            try {
+                const url = currentPaymentId
+                    ? `${API_BASE}/financial/transactions/${currentPaymentId}`
+                    : `${API_BASE}/financial/transactions`;
+                const method = currentPaymentId ? 'PUT' : 'POST';
+
+                const token = localStorage.getItem('token');
+                const res = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await res.json();
+                if (result.success) {
+                    showAlert(draft ? 'Lưu nháp thành công!' : 'Ghi sổ thành công!');
+                    closePaymentModal();
+                    loadPayments();
+                } else {
+                    showAlert('Lỗi: ' + (result.message || 'Không thể lưu phiếu chi'));
+                }
+            } catch (error) {
+                console.error('Error saving payment:', error);
+                showAlert('Lỗi kết nối server');
+            }
+        }
+
+        // View payment
+        function viewPayment(id) {
+            openPaymentModal(id);
+        }
+
+        // Edit payment
+        function editPayment(id) {
+            openPaymentModal(id);
+        }
+
+        // Post payment
+        async function postPayment(id) {
+            if (!confirm('Bạn có chắc muốn ghi sổ phiếu chi này?')) return;
+
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`${API_BASE}/financial/transactions/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ status: 'posted' })
+                });
+
+                const result = await res.json();
+                if (result.success) {
+                    showAlert('Ghi sổ thành công!');
+                    loadPayments();
+                } else {
+                    showAlert('Lỗi: ' + (result.message || 'Không thể ghi sổ'));
+                }
+            } catch (error) {
+                console.error('Error posting payment:', error);
+                showAlert('Lỗi kết nối server');
+            }
+        }
+
+        // Cancel payment
+        async function cancelPayment(id) {
+            if (!confirm('Bạn có chắc muốn hủy phiếu chi này?')) return;
+
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`${API_BASE}/financial/transactions/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ status: 'cancelled' })
+                });
+
+                const result = await res.json();
+                if (result.success) {
+                    showAlert('Hủy phiếu chi thành công!');
+                    loadPayments();
+                } else {
+                    showAlert('Lỗi: ' + (result.message || 'Không thể hủy phiếu chi'));
+                }
+            } catch (error) {
+                console.error('Error cancelling payment:', error);
+                showAlert('Lỗi kết nối server');
+            }
+        }
+
+        // Reset filters
+        function resetFilters() {
+            if (dateRangePicker) {
+                dateRangePicker.setRange('month');
+            }
+            document.getElementById('filterSupplier').value = '';
+            document.getElementById('filterProject').value = '';
+            document.getElementById('filterExpenseType').value = '';
+            document.getElementById('filterStatus').value = '';
+            switchTab('all');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function () {
+            checkAuth();
+
+            // Initialize date range picker
+            dateRangePicker = new DateRangePicker('dateRangePicker', {
+                defaultRange: 'month',
+                onRangeChange: function (range) {
+                    loadPayments();
+                }
+            });
+
+            // Set default active tab
+            switchTab('all');
+            
+            loadPayments();
+            loadProjects(document.getElementById('filterProject'));
+        });
+    </script>
+</body>
+
+</html>
