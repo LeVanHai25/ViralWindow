@@ -36,12 +36,18 @@ exports.getByProject = async (req, res) => {
     try {
         const { projectId } = req.params;
 
-        const [rows] = await db.query(
+        // BƯỚC 1: Lấy thông tin dự án
+        const [projectRows] = await db.query(
+            `SELECT id, project_code, project_name FROM projects WHERE id = ?`,
+            [projectId]
+        );
+        const project = projectRows[0] || {};
+
+        // BƯỚC 2: Lấy tất cả vật tư đã xuất (từ project_materials) - ĐÂY LÀ "VẬT TƯ ĐÃ XUẤT"
+        const [exportedRows] = await db.query(
             `SELECT 
                 pm.id,
                 pm.project_id,
-                p.project_code,
-                p.project_name,
                 -- Xử lý cả dữ liệu cũ và mới: ưu tiên cột mới, nếu null thì dùng cột cũ
                 COALESCE(pm.material_name, pm.item_name) as material_name,
                 COALESCE(pm.quantity, pm.quantity_used) as quantity,
@@ -66,24 +72,92 @@ exports.getByProject = async (req, res) => {
                 -- Material_id: ưu tiên material_id mới, nếu không có thì dùng inventory_id hoặc accessory_id
                 COALESCE(pm.material_id, pm.inventory_id, pm.accessory_id) as material_id
              FROM project_materials pm
-             LEFT JOIN projects p ON pm.project_id = p.id
              WHERE pm.project_id = ?
              ORDER BY pm.created_at DESC`,
             [projectId]
         );
 
-        // Lấy giá và tồn kho từ kho cho mỗi vật tư
-        const materialsWithStock = await Promise.all(rows.map(async (item) => {
+        // BƯỚC 3: Lấy số lượng cần từ BOM (bom_items) - ĐÂY LÀ DANH SÁCH VẬT TƯ CẦN
+        // bom_items không có project_id, cần join qua door_designs hoặc project_items
+        let bomRequiredMaterials = [];
+        try {
+            // Thử lấy từ bom_items qua door_designs
+            const [bomRows] = await db.query(
+                `SELECT 
+                    bi.item_type,
+                    bi.item_code,
+                    bi.item_name,
+                    SUM(bi.quantity) as total_required,
+                    bi.unit
+                 FROM bom_items bi
+                 INNER JOIN door_designs dd ON dd.id = bi.design_id
+                 WHERE dd.project_id = ?
+                 GROUP BY bi.item_type, bi.item_code, bi.item_name, bi.unit`,
+                [projectId]
+            );
+
+            bomRequiredMaterials = bomRows.map(bom => {
+                const itemType = bom.item_type || 'other';
+                return {
+                    material_type: itemType === 'frame' || itemType === 'mullion' ? 'aluminum' :
+                        itemType === 'glass' ? 'glass' :
+                            itemType === 'accessory' ? 'accessory' : 'other',
+                    material_name: bom.item_name || '',
+                    item_code: bom.item_code || '',
+                    total_required: parseFloat(bom.total_required) || 0,
+                    unit: bom.unit || 'cái'
+                };
+            });
+        } catch (bomErr) {
+            console.warn('Could not get BOM requirements:', bomErr.message);
+        }
+
+        // BƯỚC 4: Tính tổng số lượng đã xuất cho mỗi vật tư (gom nhóm theo material_id + material_type + material_name)
+        const exportedByMaterial = {};
+        exportedRows.forEach(item => {
+            const key = `${item.material_type}_${item.material_id || 'unknown'}_${item.material_name || ''}`;
+            if (!exportedByMaterial[key]) {
+                exportedByMaterial[key] = {
+                    material_type: item.material_type,
+                    material_id: item.material_id,
+                    material_name: item.material_name,
+                    total_exported: 0,
+                    unit: item.unit
+                };
+            }
+            exportedByMaterial[key].total_exported += parseFloat(item.quantity) || 0;
+        });
+
+        // BƯỚC 5: Xử lý "VẬT TƯ ĐÃ XUẤT" - Lấy giá và tồn kho từ kho cho mỗi vật tư đã xuất
+        const exportedMaterials = await Promise.all(exportedRows.map(async (item) => {
             const materialType = item.material_type;
-            const materialId = item.material_id;
-            const materialName = item.material_name || '';
-            const requiredQty = parseFloat(item.quantity) || 0;
+            let materialId = item.material_id;
+            const materialName = (item.material_name || '').trim(); // Loại bỏ khoảng trắng thừa
+            const exportedQty = parseFloat(item.quantity) || 0; // Số lượng đã xuất (cho record này)
+
+            // Tính tổng số lượng đã xuất cho vật tư này (có thể có nhiều record)
+            const exportedKey = `${materialType}_${materialId || 'unknown'}_${materialName}`;
+            const totalExportedQty = exportedByMaterial[exportedKey]?.total_exported || exportedQty;
+
+            // Tìm số lượng cần từ BOM (nếu có) - tìm theo tên
+            let totalRequiredQty = exportedQty; // Mặc định = số đã xuất
+            const bomMatch = bomRequiredMaterials.find(bom =>
+                bom.material_name === materialName && bom.material_type === materialType
+            );
+            if (bomMatch) {
+                totalRequiredQty = bomMatch.total_required;
+            }
 
             let availableStock = 0;
             let stockPrice = 0; // Luôn bắt đầu từ 0, sẽ lấy từ kho (không dùng giá đã lưu)
             let stockStatus = 'unknown'; // 'sufficient', 'partial', 'shortage', 'not_found'
             let stockNote = '';
             let foundInInventory = false; // Flag để đánh dấu đã tìm thấy trong kho
+
+            // Tính toán số lượng còn cần và shortage (sẽ được tính sau khi có totalRequiredQty và totalExportedQty)
+            let stillNeeded = 0;
+            let remainingStock = 0; // Sẽ được cập nhật trong try block
+            let shortage = 0; // Sẽ được tính sau khi có remainingStock
 
             try {
                 // Nếu material_id = 0 hoặc null (từ BOM data), tìm theo tên/mã
@@ -101,6 +175,7 @@ exports.getByProject = async (req, res) => {
                             [`%${materialName}%`, `%${materialName}%`]
                         );
                         if (accRows.length > 0) {
+                            materialId = accRows[0].id; // Cập nhật material_id để dùng sau này
                             availableStock = parseFloat(accRows[0].stock_quantity) || 0;
                             stockPrice = parseFloat(accRows[0].price) || 0;
                             foundInStock = true;
@@ -116,6 +191,7 @@ exports.getByProject = async (req, res) => {
                             [`%${materialName}%`, `%${materialName}%`]
                         );
                         if (alumRows.length > 0) {
+                            materialId = alumRows[0].id; // Cập nhật material_id để dùng sau này
                             availableStock = parseFloat(alumRows[0].stock) || 0;
                             stockPrice = parseFloat(alumRows[0].price) || 0;
                             foundInStock = true;
@@ -124,14 +200,19 @@ exports.getByProject = async (req, res) => {
                     } else if (materialType === 'glass' || materialType === 'other') {
                         // Tìm trong inventory theo tên
                         const [invRows] = await db.query(
-                            `SELECT id, quantity as stock, unit_price as price 
+                            `SELECT id, CAST(quantity AS DECIMAL(10,2)) as stock, unit_price as price 
                              FROM inventory 
                              WHERE item_name LIKE ? OR item_code LIKE ? 
                              LIMIT 1`,
                             [`%${materialName}%`, `%${materialName}%`]
                         );
                         if (invRows.length > 0) {
-                            availableStock = parseFloat(invRows[0].stock) || 0;
+                            materialId = invRows[0].id; // Cập nhật material_id để dùng sau này
+                            let stockValue = invRows[0].stock;
+                            if (typeof stockValue === 'string') {
+                                stockValue = stockValue.replace(/[^\d.,]/g, '').replace(',', '.');
+                            }
+                            availableStock = parseFloat(stockValue) || 0;
                             stockPrice = parseFloat(invRows[0].price) || 0;
                             foundInStock = true;
                             foundInInventory = true;
@@ -194,18 +275,30 @@ exports.getByProject = async (req, res) => {
                     }
                 }
 
-                // Xác định trạng thái tồn kho
+                // Tính toán số lượng còn cần và shortage sau khi đã có totalRequiredQty và totalExportedQty
+                stillNeeded = Math.max(0, totalRequiredQty - totalExportedQty); // Số lượng còn cần = (tổng cần) - (đã xuất)
+                remainingStock = availableStock; // Tồn kho hiện tại (đã trừ khi xuất)
+                shortage = Math.max(0, stillNeeded - remainingStock); // Số lượng thiếu = (còn cần) - (tồn kho)
+
+                // Xác định trạng thái tồn kho dựa trên số lượng CẦN và số lượng ĐÃ XUẤT
                 if (stockStatus === 'unknown') {
                     if (foundInInventory) {
-                        // Đã tìm thấy vật tư trong kho, xác định trạng thái dựa trên số lượng
-                        if (availableStock >= requiredQty) {
+                        // Đã tìm thấy vật tư trong kho
+                        // So sánh: (tồn kho hiện tại) với (số lượng còn cần)
+                        if (stillNeeded === 0) {
+                            // Đã xuất đủ số lượng cần
+                            stockStatus = 'sufficient';
+                            stockNote = 'Đã xuất đủ';
+                        } else if (remainingStock >= stillNeeded) {
+                            // Tồn kho đủ cho số lượng còn cần
                             stockStatus = 'sufficient';
                             stockNote = 'Đủ kho';
-                        } else if (availableStock > 0) {
+                        } else if (remainingStock > 0) {
+                            // Tồn kho có nhưng không đủ
                             stockStatus = 'partial';
-                            const shortage = requiredQty - availableStock;
                             stockNote = `Thiếu ${shortage.toFixed(2)} ${item.unit || ''} - Cần bổ sung`;
                         } else {
+                            // Hết kho
                             stockStatus = 'shortage';
                             stockNote = 'Hết kho - Cần bổ sung';
                         }
@@ -219,113 +312,428 @@ exports.getByProject = async (req, res) => {
 
                 // LUÔN cập nhật giá từ kho (lấy giá mới nhất) cho TẤT CẢ record
                 // Đảm bảo cùng một vật tư luôn có cùng một giá từ kho
-                if (stockPrice > 0) {
-                    // Có giá trong kho → luôn dùng giá từ kho (nhất quán)
-                    item.unit_price = stockPrice;
-                    item.total_cost = requiredQty * stockPrice;
-                } else {
-                    // Kho không có giá → thử lấy lại từ kho một lần nữa để chắc chắn
-                    // (có thể do lỗi query hoặc vật tư không tồn tại)
+                // Nếu stockPrice = 0, thử lấy lại từ kho (có thể do query lỗi hoặc giá thật sự = 0)
+                if (stockPrice <= 0) {
+                    // Thử lấy lại giá từ kho một lần nữa để chắc chắn
                     let retryPrice = 0;
                     try {
-                        if (materialType === 'accessory' && materialId) {
-                            const [retryRows] = await db.query(
-                                'SELECT COALESCE(sale_price, purchase_price, 0) as price FROM accessories WHERE id = ?',
-                                [materialId]
-                            );
-                            if (retryRows.length > 0) {
-                                retryPrice = parseFloat(retryRows[0].price) || 0;
+                        if (materialType === 'accessory') {
+                            if (materialId) {
+                                // Thử theo ID trước
+                                const [retryRows] = await db.query(
+                                    'SELECT COALESCE(sale_price, purchase_price, 0) as price FROM accessories WHERE id = ?',
+                                    [materialId]
+                                );
+                                if (retryRows.length > 0) {
+                                    retryPrice = parseFloat(retryRows[0].price) || 0;
+                                }
                             }
-                        } else if (materialType === 'aluminum' && materialId) {
-                            const [retryRows] = await db.query(
-                                'SELECT unit_price as price FROM aluminum_systems WHERE id = ?',
-                                [materialId]
-                            );
-                            if (retryRows.length > 0) {
-                                retryPrice = parseFloat(retryRows[0].price) || 0;
+                            // Nếu vẫn không có giá, thử tìm theo tên
+                            if (retryPrice <= 0 && materialName) {
+                                const [retryRows] = await db.query(
+                                    'SELECT COALESCE(sale_price, purchase_price, 0) as price FROM accessories WHERE (name LIKE ? OR code LIKE ?) AND (sale_price > 0 OR purchase_price > 0) LIMIT 1',
+                                    [`%${materialName}%`, `%${materialName}%`]
+                                );
+                                if (retryRows.length > 0) {
+                                    retryPrice = parseFloat(retryRows[0].price) || 0;
+                                }
                             }
-                        } else if ((materialType === 'glass' || materialType === 'other') && materialId) {
-                            const [retryRows] = await db.query(
-                                'SELECT unit_price as price FROM inventory WHERE id = ?',
-                                [materialId]
-                            );
-                            if (retryRows.length > 0) {
-                                retryPrice = parseFloat(retryRows[0].price) || 0;
+                        } else if (materialType === 'aluminum') {
+                            if (materialId) {
+                                // Thử theo ID trước
+                                const [retryRows] = await db.query(
+                                    'SELECT unit_price as price FROM aluminum_systems WHERE id = ? AND unit_price > 0',
+                                    [materialId]
+                                );
+                                if (retryRows.length > 0) {
+                                    retryPrice = parseFloat(retryRows[0].price) || 0;
+                                }
+                            }
+                            // Nếu vẫn không có giá, thử tìm theo tên
+                            if (retryPrice <= 0 && materialName) {
+                                const [retryRows] = await db.query(
+                                    'SELECT unit_price as price FROM aluminum_systems WHERE (name LIKE ? OR code LIKE ?) AND unit_price > 0 LIMIT 1',
+                                    [`%${materialName}%`, `%${materialName}%`]
+                                );
+                                if (retryRows.length > 0) {
+                                    retryPrice = parseFloat(retryRows[0].price) || 0;
+                                }
+                            }
+                        } else if (materialType === 'glass' || materialType === 'other') {
+                            if (materialId) {
+                                // Thử theo ID trước
+                                const [retryRows] = await db.query(
+                                    'SELECT unit_price as price FROM inventory WHERE id = ? AND unit_price > 0',
+                                    [materialId]
+                                );
+                                if (retryRows.length > 0) {
+                                    retryPrice = parseFloat(retryRows[0].price) || 0;
+                                }
+                            }
+                            // Nếu vẫn không có giá, thử tìm theo tên
+                            if (retryPrice <= 0 && materialName) {
+                                const [retryRows] = await db.query(
+                                    'SELECT unit_price as price FROM inventory WHERE (item_name LIKE ? OR item_code LIKE ?) AND unit_price > 0 LIMIT 1',
+                                    [`%${materialName}%`, `%${materialName}%`]
+                                );
+                                if (retryRows.length > 0) {
+                                    retryPrice = parseFloat(retryRows[0].price) || 0;
+                                }
                             }
                         }
                     } catch (retryErr) {
-                        console.warn(`Retry price fetch failed for ${materialId}:`, retryErr);
+                        console.warn(`Retry price fetch failed for ${materialId || materialName}:`, retryErr);
                     }
-                    
+
+                    // Cập nhật stockPrice nếu tìm thấy giá
                     if (retryPrice > 0) {
-                        // Tìm thấy giá khi retry
-                        item.unit_price = retryPrice;
-                        item.total_cost = requiredQty * retryPrice;
-                    } else {
-                        // Vẫn không có giá → giữ nguyên giá đã lưu (nếu có) hoặc 0
-                        item.unit_price = item.unit_price || 0;
-                        item.total_cost = requiredQty * (item.unit_price || 0);
+                        stockPrice = retryPrice;
                     }
+                }
+
+                // FALLBACK UNIVERSAL: Nếu vẫn không có giá, tìm trong TẤT CẢ các bảng theo tên
+                // Điều này xử lý trường hợp material_type bị sai (ví dụ: lưu là 'other' nhưng thực tế là nhôm)
+                if (stockPrice <= 0 && materialName) {
+                    console.log(`🔍 [UNIVERSAL FALLBACK] Searching all tables for: "${materialName}"`);
+                    let fallbackPrice = 0;
+                    let fallbackSource = '';
+
+                    try {
+                        // 1. Thử tìm trong accessories
+                        if (fallbackPrice <= 0) {
+                            const [accRows] = await db.query(
+                                `SELECT COALESCE(sale_price, purchase_price, 0) as price, name 
+                                 FROM accessories 
+                                 WHERE (name LIKE ? OR code LIKE ?) AND (sale_price > 0 OR purchase_price > 0)
+                                 LIMIT 1`,
+                                [`%${materialName}%`, `%${materialName}%`]
+                            );
+                            if (accRows.length > 0 && parseFloat(accRows[0].price) > 0) {
+                                fallbackPrice = parseFloat(accRows[0].price);
+                                fallbackSource = 'accessories';
+                                console.log(`   ✅ Found in accessories: ${fallbackPrice} (${accRows[0].name})`);
+                            }
+                        }
+
+                        // 2. Thử tìm trong aluminum_systems
+                        if (fallbackPrice <= 0) {
+                            const [alumRows] = await db.query(
+                                `SELECT unit_price as price, name 
+                                 FROM aluminum_systems 
+                                 WHERE (name LIKE ? OR code LIKE ?) AND unit_price > 0
+                                 LIMIT 1`,
+                                [`%${materialName}%`, `%${materialName}%`]
+                            );
+                            if (alumRows.length > 0 && parseFloat(alumRows[0].price) > 0) {
+                                fallbackPrice = parseFloat(alumRows[0].price);
+                                fallbackSource = 'aluminum_systems';
+                                console.log(`   ✅ Found in aluminum_systems: ${fallbackPrice} (${alumRows[0].name})`);
+                            }
+                        }
+
+                        // 3. Thử tìm trong inventory
+                        if (fallbackPrice <= 0) {
+                            const [invRows] = await db.query(
+                                `SELECT unit_price as price, item_name 
+                                 FROM inventory 
+                                 WHERE (item_name LIKE ? OR item_code LIKE ?) AND unit_price > 0
+                                 LIMIT 1`,
+                                [`%${materialName}%`, `%${materialName}%`]
+                            );
+                            if (invRows.length > 0 && parseFloat(invRows[0].price) > 0) {
+                                fallbackPrice = parseFloat(invRows[0].price);
+                                fallbackSource = 'inventory';
+                                console.log(`   ✅ Found in inventory: ${fallbackPrice} (${invRows[0].item_name})`);
+                            }
+                        }
+
+                        if (fallbackPrice > 0) {
+                            stockPrice = fallbackPrice;
+                            console.log(`   📦 Using fallback price from ${fallbackSource}: ${stockPrice}`);
+                        } else {
+                            console.log(`   ❌ No price found in any table for: "${materialName}"`);
+                        }
+                    } catch (fallbackErr) {
+                        console.warn(`   ⚠️ Fallback search failed for "${materialName}":`, fallbackErr.message);
+                    }
+                }
+
+                // Áp dụng giá cuối cùng
+                if (stockPrice > 0) {
+                    // Có giá trong kho → luôn dùng giá từ kho (nhất quán)
+                    item.unit_price = stockPrice;
+                    item.total_cost = exportedQty * stockPrice; // Tính theo số lượng đã xuất (cho record này)
+                } else if (item.unit_price > 0) {
+                    // Không có giá trong kho nhưng có giá đã lưu → giữ nguyên giá đã lưu
+                    item.total_cost = exportedQty * item.unit_price;
+                } else {
+                    // Không có giá cả trong kho và đã lưu → để 0
+                    item.unit_price = 0;
+                    item.total_cost = 0;
                 }
             } catch (err) {
                 console.error(`Error getting stock for material ${materialId || materialName}:`, err);
                 stockStatus = 'error';
                 stockNote = 'Lỗi kiểm tra kho';
+                // Đảm bảo remainingStock và shortage được tính ngay cả khi có lỗi
+                stillNeeded = Math.max(0, totalRequiredQty - totalExportedQty);
+                remainingStock = availableStock || 0;
+                shortage = Math.max(0, stillNeeded - remainingStock);
+
+                // QUAN TRỌNG: Dù có lỗi, vẫn thử tìm giá từ kho theo tên
+                if (stockPrice <= 0 && materialName) {
+                    console.log(`🔧 [ERROR FALLBACK] Trying to find price despite error for: "${materialName}"`);
+                    try {
+                        // Tìm trong accessories
+                        const [accRows] = await db.query(
+                            `SELECT COALESCE(sale_price, purchase_price, 0) as price FROM accessories 
+                             WHERE (name LIKE ? OR code LIKE ?) AND (sale_price > 0 OR purchase_price > 0) LIMIT 1`,
+                            [`%${materialName}%`, `%${materialName}%`]
+                        );
+                        if (accRows.length > 0 && parseFloat(accRows[0].price) > 0) {
+                            stockPrice = parseFloat(accRows[0].price);
+                            item.unit_price = stockPrice;
+                            item.total_cost = exportedQty * stockPrice;
+                            console.log(`   ✅ Found price in accessories: ${stockPrice}`);
+                        }
+
+                        if (stockPrice <= 0) {
+                            // Tìm trong aluminum_systems
+                            const [alumRows] = await db.query(
+                                `SELECT unit_price as price FROM aluminum_systems 
+                                 WHERE (name LIKE ? OR code LIKE ?) AND unit_price > 0 LIMIT 1`,
+                                [`%${materialName}%`, `%${materialName}%`]
+                            );
+                            if (alumRows.length > 0 && parseFloat(alumRows[0].price) > 0) {
+                                stockPrice = parseFloat(alumRows[0].price);
+                                item.unit_price = stockPrice;
+                                item.total_cost = exportedQty * stockPrice;
+                                console.log(`   ✅ Found price in aluminum_systems: ${stockPrice}`);
+                            }
+                        }
+
+                        if (stockPrice <= 0) {
+                            // Tìm trong inventory
+                            const [invRows] = await db.query(
+                                `SELECT unit_price as price FROM inventory 
+                                 WHERE (item_name LIKE ? OR item_code LIKE ?) AND unit_price > 0 LIMIT 1`,
+                                [`%${materialName}%`, `%${materialName}%`]
+                            );
+                            if (invRows.length > 0 && parseFloat(invRows[0].price) > 0) {
+                                stockPrice = parseFloat(invRows[0].price);
+                                item.unit_price = stockPrice;
+                                item.total_cost = exportedQty * stockPrice;
+                                console.log(`   ✅ Found price in inventory: ${stockPrice}`);
+                            }
+                        }
+                    } catch (fallbackErr) {
+                        console.error(`   ❌ Error fallback also failed:`, fallbackErr.message);
+                    }
+                }
             }
+
+            // Xác định xem vật tư này đã xuất đủ chưa
+            const isFullyExported = totalExportedQty >= totalRequiredQty;
 
             return {
                 ...item,
-                available_stock: availableStock,
-                stock_status: stockStatus,
-                stock_note: stockNote,
-                shortage: Math.max(0, requiredQty - availableStock)
+                project_code: project.project_code,
+                project_name: project.project_name,
+                quantity: exportedQty, // Số lượng đã xuất (cho record này)
+                total_required: totalRequiredQty, // Tổng số lượng cần (từ BOM)
+                total_exported: totalExportedQty, // Tổng số lượng đã xuất (tất cả record)
+                still_needed: Math.max(0, totalRequiredQty - totalExportedQty), // Số lượng còn cần
+                available_stock: remainingStock, // Tồn kho hiện tại
+                stock_status: isFullyExported ? 'sufficient' : stockStatus, // Chỉ sufficient nếu đã xuất đủ
+                stock_note: stockNote || (isFullyExported ? 'Đã xuất đủ' : 'Đã xuất nhưng chưa đủ'),
+                shortage: isFullyExported ? 0 : shortage, // Có shortage nếu chưa xuất đủ
+                is_fully_exported: isFullyExported // Flag để phân loại
             };
         }));
 
-        // Phân loại vật tư: đã xuất (đủ kho) và chưa đủ (thiếu kho)
-        const exportedMaterials = materialsWithStock.filter(m => m.stock_status === 'sufficient');
-        const insufficientMaterials = materialsWithStock.filter(m => {
-            // Tất cả vật tư không phải 'sufficient' đều vào insufficient (bao gồm: partial, shortage, not_found, error)
-            return m.stock_status !== 'sufficient';
-        });
+        // Phân loại: "Vật tư đã xuất" = đã xuất đủ, "Vật tư chưa đủ" = chưa xuất hoặc chưa đủ
+        const fullyExportedMaterials = exportedMaterials.filter(m => m.is_fully_exported);
+        const partiallyExportedMaterials = exportedMaterials.filter(m => !m.is_fully_exported);
 
-        // Tính tổng chi phí cho vật tư đã xuất
-        const totalCost = exportedMaterials.reduce((sum, item) => sum + parseFloat(item.total_cost || 0), 0);
+        // BƯỚC 6: Xử lý "VẬT TƯ CHƯA ĐỦ" - Từ BOM nhưng chưa xuất hoặc chưa đủ
+        // Bao gồm cả vật tư đã xuất nhưng chưa đủ (từ partiallyExportedMaterials)
+        const insufficientMaterialsFromBOM = await Promise.all(bomRequiredMaterials.map(async (bom) => {
+            const materialType = bom.material_type;
+            const materialName = bom.material_name;
+            const totalRequiredQty = bom.total_required;
+            const unit = bom.unit;
+
+            // Kiểm tra xem vật tư này đã được xuất chưa (tìm theo tên)
+            let totalExportedQty = 0;
+            for (const key in exportedByMaterial) {
+                const exported = exportedByMaterial[key];
+                if (exported.material_name === materialName && exported.material_type === materialType) {
+                    totalExportedQty = exported.total_exported;
+                    break;
+                }
+            }
+
+            const stillNeeded = Math.max(0, totalRequiredQty - totalExportedQty);
+
+            // Nếu đã xuất đủ, không hiển thị ở "Vật tư chưa đủ"
+            if (stillNeeded <= 0) {
+                return null;
+            }
+
+            // Tìm material_id từ kho (nếu có)
+            let materialId = null;
+            let availableStock = 0;
+            let stockPrice = 0;
+            let stockStatus = 'not_found';
+            let stockNote = 'Không có trong kho - Cần bổ sung';
+            let foundInInventory = false;
+
+            try {
+                if (materialType === 'accessory') {
+                    const [accRows] = await db.query(
+                        `SELECT id, stock_quantity, COALESCE(sale_price, purchase_price, 0) as price 
+                         FROM accessories 
+                         WHERE name LIKE ? OR code LIKE ? 
+                         LIMIT 1`,
+                        [`%${materialName}%`, `%${materialName}%`]
+                    );
+                    if (accRows.length > 0) {
+                        materialId = accRows[0].id;
+                        availableStock = parseFloat(accRows[0].stock_quantity) || 0;
+                        stockPrice = parseFloat(accRows[0].price) || 0;
+                        foundInInventory = true;
+                    }
+                } else if (materialType === 'aluminum') {
+                    const [alumRows] = await db.query(
+                        `SELECT id, COALESCE(quantity, quantity_m, 0) as stock, unit_price as price 
+                         FROM aluminum_systems 
+                         WHERE name LIKE ? OR code LIKE ? 
+                         LIMIT 1`,
+                        [`%${materialName}%`, `%${materialName}%`]
+                    );
+                    if (alumRows.length > 0) {
+                        materialId = alumRows[0].id;
+                        availableStock = parseFloat(alumRows[0].stock) || 0;
+                        stockPrice = parseFloat(alumRows[0].price) || 0;
+                        foundInInventory = true;
+                    }
+                } else if (materialType === 'glass' || materialType === 'other') {
+                    const [invRows] = await db.query(
+                        `SELECT id, CAST(quantity AS DECIMAL(10,2)) as stock, unit_price as price 
+                         FROM inventory 
+                         WHERE item_name LIKE ? OR item_code LIKE ? 
+                         LIMIT 1`,
+                        [`%${materialName}%`, `%${materialName}%`]
+                    );
+                    if (invRows.length > 0) {
+                        materialId = invRows[0].id;
+                        let stockValue = invRows[0].stock;
+                        if (typeof stockValue === 'string') {
+                            stockValue = stockValue.replace(/[^\d.,]/g, '').replace(',', '.');
+                        }
+                        availableStock = parseFloat(stockValue) || 0;
+                        stockPrice = parseFloat(invRows[0].price) || 0;
+                        foundInInventory = true;
+                    }
+                }
+
+                // Xác định trạng thái
+                if (foundInInventory) {
+                    const shortage = Math.max(0, stillNeeded - availableStock);
+                    if (availableStock >= stillNeeded) {
+                        stockStatus = 'sufficient';
+                        stockNote = 'Đủ kho';
+                    } else if (availableStock > 0) {
+                        stockStatus = 'partial';
+                        stockNote = `Thiếu ${shortage.toFixed(2)} ${unit} - Cần bổ sung`;
+                    } else {
+                        stockStatus = 'shortage';
+                        stockNote = 'Hết kho - Cần bổ sung';
+                    }
+                }
+            } catch (err) {
+                console.error(`Error getting stock for insufficient material ${materialName}:`, err);
+                stockStatus = 'error';
+                stockNote = 'Lỗi kiểm tra kho';
+            }
+
+            return {
+                id: null, // Chưa có trong project_materials
+                project_id: projectId,
+                project_code: project.project_code,
+                project_name: project.project_name,
+                material_name: materialName,
+                material_type: materialType,
+                material_id: materialId,
+                quantity: 0, // Chưa xuất
+                unit: unit,
+                total_required: totalRequiredQty,
+                total_exported: totalExportedQty,
+                still_needed: stillNeeded,
+                available_stock: availableStock,
+                stock_status: stockStatus,
+                stock_note: stockNote,
+                shortage: Math.max(0, stillNeeded - availableStock),
+                unit_price: stockPrice,
+                total_cost: 0,
+                notes: '',
+                created_at: null,
+                updated_at: null
+            };
+        }));
+
+        // Lọc bỏ các vật tư null (đã xuất đủ)
+        const filteredInsufficientFromBOM = insufficientMaterialsFromBOM.filter(m => m !== null);
+
+        // Kết hợp: "Vật tư chưa đủ" = vật tư từ BOM chưa xuất/chưa đủ + vật tư đã xuất nhưng chưa đủ
+        // Chuyển đổi partiallyExportedMaterials sang format của insufficient
+        const insufficientFromPartiallyExported = partiallyExportedMaterials.map(item => ({
+            id: item.id, // Có ID vì đã có trong project_materials
+            project_id: item.project_id,
+            project_code: item.project_code,
+            project_name: item.project_name,
+            material_name: item.material_name,
+            material_type: item.material_type,
+            material_id: item.material_id,
+            quantity: item.quantity, // Số lượng đã xuất
+            unit: item.unit,
+            total_required: item.total_required,
+            total_exported: item.total_exported,
+            still_needed: item.still_needed,
+            available_stock: item.available_stock,
+            stock_status: item.stock_status,
+            stock_note: item.stock_note,
+            shortage: item.shortage,
+            unit_price: item.unit_price,
+            total_cost: item.total_cost,
+            notes: item.notes,
+            created_at: item.created_at,
+            updated_at: item.updated_at
+        }));
+
+        // Gộp lại: vật tư từ BOM chưa xuất/chưa đủ + vật tư đã xuất nhưng chưa đủ
+        const allInsufficientMaterials = [...filteredInsufficientFromBOM, ...insufficientFromPartiallyExported];
+
+        // Tính tổng chi phí cho vật tư đã xuất đủ
+        const totalCost = fullyExportedMaterials.reduce((sum, item) => sum + parseFloat(item.total_cost || 0), 0);
 
         // Debug log để kiểm tra
         console.log(`📊 Project ${projectId} materials summary:`);
-        console.log(`   Total materials: ${materialsWithStock.length}`);
-        console.log(`   Exported (sufficient): ${exportedMaterials.length}`);
-        console.log(`   Insufficient: ${insufficientMaterials.length}`);
-        if (materialsWithStock.length > 0) {
-            console.log(`   Stock status breakdown:`, {
-                sufficient: materialsWithStock.filter(m => m.stock_status === 'sufficient').length,
-                partial: materialsWithStock.filter(m => m.stock_status === 'partial').length,
-                shortage: materialsWithStock.filter(m => m.stock_status === 'shortage').length,
-                not_found: materialsWithStock.filter(m => m.stock_status === 'not_found').length,
-                unknown: materialsWithStock.filter(m => m.stock_status === 'unknown').length,
-                error: materialsWithStock.filter(m => m.stock_status === 'error').length
-            });
-            console.log(`   Sample materials:`, materialsWithStock.slice(0, 3).map(m => ({
-                name: m.material_name,
-                type: m.material_type,
-                material_id: m.material_id,
-                status: m.stock_status,
-                available: m.available_stock,
-                required: m.quantity
-            })));
-        }
+        console.log(`   Fully exported materials: ${fullyExportedMaterials.length}`);
+        console.log(`   Partially exported materials: ${partiallyExportedMaterials.length}`);
+        console.log(`   Insufficient materials (from BOM): ${filteredInsufficientFromBOM.length}`);
+        console.log(`   Total insufficient materials: ${allInsufficientMaterials.length}`);
 
         // Đảm bảo exported và insufficient luôn là arrays
         const response = {
             success: true,
-            data: materialsWithStock || [],
-            exported: exportedMaterials || [],
-            insufficient: insufficientMaterials || [],
+            data: [...fullyExportedMaterials, ...allInsufficientMaterials] || [],
+            exported: fullyExportedMaterials || [], // Chỉ vật tư đã xuất ĐỦ
+            insufficient: allInsufficientMaterials || [], // Vật tư chưa xuất hoặc chưa đủ
             total_cost: totalCost || 0,
-            count: materialsWithStock.length || 0,
-            exported_count: exportedMaterials.length || 0,
-            insufficient_count: insufficientMaterials.length || 0
+            count: (fullyExportedMaterials.length + allInsufficientMaterials.length) || 0,
+            exported_count: fullyExportedMaterials.length || 0,
+            insufficient_count: allInsufficientMaterials.length || 0
         };
 
         // Debug log chi tiết
@@ -460,7 +868,7 @@ exports.create = async (req, res) => {
                             }
                         }
                     }
-                    
+
                     if (material_type) {
                         console.log(`✅ [AUTO-DETECTED TYPE] ID ${material_id} -> ${material_type}`);
                     }
@@ -502,7 +910,7 @@ exports.create = async (req, res) => {
                             }
                         }
                     }
-                    
+
                     if (actualType && actualType !== material_type) {
                         console.log(`⚠️ [TYPE MISMATCH] Frontend sent: ${material_type}, Actual: ${actualType}. Using actual type.`);
                         material_type = actualType;
@@ -518,7 +926,7 @@ exports.create = async (req, res) => {
             }
 
             const requestedQty = parseFloat(quantity) || 0;
-            
+
             // DEBUG: Log thông tin vật tư được xử lý
             console.log(`📦 [PROCESSING MATERIAL] Type: ${material_type}, ID: ${material_id}, Name: ${material_name}, Qty: ${requestedQty}, Unit: ${unit}`);
 
@@ -576,18 +984,18 @@ exports.create = async (req, res) => {
                     );
                     if (invRows.length > 0) {
                         // Ưu tiên dùng stock_value (đã CAST), nếu không có thì parse từ raw_quantity
-                        let rawStock = invRows[0].stock_value !== null && invRows[0].stock_value !== undefined 
-                            ? invRows[0].stock_value 
+                        let rawStock = invRows[0].stock_value !== null && invRows[0].stock_value !== undefined
+                            ? invRows[0].stock_value
                             : invRows[0].raw_quantity;
-                        
+
                         // Xử lý trường hợp rawStock là string có chứa "m²" hoặc đơn vị khác
                         if (typeof rawStock === 'string') {
                             // Loại bỏ tất cả ký tự không phải số, dấu chấm, dấu phẩy
                             rawStock = rawStock.replace(/[^\d.,]/g, '').replace(',', '.');
                         }
-                        
+
                         availableStock = parseFloat(rawStock) || 0;
-                        
+
                         // DEBUG: Log thông tin tồn kho kính CHI TIẾT
                         if (material_type === 'glass') {
                             console.log(`🔍 [GLASS STOCK CHECK] Material: ${material_name}, ID: ${material_id}`);
@@ -641,7 +1049,7 @@ exports.create = async (req, res) => {
                     });
                     continue; // Bỏ qua vật tư không đủ
                 }
-                
+
                 // DEBUG: Log khi kiểm tra thành công
                 if (material_type === 'glass') {
                     console.log(`✅ [GLASS STOCK CHECK PASSED] ${material_name}: requestedQty (${requestedQty}) <= availableStock (${availableStock})`);
@@ -1163,10 +1571,36 @@ exports.getExportedMaterials = async (req, res) => {
             materials = materialRows;
         }
 
+        // Tính tổng cost cho mỗi dự án từ materials
+        const projectCosts = {};
+        const projectMaterialCounts = {};
+        materials.forEach(m => {
+            if (!projectCosts[m.project_id]) {
+                projectCosts[m.project_id] = 0;
+                projectMaterialCounts[m.project_id] = 0;
+            }
+            projectCosts[m.project_id] += parseFloat(m.total_cost || 0);
+            projectMaterialCounts[m.project_id]++;
+        });
+
+        // Gắn total_cost và materials_count vào mỗi project
+        const projectsWithCost = projectRows.map(p => ({
+            ...p,
+            total_cost: projectCosts[p.id] || 0,
+            materials_count: projectMaterialCounts[p.id] || 0
+        }));
+
+        console.log('📊 getExportedMaterials - Projects with costs:', projectsWithCost.map(p => ({
+            id: p.id,
+            name: p.project_name,
+            total_cost: p.total_cost,
+            materials_count: p.materials_count
+        })));
+
         res.json({
             success: true,
             data: {
-                projects: projectRows,
+                projects: projectsWithCost,
                 materials: materials
             },
             count: {

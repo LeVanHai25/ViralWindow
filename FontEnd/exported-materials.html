@@ -1098,8 +1098,9 @@
                     document.getElementById('noDataMessage').classList.add('hidden');
 
                     container.innerHTML = projects.map(project => {
-                        const projectMaterials = allMaterials.filter(m => m.project_id === project.id);
-                        const projectTotalCost = projectMaterials.reduce((sum, m) => sum + parseFloat(m.total_cost || 0), 0);
+                        // Sử dụng total_cost từ API thay vì tính lại từ allMaterials
+                        const projectTotalCost = project.total_cost || 0;
+                        const materialsCount = project.materials_count || 0;
                         const statusColor = project.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800';
                         const statusText = project.status === 'completed' ? 'Đã hoàn thành' : 'Đang sản xuất';
 
@@ -1117,7 +1118,7 @@
                             <div class="text-right">
                                 <p class="text-sm text-gray-600 mb-1">Tổng giá trị vật tư</p>
                                 <p class="text-2xl font-bold text-indigo-600">${formatCurrency(projectTotalCost)}</p>
-                                <p class="text-xs text-gray-500 mt-1">${projectMaterials.length} vật tư</p>
+                                <p class="text-xs text-gray-500 mt-1">${materialsCount} vật tư</p>
                             </div>
                         </div>
 
