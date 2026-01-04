@@ -222,6 +222,12 @@
                     </svg>
                     <span>Thiết kế & Bóc tách</span>
                 </a>
+                <a href="material-requests.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Yêu cầu vật tư</span>
+                </a>
             </div>
 
             <!-- SẢN XUẤT -->
@@ -1288,8 +1294,8 @@
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Tồn kho (m²)</label>
-                        <input type="number" id="glassStock" step="0.01" value="0"
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tồn kho (tấm)</label>
+                        <input type="number" id="glassStock" step="1" value="0"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
                     </div>
                     <div class="col-span-2">
@@ -2003,11 +2009,17 @@
                     const materialName = mat.material_name || mat.item_name || mat.name || 'N/A';
                     const materialType = mat.material_type || 'other';
                     const quantity = parseFloat(mat.quantity) || 0;
-                    const unit = mat.unit || mat.item_unit || 'cái';
+                    let unit = mat.unit || mat.item_unit || 'cái';
                     const unitPrice = parseFloat(mat.unit_price) || 0;
                     const totalCost = parseFloat(mat.total_cost) || (quantity * unitPrice);
                     const availableStock = parseFloat(mat.available_stock) || 0;
                     const notes = mat.notes || '';
+                    
+                    // Đối với kính, đơn vị tồn kho luôn là "tấm" (không phải m²)
+                    let stockUnit = unit;
+                    if (materialType === 'glass') {
+                        stockUnit = 'tấm';
+                    }
                     
                     // Xử lý an toàn dữ liệu để tránh lỗi syntax
                     const safeMaterialName = typeof materialName === 'string' 
@@ -2030,7 +2042,7 @@
                             <td class="px-4 py-3">${quantity.toFixed(2)} ${unit}</td>
                             <td class="px-4 py-3">${formatCurrency(unitPrice)}</td>
                             <td class="px-4 py-3 font-medium text-green-600">${formatCurrency(totalCost)}</td>
-                            <td class="px-4 py-3 text-green-600 font-semibold">${availableStock.toFixed(2)} ${unit}</td>
+                            <td class="px-4 py-3 text-green-600 font-semibold">${availableStock.toFixed(2)} ${stockUnit}</td>
                             <td class="px-4 py-3 text-gray-500 text-sm">${escapeHtml(notes) || '-'}</td>
                             <td class="px-4 py-3">
                                 <div class="flex gap-2">
@@ -2141,12 +2153,18 @@
                     const materialName = mat.material_name || mat.item_name || mat.name || 'N/A';
                     const materialType = mat.material_type || 'other';
                     const requiredQty = parseFloat(mat.quantity) || 0;
-                    const unit = mat.unit || mat.item_unit || 'cái';
+                    let unit = mat.unit || mat.item_unit || 'cái';
                     const availableStock = parseFloat(mat.available_stock) || 0;
                     const shortage = parseFloat(mat.shortage) || 0;
                     const stockStatus = mat.stock_status || 'unknown';
                     const stockNote = mat.stock_note || '';
                     const notes = mat.notes || '';
+                    
+                    // Đối với kính, đơn vị tồn kho luôn là "tấm" (không phải m²)
+                    let stockUnit = unit;
+                    if (materialType === 'glass') {
+                        stockUnit = 'tấm';
+                    }
                     
                     // Xử lý an toàn dữ liệu để tránh lỗi syntax
                     const safeMaterialName = typeof materialName === 'string' 
@@ -2163,7 +2181,7 @@
                                 <span class="px-2 py-1 text-xs rounded ${getTypeColor(materialType)}">${getTypeName(materialType)}</span>
                             </td>
                             <td class="px-4 py-3 font-semibold text-blue-600">${requiredQty.toFixed(2)} ${unit}</td>
-                            <td class="px-4 py-3 ${availableStock > 0 ? 'text-orange-600' : 'text-gray-500'}">${availableStock > 0 ? availableStock.toFixed(2) : '-'} ${unit}</td>
+                            <td class="px-4 py-3 ${availableStock > 0 ? 'text-orange-600' : 'text-gray-500'}">${availableStock > 0 ? availableStock.toFixed(2) : '-'} ${stockUnit}</td>
                             <td class="px-4 py-3 font-semibold text-red-600">${shortage.toFixed(2)} ${unit}</td>
                             <td class="px-4 py-3">${getStockStatusBadge(stockStatus)}</td>
                             <td class="px-4 py-3 text-sm text-orange-600 font-medium">${escapeHtml(stockNote)}</td>
@@ -2578,11 +2596,17 @@
                 tbody.innerHTML = data.map(item => {
                     const name = item.name || item.item_name || '';
                     const code = item.code || item.item_code || '';
-                    const unit = item.unit || 'cái';
+                    let unit = item.unit || 'cái';
                     const price = parseFloat(item.price || 0);
                     const stock = parseFloat(item.stock || 0);
                     const materialType = item.material_type || 'other';
                     const typeName = getTypeName(materialType);
+
+                    // Đối với kính, đơn vị tồn kho luôn là "tấm" (không phải m²)
+                    let stockUnit = unit;
+                    if (materialType === 'glass') {
+                        stockUnit = 'tấm';
+                    }
 
                     // Escape HTML để tránh XSS
                     const escapeHtml = (str) => {
@@ -2605,11 +2629,15 @@
                                     <span class="px-2 py-0.5 text-xs rounded ${getTypeColorClass(materialType)}">${escapeHtml(typeName)}</span>
                                 </div>
                             </td>
-                            <td class="px-3 py-2">${stock} ${escapeHtml(unit)}</td>
+                            <td class="px-3 py-2">${stock} ${escapeHtml(stockUnit)}</td>
                             <td class="px-3 py-2">${formatCurrency(price)}</td>
                             <td class="px-3 py-2">
                                 <input type="number" class="material-quantity w-20 px-2 py-1 border rounded text-center ${stock === 0 ? 'bg-red-100 border-red-300' : ''}" 
-                                       data-id="${item.id}" min="0.01" step="0.01" value="${stock === 0 ? 0 : 1}" max="${stock}"
+                                       data-id="${item.id}" 
+                                       min="${materialType === 'glass' ? '1' : '0.01'}" 
+                                       step="${materialType === 'glass' ? '1' : '0.01'}" 
+                                       value="${stock === 0 ? 0 : (materialType === 'glass' ? 1 : 1)}" 
+                                       max="${stock}"
                                        ${stock === 0 ? 'disabled title="Không có trong kho"' : ''}
                                        onchange="validateMaterialQuantity(this, ${stock}, '${escapeHtml(name)}')"
                                        onblur="validateMaterialQuantity(this, ${stock}, '${escapeHtml(name)}')">
@@ -2838,34 +2866,37 @@
                     continue; // Bỏ qua nếu số lượng <= 0
                 }
 
-                // Lấy giá từ kho (nếu chưa có hoặc = 0)
-                let unitPrice = parseFloat(cb.dataset.price) || 0;
-                
-                // Nếu giá = 0, lấy từ kho
-                if (unitPrice === 0) {
-                    try {
-                        if (materialType === 'accessory') {
-                            const accResponse = await fetch(`${API_BASE}/accessories/${id}`);
-                            const accResult = await accResponse.json();
-                            if (accResult.success && accResult.data) {
-                                unitPrice = parseFloat(accResult.data.sale_price || accResult.data.purchase_price || 0);
-                            }
-                        } else if (materialType === 'aluminum') {
-                            const alumResponse = await fetch(`${API_BASE}/aluminum-systems/${id}`);
-                            const alumResult = await alumResponse.json();
-                            if (alumResult.success && alumResult.data) {
-                                unitPrice = parseFloat(alumResult.data.unit_price || 0);
-                            }
-                        } else {
-                            const invResponse = await fetch(`${API_BASE}/inventory/${id}`);
-                            const invResult = await invResponse.json();
-                            if (invResult.success && invResult.data) {
-                                unitPrice = parseFloat(invResult.data.unit_price || 0);
-                            }
+                // Luôn lấy giá từ kho (ưu tiên giá mới nhất)
+                let unitPrice = 0;
+                try {
+                    if (materialType === 'accessory') {
+                        const accResponse = await fetch(`${API_BASE}/accessories/${id}`);
+                        const accResult = await accResponse.json();
+                        if (accResult.success && accResult.data) {
+                            unitPrice = parseFloat(accResult.data.sale_price || accResult.data.purchase_price || 0);
                         }
-                    } catch (err) {
-                        console.warn(`Could not fetch price for ${materialName}:`, err);
+                    } else if (materialType === 'aluminum') {
+                        const alumResponse = await fetch(`${API_BASE}/aluminum-systems/${id}`);
+                        const alumResult = await alumResponse.json();
+                        if (alumResult.success && alumResult.data) {
+                            unitPrice = parseFloat(alumResult.data.unit_price || 0);
+                        }
+                    } else {
+                        const invResponse = await fetch(`${API_BASE}/inventory/${id}`);
+                        const invResult = await invResponse.json();
+                        if (invResult.success && invResult.data) {
+                            unitPrice = parseFloat(invResult.data.unit_price || 0);
+                        }
                     }
+                } catch (err) {
+                    console.warn(`Could not fetch price for ${materialName}:`, err);
+                    // Fallback: dùng giá từ dataset nếu có
+                    unitPrice = parseFloat(cb.dataset.price) || 0;
+                }
+                
+                // Nếu vẫn không có giá, cảnh báo
+                if (unitPrice === 0) {
+                    console.warn(`⚠️ Vật tư "${materialName}" không có giá trong kho. Sẽ lưu với giá = 0.`);
                 }
 
                 materials.push({
@@ -5396,7 +5427,7 @@
                         <td class="px-4 py-3 text-sm font-medium">
                             ${unitPrice > 0 ? formatCurrency(unitPrice) : '-'}
                         </td>
-                        <td class="px-4 py-3 text-sm">${stock.toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m²</td>
+                        <td class="px-4 py-3 text-sm">${stock.toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} tấm</td>
                         <td class="px-4 py-3 text-sm font-semibold">${formatCurrency(totalValue)}</td>
                         <td class="px-4 py-3 text-sm">
                             <button class="text-blue-600 hover:text-blue-800 mr-2" onclick="editGlass(${item.id})">
@@ -5448,10 +5479,10 @@
                             <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs">${glassType}</span>
                         </td>
                         <td class="px-4 py-3 text-sm ${isLowStock ? 'text-red-600 font-semibold' : 'text-gray-700'}">
-                            ${stockQty.toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m²
+                            ${stockQty.toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} tấm
                             ${isLowStock ? '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 inline ml-1 text-red-600"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>' : ''}
                         </td>
-                        <td class="px-4 py-3 text-sm">${Math.round(minStock)} m²</td>
+                        <td class="px-4 py-3 text-sm">${Math.round(minStock)} tấm</td>
                         <td class="px-4 py-3 text-sm">${formatCurrency(unitPrice)}</td>
                         <td class="px-4 py-3 text-sm font-semibold">${formatCurrency(value)}</td>
                         <td class="px-4 py-3 text-sm">
@@ -5661,8 +5692,8 @@
                 item_code: codeEl.value.trim(),
                 item_name: nameEl.value.trim(),
                 item_type: 'glass',
-                unit: 'm²',
-                quantity: stock, // Tồn kho - PHẢI là number
+                unit: 'tấm', // Đơn vị tồn kho là tấm, không phải m²
+                quantity: stock, // Tồn kho - số tấm (PHẢI là number)
                 min_stock_level: 10,
                 unit_price: unitPrice, // Giá - PHẢI là number
                 description: glassType || null,

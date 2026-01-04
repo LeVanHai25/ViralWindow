@@ -156,13 +156,24 @@
             <div id="tabNhom" class="tab-content p-6">
                 <div class="flex justify-between items-center mb-4 no-print">
                     <h3 class="text-lg font-semibold text-blue-600">PHIẾU YÊU CẦU VẬT TƯ - NHÔM</h3>
-                    <button onclick="addRow('nhom')"
-                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Thêm dòng
-                    </button>
+                    <div class="flex gap-2">
+                        <button onclick="saveCurrentTab('nhom')"
+                            class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                            </svg>
+                            Lưu Yêu Cầu
+                        </button>
+                        <button onclick="addRow('nhom')"
+                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4" />
+                            </svg>
+                            Thêm dòng
+                        </button>
+                    </div>
                 </div>
                 <div class="overflow-x-auto border border-gray-200 rounded-lg">
                     <table class="w-full text-sm" id="tableNhom">
@@ -199,13 +210,24 @@
             <div id="tabVattu" class="tab-content p-6 hidden">
                 <div class="flex justify-between items-center mb-4 no-print">
                     <h3 class="text-lg font-semibold text-amber-600">PHIẾU YÊU CẦU VẬT TƯ - VẬT TƯ PHỤ</h3>
-                    <button onclick="addRow('vattu')"
-                        class="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Thêm dòng
-                    </button>
+                    <div class="flex gap-2">
+                        <button onclick="saveCurrentTab('vattu')"
+                            class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                            </svg>
+                            Lưu Yêu Cầu
+                        </button>
+                        <button onclick="addRow('vattu')"
+                            class="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4" />
+                            </svg>
+                            Thêm dòng
+                        </button>
+                    </div>
                 </div>
                 <div class="overflow-x-auto border border-gray-200 rounded-lg">
                     <table class="w-full text-sm" id="tableVattu">
@@ -238,6 +260,14 @@
                 <div class="flex justify-between items-center mb-4 no-print">
                     <h3 class="text-lg font-semibold text-purple-600">PHIẾU YÊU CẦU VẬT TƯ - PHỤ KIỆN</h3>
                     <div class="flex gap-2">
+                        <button onclick="saveCurrentTab('phukien')"
+                            class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                            </svg>
+                            Lưu Yêu Cầu
+                        </button>
                         <button onclick="addGroupRow('phukien')"
                             class="px-4 py-2 bg-purple-100 text-purple-700 border border-purple-300 rounded-lg hover:bg-purple-200 flex items-center gap-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -279,13 +309,24 @@
             <div id="tabKinh" class="tab-content p-6 hidden">
                 <div class="flex justify-between items-center mb-4 no-print">
                     <h3 class="text-lg font-semibold text-cyan-600">PHIẾU YÊU CẦU VẬT TƯ - KÍNH</h3>
-                    <button onclick="addRow('kinh')"
-                        class="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Thêm dòng
-                    </button>
+                    <div class="flex gap-2">
+                        <button onclick="saveCurrentTab('kinh')"
+                            class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                            </svg>
+                            Lưu Yêu Cầu
+                        </button>
+                        <button onclick="addRow('kinh')"
+                            class="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4" />
+                            </svg>
+                            Thêm dòng
+                        </button>
+                    </div>
                 </div>
                 <div class="overflow-x-auto border border-gray-200 rounded-lg">
                     <table class="w-full text-sm" id="tableKinh">
@@ -477,7 +518,7 @@
                     const height = item.height_mm || item.height || 0;
                     const area = item.area_m2 || item.area || 0;
                     const panels = item.quantity || item.panels || item.requestQty || item.shortage || 0;
-                    
+
                     addRow('kinh', {
                         code: item.code || '',
                         type: item.name || item.type || '',
@@ -739,6 +780,103 @@
             if (item) {
                 item[field] = value;
             }
+        }
+
+        // Sync data from DOM to tableData before saving
+        function syncTableDataFromDOM() {
+            console.log('🔄 syncTableDataFromDOM started...');
+            console.log('📊 tableData before sync:', JSON.parse(JSON.stringify(tableData)));
+
+            // Sync nhom data
+            const nhomRows = document.querySelectorAll('#nhomTableBody tr[data-index]');
+            console.log(`📋 Found ${nhomRows.length} nhom rows in DOM`);
+
+            nhomRows.forEach(row => {
+                const index = parseInt(row.getAttribute('data-index'));
+                let item = tableData.nhom.find(item => item.stt === index);
+                if (!item) {
+                    // Create new item if not found
+                    item = { stt: index };
+                    tableData.nhom.push(item);
+                    console.log(`➕ Created new nhom item with stt=${index}`);
+                }
+                const inputs = row.querySelectorAll('input');
+                console.log(`🔍 Row ${index} has ${inputs.length} inputs`);
+
+                // Sync tất cả inputs có sẵn, không yêu cầu đủ 8
+                if (inputs.length > 0) {
+                    item.name = inputs[0]?.value || item.name || '';
+                    item.code = inputs[1]?.value || item.code || '';
+                    item.density = inputs[2]?.value || item.density || '';
+                    item.length = inputs[3]?.value || item.length || '';
+                    item.unit = inputs[4]?.value || item.unit || '';
+                    item.quantity = inputs[5]?.value || item.quantity || '';
+                    item.weight = inputs[6]?.value || item.weight || '';
+                    item.note = inputs[7]?.value || item.note || '';
+                    console.log(`✅ Synced row ${index}:`, item);
+                } else {
+                    console.warn(`⚠️ Row ${index} has no inputs, keeping existing data`);
+                }
+            });
+
+            // Sync vattu data
+            const vattuRows = document.querySelectorAll('#vattuTableBody tr[data-index]');
+            vattuRows.forEach(row => {
+                const index = parseInt(row.getAttribute('data-index'));
+                let item = tableData.vattu.find(item => item.stt === index);
+                if (!item) {
+                    item = { stt: index };
+                    tableData.vattu.push(item);
+                }
+                const inputs = row.querySelectorAll('input');
+                if (inputs.length >= 4) {
+                    item.code = inputs[0]?.value || '';
+                    item.name = inputs[1]?.value || '';
+                    item.unit = inputs[2]?.value || '';
+                    item.quantity = inputs[3]?.value || '';
+                }
+            });
+
+            // Sync phukien data
+            const phukienRows = document.querySelectorAll('#phukienTableBody tr[data-index]');
+            phukienRows.forEach(row => {
+                const index = parseInt(row.getAttribute('data-index'));
+                let item = tableData.phukien.find(item => item.stt === index);
+                if (!item) {
+                    item = { stt: index };
+                    tableData.phukien.push(item);
+                }
+                const inputs = row.querySelectorAll('input');
+                if (inputs.length >= 4) {
+                    item.code = inputs[0]?.value || '';
+                    item.name = inputs[1]?.value || '';
+                    item.unit = inputs[2]?.value || '';
+                    item.quantity = inputs[3]?.value || '';
+                }
+            });
+
+            // Sync kinh data
+            const kinhRows = document.querySelectorAll('#kinhTableBody tr[data-index]');
+            kinhRows.forEach(row => {
+                const index = parseInt(row.getAttribute('data-index'));
+                let item = tableData.kinh.find(item => item.stt === index);
+                if (!item) {
+                    item = { stt: index };
+                    tableData.kinh.push(item);
+                }
+                const inputs = row.querySelectorAll('input');
+                if (inputs.length >= 7) {
+                    item.code = inputs[0]?.value || '';
+                    item.type = inputs[1]?.value || '';
+                    item.width = inputs[2]?.value || '';
+                    item.height = inputs[3]?.value || '';
+                    item.unit = inputs[4]?.value || '';
+                    item.panels = inputs[5]?.value || '';
+                    item.area = inputs[6]?.value || '';
+                }
+            });
+
+            console.log('Synced tableData:', tableData);
         }
 
         // =============================================
@@ -1118,6 +1256,207 @@
         // =============================================
         // SAVE
         // =============================================
+
+        // Save current tab only
+        async function saveCurrentTab(type) {
+            const projectName = document.getElementById('projectName').value;
+            if (!projectName) {
+                alert('Vui lòng nhập tên công trình!');
+                return;
+            }
+
+            // Sync data from DOM first
+            syncTableDataFromDOM();
+
+            // Get data for current tab only
+            let items = [];
+            if (type === 'nhom' && tableData.nhom.length > 0) {
+                items = tableData.nhom;
+            } else if (type === 'vattu' && tableData.vattu.length > 0) {
+                items = tableData.vattu;
+            } else if (type === 'phukien' && tableData.phukien.length > 0) {
+                items = tableData.phukien;
+            } else if (type === 'kinh' && tableData.kinh.length > 0) {
+                items = tableData.kinh;
+            }
+
+            if (items.length === 0) {
+                alert(`Không có vật tư nào trong tab ${getTabName(type)}. Vui lòng thêm vật tư trước khi lưu.`);
+                return;
+            }
+
+            // Lấy project_id từ sessionStorage nếu có
+            let projectId = null;
+            try {
+                const projectStr = sessionStorage.getItem('purchaseRequest_project');
+                if (projectStr) {
+                    const project = JSON.parse(projectStr);
+                    projectId = project.id || project.project_id || null;
+                }
+            } catch (e) {
+                console.warn('Không thể lấy project_id từ sessionStorage:', e);
+            }
+
+            // Get created_date, set to today if empty
+            let createdDate = document.getElementById('createdDate').value;
+            if (!createdDate) {
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                createdDate = `${year}-${month}-${day}`;
+                document.getElementById('createdDate').value = createdDate;
+            }
+
+            // Prepare payload with only current tab data
+            const payload = {
+                project_id: projectId,
+                project_name: projectName,
+                order_code: document.getElementById('orderCode').value,
+                product_type: document.getElementById('productType').value,
+                color: document.getElementById('color').value,
+                delivery_address: document.getElementById('deliveryAddress').value,
+                created_date: createdDate,
+                required_date: document.getElementById('requiredDate').value,
+                status: 'draft'
+            };
+
+            console.log('saveCurrentTab payload:', payload);
+            console.log('Items to save:', items);
+
+            // Format data for backend
+            const formatNhomData = (items) => {
+                return items.map(item => ({
+                    code: item.code || '',
+                    name: item.name || '',
+                    density: item.density || '',
+                    length: item.length || item.length_m || '',
+                    unit: item.unit || '',
+                    quantity: parseFloat(item.quantity) || 0,
+                    weight: item.weight || '',
+                    note: item.note || item.notes || ''
+                }));
+            };
+
+            const formatVattuData = (items) => {
+                return items.map(item => ({
+                    code: item.code || '',
+                    name: item.name || '',
+                    unit: item.unit || '',
+                    quantity: parseFloat(item.quantity) || 0,
+                    note: item.note || item.notes || ''
+                }));
+            };
+
+            const formatPhukienData = (items) => {
+                return items.map(item => ({
+                    code: item.code || '',
+                    name: item.name || '',
+                    unit: item.unit || '',
+                    quantity: parseFloat(item.quantity) || 0,
+                    note: item.note || item.notes || ''
+                }));
+            };
+
+            const formatKinhData = (items) => {
+                return items.map(item => ({
+                    code: item.code || '',
+                    type: item.type || item.name || '',
+                    width: item.width || item.width_mm || '',
+                    height: item.height || item.height_mm || '',
+                    unit: item.unit || '',
+                    panels: parseFloat(item.panels || item.quantity) || 0,
+                    area: item.area || item.area_m2 || '',
+                    note: item.note || item.notes || ''
+                }));
+            };
+
+            // Add only current tab data with proper formatting
+            if (type === 'nhom') {
+                payload.nhom = formatNhomData(items);
+                payload.vattu = null;
+                payload.phukien = null;
+                payload.kinh = null;
+            } else if (type === 'vattu') {
+                payload.nhom = null;
+                payload.vattu = formatVattuData(items);
+                payload.phukien = null;
+                payload.kinh = null;
+            } else if (type === 'phukien') {
+                payload.nhom = null;
+                payload.vattu = null;
+                payload.phukien = formatPhukienData(items);
+                payload.kinh = null;
+            } else if (type === 'kinh') {
+                payload.nhom = null;
+                payload.vattu = null;
+                payload.phukien = null;
+                payload.kinh = formatKinhData(items);
+            }
+
+            try {
+                const API_BASE = window.API_BASE || 'http://localhost:3001/api';
+                const token = localStorage.getItem('token');
+
+                if (!token) {
+                    alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                // Log the complete payload before sending
+                console.log('📤 FINAL PAYLOAD TO SEND:', JSON.stringify(payload, null, 2));
+                console.log('📋 payload.nhom:', payload.nhom);
+                console.log('📋 payload.vattu:', payload.vattu);
+                console.log('📋 payload.phukien:', payload.phukien);
+                console.log('📋 payload.kinh:', payload.kinh);
+
+                const response = await fetch(`${API_BASE}/purchase-requests`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showSuccessNotification(`Đã lưu phiếu yêu cầu vật tư ${getTabName(type)} thành công!`);
+                    console.log('Save successful, result:', result);
+                    // Optionally redirect to material requests page
+                    setTimeout(() => {
+                        if (confirm('Bạn có muốn xem danh sách phiếu đã lưu không?')) {
+                            window.location.href = 'material-requests.html';
+                        }
+                    }, 1500);
+                } else {
+                    console.error('Save failed:', result);
+                    alert('Lỗi khi lưu phiếu: ' + (result.message || 'Lỗi không xác định'));
+                }
+            } catch (error) {
+                console.error('Error saving purchase request:', error);
+                alert('Lỗi kết nối server: ' + error.message);
+            }
+        }
+
+        function getTabName(type) {
+            const names = {
+                'nhom': 'Nhôm',
+                'vattu': 'Vật tư phụ',
+                'phukien': 'Phụ kiện',
+                'kinh': 'Kính'
+            };
+            return names[type] || type;
+        }
+
         async function saveAllForms() {
             const projectName = document.getElementById('projectName').value;
             if (!projectName) {
@@ -1125,23 +1464,154 @@
                 return;
             }
 
-            const payload = {
-                projectName: projectName,
-                orderCode: document.getElementById('orderCode').value,
-                productType: document.getElementById('productType').value,
-                color: document.getElementById('color').value,
-                deliveryAddress: document.getElementById('deliveryAddress').value,
-                createdDate: document.getElementById('createdDate').value,
-                requiredDate: document.getElementById('requiredDate').value,
-                nhom: tableData.nhom,
-                vattu: tableData.vattu,
-                phukien: tableData.phukien,
-                kinh: tableData.kinh
+            // Sync data from DOM first to ensure all changes are captured
+            syncTableDataFromDOM();
+
+            // Lấy project_id từ sessionStorage nếu có
+            let projectId = null;
+            try {
+                const projectStr = sessionStorage.getItem('purchaseRequest_project');
+                if (projectStr) {
+                    const project = JSON.parse(projectStr);
+                    projectId = project.id || project.project_id || null;
+                }
+            } catch (e) {
+                console.warn('Không thể lấy project_id từ sessionStorage:', e);
+            }
+
+            // Check if there's any data to save
+            const hasData = tableData.nhom.length > 0 ||
+                tableData.vattu.length > 0 ||
+                tableData.phukien.length > 0 ||
+                tableData.kinh.length > 0;
+
+            if (!hasData) {
+                alert('Không có vật tư nào để lưu. Vui lòng thêm vật tư trước khi lưu.');
+                return;
+            }
+
+            // Get created_date, set to today if empty
+            let createdDate = document.getElementById('createdDate').value;
+            if (!createdDate) {
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                createdDate = `${year}-${month}-${day}`;
+                document.getElementById('createdDate').value = createdDate;
+            }
+
+            // Format data for backend
+            const formatNhomData = (items) => {
+                return items.map(item => ({
+                    code: item.code || '',
+                    name: item.name || '',
+                    density: item.density || '',
+                    length: item.length || item.length_m || '',
+                    unit: item.unit || '',
+                    quantity: parseFloat(item.quantity) || 0,
+                    weight: item.weight || '',
+                    note: item.note || item.notes || ''
+                }));
             };
 
-            // For now, just save to localStorage
-            localStorage.setItem(`purchaseRequest_${projectName}`, JSON.stringify(payload));
-            showSuccessNotification('Đã lưu phiếu yêu cầu vật tư thành công!');
+            const formatVattuData = (items) => {
+                return items.map(item => ({
+                    code: item.code || '',
+                    name: item.name || '',
+                    unit: item.unit || '',
+                    quantity: parseFloat(item.quantity) || 0,
+                    note: item.note || item.notes || ''
+                }));
+            };
+
+            const formatPhukienData = (items) => {
+                return items.map(item => ({
+                    code: item.code || '',
+                    name: item.name || '',
+                    unit: item.unit || '',
+                    quantity: parseFloat(item.quantity) || 0,
+                    note: item.note || item.notes || ''
+                }));
+            };
+
+            const formatKinhData = (items) => {
+                return items.map(item => ({
+                    code: item.code || '',
+                    type: item.type || item.name || '',
+                    width: item.width || item.width_mm || '',
+                    height: item.height || item.height_mm || '',
+                    unit: item.unit || '',
+                    panels: parseFloat(item.panels || item.quantity) || 0,
+                    area: item.area || item.area_m2 || '',
+                    note: item.note || item.notes || ''
+                }));
+            };
+
+            const payload = {
+                project_id: projectId,
+                project_name: projectName,
+                order_code: document.getElementById('orderCode').value,
+                product_type: document.getElementById('productType').value,
+                color: document.getElementById('color').value,
+                delivery_address: document.getElementById('deliveryAddress').value,
+                created_date: createdDate,
+                required_date: document.getElementById('requiredDate').value,
+                nhom: tableData.nhom.length > 0 ? formatNhomData(tableData.nhom) : null,
+                vattu: tableData.vattu.length > 0 ? formatVattuData(tableData.vattu) : null,
+                phukien: tableData.phukien.length > 0 ? formatPhukienData(tableData.phukien) : null,
+                kinh: tableData.kinh.length > 0 ? formatKinhData(tableData.kinh) : null,
+                status: 'draft'
+            };
+
+            try {
+                const API_BASE = window.API_BASE || 'http://localhost:3001/api';
+                const token = localStorage.getItem('token');
+
+                if (!token) {
+                    alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                console.log('Saving payload:', payload);
+                console.log('Nhom items:', payload.nhom);
+                console.log('Vattu items:', payload.vattu);
+                console.log('Phukien items:', payload.phukien);
+                console.log('Kinh items:', payload.kinh);
+
+                const response = await fetch(`${API_BASE}/purchase-requests`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showSuccessNotification('Đã lưu phiếu yêu cầu vật tư thành công!');
+                    // Có thể chuyển đến trang quản lý phiếu
+                    setTimeout(() => {
+                        if (confirm('Bạn có muốn xem danh sách phiếu đã lưu không?')) {
+                            window.location.href = 'material-requests.html';
+                        }
+                    }, 1500);
+                } else {
+                    alert('Lỗi khi lưu phiếu: ' + (result.message || 'Lỗi không xác định'));
+                }
+            } catch (error) {
+                console.error('Error saving purchase request:', error);
+                alert('Lỗi kết nối server: ' + error.message);
+            }
         }
 
         // =============================================

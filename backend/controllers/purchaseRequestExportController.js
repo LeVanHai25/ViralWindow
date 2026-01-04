@@ -14,7 +14,7 @@ function formatDateVN(date) {
 }
 
 /**
- * Xuất Excel Phiếu Yêu Cầu Vật Tư
+ * Xuất Excel Phiếu Yêu Cầu Vật Tư - Professional Format với Logo
  */
 exports.exportPurchaseRequest = async (req, res) => {
     try {
@@ -32,7 +32,21 @@ exports.exportPurchaseRequest = async (req, res) => {
 
         // Tạo workbook
         const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet('PHIẾU YÊU CẦU VẬT TƯ');
+        workbook.creator = 'ViralWindow';
+        workbook.created = new Date();
+
+        const worksheet = workbook.addWorksheet('PHIẾU YÊU CẦU VẬT TƯ', {
+            pageSetup: {
+                paperSize: 9, // A4
+                orientation: 'landscape',
+                fitToPage: true,
+                fitToWidth: 1,
+                fitToHeight: 0
+            },
+            headerFooter: {
+                oddFooter: '&L&"Times New Roman"Trang &P / &N'
+            }
+        });
 
         // Set column widths based on type
         if (type === 'nhom') {
@@ -53,7 +67,8 @@ exports.exportPurchaseRequest = async (req, res) => {
                 { width: 15 },  // B - Mã VT
                 { width: 40 },  // C - Tên vật tư
                 { width: 10 },  // D - Đơn vị
-                { width: 12 }   // E - Số lượng
+                { width: 12 },  // E - Số lượng
+                { width: 30 }   // F - Ghi chú
             ];
         } else if (type === 'kinh') {
             worksheet.columns = [
@@ -64,59 +79,117 @@ exports.exportPurchaseRequest = async (req, res) => {
                 { width: 12 },  // E - Chiều cao
                 { width: 10 },  // F - ĐVT
                 { width: 12 },  // G - Số tấm
-                { width: 15 }   // H - Diện tích
+                { width: 15 },  // H - Diện tích
+                { width: 25 }   // I - Ghi chú
             ];
         }
 
         let currentRow = 1;
 
+        // ========================
+        // LOGO VÀ THÔNG TIN CÔNG TY
+        // ========================
+
+        // Try to add logo
+        const logoPath = path.join(__dirname, '../assets/logo.png');
+        let hasLogo = false;
+
+        try {
+            if (fs.existsSync(logoPath)) {
+                const logoImage = workbook.addImage({
+                    filename: logoPath,
+                    extension: 'png'
+                });
+
+                worksheet.addImage(logoImage, {
+                    tl: { col: 0, row: 0 },
+                    ext: { width: 120, height: 50 }
+                });
+                hasLogo = true;
+            }
+        } catch (logoErr) {
+            console.warn('Could not load logo:', logoErr.message);
+        }
+
+        // Company info header (next to logo)
+        worksheet.mergeCells('B1:E1');
+        const companyNameCell = worksheet.getCell('B1');
+        companyNameCell.value = 'CÔNG TY TNHH CỬA NHÔM VIRALWINDOW';
+        companyNameCell.font = { name: 'Times New Roman', size: 14, bold: true, color: { argb: 'FF1E3A5F' } };
+        companyNameCell.alignment = { vertical: 'middle', horizontal: 'left' };
+
+        worksheet.mergeCells('B2:E2');
+        const addressCell = worksheet.getCell('B2');
+        addressCell.value = 'Địa chỉ: Số 123, Đường ABC, Quận XYZ, Hà Nội';
+        addressCell.font = { name: 'Times New Roman', size: 10, italic: true };
+        addressCell.alignment = { vertical: 'middle', horizontal: 'left' };
+
+        worksheet.mergeCells('B3:E3');
+        const phoneCell = worksheet.getCell('B3');
+        phoneCell.value = 'Hotline: 0909.xxx.xxx | Email: viralwindow@email.com';
+        phoneCell.font = { name: 'Times New Roman', size: 10, italic: true };
+        phoneCell.alignment = { vertical: 'middle', horizontal: 'left' };
+
+        // Set row heights for header
+        worksheet.getRow(1).height = 25;
+        worksheet.getRow(2).height = 18;
+        worksheet.getRow(3).height = 18;
+
+        currentRow = 5; // Leave space after header
+
         // Title
         const titles = {
-            'nhom': 'PHIẾU YÊU CẦU VẬT TƯ- PHỤ KIỆN (NHÔM)',
+            'nhom': 'PHIẾU YÊU CẦU VẬT TƯ - NHÔM',
             'vattu': 'PHIẾU YÊU CẦU VẬT TƯ',
-            'phukien': 'PHIẾU YÊU CẦU VẬT TƯ- PHỤ KIỆN ĐI CÔNG TRÌNH',
-            'kinh': 'PHIẾU YÊU CẦU VẬT TƯ KÍNH'
+            'phukien': 'PHIẾU YÊU CẦU VẬT TƯ - PHỤ KIỆN',
+            'kinh': 'PHIẾU YÊU CẦU VẬT TƯ - KÍNH'
         };
 
-        worksheet.mergeCells(`A${currentRow}:I${currentRow}`);
-        const titleCell = worksheet.getCell(`A${currentRow}`);
-        titleCell.value = `  ${titles[type] || 'PHIẾU YÊU CẦU VẬT TƯ'}`;
-        titleCell.font = { name: 'Times New Roman', size: 14, bold: true };
+        const colCount = type === 'nhom' ? 9 : (type === 'kinh' ? 9 : 6);
+        worksheet.mergeCells(currentRow, 1, currentRow, colCount);
+        const titleCell = worksheet.getCell(currentRow, 1);
+        titleCell.value = titles[type] || 'PHIẾU YÊU CẦU VẬT TƯ';
+        titleCell.font = { name: 'Times New Roman', size: 16, bold: true, color: { argb: 'FF1E3A5F' } };
         titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+        worksheet.getRow(currentRow).height = 30;
         currentRow++;
 
-        // Date
+        // Date line
         const date = new Date();
         const day = date.getDate();
         const month = date.getMonth() + 1;
         const year = date.getFullYear();
-        worksheet.mergeCells(`B${currentRow}:D${currentRow}`);
-        worksheet.getCell(`B${currentRow}`).value = ` Ngày ..${day}..tháng ..${month}.. năm ${year}`;
-        worksheet.getCell(`B${currentRow}`).font = { name: 'Times New Roman', size: 11 };
-        currentRow++;
+        worksheet.mergeCells(currentRow, 1, currentRow, colCount);
+        const dateCell = worksheet.getCell(currentRow, 1);
+        dateCell.value = `Ngày ${day} tháng ${month} năm ${year}`;
+        dateCell.font = { name: 'Times New Roman', size: 11, italic: true };
+        dateCell.alignment = { vertical: 'middle', horizontal: 'center' };
+        currentRow += 2;
 
-        // Project info
-        worksheet.getCell(`A${currentRow}`).value = `Công trình : ${projectInfo.projectName || ''}`;
-        worksheet.getCell(`A${currentRow}`).font = { name: 'Times New Roman', size: 11 };
-        currentRow++;
+        // ========================
+        // THÔNG TIN DỰ ÁN
+        // ========================
+        const infoStyle = { name: 'Times New Roman', size: 11 };
+        const labelStyle = { name: 'Times New Roman', size: 11, bold: true };
 
-        worksheet.getCell(`A${currentRow}`).value = `Mã Đơn Hàng : ${projectInfo.orderCode || ''}`;
-        worksheet.getCell(`A${currentRow}`).font = { name: 'Times New Roman', size: 11 };
-        currentRow++;
+        const projectInfoData = [
+            { label: 'Công trình:', value: projectInfo.projectName || '' },
+            { label: 'Mã đơn hàng:', value: projectInfo.orderCode || '' },
+            { label: 'Loại sản phẩm:', value: projectInfo.productType || '' },
+            { label: 'Màu sắc:', value: projectInfo.color || '' },
+            { label: 'Địa chỉ giao hàng:', value: projectInfo.deliveryAddress || '' }
+        ];
 
-        worksheet.getCell(`A${currentRow}`).value = `Chủng loại phụ kiện : ${projectInfo.productType || ''}`;
-        worksheet.getCell(`A${currentRow}`).font = { name: 'Times New Roman', size: 11 };
-        currentRow++;
+        projectInfoData.forEach(info => {
+            worksheet.getCell(currentRow, 1).value = info.label;
+            worksheet.getCell(currentRow, 1).font = labelStyle;
+            worksheet.mergeCells(currentRow, 2, currentRow, 4);
+            worksheet.getCell(currentRow, 2).value = info.value;
+            worksheet.getCell(currentRow, 2).font = infoStyle;
+            currentRow++;
+        });
 
-        worksheet.getCell(`A${currentRow}`).value = `Màu sắc : ${projectInfo.color || ''}`;
-        worksheet.getCell(`A${currentRow}`).font = { name: 'Times New Roman', size: 11 };
-        currentRow++;
-
-        worksheet.getCell(`A${currentRow}`).value = `Địa chỉ giao hàng : ${projectInfo.deliveryAddress || ''}`;
-        worksheet.getCell(`A${currentRow}`).font = { name: 'Times New Roman', size: 11 };
-        currentRow++;
-
-        currentRow++; // Empty row
+        currentRow++; // Empty row before table
 
         // Table header
         const headerRow = currentRow;

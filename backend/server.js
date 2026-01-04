@@ -66,6 +66,8 @@ const warehouseExportRoutes = require("./routes/warehouseExportRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
 // NEW: BOM Export Excel
 const bomExportRoutes = require("./routes/bom-export");
+// NEW: Purchase Requests
+const purchaseRequestRoutes = require("./routes/purchase-requests");
 
 // Use routes
 app.use("/api/auth", authRoutes);
@@ -134,6 +136,9 @@ console.log('✅ Route /api/upload đã được đăng ký');
 // NEW: BOM Export Excel
 app.use("/api/bom-export", bomExportRoutes);
 console.log('✅ Route /api/bom-export đã được đăng ký');
+// NEW: Purchase Requests
+app.use("/api/purchase-requests", purchaseRequestRoutes);
+console.log('✅ Route /api/purchase-requests đã được đăng ký');
 
 // Health check
 app.get("/", (req, res) => {

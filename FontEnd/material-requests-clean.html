@@ -391,7 +391,8 @@
                     <a href="design-new.html"
                         class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                         <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 4v16m8-8H4" />
                         </svg>
                         Tạo yêu cầu mới
                     </a>
@@ -462,15 +463,13 @@
     </div>
 
     <!-- View/Edit Modal -->
-    <div id="requestModal"
-        class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div id="requestModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div class="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
                 <h2 class="text-xl font-bold text-gray-900" id="modalTitle">Chi tiết Yêu Cầu Vật Tư</h2>
                 <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
@@ -480,7 +479,6 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="js/success-notification.js"></script>
     <script src="js/notification-header.js"></script>
     <script src="js/sidebar-enterprise.js"></script>
@@ -525,23 +523,13 @@
                         if (user.avatar_url) {
                             // Handle different URL formats
                             let avatarUrl = user.avatar_url;
-
-                            // Check if it's a base64 data URL
-                            if (avatarUrl.startsWith('data:image')) {
-                                // Use base64 directly - don't modify it
-                                avatarImage.src = avatarUrl;
-                            } else if (!avatarUrl.startsWith('http') && !avatarUrl.startsWith('/')) {
-                                // Relative path - construct full URL
+                            if (!avatarUrl.startsWith('http') && !avatarUrl.startsWith('/')) {
                                 avatarUrl = `${API_BASE.replace('/api', '')}/${avatarUrl}`;
-                                avatarImage.src = avatarUrl;
                             } else if (avatarUrl.startsWith('/')) {
-                                // Absolute path from root
                                 avatarUrl = `${window.location.origin}${avatarUrl}`;
-                                avatarImage.src = avatarUrl;
-                            } else {
-                                // Full URL
-                                avatarImage.src = avatarUrl;
                             }
+                            
+                            avatarImage.src = avatarUrl;
                             avatarImage.onerror = () => {
                                 avatarImage.classList.add('hidden');
                                 avatarInitial.classList.remove('hidden');
@@ -661,7 +649,7 @@
                                 </div>
                                 <div>
                                     <span class="font-medium">Ngày tạo:</span>
-                                    <span class="ml-2">${formatDate(request.created_date || request.request_date || request.created_at)}</span>
+                                    <span class="ml-2">${formatDate(request.request_date)}</span>
                                 </div>
                                 <div>
                                     <span class="font-medium">Số lượng vật tư:</span>
@@ -688,13 +676,6 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
                                 Sửa
-                            </button>
-                            <button onclick="exportRequestExcel(${request.id})" 
-                                class="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm">
-                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                                Excel
                             </button>
                             <button onclick="deleteRequest(${request.id})" 
                                 class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm">
@@ -759,14 +740,6 @@
                 'phukien': 'Phụ kiện',
                 'vattu': 'Vật tư phụ',
                 'all': 'Tất cả'
-            };
-
-            const statusNames = {
-                'draft': 'Bản nháp',
-                'submitted': 'Đã gửi',
-                'approved': 'Đã duyệt',
-                'rejected': 'Từ chối',
-                'completed': 'Hoàn thành'
             };
 
             let itemsTable = '';
@@ -908,7 +881,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Ngày tạo</label>
-                            <input type="date" id="editRequestDate" value="${formatDateForInput(request.created_date || request.request_date || request.created_at)}" 
+                            <input type="date" id="editRequestDate" value="${formatDateForInput(request.request_date)}" 
                                 ${!isEdit ? 'readonly' : ''}
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg ${!isEdit ? 'bg-gray-100' : ''}">
                         </div>
@@ -955,7 +928,7 @@
                     <div class="mt-4">
                         <h3 class="text-lg font-semibold mb-2">Danh sách vật tư</h3>
                         <div class="overflow-x-auto">
-                            ${itemsTable || '<p class="text-gray-500 text-center py-4">Không có vật tư nào</p>'}
+                            ${itemsTable || '<p class="text-gray-500">Không có vật tư nào</p>'}
                         </div>
                     </div>
                     ${isEdit ? `
@@ -1082,150 +1055,6 @@
             return div.innerHTML;
         }
 
-        async function exportRequestExcel(id) {
-            try {
-                showToast('Đang xuất Excel...', 'info');
-
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    showToast('Vui lòng đăng nhập lại', 'error');
-                    window.location.href = 'login.html';
-                    return;
-                }
-
-                // Get the request data first
-                const requestResponse = await fetch(`${API_BASE}/purchase-requests/${id}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (requestResponse.status === 401 || requestResponse.status === 403) {
-                    showToast('Phiên đăng nhập đã hết hạn', 'error');
-                    window.location.href = 'login.html';
-                    return;
-                }
-
-                if (!requestResponse.ok) {
-                    throw new Error('Không tìm thấy phiếu yêu cầu');
-                }
-
-                const requestResult = await requestResponse.json();
-                if (!requestResult.success || !requestResult.data) {
-                    throw new Error('Không tìm thấy phiếu yêu cầu');
-                }
-
-                const request = requestResult.data;
-
-                // Group items by type
-                const itemsByType = { nhom: [], kinh: [], phukien: [], vattu: [] };
-                if (request.items && request.items.length > 0) {
-                    request.items.forEach(item => {
-                        if (itemsByType[item.material_type]) {
-                            itemsByType[item.material_type].push({
-                                code: item.material_code || '',
-                                name: item.material_name || '',
-                                unit: item.unit || '',
-                                quantity: item.quantity || 0,
-                                density: item.density || '',
-                                length: item.length_m || 6,
-                                weight: item.weight || '',
-                                width: item.width || '',
-                                height: item.height || '',
-                                panels: item.panels || item.quantity || '',
-                                area: item.area || '',
-                                type: item.material_name || '',
-                                note: item.notes || ''
-                            });
-                        }
-                    });
-                }
-
-                // Determine which type to export
-                let exportType = 'nhom'; // default
-                let exportData = [];
-
-                if (itemsByType.nhom.length > 0) {
-                    exportType = 'nhom';
-                    exportData = itemsByType.nhom;
-                } else if (itemsByType.kinh.length > 0) {
-                    exportType = 'kinh';
-                    exportData = itemsByType.kinh;
-                } else if (itemsByType.phukien.length > 0) {
-                    exportType = 'phukien';
-                    exportData = itemsByType.phukien;
-                } else if (itemsByType.vattu.length > 0) {
-                    exportType = 'vattu';
-                    exportData = itemsByType.vattu;
-                }
-
-                if (exportData.length === 0) {
-                    showToast('Không có vật tư để xuất Excel', 'warning');
-                    return;
-                }
-
-                // Call backend API for professional Excel export with logo
-                const exportResponse = await fetch(`${API_BASE}/bom-export/purchase-request`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        type: exportType,
-                        data: exportData,
-                        projectInfo: {
-                            projectName: request.project_name || '',
-                            orderCode: request.order_code || '',
-                            productType: request.product_type || '',
-                            color: request.color || '',
-                            deliveryAddress: request.delivery_address || ''
-                        }
-                    })
-                });
-
-                if (!exportResponse.ok) {
-                    const errorResult = await exportResponse.json();
-                    throw new Error(errorResult.message || 'Lỗi khi xuất Excel');
-                }
-
-                // Get filename from response headers
-                const contentDisposition = exportResponse.headers.get('Content-Disposition');
-                let filename = `Phieu_Yeu_Cau_${exportType}_${request.order_code || id}.xlsx`;
-                if (contentDisposition) {
-                    const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-                    if (filenameMatch && filenameMatch[1]) {
-                        filename = decodeURIComponent(filenameMatch[1].replace(/['"]/g, ''));
-                    }
-                }
-
-                // Download file
-                const blob = await exportResponse.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
-
-                showToast('Đã xuất Excel thành công!', 'success');
-            } catch (error) {
-                console.error('Error exporting Excel:', error);
-                showToast('Lỗi khi xuất Excel: ' + (error.message || error), 'error');
-            }
-        }
-
-        function getStatusName(status) {
-            const statusNames = {
-                'draft': 'Bản nháp',
-                'submitted': 'Đã gửi',
-                'approved': 'Đã duyệt',
-                'rejected': 'Từ chối',
-                'completed': 'Hoàn thành'
-            };
-            return statusNames[status] || status;
-        }
-
         // Show toast notification
         function showToast(message, type = 'info') {
             const existingToast = document.querySelector('.toast-notification');
@@ -1251,9 +1080,9 @@
             try {
                 const token = localStorage.getItem('token');
                 const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-
+                
                 const response = await fetch(`${API_BASE}/company-settings`, { headers });
-
+                
                 if (!response.ok) {
                     console.warn('Company settings API not available');
                     const logoImg = document.getElementById('companyLogo');
@@ -1264,33 +1093,23 @@
                     }
                     return;
                 }
-
+                
                 const result = await response.json();
 
                 if (result.success && result.data) {
                     const logoImg = document.getElementById('companyLogo');
                     const logoIcon = document.getElementById('companyLogoIcon');
-
+                    
                     if (logoImg && logoIcon) {
                         if (result.data.logo_path) {
                             let logoUrl = result.data.logo_path;
-
-                            // Check if it's a base64 data URL
-                            if (logoUrl.startsWith('data:image')) {
-                                // Use base64 directly - don't modify it
-                                logoImg.src = logoUrl;
-                            } else if (!logoUrl.startsWith('http') && !logoUrl.startsWith('/')) {
-                                // Relative path - construct full URL
+                            if (!logoUrl.startsWith('http') && !logoUrl.startsWith('/')) {
                                 logoUrl = `${API_BASE.replace('/api', '')}/${logoUrl}`;
-                                logoImg.src = logoUrl;
                             } else if (logoUrl.startsWith('/')) {
-                                // Absolute path from root
                                 logoUrl = `${window.location.origin}${logoUrl}`;
-                                logoImg.src = logoUrl;
-                            } else {
-                                // Full URL
-                                logoImg.src = logoUrl;
                             }
+                            
+                            logoImg.src = logoUrl;
                             logoImg.onerror = () => {
                                 logoImg.classList.add('hidden');
                                 logoIcon.classList.remove('hidden');

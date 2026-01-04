@@ -230,6 +230,14 @@
                     </svg>
                     <span>Thiết kế & Bóc tách</span>
                 </a>
+                <a href="material-requests.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Yêu cầu vật tư</span>
+                </a>
             </div>
 
             <!-- SẢN XUẤT -->
@@ -952,7 +960,7 @@
                             <div>
                                 <p class="text-sm text-gray-600">Tên dự án</p>
                                 <p class="font-semibold text-gray-900" id="step4ProjectName">--</p>
-                    </div>
+                            </div>
                             <div>
                                 <p class="text-sm text-gray-600">Khách hàng</p>
                                 <p class="font-semibold text-gray-900" id="step4Customer">--</p>
@@ -969,8 +977,8 @@
                                 <p class="text-sm text-gray-600">Ngày giao</p>
                                 <p class="font-semibold text-gray-900" id="step4DeliveryDate">--</p>
                             </div>
-                </div>
-            </div>
+                        </div>
+                    </div>
 
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-xl font-bold">Kiểm Tra Kho</h2>
@@ -1186,24 +1194,25 @@
 
                             <!-- Tab Content for Nhôm -->
                             <div id="materialRequestTabContentNhom" class="material-request-tab-content">
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 p-4 bg-white rounded-lg border border-blue-200">
+                                <div
+                                    class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 p-4 bg-white rounded-lg border border-blue-200">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Mã đơn hàng</label>
-                                        <input type="text" id="requestOrderCodeNhom" 
+                                        <input type="text" id="requestOrderCodeNhom"
                                             class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                                             placeholder="Tự động tạo hoặc nhập mã">
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Ngày tạo phiếu</label>
-                                        <input type="date" id="requestCreatedDateNhom" 
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                                            value="">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Ngày tạo
+                                            phiếu</label>
+                                        <input type="date" id="requestCreatedDateNhom"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" value="">
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Ngày vật tư cần về</label>
-                                        <input type="date" id="requestRequiredDateNhom" 
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                                            value="">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Ngày vật tư cần
+                                            về</label>
+                                        <input type="date" id="requestRequiredDateNhom"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" value="">
                                     </div>
                                 </div>
                                 <div class="overflow-x-auto border border-blue-200 rounded-lg bg-white">
@@ -1259,24 +1268,25 @@
 
                             <!-- Tab Content for Kính -->
                             <div id="materialRequestTabContentKinh" class="material-request-tab-content hidden">
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 p-4 bg-white rounded-lg border border-cyan-200">
+                                <div
+                                    class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 p-4 bg-white rounded-lg border border-cyan-200">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Mã đơn hàng</label>
-                                        <input type="text" id="requestOrderCodeKinh" 
+                                        <input type="text" id="requestOrderCodeKinh"
                                             class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                                             placeholder="Tự động tạo hoặc nhập mã">
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Ngày tạo phiếu</label>
-                                        <input type="date" id="requestCreatedDateKinh" 
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                                            value="">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Ngày tạo
+                                            phiếu</label>
+                                        <input type="date" id="requestCreatedDateKinh"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" value="">
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Ngày vật tư cần về</label>
-                                        <input type="date" id="requestRequiredDateKinh" 
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                                            value="">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Ngày vật tư cần
+                                            về</label>
+                                        <input type="date" id="requestRequiredDateKinh"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" value="">
                                     </div>
                                 </div>
                                 <div class="overflow-x-auto border border-cyan-200 rounded-lg bg-white">
@@ -1332,24 +1342,25 @@
 
                             <!-- Tab Content for Phụ kiện -->
                             <div id="materialRequestTabContentPhuKien" class="material-request-tab-content hidden">
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 p-4 bg-white rounded-lg border border-amber-200">
+                                <div
+                                    class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 p-4 bg-white rounded-lg border border-amber-200">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Mã đơn hàng</label>
-                                        <input type="text" id="requestOrderCodePhuKien" 
+                                        <input type="text" id="requestOrderCodePhuKien"
                                             class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                                             placeholder="Tự động tạo hoặc nhập mã">
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Ngày tạo phiếu</label>
-                                        <input type="date" id="requestCreatedDatePhuKien" 
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                                            value="">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Ngày tạo
+                                            phiếu</label>
+                                        <input type="date" id="requestCreatedDatePhuKien"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" value="">
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Ngày vật tư cần về</label>
-                                        <input type="date" id="requestRequiredDatePhuKien" 
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                                            value="">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Ngày vật tư cần
+                                            về</label>
+                                        <input type="date" id="requestRequiredDatePhuKien"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm" value="">
                                     </div>
                                 </div>
                                 <div class="overflow-x-auto border border-amber-200 rounded-lg bg-white">
@@ -1747,8 +1758,8 @@
                         if (currentProject && currentProject.id) {
                             console.log('📥 Refreshing product data from server for project:', currentProject.id);
                             // Skip auto step và skip render (vì đã render từ sessionStorage rồi)
-                            loadQuotationItemsForDesign(currentProject.id, { 
-                                skipAutoStep: true, 
+                            loadQuotationItemsForDesign(currentProject.id, {
+                                skipAutoStep: true,
                                 skipRender: false  // Vẫn render để cập nhật với data mới nhất
                             }).then(() => {
                                 console.log('✅ Product data refreshed from server');
@@ -2807,13 +2818,13 @@
                                 if (uploadResponse.ok) {
                                     const uploadResult = await uploadResponse.json();
                                     console.log('📥 Upload response:', uploadResult);
-                                    
+
                                     if (uploadResult.success && uploadResult.fileUrl) {
                                         // Cập nhật thông tin file từ server
                                         const fileIndex = uploadedDesignFiles.length - 1;
                                         uploadedDesignFiles[fileIndex].serverUrl = uploadResult.fileUrl;
                                         uploadedDesignFiles[fileIndex].serverFilename = uploadResult.filename;
-                                        
+
                                         // QUAN TRỌNG: Ưu tiên originalName từ server, nếu không có thì dùng tên gốc từ file
                                         uploadedDesignFiles[fileIndex].originalName = uploadResult.originalName || file.name;
                                         uploadedDesignFiles[fileIndex].uploaded = true;
@@ -2917,7 +2928,7 @@
                                     originalName: file.originalName,
                                     url: file.url
                                 });
-                                
+
                                 return {
                                     name: file.name,  // Tên unique trên server
                                     originalName: file.originalName || file.name,  // Tên gốc để hiển thị (fallback về name nếu không có)
@@ -2926,7 +2937,7 @@
                                     serverFilename: file.name,  // Lưu tên unique để xóa
                                     type: file.type || 'application/octet-stream',
                                     size: file.size || 0,
-                                uploaded: true
+                                    uploaded: true
                                 };
                             });
                             console.log(`✅ Loaded ${uploadedDesignFiles.length} design files from server`);
@@ -3022,7 +3033,7 @@
                 container.innerHTML = uploadedDesignFiles.map((file, index) => {
                     // Dùng serverUrl nếu có, nếu không thì dùng url (blob URL)
                     const fileUrl = file.serverUrl || file.url;
-                    
+
                     // QUAN TRỌNG: Ưu tiên hiển thị originalName (tên gốc) thay vì name (tên unique)
                     const displayFileName = file.originalName || file.name || 'Unknown';
                     const ext = displayFileName.toLowerCase().split('.').pop();
@@ -3080,7 +3091,7 @@
 
                 // Tìm file trong array theo serverFilename (tên unique) hoặc name
                 // filename được truyền vào là serverFilename (tên unique trên server)
-                const fileIndex = uploadedDesignFiles.findIndex(f => 
+                const fileIndex = uploadedDesignFiles.findIndex(f =>
                     f.serverFilename === filename || f.name === filename
                 );
 
@@ -3221,7 +3232,7 @@
 
             async function loadQuotationItemsForDesign(projectId, options = {}) {
                 const { skipAutoStep = false, skipRender = false } = options;
-                
+
                 try {
                     console.log('📥 Loading quotation items for design from server, projectId:', projectId);
                     const response = await fetch(`${API_BASE}/projects/${projectId}/quotation-items-for-design`);
@@ -3235,24 +3246,24 @@
                         // Điều này đảm bảo dữ liệu vừa edit không bị mất khi refresh
                         if (quotationItemsForDesign && quotationItemsForDesign.length > 0 && !skipRender) {
                             console.log('🔄 Merging server data with local array (preserving recent edits)...');
-                            
+
                             // Tạo map của local items để merge hiệu quả
                             const localMap = new Map();
                             quotationItemsForDesign.forEach(item => {
                                 const key = item.quotation_item_id || item.id;
                                 if (key) localMap.set(key, item);
                             });
-                            
+
                             // Merge: Update từ server nhưng giữ lại local data nếu mới hơn
                             serverItems.forEach(serverItem => {
                                 const key = serverItem.id || serverItem.quotation_item_id;
                                 const localItem = localMap.get(key);
-                                
+
                                 if (localItem) {
                                     // So sánh updated_at để quyết định dùng data nào
                                     const localUpdatedAt = localItem.updated_at ? new Date(localItem.updated_at).getTime() : 0;
                                     const serverUpdatedAt = serverItem.updated_at ? new Date(serverItem.updated_at).getTime() : 0;
-                                    
+
                                     if (localUpdatedAt > serverUpdatedAt) {
                                         // Local data mới hơn (vừa edit), giữ lại local data
                                         console.log(`⚠️ Keeping local data for item ${key} (local updated: ${localItem.updated_at})`);
@@ -3271,7 +3282,7 @@
                                     quotationItemsForDesign.push(serverItem);
                                 }
                             });
-                            
+
                             // Xóa items không còn trong server (nếu có)
                             const serverIds = new Set(serverItems.map(item => item.id || item.quotation_item_id));
                             quotationItemsForDesign = quotationItemsForDesign.filter(item => {
@@ -3326,12 +3337,12 @@
 
                         // Render nếu không skip
                         if (!skipRender) {
-                        renderProductCards(quotationItemsForDesign);
-                        updateProductTypeSummary(quotationItemsForDesign);
+                            renderProductCards(quotationItemsForDesign);
+                            updateProductTypeSummary(quotationItemsForDesign);
 
-                        // Re-add checkboxes if batch mode is active
-                        if (batchMode) {
-                            setTimeout(() => addCheckboxesToProducts(), 100);
+                            // Re-add checkboxes if batch mode is active
+                            if (batchMode) {
+                                setTimeout(() => addCheckboxesToProducts(), 100);
                             }
                         }
 
@@ -3361,11 +3372,11 @@
                     // KHÔNG reset về [] khi lỗi, giữ lại data cũ nếu có
                     // Chỉ reset nếu thực sự không có data
                     if (!quotationItemsForDesign || quotationItemsForDesign.length === 0) {
-                    quotationItemsForDesign = [];
-                    items = [];
+                        quotationItemsForDesign = [];
+                        items = [];
                         if (!skipRender) {
-                    renderProductCards([]);
-                    updateProductTypeSummary([]);
+                            renderProductCards([]);
+                            updateProductTypeSummary([]);
                         }
                     }
                 }
@@ -4577,7 +4588,7 @@
                             if (currentProject.id) {
                                 console.log('📥 Loading product data from server when entering step 2...');
                                 // Skip auto step vì đã ở step 2 rồi
-                                loadQuotationItemsForDesign(currentProject.id, { 
+                                loadQuotationItemsForDesign(currentProject.id, {
                                     skipAutoStep: true,
                                     skipRender: false  // Vẫn render để cập nhật UI
                                 }).then(() => {
@@ -5825,17 +5836,17 @@
                 // Tính tổng trọng lượng nhôm (kg)
                 let totalNhomWeight = 0;
                 if (bocTachData.nhom && bocTachData.nhom.length > 0) {
-                bocTachData.nhom.forEach(item => {
+                    bocTachData.nhom.forEach(item => {
                         totalNhomWeight += parseFloat(item.weight_kg || (item.density || 0) * (item.quantity || 0)) || 0;
-                });
+                    });
                 }
 
                 // Tính tổng diện tích kính (m²)
                 let totalKinhArea = 0;
                 if (bocTachData.kinh && bocTachData.kinh.length > 0) {
-                bocTachData.kinh.forEach(item => {
+                    bocTachData.kinh.forEach(item => {
                         totalKinhArea += parseFloat(item.area_m2 || ((item.width_mm || 0) * (item.height_mm || 0) / 1000000 * (item.quantity || 0))) || 0;
-                });
+                    });
                 }
 
                 // Đếm số loại Phụ kiện
@@ -8027,7 +8038,7 @@
 
                 try {
                     console.log('📥 Loading inventory data from multiple sources...');
-                    
+
                     // Load từ nhiều nguồn: accessories, aluminum_systems, và inventory table
                     const [accessoriesRes, aluminumRes, glassRes, inventoryRes] = await Promise.all([
                         fetch(`${API_BASE}/project-materials/inventory/accessory`).catch(e => ({ ok: false, json: () => ({ success: false, data: [] }) })),
@@ -8047,7 +8058,7 @@
 
                     // Normalize tất cả về cùng format: { item_code, item_name, item_type, quantity, stock_quantity, ... }
                     inventoryData = [];
-                    
+
                     // 1. Phụ kiện từ bảng accessories
                     accessoriesData.forEach(item => {
                         inventoryData.push({
@@ -8095,7 +8106,7 @@
                         inventoryRawData.forEach(item => {
                             if (item.item_code && item.item_type === 'glass') {
                                 // Kiểm tra xem đã có trong inventoryData chưa (tránh duplicate)
-                                const exists = inventoryData.some(inv => 
+                                const exists = inventoryData.some(inv =>
                                     inv.item_code === item.item_code && inv.item_type === 'glass'
                                 );
                                 if (!exists) {
@@ -8117,7 +8128,7 @@
                     inventoryRawData.forEach(item => {
                         if (item.item_code && item.item_type && item.item_type !== 'glass') {
                             // Kiểm tra xem đã có trong inventoryData chưa (tránh duplicate)
-                            const exists = inventoryData.some(inv => 
+                            const exists = inventoryData.some(inv =>
                                 inv.item_code === item.item_code && inv.item_type === item.item_type
                             );
                             if (!exists) {
@@ -8135,7 +8146,7 @@
                     });
 
                     console.log(`✅ Total normalized inventory data: ${inventoryData.length} items`);
-                    
+
                     // Log sample để debug
                     if (inventoryData.length > 0) {
                         console.log('📋 Sample inventory items:', inventoryData.slice(0, 5).map(inv => ({
@@ -8193,9 +8204,9 @@
                         const unit = 'm²';
                         const bomCode = item.code || item.glass_code || '';
                         const bomName = item.type || item.glass_type || '';
-                        
+
                         console.log(`🔍 Checking kính: code="${bomCode}", name="${bomName}", required=${required} m²`);
-                        
+
                         const stockItem = findInventoryItem(bomCode, bomName, 'glass');
                         const found = stockItem !== null && stockItem !== undefined;
                         const available = found ? parseFloat(stockItem.stock_quantity || stockItem.quantity || 0) : 0;
@@ -8225,9 +8236,9 @@
                         const unit = item.unit || 'cái';
                         const bomCode = item.code || item.item_code || '';
                         const bomName = item.name || item.item_name || '';
-                        
+
                         console.log(`🔍 Checking vật tư phụ: code="${bomCode}", name="${bomName}", required=${required}`);
-                        
+
                         const stockItem = findInventoryItem(bomCode, bomName, 'material');
                         const found = stockItem !== null && stockItem !== undefined;
                         // Lấy quantity từ stockItem - ưu tiên stock_quantity, sau đó quantity
@@ -8297,7 +8308,7 @@
                 let item = inventoryData.find(inv => {
                     const codeMatch = inv.item_code && inv.item_code.trim().toUpperCase() === (code || '').trim().toUpperCase();
                     if (!codeMatch) return false;
-                    
+
                     // Kiểm tra item_type - linh hoạt hơn
                     if (type === 'aluminum') {
                         return inv.item_type === 'aluminum';
@@ -8305,11 +8316,11 @@
                         return inv.item_type === 'glass';
                     } else {
                         // Vật tư phụ: có thể là 'material', 'accessory', hoặc các loại khác
-                        return inv.item_type === 'material' || 
-                               inv.item_type === 'accessory' || 
-                               inv.item_type === 'consumable' ||
-                               inv.item_type === 'other' ||
-                               !inv.item_type; // Nếu không có item_type, vẫn chấp nhận
+                        return inv.item_type === 'material' ||
+                            inv.item_type === 'accessory' ||
+                            inv.item_type === 'consumable' ||
+                            inv.item_type === 'other' ||
+                            !inv.item_type; // Nếu không có item_type, vẫn chấp nhận
                     }
                 });
 
@@ -8323,14 +8334,14 @@
                     const nameLower = name.toLowerCase().trim();
                     item = inventoryData.find(inv => {
                         if (!inv.item_name) return false;
-                        
+
                         const invNameLower = inv.item_name.toLowerCase().trim();
-                        const nameMatch = invNameLower === nameLower || 
-                                         invNameLower.includes(nameLower) || 
-                                         nameLower.includes(invNameLower);
-                        
+                        const nameMatch = invNameLower === nameLower ||
+                            invNameLower.includes(nameLower) ||
+                            nameLower.includes(invNameLower);
+
                         if (!nameMatch) return false;
-                        
+
                         // Kiểm tra item_type - linh hoạt hơn
                         if (type === 'aluminum') {
                             return inv.item_type === 'aluminum';
@@ -8338,11 +8349,11 @@
                             return inv.item_type === 'glass';
                         } else {
                             // Vật tư phụ: linh hoạt hơn
-                            return inv.item_type === 'material' || 
-                                   inv.item_type === 'accessory' || 
-                                   inv.item_type === 'consumable' ||
-                                   inv.item_type === 'other' ||
-                                   !inv.item_type;
+                            return inv.item_type === 'material' ||
+                                inv.item_type === 'accessory' ||
+                                inv.item_type === 'consumable' ||
+                                inv.item_type === 'other' ||
+                                !inv.item_type;
                         }
                     });
                 }
@@ -8376,16 +8387,16 @@
                         if (type === 'glass' && inv.item_type === 'glass') {
                             // For glass, check if code or name contains search terms
                             if (code && inv.item_code) {
-                                return inv.item_code.toLowerCase().includes(code.toLowerCase()) || 
-                                       code.toLowerCase().includes(inv.item_code.toLowerCase());
+                                return inv.item_code.toLowerCase().includes(code.toLowerCase()) ||
+                                    code.toLowerCase().includes(inv.item_code.toLowerCase());
                             }
                             if (name && inv.item_name) {
-                                return inv.item_name.toLowerCase().includes(name.toLowerCase()) || 
-                                       name.toLowerCase().includes(inv.item_name.toLowerCase());
+                                return inv.item_name.toLowerCase().includes(name.toLowerCase()) ||
+                                    name.toLowerCase().includes(inv.item_name.toLowerCase());
                             }
                         } else if (code && inv.item_code) {
-                            return inv.item_code.toLowerCase().includes(code.toLowerCase()) || 
-                                   code.toLowerCase().includes(inv.item_code.toLowerCase());
+                            return inv.item_code.toLowerCase().includes(code.toLowerCase()) ||
+                                code.toLowerCase().includes(inv.item_code.toLowerCase());
                         }
                         return false;
                     }).slice(0, 5);
@@ -8455,8 +8466,8 @@
                     // Xác định màu cho cột "Tồn kho"
                     let availableColor = 'text-gray-500';
                     if (item.status !== 'not_found') {
-                        availableColor = item.available >= item.required ? 'text-green-600' : 
-                                       item.available > 0 ? 'text-orange-600' : 'text-red-600';
+                        availableColor = item.available >= item.required ? 'text-green-600' :
+                            item.available > 0 ? 'text-orange-600' : 'text-red-600';
                     }
 
                     return `
@@ -8508,8 +8519,8 @@
                     // Xác định màu cho cột "Tồn kho"
                     let availableColor = 'text-gray-500';
                     if (item.status !== 'not_found') {
-                        availableColor = item.available >= item.required ? 'text-green-600' : 
-                                       item.available > 0 ? 'text-orange-600' : 'text-red-600';
+                        availableColor = item.available >= item.required ? 'text-green-600' :
+                            item.available > 0 ? 'text-orange-600' : 'text-red-600';
                     }
 
                     return `
@@ -8561,8 +8572,8 @@
                     // Xác định màu cho cột "Tồn kho"
                     let availableColor = 'text-gray-500';
                     if (item.status !== 'not_found') {
-                        availableColor = item.available >= item.required ? 'text-green-600' : 
-                                       item.available > 0 ? 'text-orange-600' : 'text-red-600';
+                        availableColor = item.available >= item.required ? 'text-green-600' :
+                            item.available > 0 ? 'text-orange-600' : 'text-red-600';
                     }
 
                     return `
@@ -8679,9 +8690,9 @@
             function generateOrderCode(category) {
                 const prefix = category === 'nhom' ? 'YC-NHOM' : category === 'kinh' ? 'YC-KINH' : 'YC-PK';
                 const date = new Date();
-                const dateStr = date.getFullYear().toString().substring(2) + 
-                               String(date.getMonth() + 1).padStart(2, '0') + 
-                               String(date.getDate()).padStart(2, '0');
+                const dateStr = date.getFullYear().toString().substring(2) +
+                    String(date.getMonth() + 1).padStart(2, '0') +
+                    String(date.getDate()).padStart(2, '0');
                 const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
                 return `${prefix}-${dateStr}-${random}`;
             }
@@ -8712,7 +8723,7 @@
                             // Tìm thông tin chi tiết từ bocTachData
                             let bocTachItem = null;
                             if (bocTachData && bocTachData.nhom) {
-                                bocTachItem = bocTachData.nhom.find(b => 
+                                bocTachItem = bocTachData.nhom.find(b =>
                                     (b.code || b.material_code || b.ma_vat_tu) === item.code ||
                                     (b.name || b.material_name || b.ten_vat_tu) === item.name
                                 );
@@ -8748,7 +8759,7 @@
                             // Tìm thông tin chi tiết từ bocTachData
                             let bocTachItem = null;
                             if (bocTachData && bocTachData.kinh) {
-                                bocTachItem = bocTachData.kinh.find(b => 
+                                bocTachItem = bocTachData.kinh.find(b =>
                                     (b.code || b.glass_code || b.ma_kinh) === item.code ||
                                     (b.type || b.glass_type || b.loai_kinh) === item.name
                                 );
@@ -8825,40 +8836,40 @@
                 const form = document.getElementById('materialRequestForm');
                 if (form) {
                     form.classList.remove('hidden');
-                    
+
                     // Initialize all category forms
                     ['nhom', 'kinh', 'phukien'].forEach(category => {
-                        const orderCodeId = category === 'nhom' ? 'requestOrderCodeNhom' : 
-                                          category === 'kinh' ? 'requestOrderCodeKinh' : 
-                                          'requestOrderCodePhuKien';
-                        const createdDateId = category === 'nhom' ? 'requestCreatedDateNhom' : 
-                                            category === 'kinh' ? 'requestCreatedDateKinh' : 
-                                            'requestCreatedDatePhuKien';
-                        const requiredDateId = category === 'nhom' ? 'requestRequiredDateNhom' : 
-                                             category === 'kinh' ? 'requestRequiredDateKinh' : 
-                                             'requestRequiredDatePhuKien';
-                        
+                        const orderCodeId = category === 'nhom' ? 'requestOrderCodeNhom' :
+                            category === 'kinh' ? 'requestOrderCodeKinh' :
+                                'requestOrderCodePhuKien';
+                        const createdDateId = category === 'nhom' ? 'requestCreatedDateNhom' :
+                            category === 'kinh' ? 'requestCreatedDateKinh' :
+                                'requestCreatedDatePhuKien';
+                        const requiredDateId = category === 'nhom' ? 'requestRequiredDateNhom' :
+                            category === 'kinh' ? 'requestRequiredDateKinh' :
+                                'requestRequiredDatePhuKien';
+
                         const orderCodeEl = document.getElementById(orderCodeId);
                         if (orderCodeEl && !orderCodeEl.value) {
                             orderCodeEl.value = generateOrderCode(category);
                         }
-                        
+
                         const createdDateEl = document.getElementById(createdDateId);
                         if (createdDateEl && !createdDateEl.value) {
                             const today = new Date().toISOString().split('T')[0];
                             createdDateEl.value = today;
                         }
-                        
+
                         const requiredDateEl = document.getElementById(requiredDateId);
                         if (requiredDateEl && !requiredDateEl.value) {
                             const futureDate = new Date();
                             futureDate.setDate(futureDate.getDate() + 7);
                             requiredDateEl.value = futureDate.toISOString().split('T')[0];
                         }
-                        
+
                         renderMaterialRequestTable(category);
                     });
-                    
+
                     // Show first tab with items
                     if (materialRequestItems.nhom.length > 0) {
                         switchMaterialRequestTab('nhom');
@@ -8878,7 +8889,7 @@
                 document.querySelectorAll('.material-request-tab-content').forEach(el => {
                     el.classList.add('hidden');
                 });
-                
+
                 // Remove active class from all tabs
                 document.querySelectorAll('[id^="materialRequestTab"]').forEach(el => {
                     el.classList.remove('border-blue-500', 'text-blue-600', 'bg-blue-50');
@@ -8886,20 +8897,20 @@
                     el.classList.remove('border-amber-500', 'text-amber-600', 'bg-amber-50');
                     el.classList.add('border-transparent', 'text-gray-600');
                 });
-                
+
                 // Show selected tab content
-                const tabContentId = category === 'nhom' ? 'materialRequestTabContentNhom' : 
-                                  category === 'kinh' ? 'materialRequestTabContentKinh' : 
-                                  'materialRequestTabContentPhuKien';
+                const tabContentId = category === 'nhom' ? 'materialRequestTabContentNhom' :
+                    category === 'kinh' ? 'materialRequestTabContentKinh' :
+                        'materialRequestTabContentPhuKien';
                 const tabContent = document.getElementById(tabContentId);
                 if (tabContent) {
                     tabContent.classList.remove('hidden');
                 }
-                
+
                 // Activate selected tab
-                const tabId = category === 'nhom' ? 'materialRequestTabNhom' : 
-                            category === 'kinh' ? 'materialRequestTabKinh' : 
-                            'materialRequestTabPhuKien';
+                const tabId = category === 'nhom' ? 'materialRequestTabNhom' :
+                    category === 'kinh' ? 'materialRequestTabKinh' :
+                        'materialRequestTabPhuKien';
                 const tab = document.getElementById(tabId);
                 if (tab) {
                     if (category === 'nhom') {
@@ -8911,7 +8922,7 @@
                     }
                     tab.classList.remove('border-transparent', 'text-gray-600');
                 }
-                
+
                 // Re-render table for this category to ensure data is displayed
                 renderMaterialRequestTable(category);
             }
@@ -8934,7 +8945,7 @@
                 const tabNhom = document.getElementById('materialRequestTabNhom');
                 const tabKinh = document.getElementById('materialRequestTabKinh');
                 const tabPhuKien = document.getElementById('materialRequestTabPhuKien');
-                
+
                 if (tabNhom && tabNhom.classList.contains('border-blue-500')) {
                     return 'nhom';
                 } else if (tabKinh && tabKinh.classList.contains('border-cyan-500')) {
@@ -8942,7 +8953,7 @@
                 } else if (tabPhuKien && tabPhuKien.classList.contains('border-amber-500')) {
                     return 'phukien';
                 }
-                
+
                 // Default to first tab with items
                 if (materialRequestItems.nhom && materialRequestItems.nhom.length > 0) {
                     return 'nhom';
@@ -8951,7 +8962,7 @@
                 } else if (materialRequestItems.phukien && materialRequestItems.phukien.length > 0) {
                     return 'phukien';
                 }
-                
+
                 return 'nhom'; // Default fallback
             }
 
@@ -9076,7 +9087,7 @@
             }
 
             /**
-             * Save material request for specific category
+             * Save material request for specific category - CALLS API TO PERSIST TO DATABASE
              */
             async function saveMaterialRequest(category) {
                 const categoryMap = {
@@ -9105,46 +9116,97 @@
                     const createdDate = document.getElementById(config.createdDateId)?.value || new Date().toISOString().split('T')[0];
                     const requiredDate = document.getElementById(config.requiredDateId)?.value || '';
 
-                    // Prepare data
-                    const requestData = {
+                    // Format items based on category for backend
+                    const formatNhomData = (items) => items.map(item => ({
+                        code: item.code || '',
+                        name: item.name || '',
+                        density: item.density || '',
+                        length: item.length || 6,
+                        unit: item.unit || 'cây',
+                        quantity: parseFloat(item.requestQty || item.shortage || item.quantity) || 0,
+                        weight: item.weight || '',
+                        note: item.notes || ''
+                    }));
+
+                    const formatKinhData = (items) => items.map(item => ({
+                        code: item.code || '',
+                        type: item.name || '',
+                        width: item.width || 0,
+                        height: item.height || 0,
+                        unit: item.unit || 'tấm',
+                        panels: parseFloat(item.requestQty || item.shortage || item.panels || item.quantity) || 0,
+                        area: item.area || 0,
+                        note: item.notes || ''
+                    }));
+
+                    const formatPhukienData = (items) => items.map(item => ({
+                        code: item.code || '',
+                        name: item.name || '',
+                        unit: item.unit || 'cái',
+                        quantity: parseFloat(item.requestQty || item.shortage || item.quantity) || 0,
+                        note: item.notes || ''
+                    }));
+
+                    // Prepare API payload
+                    const payload = {
                         project_id: currentProject.id,
                         project_name: currentProject.name || currentProject.project_name,
                         order_code: orderCode,
-                        request_date: createdDate,
-                        required_date: requiredDate,
-                        category: config.label,
-                        items: items.map(item => ({
-                            code: item.code,
-                            name: item.name,
-                            unit: item.unit,
-                            quantity: item.requestQty || item.shortage,
-                            notes: item.notes || '',
-                            type: item.type,
-                            category: item.category,
-                            required: item.required,
-                            available: item.available,
-                            shortage: item.shortage,
-                            // Thêm thông tin chi tiết cho nhôm
-                            density: item.density || 0,
-                            length: item.length || 6,
-                            weight: item.weight || 0,
-                            // Thêm thông tin chi tiết cho kính
-                            width: item.width || 0,
-                            height: item.height || 0,
-                            area: item.area || 0,
-                            panels: item.panels || item.quantity || item.requestQty || item.shortage || 0
-                        }))
+                        product_type: currentProject.product_type || 'Cửa nhôm',
+                        color: currentProject.color || '',
+                        delivery_address: currentProject.address || currentProject.delivery_address || '',
+                        created_date: createdDate,
+                        required_date: requiredDate || null,
+                        status: 'draft'
                     };
 
-                    // Save to sessionStorage
-                    const storageKey = `purchaseRequest_${config.key}`;
-                    sessionStorage.setItem(storageKey, JSON.stringify(requestData));
-                    sessionStorage.setItem('purchaseRequest_project', JSON.stringify(currentProject));
+                    // Add formatted data for the specific category
+                    if (category === 'nhom') {
+                        payload.nhom = formatNhomData(items);
+                        payload.vattu = null;
+                        payload.phukien = null;
+                        payload.kinh = null;
+                    } else if (category === 'kinh') {
+                        payload.nhom = null;
+                        payload.vattu = null;
+                        payload.phukien = null;
+                        payload.kinh = formatKinhData(items);
+                    } else if (category === 'phukien') {
+                        payload.nhom = null;
+                        payload.vattu = null;
+                        payload.phukien = formatPhukienData(items);
+                        payload.kinh = null;
+                    }
 
-                    showToast(`Đã lưu yêu cầu ${config.label.toLowerCase()}!`, 'success');
+                    console.log('📤 Saving material request to API:', payload);
+
+                    // Call API to save to database
+                    const token = localStorage.getItem('token');
+                    const response = await fetch(`${API_BASE}/purchase-requests`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token || ''}`
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showToast(`Đã lưu phiếu yêu cầu ${config.label.toLowerCase()} thành công!`, 'success');
+                        console.log('✅ Saved successfully:', result.data);
+
+                        // Also save to sessionStorage for compatibility
+                        const storageKey = `purchaseRequest_${config.key}`;
+                        sessionStorage.setItem(storageKey, JSON.stringify(payload));
+                        sessionStorage.setItem('purchaseRequest_project', JSON.stringify(currentProject));
+                    } else {
+                        throw new Error(result.message || 'Lỗi không xác định từ server');
+                    }
                 } catch (error) {
                     console.error('Error saving material request:', error);
-                    alert('Lỗi khi lưu yêu cầu vật tư');
+                    alert('Lỗi khi lưu yêu cầu vật tư: ' + error.message);
                 }
             }
 
@@ -9250,16 +9312,16 @@
 
                     // Get file as blob
                     const blob = await response.blob();
-                    
+
                     // Create download link
                     const url = window.URL.createObjectURL(blob);
                     const link = document.createElement('a');
-                    
+
                     // Generate filename
                     const projectName = currentProject ? (currentProject.name || currentProject.project_name || 'Project') : 'Project';
                     const dateStr = new Date().toISOString().split('T')[0];
                     const filename = `${title.replace(/\s+/g, '_')}_${projectName.replace(/\s+/g, '_')}_${dateStr}.xlsx`;
-                    
+
                     link.href = url;
                     link.download = filename;
                     link.style.display = 'none';
@@ -10467,7 +10529,7 @@
                         // 
                         // Chỉ refresh khi thực sự cần (ví dụ: khi user reload trang hoặc chuyển step)
                         console.log('✅ Update successful. Data saved to database. Will refresh on next page load.');
-                        
+
                         showToast('Cập nhật sản phẩm thành công!', 'success');
                     } else {
                         alert('Lỗi: ' + (result.message || 'Không thể cập nhật'));
