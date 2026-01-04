@@ -61,28 +61,36 @@ exports.getProductionProjects = async (req, res) => {
                         ORDER BY qi.id
                     `, [quotationId]);
 
-                    // Chuyển đổi quotation_items thành format sản phẩm
-                    products = quotationItems.map((item, index) => {
-                        // Lấy tên sản phẩm (Quy cách) - ưu tiên item_name, nếu không có thì dùng spec
-                        const productName = item.item_name || item.spec || `Sản phẩm ${index + 1}`;
+                    // Tách sản phẩm có quantity > 1 thành nhiều item riêng
+                    for (const item of quotationItems) {
+                        const qty = parseInt(item.quantity) || 1;
+                        const baseCode = item.code || `SP-${item.id}`;
+                        const productName = item.item_name || item.spec || `Sản phẩm`;
 
-                        return {
-                            id: item.id,
-                            design_code: item.code || `SP-${item.id}`,
-                            door_type: item.item_type || 'material',
-                            template_name: productName, // Quy cách là tên sản phẩm
-                            template_code: item.code || null,
-                            width_mm: parseFloat(item.width) || 0,
-                            height_mm: parseFloat(item.height) || 0,
-                            number_of_panels: 1,
-                            quantity: parseFloat(item.quantity) || 1,
-                            spec: item.spec || null,
-                            glass: item.glass || null,
-                            accessories: item.accessories || null,
-                            aluminum_system_name: item.accessories || null,
-                            aluminum_system_code: null
-                        };
-                    });
+                        for (let i = 1; i <= qty; i++) {
+                            const productCode = qty > 1 ? `${baseCode}_C${String(i).padStart(3, '0')}` : baseCode;
+
+                            products.push({
+                                id: `${item.id}_${i}`, // Unique ID cho mỗi item
+                                original_id: item.id, // ID gốc từ quotation_items
+                                design_code: productCode,
+                                door_type: item.item_type || 'material',
+                                template_name: productName,
+                                template_code: item.code || null,
+                                width_mm: parseFloat(item.width) || 0,
+                                height_mm: parseFloat(item.height) || 0,
+                                number_of_panels: 1,
+                                quantity: 1, // Mỗi item là 1 sản phẩm riêng
+                                spec: item.spec || null,
+                                glass: item.glass || null,
+                                accessories: item.accessories || null,
+                                aluminum_system_name: item.accessories || null,
+                                aluminum_system_code: null,
+                                item_index: i,
+                                total_in_group: qty
+                            });
+                        }
+                    }
                 }
 
                 // Nếu không có từ quotation_items, thử lấy từ door_designs
@@ -150,24 +158,21 @@ exports.getProductionProjects = async (req, res) => {
                         let progressPercent = 0;
                         let isCompleted = false;
 
-                        if (orderRows.length > 0 && designId) {
-                            const orderId = orderRows[0].id;
+                        // Tính tiến độ dựa trên vật tư đã hoàn thành trong product_materials
+                        // (giống logic trong getProductDetail modal)
+                        const [productMaterials] = await db.query(`
+                            SELECT 
+                                COUNT(*) as total_materials,
+                                SUM(CASE WHEN is_completed = 1 THEN 1 ELSE 0 END) as completed_materials
+                            FROM product_materials
+                            WHERE project_id = ? AND product_id = ?
+                        `, [project.id, door.id]);
 
-                            // Lấy tiến độ sản xuất của cửa
-                            const [progressRows] = await db.query(`
-                                SELECT * FROM production_progress
-                                WHERE order_id = ? AND design_id = ?
-                                ORDER BY stage, updated_at DESC
-                            `, [orderId, designId]);
-
-                            // Các giai đoạn sản xuất
-                            const stages = ['cutting', 'welding', 'accessories', 'gluing', 'finishing', 'packaging', 'completed'];
-                            const completedStages = progressRows.filter(p => p.status === 'completed').length;
-                            progressPercent = (completedStages / stages.length) * 100;
-
-                            // Kiểm tra xem đã hoàn thành chưa
-                            const completedProgress = progressRows.find(p => p.stage === 'completed' && p.status === 'completed');
-                            isCompleted = !!completedProgress || progressPercent >= 100;
+                        if (productMaterials.length > 0 && productMaterials[0].total_materials > 0) {
+                            const total = productMaterials[0].total_materials;
+                            const completed = productMaterials[0].completed_materials || 0;
+                            progressPercent = Math.round((completed / total) * 100);
+                            isCompleted = progressPercent >= 100;
                         }
 
                         // Lấy vật tư đã sử dụng cho sản phẩm này (từ BOM)
@@ -399,24 +404,54 @@ exports.updateProductCompletion = async (req, res) => {
             }
         }
 
-        // Lấy production order của dự án
-        const [orderRows] = await connection.query(`
+        // Lấy production order của dự án, nếu chưa có thì tự động tạo
+        let [orderRows] = await connection.query(`
             SELECT id FROM production_orders 
             WHERE project_id = ? 
             ORDER BY created_at DESC 
             LIMIT 1
         `, [projectId]);
 
+        let orderId;
         if (orderRows.length === 0) {
-            await connection.rollback();
-            connection.release();
-            return res.status(404).json({
-                success: false,
-                message: "Không tìm thấy lệnh sản xuất cho dự án này"
-            });
-        }
+            // Tự động tạo production order nếu chưa có
+            const year = new Date().getFullYear();
+            const prefix = `SX-${year}-`;
+            const [maxRows] = await connection.query(
+                `SELECT MAX(CAST(SUBSTRING_INDEX(order_code, '-', -1) AS UNSIGNED)) as max_num 
+                 FROM production_orders 
+                 WHERE order_code LIKE ?`,
+                [`${prefix}%`]
+            );
+            const maxNum = (maxRows[0]?.max_num || 0) + 1;
+            const order_code = `${prefix}${String(maxNum).padStart(4, '0')}`;
 
-        const orderId = orderRows[0].id;
+            // Lấy quotation_id nếu có
+            const [quotationRows] = await connection.query(`
+                SELECT id FROM quotations 
+                WHERE project_id = ? 
+                ORDER BY created_at DESC 
+                LIMIT 1
+            `, [projectId]);
+            const quotationId = quotationRows.length > 0 ? quotationRows[0].id : null;
+
+            const [orderResult] = await connection.query(`
+                INSERT INTO production_orders 
+                (order_code, project_id, quotation_id, order_date, status, priority, notes) 
+                VALUES (?, ?, ?, ?, 'pending', 'normal', ?)
+            `, [
+                order_code,
+                projectId,
+                quotationId,
+                new Date().toISOString().split('T')[0],
+                `Tự động tạo khi đánh dấu hoàn thành sản phẩm`
+            ]);
+
+            orderId = orderResult.insertId;
+            console.log(`✅ Đã tự động tạo production order ${order_code} (ID: ${orderId}) cho dự án ${projectId}`);
+        } else {
+            orderId = orderRows[0].id;
+        }
 
         if (is_completed) {
             // Đánh dấu tất cả các giai đoạn là completed
@@ -502,24 +537,54 @@ exports.moveToNextStage = async (req, res) => {
             });
         }
 
-        // Lấy production order
-        const [orderRows] = await connection.query(`
+        // Lấy production order, nếu chưa có thì tự động tạo
+        let [orderRows] = await connection.query(`
             SELECT id FROM production_orders 
             WHERE project_id = ? 
             ORDER BY created_at DESC 
             LIMIT 1
         `, [projectId]);
 
+        let orderId;
         if (orderRows.length === 0) {
-            await connection.rollback();
-            connection.release();
-            return res.status(404).json({
-                success: false,
-                message: "Không tìm thấy lệnh sản xuất"
-            });
-        }
+            // Tự động tạo production order nếu chưa có
+            const year = new Date().getFullYear();
+            const prefix = `SX-${year}-`;
+            const [maxRows] = await connection.query(
+                `SELECT MAX(CAST(SUBSTRING_INDEX(order_code, '-', -1) AS UNSIGNED)) as max_num 
+                 FROM production_orders 
+                 WHERE order_code LIKE ?`,
+                [`${prefix}%`]
+            );
+            const maxNum = (maxRows[0]?.max_num || 0) + 1;
+            const order_code = `${prefix}${String(maxNum).padStart(4, '0')}`;
 
-        const orderId = orderRows[0].id;
+            // Lấy quotation_id nếu có
+            const [quotRows] = await connection.query(`
+                SELECT id FROM quotations 
+                WHERE project_id = ? 
+                ORDER BY created_at DESC 
+                LIMIT 1
+            `, [projectId]);
+            const quotationId = quotRows.length > 0 ? quotRows[0].id : null;
+
+            const [orderResult] = await connection.query(`
+                INSERT INTO production_orders 
+                (order_code, project_id, quotation_id, order_date, status, priority, notes) 
+                VALUES (?, ?, ?, ?, 'pending', 'normal', ?)
+            `, [
+                order_code,
+                projectId,
+                quotationId,
+                new Date().toISOString().split('T')[0],
+                `Tự động tạo khi chuyển giai đoạn sản xuất`
+            ]);
+
+            orderId = orderResult.insertId;
+            console.log(`✅ Đã tự động tạo production order ${order_code} (ID: ${orderId}) cho dự án ${projectId}`);
+        } else {
+            orderId = orderRows[0].id;
+        }
 
         // Lấy tất cả sản phẩm của dự án - ưu tiên từ quotation_items
         let productDesignIds = [];
@@ -1126,22 +1191,28 @@ exports.getAvailableMaterials = async (req, res) => {
 
         console.log('Assigned materials found:', assignedMaterials.length);
 
-        // Tạo map để tra cứu nhanh
+        // Tạo map để tra cứu nhanh (normalize tên để so khớp chính xác)
         const assignedMap = {};
         assignedMaterials.forEach(a => {
-            assignedMap[a.item_name] = parseFloat(a.assigned_qty) || 0;
+            const normalizedName = (a.item_name || '').trim().toLowerCase();
+            assignedMap[normalizedName] = (assignedMap[normalizedName] || 0) + (parseFloat(a.assigned_qty) || 0);
         });
+
+        console.log('Assigned map:', assignedMap);
 
         // 3. Tính số lượng còn lại cho mỗi vật tư
         const allMaterials = exportedMaterials.map(m => {
             const exportedQty = parseFloat(m.exported_qty) || 0;
-            const assignedQty = assignedMap[m.item_name] || 0;
+            const normalizedName = (m.item_name || '').trim().toLowerCase();
+            const assignedQty = assignedMap[normalizedName] || 0;
             const remainingQty = Math.max(0, exportedQty - assignedQty);
+
+            console.log(`Material "${m.item_name}": exported=${exportedQty}, assigned=${assignedQty}, remaining=${remainingQty}`);
 
             return {
                 item_type: m.item_type || 'other',
                 item_code: m.item_code || '',
-                item_name: m.item_name,
+                item_name: (m.item_name || '').trim(), // Trim whitespace
                 unit: m.unit || 'cái',
                 exported_qty: exportedQty,      // Tổng đã xuất
                 assigned_qty: assignedQty,       // Đã gán cho sản phẩm

@@ -1723,7 +1723,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            ${createMaterialRows(materials_by_type.accessory || [], 'phụ kiện', projectId, product.id)}
+                                            ${createMaterialRows(materials_by_type.accessories || [], 'phụ kiện', projectId, product.id)}
                                         </tbody>
                                     </table>
                                 </div>
@@ -1794,19 +1794,11 @@
                 `;
 
                 modal.innerHTML = modalContent;
-            }
-
-            /**
-             * Đóng modal chi tiết sản phẩm
-             */
+            }              /*               * Đóng modal chi tiết sản phẩ               */
             function closeProductDetailModal() {
                 const modal = document.getElementById('productDetailModal');
                 if (modal) modal.remove();
-            }
-
-            /**
-             * Đánh dấu hoàn thành từ modal với kiểm tra vật tư
-             */
+            }              /*               * Đánh dấu hoàn thành từ modal với kiểm tra vật t               */
             async function markProductCompleteFromModal(projectId, productId, canComplete) {
                 if (!canComplete) {
                     alert('⚠️ Chưa thể đánh dấu hoàn thành!\n\nVui lòng xuất đủ 100% vật tư cần thiết trước khi hoàn thành sản phẩm.');
@@ -1844,13 +1836,9 @@
                     console.error('Error marking product complete:', error);
                     alert('Lỗi kết nối server');
                 }
-            }
-
-            /**
-             * Hiển thị form thêm vật tư vào sản phẩm (với dropdown từ BOM)
-             */
+            }              /*               * Hiển thị form thêm vật tư vào sản phẩm (với dropdown từ BOM               */
             async function showAddMaterialForm(projectId, productId) {
-                // Fetch danh sách vật tư từ BOM (đã bóc tách)
+                // Fetch danh sách vật tư từ BOM (đã bóc tách) - LUÔN reload để có số lượng còn lại mới nhất
                 let bomMaterials = [];
                 try {
                     const response = await fetch(`${API_BASE}/production-management/projects/${projectId}/available-materials`);
@@ -1863,6 +1851,9 @@
                 }
 
                 console.log('Fetched exported materials:', bomMaterials);
+
+                // Lưu vào global để dùng khi thay đổi loại
+                window._bomMaterials = bomMaterials;
 
                 // Tạo options cho dropdown vật tư (CHỈ từ xuất kho)
                 const createMaterialOptions = (type) => {
@@ -1884,12 +1875,14 @@
                     }
 
                     // Hiện tên vật tư + số lượng còn lại (remaining_qty)
+                    // LƯU Ý: Không dùng || vì 0 là falsy, phải check typeof
                     return filtered.map(m => {
-                        const remaining = m.remaining_qty || m.exported_qty || 0;
+                        const remaining = (typeof m.remaining_qty === 'number') ? m.remaining_qty : (m.exported_qty || 0);
                         const exported = m.exported_qty || 0;
-                        const hint = remaining > 0 ? `Còn lại: ${remaining}` : `(Đã dùng hết)`;
+                        const hint = remaining > 0 ? `Còn lại: ${remaining}` : `⚠️ Đã dùng hết`;
                         const disabled = remaining <= 0 ? 'disabled' : '';
-                        return `<option value="${escapeHtml(m.item_name || '')}" data-code="${escapeHtml(m.item_code || '')}" data-unit="${escapeHtml(m.unit || 'cái')}" data-maxqty="${remaining}" data-exported="${exported}" ${disabled}>${escapeHtml(m.item_name || 'N/A')} - ${hint} ${m.unit || ''}</option>`;
+                        const optClass = remaining <= 0 ? 'text-gray-400' : '';
+                        return `<option value="${escapeHtml(m.item_name || '')}" data-code="${escapeHtml(m.item_code || '')}" data-unit="${escapeHtml(m.unit || 'cái')}" data-maxqty="${remaining}" data-exported="${exported}" ${disabled} class="${optClass}">${escapeHtml(m.item_name || 'N/A')} - ${hint} ${m.unit || ''}</option>`;
                     }).join('');
                 };
 
@@ -1944,23 +1937,33 @@
                                     <button onclick="submitProductMaterial(${projectId}, ${productId})" 
                                         class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold">
                                         Thêm vật tư
-                                    </button>
+                                             
                                 </div>
                             </div>
                         </div>
                     </div>
                 `;
                 document.body.insertAdjacentHTML('beforeend', formHtml);
-
-                // Lưu BOM materials vào global để dùng khi thay đổi loại
-                window._bomMaterials = bomMaterials;
             }
 
             /**
              * Cập nhật dropdown vật tư khi thay đổi loại
+             * Reload lại từ API để có số lượng còn lại chính xác
              */
-            function updateMaterialDropdown(projectId) {
+            async function updateMaterialDropdown(projectId) {
                 const type = document.getElementById('newMaterialType').value;
+
+                // Reload lại danh sách vật tư từ API để có số lượng còn lại mới nhất
+                try {
+                    const response = await fetch(`${API_BASE}/production-management/projects/${projectId}/available-materials`);
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                        window._bomMaterials = result.data.all || [];
+                    }
+                } catch (error) {
+                    console.error('Error reloading available materials:', error);
+                }
+
                 const bomMaterials = window._bomMaterials || [];
 
                 // Filter theo loại vật tư từ project_materials
@@ -1980,7 +1983,8 @@
                     select.innerHTML += '<option value="" disabled>Chưa có vật tư loại này đã xuất kho</option>';
                 } else {
                     filtered.forEach(m => {
-                        const remaining = m.remaining_qty || m.exported_qty || 0;
+                        // LƯU Ý: Không dùng || vì 0 là falsy, phải check typeof
+                        const remaining = (typeof m.remaining_qty === 'number') ? m.remaining_qty : (m.exported_qty || 0);
                         const option = document.createElement('option');
                         option.value = m.item_name || '';
                         option.dataset.code = m.item_code || '';
@@ -1988,11 +1992,12 @@
                         option.dataset.maxqty = remaining;
                         option.dataset.exported = m.exported_qty || 0;
 
-                        const hint = remaining > 0 ? `Còn lại: ${remaining}` : `(Đã dùng hết)`;
+                        const hint = remaining > 0 ? `Còn lại: ${remaining}` : `⚠️ Đã dùng hết`;
                         option.textContent = `${m.item_name || 'N/A'} - ${hint} ${m.unit || ''}`;
 
                         if (remaining <= 0) {
                             option.disabled = true;
+                            option.style.color = '#999';
                         }
                         select.appendChild(option);
                     });
@@ -2003,6 +2008,7 @@
                 document.getElementById('newMaterialUnit').value = '';
                 document.getElementById('maxQtyHint').textContent = '';
                 document.getElementById('newMaterialQty').max = '';
+                document.getElementById('newMaterialQty').value = '';
                 window._currentMaxQty = 0;
             }
 
@@ -2093,8 +2099,18 @@
                         closeAddMaterialForm();
                         // Reload modal để cập nhật danh sách
                         openProductDetail(projectId, productId, '');
+                        // Reload lại dropdown vật tư để cập nhật số lượng còn lại
+                        // (Nếu form thêm vật tư vẫn đang mở, sẽ được reload khi mở lại)
                     } else {
-                        alert('Lỗi: ' + (result.message || 'Không thể thêm vật tư'));
+                        // Kiểm tra nếu là lỗi "đã tồn tại" → đóng form và reload để hiện số lượng đúng
+                        const isAlreadyExistsError = result.message && result.message.includes('đã được thêm');
+                        alert('Lỗi: ' + (result.message || 'Không thể thêm vật tư') +
+                            (isAlreadyExistsError ? '\n\n💡 Tip: Dùng nút Sửa (✏️) để cập nhật số lượng.' : ''));
+
+                        if (isAlreadyExistsError) {
+                            closeAddMaterialForm();
+                            openProductDetail(projectId, productId, '');
+                        }
                     }
                 } catch (error) {
                     console.error('Error adding product material:', error);

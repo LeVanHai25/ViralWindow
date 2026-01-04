@@ -62,25 +62,54 @@ router.get('/projects', async (req, res) => {
 
         const [projects] = await db.query(projectQuery);
 
-        // Lấy sản phẩm cho mỗi dự án
+        // Lấy sản phẩm cho mỗi dự án (từ quotation_items với tách quantity)
         for (let project of projects) {
             try {
-                const productsQuery = `
-                    SELECT 
-                        qi.id,
-                        qi.item_name,
-                        qi.spec,
-                        qi.design_code,
-                        qi.width_mm,
-                        qi.height_mm,
-                        qi.quantity,
-                        pt.name as template_name
-                    FROM quotation_items qi
-                    LEFT JOIN product_templates pt ON qi.template_id = pt.id
-                    WHERE qi.project_id = ?
-                `;
-                const [products] = await db.query(productsQuery, [project.id]);
-                project.products = products || [];
+                // Lấy quotation_id
+                const [quotationRows] = await db.query(`
+                    SELECT id FROM quotations WHERE project_id = ? ORDER BY created_at DESC LIMIT 1
+                `, [project.id]);
+
+                let products = [];
+
+                if (quotationRows.length > 0) {
+                    const [items] = await db.query(`
+                        SELECT 
+                            qi.id,
+                            qi.item_name,
+                            qi.spec,
+                            qi.code,
+                            qi.width,
+                            qi.height,
+                            qi.quantity
+                        FROM quotation_items qi
+                        WHERE qi.quotation_id = ?
+                        ORDER BY qi.id
+                    `, [quotationRows[0].id]);
+
+                    // Tách sản phẩm có quantity > 1
+                    for (const item of items) {
+                        const qty = parseInt(item.quantity) || 1;
+                        const baseCode = item.code || `SP-${item.id}`;
+                        const baseName = item.item_name || item.spec || 'Sản phẩm';
+
+                        for (let i = 1; i <= qty; i++) {
+                            const productCode = qty > 1 ? `${baseCode}_C${String(i).padStart(3, '0')}` : baseCode;
+
+                            products.push({
+                                id: `${item.id}_${i}`,
+                                item_name: baseName,
+                                spec: item.spec,
+                                design_code: productCode,
+                                width_mm: parseFloat(item.width) || 0,
+                                height_mm: parseFloat(item.height) || 0,
+                                quantity: 1
+                            });
+                        }
+                    }
+                }
+
+                project.products = products;
                 project.total_products = products.length;
             } catch (err) {
                 console.log('Lỗi lấy sản phẩm cho dự án', project.id, err.message);
@@ -210,4 +239,70 @@ router.put('/:id/status', async (req, res) => {
     }
 });
 
+// PUT /api/handover/projects/:id/info - Lưu thông tin bàn giao (ngày, người, ghi chú, ảnh)
+router.put('/projects/:id/info', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const {
+            handover_date,
+            handover_person,
+            receiver_name,
+            receiver_phone,
+            handover_notes,
+            photos
+        } = req.body;
+
+        // Thêm cột photos nếu chưa có
+        try {
+            await db.query(`
+                ALTER TABLE projects 
+                ADD COLUMN handover_person VARCHAR(255) NULL,
+                ADD COLUMN receiver_name VARCHAR(255) NULL,
+                ADD COLUMN receiver_phone VARCHAR(50) NULL,
+                ADD COLUMN handover_photos JSON NULL
+            `);
+        } catch (alterErr) {
+            // Columns might already exist
+        }
+
+        const photosJson = photos && Array.isArray(photos) ? JSON.stringify(photos) : null;
+
+        const query = `
+            UPDATE projects 
+            SET 
+                handover_date = ?,
+                handover_person = ?,
+                receiver_name = ?,
+                receiver_phone = ?,
+                handover_notes = ?,
+                handover_photos = ?,
+                updated_at = NOW()
+            WHERE id = ?
+        `;
+
+        await db.query(query, [
+            handover_date || null,
+            handover_person || null,
+            receiver_name || null,
+            receiver_phone || null,
+            handover_notes || null,
+            photosJson,
+            id
+        ]);
+
+        res.json({
+            success: true,
+            message: 'Đã lưu thông tin bàn giao'
+        });
+    } catch (error) {
+        console.error('Lỗi lưu thông tin bàn giao:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi server',
+            error: error.message
+        });
+    }
+});
+
 module.exports = router;
+

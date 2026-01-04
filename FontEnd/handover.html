@@ -108,11 +108,12 @@
     <div class="header-notification-container">
         <button id="headerNotificationButton" class="header-notification-button" onclick="toggleHeaderNotifications()">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
             <span id="headerNotificationBadge" class="header-notification-badge hidden">0</span>
         </button>
-        
+
         <div id="headerNotificationsDropdown" class="header-notifications-dropdown">
             <div class="header-notifications-header">
                 <h3>Thông báo</h3>
@@ -128,10 +129,13 @@
         <!-- Logo -->
         <a href="settings.html" class="block p-6 border-b border-blue-600 hover:bg-blue-700 transition cursor-pointer">
             <div class="flex items-center gap-3">
-                <div class="w-12 h-12 bg-blue-400 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0" id="companyLogoContainer">
+                <div class="w-12 h-12 bg-blue-400 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0"
+                    id="companyLogoContainer">
                     <img id="companyLogo" src="" alt="Logo" class="hidden w-full h-full object-contain">
-                    <svg id="companyLogoIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-white">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <svg id="companyLogoIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" class="w-6 h-6 text-white">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
                 <span class="text-xl font-bold" id="companyName">ViralWindow</span>
@@ -140,26 +144,35 @@
 
         <!-- User Profile -->
         <div class="p-4 border-b border-blue-600 relative">
-            <div class="flex items-center gap-3 cursor-pointer hover:bg-blue-700 rounded-lg p-2" onclick="toggleSidebarUserMenu()">
-                <div class="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center font-semibold overflow-hidden" id="sidebarUserAvatar">
+            <div class="flex items-center gap-3 cursor-pointer hover:bg-blue-700 rounded-lg p-2"
+                onclick="toggleSidebarUserMenu()">
+                <div class="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center font-semibold overflow-hidden"
+                    id="sidebarUserAvatar">
                     <div id="sidebarUserAvatarInitial">U</div>
-                    <img id="sidebarUserAvatarImage" src="" alt="Avatar" class="hidden w-full h-full object-cover rounded-full">
+                    <img id="sidebarUserAvatarImage" src="" alt="Avatar"
+                        class="hidden w-full h-full object-cover rounded-full">
                 </div>
                 <div class="flex-1 min-w-0">
                     <div class="font-medium text-sm" id="sidebarUserName">Lê Văn Hải</div>
                     <div class="text-xs text-blue-200">Quản lý</div>
                 </div>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
             </div>
             <!-- User Menu Dropdown -->
-            <div id="sidebarUserMenuDropdown" class="hidden absolute left-0 right-0 mt-2 bg-white rounded-lg shadow-xl z-[9999] border border-gray-200">
+            <div id="sidebarUserMenuDropdown"
+                class="hidden absolute left-0 right-0 mt-2 bg-white rounded-lg shadow-xl z-[9999] border border-gray-200">
                 <div class="p-2">
-                    <a href="profile.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Hồ sơ</a>
-                    <a href="settings.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Cài đặt</a>
+                    <a href="profile.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Hồ
+                        sơ</a>
+                    <a href="settings.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded">Cài
+                        đặt</a>
                     <hr class="my-2">
-                    <button onclick="handleLogout()" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 rounded">Đăng xuất</button>
+                    <button onclick="handleLogout()"
+                        class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 rounded">Đăng
+                        xuất</button>
                 </div>
             </div>
         </div>
@@ -169,8 +182,10 @@
         <nav class="sidebar-nav">
             <!-- TỔNG QUAN -->
             <a href="index.html" class="nav-item">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                 </svg>
                 <span>TỔNG QUAN</span>
             </a>
@@ -178,25 +193,32 @@
             <!-- KINH DOANH -->
             <div class="nav-item has-submenu">
                 <div class="flex items-center gap-3 flex-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                     <span>KINH DOANH</span>
                 </div>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
             </div>
             <div class="submenu">
                 <a href="sales.html" class="submenu-item">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                     <span>Khách hàng & Dự án</span>
                 </a>
                 <a href="quotation-new.html" class="submenu-item">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                     <span>Báo giá</span>
                 </a>
@@ -205,20 +227,26 @@
             <!-- KỸ THUẬT -->
             <div class="nav-item has-submenu">
                 <div class="flex items-center gap-3 flex-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                     <span>KỸ THUẬT</span>
                 </div>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
             </div>
             <div class="submenu">
                 <a href="design-new.html" class="submenu-item">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                     </svg>
                     <span>Thiết kế & Bóc tách</span>
                 </a>
@@ -227,25 +255,32 @@
             <!-- SẢN XUẤT -->
             <div class="nav-item has-submenu">
                 <div class="flex items-center gap-3 flex-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
                     </svg>
                     <span>SẢN XUẤT</span>
                 </div>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
             </div>
             <div class="submenu">
                 <a href="production.html" class="submenu-item">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                     </svg>
                     <span>Quy trình sản xuất</span>
                 </a>
                 <a href="production-management.html" class="submenu-item">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                     <span>Lệnh sản xuất</span>
                 </a>
@@ -254,25 +289,32 @@
             <!-- KHO & VẬT TƯ -->
             <div class="nav-item has-submenu">
                 <div class="flex items-center gap-3 flex-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                     </svg>
                     <span>KHO & VẬT TƯ</span>
                 </div>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
             </div>
             <div class="submenu">
                 <a href="inventory.html" class="submenu-item">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                     </svg>
                     <span>Kho vật tư</span>
                 </a>
                 <a href="exported-materials.html" class="submenu-item">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                     </svg>
                     <span>Xuất vật tư</span>
                 </a>
@@ -281,26 +323,34 @@
             <!-- THI CÔNG & NGHIỆM THU -->
             <div class="nav-item has-submenu expanded">
                 <div class="flex items-center gap-3 flex-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                     <span>THI CÔNG & NGHIỆM THU</span>
                 </div>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
             </div>
             <div class="submenu expanded">
                 <a href="installation.html" class="submenu-item">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                     <span>Lắp đặt</span>
                 </a>
                 <a href="handover.html" class="submenu-item active">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                     </svg>
                     <span>Bàn giao</span>
                 </a>
@@ -309,19 +359,24 @@
             <!-- TÀI CHÍNH -->
             <div class="nav-item has-submenu">
                 <div class="flex items-center gap-3 flex-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <span>TÀI CHÍNH</span>
                 </div>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
             </div>
             <div class="submenu">
                 <a href="finance-dashboard.html" class="submenu-item">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                     <span>Tài chính</span>
                 </a>
@@ -340,8 +395,10 @@
             <div class="flex items-center gap-4">
                 <button onclick="loadProjects()"
                     class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2 hover:bg-green-700 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
                     Làm mới
                 </button>
@@ -350,202 +407,204 @@
 
         <!-- STATISTICS -->
         <div class="px-6 py-4">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4" id="statistics">
-            <div class="bg-white rounded-xl p-4 shadow-md">
-                <div class="text-sm text-gray-600 mb-1">Tổng dự án</div>
-                <div class="text-2xl font-bold text-gray-800" id="total-projects">0</div>
-            </div>
-            <div class="bg-white rounded-xl p-4 shadow-md">
-                <div class="text-sm text-gray-600 mb-1">Tổng sản phẩm</div>
-                <div class="text-2xl font-bold text-gray-800" id="total-products">0</div>
-            </div>
-            <div class="bg-white rounded-xl p-4 shadow-md">
-                <div class="text-sm text-gray-600 mb-1">Đã bàn giao</div>
-                <div class="text-2xl font-bold text-green-600" id="handovered-projects">0</div>
-            </div>
-            <div class="bg-white rounded-xl p-4 shadow-md">
-                <div class="text-sm text-gray-600 mb-1">Tiến độ trung bình</div>
-                <div class="text-2xl font-bold text-green-600" id="avg-progress">0%</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- PROJECTS LIST -->
-    <div class="px-6 pb-6">
-        <div id="projects-container" class="space-y-6">
-            <div class="text-center py-12">
-                <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
-                <p class="mt-4 text-gray-600">Đang tải dữ liệu...</p>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4" id="statistics">
+                <div class="bg-white rounded-xl p-4 shadow-md">
+                    <div class="text-sm text-gray-600 mb-1">Tổng dự án</div>
+                    <div class="text-2xl font-bold text-gray-800" id="total-projects">0</div>
+                </div>
+                <div class="bg-white rounded-xl p-4 shadow-md">
+                    <div class="text-sm text-gray-600 mb-1">Tổng sản phẩm</div>
+                    <div class="text-2xl font-bold text-gray-800" id="total-products">0</div>
+                </div>
+                <div class="bg-white rounded-xl p-4 shadow-md">
+                    <div class="text-sm text-gray-600 mb-1">Đã bàn giao</div>
+                    <div class="text-2xl font-bold text-green-600" id="handovered-projects">0</div>
+                </div>
+                <div class="bg-white rounded-xl p-4 shadow-md">
+                    <div class="text-sm text-gray-600 mb-1">Tiến độ trung bình</div>
+                    <div class="text-2xl font-bold text-green-600" id="avg-progress">0%</div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- MODAL: Handover Details -->
-    <div id="handoverModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            <div class="sticky top-0 bg-white border-b p-4 flex justify-between items-center">
-                <h3 class="text-xl font-bold text-gray-800">Chi tiết bàn giao</h3>
-                <button onclick="closeHandoverModal()" class="text-gray-500 hover:text-gray-700">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-            <div class="p-6" id="handoverModalContent">
-                <!-- Content sẽ được điền bằng JavaScript -->
+        <!-- PROJECTS LIST -->
+        <div class="px-6 pb-6">
+            <div id="projects-container" class="space-y-6">
+                <div class="text-center py-12">
+                    <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+                    <p class="mt-4 text-gray-600">Đang tải dữ liệu...</p>
+                </div>
             </div>
         </div>
-    </div>
 
-    <script>
-        const API_BASE = 'http://localhost:3001/api';
+        <!-- MODAL: Handover Details -->
+        <div id="handoverModal"
+            class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="sticky top-0 bg-white border-b p-4 flex justify-between items-center">
+                    <h3 class="text-xl font-bold text-gray-800">Chi tiết bàn giao</h3>
+                    <button onclick="closeHandoverModal()" class="text-gray-500 hover:text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="p-6" id="handoverModalContent">
+                    <!-- Content sẽ được điền bằng JavaScript -->
+                </div>
+            </div>
+        </div>
 
-        // Load sidebar user info
-        async function loadSidebarUserInfo() {
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    return;
-                }
+        <script>
+            const API_BASE = 'http://localhost:3001/api';
 
-                const response = await fetch(`${API_BASE}/auth/me`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    const user = result.data;
-                    const userNameEl = document.getElementById('sidebarUserName');
-                    if (userNameEl) {
-                        userNameEl.textContent = user.full_name || 'User';
+            // Load sidebar user info
+            async function loadSidebarUserInfo() {
+                try {
+                    const token = localStorage.getItem('token');
+                    if (!token) {
+                        return;
                     }
 
-                    const avatarInitial = document.getElementById('sidebarUserAvatarInitial');
-                    const avatarImage = document.getElementById('sidebarUserAvatarImage');
+                    const response = await fetch(`${API_BASE}/auth/me`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
 
-                    if (avatarInitial && avatarImage) {
-                        if (user.avatar_url) {
-                            avatarImage.src = user.avatar_url;
-                            avatarImage.classList.remove('hidden');
-                            avatarInitial.classList.add('hidden');
-                        } else {
-                            const initial = (user.full_name || 'U').charAt(0).toUpperCase();
-                            avatarInitial.textContent = initial;
-                            avatarInitial.classList.remove('hidden');
-                            avatarImage.classList.add('hidden');
+                    const result = await response.json();
+
+                    if (result.success) {
+                        const user = result.data;
+                        const userNameEl = document.getElementById('sidebarUserName');
+                        if (userNameEl) {
+                            userNameEl.textContent = user.full_name || 'User';
+                        }
+
+                        const avatarInitial = document.getElementById('sidebarUserAvatarInitial');
+                        const avatarImage = document.getElementById('sidebarUserAvatarImage');
+
+                        if (avatarInitial && avatarImage) {
+                            if (user.avatar_url) {
+                                avatarImage.src = user.avatar_url;
+                                avatarImage.classList.remove('hidden');
+                                avatarInitial.classList.add('hidden');
+                            } else {
+                                const initial = (user.full_name || 'U').charAt(0).toUpperCase();
+                                avatarInitial.textContent = initial;
+                                avatarInitial.classList.remove('hidden');
+                                avatarImage.classList.add('hidden');
+                            }
                         }
                     }
+                } catch (error) {
+                    console.error('Lỗi load sidebar user info:', error);
                 }
-            } catch (error) {
-                console.error('Lỗi load sidebar user info:', error);
             }
-        }
 
-        // Toggle sidebar user menu
-        function toggleSidebarUserMenu() {
-            const dropdown = document.getElementById('sidebarUserMenuDropdown');
-            if (dropdown) {
-                dropdown.classList.toggle('hidden');
+            // Toggle sidebar user menu
+            function toggleSidebarUserMenu() {
+                const dropdown = document.getElementById('sidebarUserMenuDropdown');
+                if (dropdown) {
+                    dropdown.classList.toggle('hidden');
+                }
             }
-        }
 
-        // Handle logout (shared function)
-        function handleLogout() {
-            if (confirm('Bạn có chắc muốn đăng xuất?')) {
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                window.location.href = 'login.html';
+            // Handle logout (shared function)
+            function handleLogout() {
+                if (confirm('Bạn có chắc muốn đăng xuất?')) {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    window.location.href = 'login.html';
+                }
             }
-        }
 
-        // Close dropdowns when clicking outside
-        document.addEventListener('click', function (event) {
-            const sidebarUserMenuDropdown = document.getElementById('sidebarUserMenuDropdown');
-            if (sidebarUserMenuDropdown && !sidebarUserMenuDropdown.contains(event.target) && !event.target.closest('[onclick="toggleSidebarUserMenu()"]')) {
-                sidebarUserMenuDropdown.classList.add('hidden');
-            }
-        });
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function (event) {
+                const sidebarUserMenuDropdown = document.getElementById('sidebarUserMenuDropdown');
+                if (sidebarUserMenuDropdown && !sidebarUserMenuDropdown.contains(event.target) && !event.target.closest('[onclick="toggleSidebarUserMenu()"]')) {
+                    sidebarUserMenuDropdown.classList.add('hidden');
+                }
+            });
 
-        // Load company logo and name
-        async function loadCompanyLogo() {
-            try {
-                const response = await fetch(`${API_BASE}/company-settings`);
-                const result = await response.json();
+            // Load company logo and name
+            async function loadCompanyLogo() {
+                try {
+                    const response = await fetch(`${API_BASE}/company-settings`);
+                    const result = await response.json();
 
-                if (result.success && result.data) {
-                    // Load logo
-                    if (result.data.logo_path) {
-                        const logoImg = document.getElementById('companyLogo');
-                        const logoIcon = document.getElementById('companyLogoIcon');
-                        if (logoImg && logoIcon) {
-                            logoImg.src = result.data.logo_path;
-                            logoImg.classList.remove('hidden');
-                            logoIcon.classList.add('hidden');
+                    if (result.success && result.data) {
+                        // Load logo
+                        if (result.data.logo_path) {
+                            const logoImg = document.getElementById('companyLogo');
+                            const logoIcon = document.getElementById('companyLogoIcon');
+                            if (logoImg && logoIcon) {
+                                logoImg.src = result.data.logo_path;
+                                logoImg.classList.remove('hidden');
+                                logoIcon.classList.add('hidden');
+                            }
+                        }
+
+                        // Load company name
+                        const companyNameEl = document.getElementById('companyName');
+                        if (companyNameEl && result.data.company_name) {
+                            companyNameEl.textContent = result.data.company_name;
                         }
                     }
-                    
-                    // Load company name
-                    const companyNameEl = document.getElementById('companyName');
-                    if (companyNameEl && result.data.company_name) {
-                        companyNameEl.textContent = result.data.company_name;
-                    }
+                } catch (error) {
+                    console.error('Lỗi load logo:', error);
                 }
-            } catch (error) {
-                console.error('Lỗi load logo:', error);
             }
-        }
 
-        // Escape HTML để tránh XSS
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
+            // Escape HTML để tránh XSS
+            function escapeHtml(text) {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
 
-        // Format date
-        function formatDate(dateString) {
-            if (!dateString) return 'Chưa có';
-            const date = new Date(dateString);
-            return date.toLocaleDateString('vi-VN');
-        }
+            // Format date
+            function formatDate(dateString) {
+                if (!dateString) return 'Chưa có';
+                const date = new Date(dateString);
+                return date.toLocaleDateString('vi-VN');
+            }
 
-        // Load projects
-        async function loadProjects() {
-            try {
-                const response = await fetch(`${API_BASE}/handover/projects`);
-                const result = await response.json();
+            // Load projects
+            async function loadProjects() {
+                try {
+                    const response = await fetch(`${API_BASE}/handover/projects`);
+                    const result = await response.json();
 
-                if (result.success) {
-                    displayProjects(result.data);
-                    updateStatistics(result.data);
-                } else {
-                    console.error('Error loading projects:', result.message);
-                    document.getElementById('projects-container').innerHTML = `
+                    if (result.success) {
+                        displayProjects(result.data);
+                        updateStatistics(result.data);
+                    } else {
+                        console.error('Error loading projects:', result.message);
+                        document.getElementById('projects-container').innerHTML = `
                         <div class="text-center py-12">
                             <p class="text-red-600">Lỗi: ${escapeHtml(result.message)}</p>
                         </div>
                     `;
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                document.getElementById('projects-container').innerHTML = `
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    document.getElementById('projects-container').innerHTML = `
                     <div class="text-center py-12">
                         <p class="text-red-600">Lỗi kết nối server: ${error.message}</p>
                     </div>
                 `;
+                }
             }
-        }
 
-        // Display projects
-        function displayProjects(projects) {
-            const container = document.getElementById('projects-container');
+            // Display projects
+            function displayProjects(projects) {
+                const container = document.getElementById('projects-container');
 
-            if (projects.length === 0) {
-                container.innerHTML = `
+                if (projects.length === 0) {
+                    container.innerHTML = `
                     <div class="text-center py-12 bg-white rounded-xl shadow-md">
                         <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -553,27 +612,27 @@
                         <p class="mt-4 text-gray-600 text-lg">Chưa có dự án nào ở giai đoạn bàn giao</p>
                     </div>
                 `;
-                return;
+                    return;
+                }
+
+                container.innerHTML = projects.map(project => createProjectCard(project)).join('');
             }
 
-            container.innerHTML = projects.map(project => createProjectCard(project)).join('');
-        }
+            // Create project card
+            function createProjectCard(project) {
+                const isHandovered = project.handover_status === 'completed';
+                const handoverDate = project.handover_date ? formatDate(project.handover_date) : 'Chưa bàn giao';
 
-        // Create project card
-        function createProjectCard(project) {
-            const isHandovered = project.handover_status === 'completed';
-            const handoverDate = project.handover_date ? formatDate(project.handover_date) : 'Chưa bàn giao';
-
-            return `
+                return `
                 <div class="project-card bg-white rounded-xl p-6 shadow-lg fade-in">
                     <div class="flex justify-between items-start mb-4">
                         <div class="flex-1">
                             <div class="flex items-center gap-3 mb-2">
                                 <h3 class="text-xl font-bold text-gray-900">${escapeHtml(project.project_name || 'N/A')}</h3>
-                                ${isHandovered ? 
-                                    '<span class="status-badge bg-green-100 text-green-800">Đã bàn giao</span>' : 
-                                    '<span class="status-badge bg-yellow-100 text-yellow-800">Chờ bàn giao</span>'
-                                }
+                                ${isHandovered ?
+                        '<span class="status-badge bg-green-100 text-green-800">Đã bàn giao</span>' :
+                        '<span class="status-badge bg-yellow-100 text-yellow-800">Chờ bàn giao</span>'
+                    }
                             </div>
                             <p class="text-sm text-gray-600 mb-1">
                                 <span class="font-semibold">Mã dự án:</span> ${escapeHtml(project.project_code || 'N/A')}
@@ -637,14 +696,14 @@
                     </div>
                 </div>
             `;
-        }
+            }
 
-        // Create product card
-        function createProductCard(product, projectId) {
-            const productName = product.template_name || product.spec || product.item_name || 'Sản phẩm';
-            const productCode = product.design_code || product.code || 'N/A';
+            // Create product card
+            function createProductCard(product, projectId) {
+                const productName = product.template_name || product.spec || product.item_name || 'Sản phẩm';
+                const productCode = product.design_code || product.code || 'N/A';
 
-            return `
+                return `
                 <div class="product-card bg-white rounded-lg p-4 border">
                     <div class="mb-2">
                         <h4 class="font-semibold text-gray-900 text-sm mb-1">
@@ -656,35 +715,35 @@
                     </div>
                 </div>
             `;
-        }
+            }
 
-        // Update statistics
-        function updateStatistics(projects) {
-            const totalProjects = projects.length;
-            const totalProducts = projects.reduce((sum, p) => sum + (p.total_products || 0), 0);
-            const handoveredProjects = projects.filter(p => p.handover_status === 'completed').length;
-            const avgProgress = totalProjects > 0
-                ? Math.round(projects.reduce((sum, p) => sum + (p.progress_percent || 0), 0) / totalProjects)
-                : 0;
+            // Update statistics
+            function updateStatistics(projects) {
+                const totalProjects = projects.length;
+                const totalProducts = projects.reduce((sum, p) => sum + (p.total_products || 0), 0);
+                const handoveredProjects = projects.filter(p => p.handover_status === 'completed').length;
+                const avgProgress = totalProjects > 0
+                    ? Math.round(projects.reduce((sum, p) => sum + (p.progress_percent || 0), 0) / totalProjects)
+                    : 0;
 
-            document.getElementById('total-projects').textContent = totalProjects;
-            document.getElementById('total-products').textContent = totalProducts;
-            document.getElementById('handovered-projects').textContent = handoveredProjects;
-            document.getElementById('avg-progress').textContent = avgProgress + '%';
-        }
+                document.getElementById('total-projects').textContent = totalProjects;
+                document.getElementById('total-products').textContent = totalProducts;
+                document.getElementById('handovered-projects').textContent = handoveredProjects;
+                document.getElementById('avg-progress').textContent = avgProgress + '%';
+            }
 
-        // Show handover details modal
-        async function showHandoverDetails(projectId) {
-            try {
-                const response = await fetch(`${API_BASE}/handover/projects`);
-                const result = await response.json();
+            // Show handover details modal
+            async function showHandoverDetails(projectId) {
+                try {
+                    const response = await fetch(`${API_BASE}/handover/projects`);
+                    const result = await response.json();
 
-                if (result.success) {
-                    const project = result.data.find(p => p.id === projectId);
-                    if (project) {
-                        const handoverInfo = project.handover_info || {};
-                        
-                        document.getElementById('handoverModalContent').innerHTML = `
+                    if (result.success) {
+                        const project = result.data.find(p => p.id === projectId);
+                        if (project) {
+                            const handoverInfo = project.handover_info || {};
+
+                            document.getElementById('handoverModalContent').innerHTML = `
                             <div class="space-y-4">
                                 <div>
                                     <h4 class="font-bold text-lg text-gray-800 mb-2">${escapeHtml(project.project_name || 'N/A')}</h4>
@@ -726,10 +785,10 @@
                                     <div class="bg-gray-50 rounded-lg p-4 max-h-60 overflow-y-auto">
                                         <ul class="space-y-2">
                                             ${project.products.map((p, idx) => {
-                                                const pName = p.template_name || p.spec || p.item_name || 'Sản phẩm';
-                                                const pCode = p.design_code || p.code || 'N/A';
-                                                return `<li class="text-sm text-gray-700">${idx + 1}. ${escapeHtml(pCode)} - ${escapeHtml(pName)} (${p.width_mm || 'N/A'} x ${p.height_mm || 'N/A'} mm)</li>`;
-                                            }).join('')}
+                                const pName = p.template_name || p.spec || p.item_name || 'Sản phẩm';
+                                const pCode = p.design_code || p.code || 'N/A';
+                                return `<li class="text-sm text-gray-700">${idx + 1}. ${escapeHtml(pCode)} - ${escapeHtml(pName)} (${p.width_mm || 'N/A'} x ${p.height_mm || 'N/A'} mm)</li>`;
+                            }).join('')}
                                         </ul>
                                     </div>
                                 </div>
@@ -746,99 +805,103 @@
                                 </div>
                             </div>
                         `;
-                            
-                        document.getElementById('handoverModal').classList.remove('hidden');
+
+                            document.getElementById('handoverModal').classList.remove('hidden');
+                        }
                     }
+                } catch (error) {
+                    console.error('Error loading handover details:', error);
+                    alert('Lỗi khi tải chi tiết bàn giao: ' + error.message);
                 }
-            } catch (error) {
-                console.error('Error loading handover details:', error);
-                alert('Lỗi khi tải chi tiết bàn giao: ' + error.message);
-            }
-        }
-
-        // Close handover modal
-        function closeHandoverModal() {
-            document.getElementById('handoverModal').classList.add('hidden');
-        }
-
-        // Save handover info
-        async function saveHandoverInfo(projectId) {
-            const handoverDate = document.getElementById('handoverDate').value;
-            const handoverBy = document.getElementById('handoverBy').value;
-            const receivedBy = document.getElementById('receivedBy').value;
-            const receiverPhone = document.getElementById('receiverPhone').value;
-            const notes = document.getElementById('handoverNotes').value;
-
-            try {
-                const response = await fetch(`${API_BASE}/handover/projects/${projectId}/info`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        handover_date: handoverDate,
-                        handover_by: handoverBy,
-                        received_by: receivedBy,
-                        receiver_phone: receiverPhone,
-                        notes: notes
-                    })
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    alert('Đã lưu thông tin bàn giao!');
-                    closeHandoverModal();
-                    loadProjects();
-                } else {
-                    alert('Lỗi: ' + result.message);
-                }
-            } catch (error) {
-                console.error('Error saving handover info:', error);
-                alert('Lỗi khi lưu thông tin: ' + error.message);
-            }
-        }
-
-        // Complete handover
-        async function completeHandover(projectId) {
-            if (!confirm('Bạn có chắc chắn muốn xác nhận bàn giao dự án này? Dự án sẽ được đánh dấu là hoàn thành.')) {
-                return;
             }
 
-            try {
-                const response = await fetch(`${API_BASE}/handover/projects/${projectId}/complete`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
+            // Close handover modal
+            function closeHandoverModal() {
+                document.getElementById('handoverModal').classList.add('hidden');
+            }
+
+            // Save handover info
+            async function saveHandoverInfo(projectId) {
+                const handoverDate = document.getElementById('handoverDate').value;
+                const handoverPerson = document.getElementById('handoverBy').value;
+                const receiverName = document.getElementById('receivedBy').value;
+                const receiverPhone = document.getElementById('receiverPhone').value;
+                const notes = document.getElementById('handoverNotes').value;
+
+                // Collect photos
+                const allPhotos = [...(window.existingHandoverPhotos || []), ...(window.pendingHandoverPhotos || [])];
+
+                try {
+                    const response = await fetch(`${API_BASE}/handover/projects/${projectId}/info`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            handover_date: handoverDate,
+                            handover_person: handoverPerson,
+                            receiver_name: receiverName,
+                            receiver_phone: receiverPhone,
+                            handover_notes: notes,
+                            photos: allPhotos
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        alert('Đã lưu thông tin bàn giao!');
+                        closeHandoverModal();
+                        loadProjects();
+                    } else {
+                        alert('Lỗi: ' + result.message);
                     }
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    alert('Đã xác nhận bàn giao dự án!');
-                    loadProjects();
-                } else {
-                    alert('Lỗi: ' + result.message);
+                } catch (error) {
+                    console.error('Error saving handover info:', error);
+                    alert('Lỗi khi lưu thông tin: ' + error.message);
                 }
-            } catch (error) {
-                console.error('Error completing handover:', error);
-                alert('Lỗi khi xác nhận bàn giao: ' + error.message);
             }
-        }
 
-        // Print handover document
-        function printHandoverDocument(projectId) {
-            window.open(`${API_BASE}/handover/projects/${projectId}/print`, '_blank');
-        }
+            // Complete handover
+            async function completeHandover(projectId) {
+                if (!confirm('Bạn có chắc chắn muốn xác nhận bàn giao dự án này? Dự án sẽ được đánh dấu là hoàn thành.')) {
+                    return;
+                }
 
-        // Load projects on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            loadCompanyLogo();
-            loadSidebarUserInfo();
-            loadProjects();
-        });
-    </script>
+                try {
+                    const response = await fetch(`${API_BASE}/handover/projects/${projectId}/complete`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        alert('Đã xác nhận bàn giao dự án!');
+                        loadProjects();
+                    } else {
+                        alert('Lỗi: ' + result.message);
+                    }
+                } catch (error) {
+                    console.error('Error completing handover:', error);
+                    alert('Lỗi khi xác nhận bàn giao: ' + error.message);
+                }
+            }
+
+            // Print handover document
+            function printHandoverDocument(projectId) {
+                window.open(`${API_BASE}/handover/projects/${projectId}/print`, '_blank');
+            }
+
+            // Load projects on page load
+            document.addEventListener('DOMContentLoaded', () => {
+                loadCompanyLogo();
+                loadSidebarUserInfo();
+                loadProjects();
+            });
+        </script>
     </div> <!-- End main-content -->
     <script src="js/sidebar-enterprise.js"></script>
     <script src="js/notification-system.js"></script>
@@ -846,4 +909,3 @@
 </body>
 
 </html>
-
