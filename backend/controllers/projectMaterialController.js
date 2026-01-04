@@ -714,8 +714,27 @@ exports.getByProject = async (req, res) => {
         // Gộp lại: vật tư từ BOM chưa xuất/chưa đủ + vật tư đã xuất nhưng chưa đủ
         const allInsufficientMaterials = [...filteredInsufficientFromBOM, ...insufficientFromPartiallyExported];
 
-        // Tính tổng chi phí cho vật tư đã xuất đủ
-        const totalCost = fullyExportedMaterials.reduce((sum, item) => sum + parseFloat(item.total_cost || 0), 0);
+        // Tính tổng chi phí cho TẤT CẢ vật tư đã xuất (không chỉ fully exported)
+        const totalCost = exportedMaterials.reduce((sum, item) => sum + parseFloat(item.total_cost || 0), 0);
+
+        // CẬP NHẬT GIÁ VÀO DATABASE để đồng bộ với API danh sách
+        // Chỉ cập nhật nếu có sự thay đổi về giá
+        try {
+            for (const mat of exportedMaterials) {
+                if (mat.id && (mat.unit_price > 0 || mat.total_cost > 0)) {
+                    await db.query(
+                        `UPDATE project_materials 
+                         SET unit_price = ?, total_cost = ?, updated_at = NOW() 
+                         WHERE id = ?`,
+                        [mat.unit_price || 0, mat.total_cost || 0, mat.id]
+                    );
+                }
+            }
+            console.log(`💾 Đã cập nhật giá cho ${exportedMaterials.length} vật tư vào database`);
+        } catch (updateErr) {
+            console.error('⚠️ Lỗi khi cập nhật giá vào database:', updateErr.message);
+            // Không throw error, vẫn tiếp tục trả về response
+        }
 
         // Debug log để kiểm tra
         console.log(`📊 Project ${projectId} materials summary:`);
@@ -723,6 +742,7 @@ exports.getByProject = async (req, res) => {
         console.log(`   Partially exported materials: ${partiallyExportedMaterials.length}`);
         console.log(`   Insufficient materials (from BOM): ${filteredInsufficientFromBOM.length}`);
         console.log(`   Total insufficient materials: ${allInsufficientMaterials.length}`);
+        console.log(`   Total cost (all exported): ${totalCost}`);
 
         // Đảm bảo exported và insufficient luôn là arrays
         const response = {
