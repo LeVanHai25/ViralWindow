@@ -8709,6 +8709,15 @@
                         console.log(`🔍 Nhôm item: code="${item.code}", name="${item.name}", shortage=${item.shortage}, status=${item.status}`);
                         // Thêm cả vật tư không có trong kho (not_found) và vật tư thiếu (shortage, partial)
                         if (item.shortage > 0 || item.status === 'not_found') {
+                            // Tìm thông tin chi tiết từ bocTachData
+                            let bocTachItem = null;
+                            if (bocTachData && bocTachData.nhom) {
+                                bocTachItem = bocTachData.nhom.find(b => 
+                                    (b.code || b.material_code || b.ma_vat_tu) === item.code ||
+                                    (b.name || b.material_name || b.ten_vat_tu) === item.name
+                                );
+                            }
+
                             materialRequestItems.nhom.push({
                                 code: item.code,
                                 name: item.name,
@@ -8719,9 +8728,13 @@
                                 type: 'nhom',
                                 category: 'Nhôm',
                                 requestQty: item.shortage || item.required, // Nếu not_found, requestQty = required
-                                notes: ''
+                                notes: '',
+                                // Thêm thông tin chi tiết từ bocTachData
+                                density: bocTachItem ? (bocTachItem.density || bocTachItem.ty_trong || 0) : 0,
+                                length: bocTachItem ? (bocTachItem.length || bocTachItem.length_m || 6) : 6,
+                                weight: bocTachItem ? (bocTachItem.weight || bocTachItem.khoi_luong || 0) : 0
                             });
-                            console.log(`✅ Added Nhôm: ${item.name}, shortage=${item.shortage || item.required}`);
+                            console.log(`✅ Added Nhôm: ${item.name}, shortage=${item.shortage || item.required}, density=${bocTachItem?.density || 0}, weight=${bocTachItem?.weight || 0}`);
                         }
                     });
                 }
@@ -8732,19 +8745,43 @@
                         console.log(`🔍 Kính item: code="${item.code}", name="${item.name}", shortage=${item.shortage}, status=${item.status}`);
                         // Thêm cả vật tư không có trong kho (not_found) và vật tư thiếu (shortage, partial)
                         if (item.shortage > 0 || item.status === 'not_found') {
+                            // Tìm thông tin chi tiết từ bocTachData
+                            let bocTachItem = null;
+                            if (bocTachData && bocTachData.kinh) {
+                                bocTachItem = bocTachData.kinh.find(b => 
+                                    (b.code || b.glass_code || b.ma_kinh) === item.code ||
+                                    (b.type || b.glass_type || b.loai_kinh) === item.name
+                                );
+                            }
+
+                            // Ưu tiên width_mm/height_mm vì đó là format trong bocTachData
+                            const width = bocTachItem ? (bocTachItem.width_mm || bocTachItem.width || bocTachItem.chieu_rong || 0) : 0;
+                            const height = bocTachItem ? (bocTachItem.height_mm || bocTachItem.height || bocTachItem.chieu_cao || 0) : 0;
+                            const area = bocTachItem ? (bocTachItem.area_m2 || bocTachItem.area || bocTachItem.dien_tich || 0) : 0;
+                            const panels = bocTachItem ? (bocTachItem.quantity || bocTachItem.panels || bocTachItem.so_tam || bocTachItem.qty || 0) : (item.shortage || item.required);
+
                             materialRequestItems.kinh.push({
                                 code: item.code,
                                 name: item.name,
-                                unit: item.unit || 'm²',
+                                unit: item.unit || 'tấm',
                                 shortage: item.shortage || item.required, // Nếu not_found, shortage = required
                                 required: item.required,
                                 available: item.available || 0,
                                 type: 'kinh',
                                 category: 'Kính',
                                 requestQty: item.shortage || item.required, // Nếu not_found, requestQty = required
-                                notes: ''
+                                notes: '',
+                                // Thêm thông tin chi tiết từ bocTachData - ưu tiên width_mm/height_mm
+                                width: width,
+                                width_mm: width, // Giữ cả hai để tương thích
+                                height: height,
+                                height_mm: height, // Giữ cả hai để tương thích
+                                area: area,
+                                area_m2: area, // Giữ cả hai để tương thích
+                                panels: panels,
+                                quantity: panels // Giữ cả hai để tương thích
                             });
-                            console.log(`✅ Added Kính: ${item.name}, shortage=${item.shortage || item.required}`);
+                            console.log(`✅ Added Kính: ${item.name}, shortage=${item.shortage || item.required}, width=${width}, height=${height}, area=${area}, panels=${panels}, bocTachItem:`, bocTachItem);
                         }
                     });
                 }
@@ -9086,7 +9123,16 @@
                             category: item.category,
                             required: item.required,
                             available: item.available,
-                            shortage: item.shortage
+                            shortage: item.shortage,
+                            // Thêm thông tin chi tiết cho nhôm
+                            density: item.density || 0,
+                            length: item.length || 6,
+                            weight: item.weight || 0,
+                            // Thêm thông tin chi tiết cho kính
+                            width: item.width || 0,
+                            height: item.height || 0,
+                            area: item.area || 0,
+                            panels: item.panels || item.quantity || item.requestQty || item.shortage || 0
                         }))
                     };
 

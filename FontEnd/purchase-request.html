@@ -119,6 +119,11 @@
                     <input type="date" id="createdDate"
                         class="form-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
                 </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Ngày cần vật tư về</label>
+                    <input type="date" id="requiredDate"
+                        class="form-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                </div>
             </div>
         </div>
 
@@ -388,15 +393,127 @@
                     populateProjectInfo(projectData);
                 }
 
-                // Load boc tach data (shortage materials)
-                const bocTachStr = sessionStorage.getItem('purchaseRequest_bocTach');
-                if (bocTachStr) {
-                    bocTachData = JSON.parse(bocTachStr);
-                    populateBocTachData(bocTachData);
+                // Load material request data from design-new.html (saved by submitMaterialRequest)
+                const nhomStr = sessionStorage.getItem('purchaseRequest_nhom');
+                const kinhStr = sessionStorage.getItem('purchaseRequest_kinh');
+                const phukienStr = sessionStorage.getItem('purchaseRequest_phukien');
+
+                if (nhomStr) {
+                    const nhomData = JSON.parse(nhomStr);
+                    if (nhomData.required_date) {
+                        document.getElementById('requiredDate').value = nhomData.required_date;
+                    }
+                    if (nhomData.request_date) {
+                        document.getElementById('createdDate').value = nhomData.request_date;
+                    }
+                    if (nhomData.order_code) {
+                        document.getElementById('orderCode').value = nhomData.order_code;
+                    }
+                    if (nhomData.items && nhomData.items.length > 0) {
+                        populateMaterialRequestData('nhom', nhomData.items);
+                    }
+                }
+
+                if (kinhStr) {
+                    const kinhData = JSON.parse(kinhStr);
+                    if (kinhData.items && kinhData.items.length > 0) {
+                        populateMaterialRequestData('kinh', kinhData.items);
+                    }
+                }
+
+                if (phukienStr) {
+                    const phukienData = JSON.parse(phukienStr);
+                    if (phukienData.items && phukienData.items.length > 0) {
+                        populateMaterialRequestData('phukien', phukienData.items);
+                    }
+                }
+
+                // Fallback: Load boc tach data (shortage materials) - old format
+                if (!nhomStr && !kinhStr && !phukienStr) {
+                    const bocTachStr = sessionStorage.getItem('purchaseRequest_bocTach');
+                    if (bocTachStr) {
+                        bocTachData = JSON.parse(bocTachStr);
+                        populateBocTachData(bocTachData);
+                    }
                 }
             } catch (e) {
                 console.error('Error loading data from session:', e);
             }
+        }
+
+        // Populate material request data from design-new.html format
+        function populateMaterialRequestData(category, items) {
+            if (!items || items.length === 0) return;
+
+            items.forEach(item => {
+                if (category === 'nhom') {
+                    addRow('nhom', {
+                        name: item.name || '',
+                        code: item.code || '',
+                        density: item.density || 0,
+                        length: item.length || 6,
+                        unit: item.unit || 'cây',
+                        quantity: item.quantity || item.requestQty || item.shortage || 0,
+                        weight: item.weight || 0,
+                        note: item.notes || ''
+                    });
+                } else if (category === 'vattu') {
+                    addRow('vattu', {
+                        code: item.code || '',
+                        name: item.name || '',
+                        unit: item.unit || 'cái',
+                        quantity: item.quantity || item.requestQty || item.shortage || 0
+                    });
+                } else if (category === 'phukien') {
+                    addRow('phukien', {
+                        code: item.code || '',
+                        name: item.name || '',
+                        unit: item.unit || 'chiếc',
+                        quantity: item.quantity || item.requestQty || item.shortage || 0
+                    });
+                } else if (category === 'kinh') {
+                    // Ưu tiên width_mm/height_mm vì đó là format trong bocTachData
+                    const width = item.width_mm || item.width || 0;
+                    const height = item.height_mm || item.height || 0;
+                    const area = item.area_m2 || item.area || 0;
+                    const panels = item.quantity || item.panels || item.requestQty || item.shortage || 0;
+                    
+                    addRow('kinh', {
+                        code: item.code || '',
+                        type: item.name || item.type || '',
+                        width: width,
+                        height: height,
+                        unit: 'tấm',
+                        panels: panels,
+                        area: area
+                    });
+                }
+            });
+
+            // Recalculate totals and weights/areas - delay để đảm bảo DOM đã render xong
+            setTimeout(() => {
+                if (category === 'nhom') {
+                    // Tính lại weight cho từng dòng nhôm
+                    tableData.nhom.forEach((item) => {
+                        if (item.stt) {
+                            calculateNhomWeight(item.stt);
+                        }
+                    });
+                    calculateNhomTotals();
+                }
+                if (category === 'vattu') {
+                    calculateVattuTotals();
+                }
+                if (category === 'kinh') {
+                    // Tính lại area cho từng dòng kính
+                    tableData.kinh.forEach((item) => {
+                        if (item.stt) {
+                            calculateKinhArea(item.stt);
+                        }
+                    });
+                    calculateKinhTotals();
+                }
+            }, 100);
         }
 
         function populateProjectInfo(project) {
@@ -405,6 +522,8 @@
             document.getElementById('projectName').value = project.name || project.project_name || '';
             document.getElementById('orderCode').value = project.order_code || '';
             document.getElementById('deliveryAddress').value = project.location || project.address || '';
+            document.getElementById('productType').value = project.product_type || 'Viralwindow';
+            document.getElementById('color').value = project.color || '';
         }
 
         function populateBocTachData(data) {
@@ -424,6 +543,15 @@
                         note: item.note || item.ghi_chu || ''
                     });
                 });
+                // Tính lại weight sau khi load xong
+                setTimeout(() => {
+                    tableData.nhom.forEach((item) => {
+                        if (item.stt) {
+                            calculateNhomWeight(item.stt);
+                        }
+                    });
+                    calculateNhomTotals();
+                }, 100);
             }
 
             // Populate Vattu (Consumables)
@@ -436,21 +564,31 @@
                         quantity: item.quantity || item.so_luong || 0
                     });
                 });
+                setTimeout(() => calculateVattuTotals(), 100);
             }
 
             // Populate Kinh (Glass)
             if (data.kinh && data.kinh.length > 0) {
                 data.kinh.forEach(item => {
                     addRow('kinh', {
-                        code: item.glass_code || item.ma_kinh,
-                        type: item.glass_type || item.loai_kinh,
-                        width: item.width || item.chieu_rong || 0,
-                        height: item.height || item.chieu_cao || 0,
+                        code: item.glass_code || item.ma_kinh || item.code,
+                        type: item.glass_type || item.loai_kinh || item.type || item.name,
+                        width: item.width || item.width_mm || item.chieu_rong || 0,
+                        height: item.height || item.height_mm || item.chieu_cao || 0,
                         unit: 'tấm',
-                        panels: item.panels || item.so_tam || 0,
-                        area: item.area || item.dien_tich || 0
+                        panels: item.panels || item.so_tam || item.qty || item.quantity || 0,
+                        area: item.area || item.area_m2 || item.dien_tich || 0
                     });
                 });
+                // Tính lại area sau khi load xong
+                setTimeout(() => {
+                    tableData.kinh.forEach((item) => {
+                        if (item.stt) {
+                            calculateKinhArea(item.stt);
+                        }
+                    });
+                    calculateKinhTotals();
+                }, 100);
             }
         }
 
@@ -820,6 +958,14 @@
             data.push([`Chủng loại phụ kiện : ${productType}`]);
             data.push([`Màu sắc : ${color}`]);
             data.push([`Địa chỉ giao hàng : ${deliveryAddress}`]);
+            const requiredDate = document.getElementById('requiredDate').value;
+            if (requiredDate) {
+                const reqDateObj = new Date(requiredDate);
+                const reqDay = reqDateObj.getDate();
+                const reqMonth = reqDateObj.getMonth() + 1;
+                const reqYear = reqDateObj.getFullYear();
+                data.push([`Ngày cần vật tư về : ${reqDay}/${reqMonth}/${reqYear}`]);
+            }
             data.push([]);
 
             // Determine header row index and column count
@@ -986,6 +1132,7 @@
                 color: document.getElementById('color').value,
                 deliveryAddress: document.getElementById('deliveryAddress').value,
                 createdDate: document.getElementById('createdDate').value,
+                requiredDate: document.getElementById('requiredDate').value,
                 nhom: tableData.nhom,
                 vattu: tableData.vattu,
                 phukien: tableData.phukien,

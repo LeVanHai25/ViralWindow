@@ -1,0 +1,7 @@
+node_modules/
+backend/uploads/
+.env
+*.log
+.DS_Store
+Thumbs.db
+temp_code.txt
