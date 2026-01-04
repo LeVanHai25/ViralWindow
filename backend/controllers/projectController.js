@@ -82,6 +82,315 @@ exports.getAllProjects = async (req, res) => {
     }
 };
 
+// GET detail (full project info with products, materials, financial, timeline)
+exports.getDetail = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // 1. Get project info
+        const [projectRows] = await db.query(
+            `SELECT 
+                p.*,
+                c.full_name AS customer_name,
+                c.phone AS customer_phone,
+                c.email AS customer_email,
+                c.address AS customer_address
+            FROM projects p
+            LEFT JOIN customers c ON p.customer_id = c.id
+            WHERE p.id = ?`,
+            [id]
+        );
+
+        if (projectRows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Không tìm thấy dự án"
+            });
+        }
+
+        const project = projectRows[0];
+
+        // 2. Get quotation info
+        const [quotationRows] = await db.query(
+            `SELECT id, quotation_code, total_amount, created_at, status
+             FROM quotations 
+             WHERE project_id = ? 
+             ORDER BY created_at DESC 
+             LIMIT 1`,
+            [id]
+        );
+        const quotation = quotationRows.length > 0 ? quotationRows[0] : null;
+
+        // 3. Get products (from quotation_items if available, otherwise from door_designs)
+        let products = [];
+        if (quotation) {
+            const [quotationItems] = await db.query(
+                `SELECT 
+                    qi.id,
+                    qi.code,
+                    qi.item_name as name,
+                    qi.width,
+                    qi.height,
+                    qi.quantity,
+                    qi.unit_price,
+                    qi.total_price
+                FROM quotation_items qi
+                WHERE qi.quotation_id = ?
+                ORDER BY qi.id`,
+                [quotation.id]
+            );
+            products = quotationItems.map(item => ({
+                code: item.code || `SP-${item.id}`,
+                name: item.name || 'Sản phẩm',
+                width: item.width || 0,
+                height: item.height || 0,
+                quantity: item.quantity || 1,
+                unit_price: item.unit_price || 0,
+                total_price: item.total_price || 0
+            }));
+        }
+
+        // If no products from quotation, try door_designs
+        if (products.length === 0) {
+            const [doors] = await db.query(
+                `SELECT 
+                    dd.id,
+                    dd.design_code as code,
+                    dd.template_name as name,
+                    dd.width_mm as width,
+                    dd.height_mm as height,
+                    dd.number_of_panels as quantity
+                FROM door_designs dd
+                WHERE dd.project_id = ?
+                ORDER BY dd.id`,
+                [id]
+            );
+            products = doors.map(door => ({
+                code: door.code || `C-${door.id}`,
+                name: door.name || 'Cửa',
+                width: door.width || 0,
+                height: door.height || 0,
+                quantity: door.quantity || 1,
+                unit_price: 0,
+                total_price: 0
+            }));
+        }
+
+        // 4. Get materials (from project_materials)
+        const [materials] = await db.query(
+            `SELECT 
+                pm.material_type,
+                COALESCE(pm.material_name, pm.item_name) as material_name,
+                COALESCE(pm.quantity, pm.quantity_used) as quantity,
+                COALESCE(pm.unit, pm.item_unit) as unit,
+                pm.unit_price,
+                pm.total_cost
+            FROM project_materials pm
+            WHERE pm.project_id = ?
+            ORDER BY pm.material_type, pm.material_name`,
+            [id]
+        );
+
+        // 5. Calculate financial info
+        const quotation_total = quotation ? (quotation.total_amount || 0) : 0;
+        const materials_total = materials.reduce((sum, m) => sum + (parseFloat(m.total_cost) || 0), 0);
+        const net_total = quotation_total - materials_total;
+
+        // 6. Build timeline
+        const timeline = {
+            created_at: project.created_at,
+            start_date: project.start_date,
+            deadline: project.deadline,
+            quotation_date: quotation ? quotation.created_at : null,
+            design_date: null,
+            bom_date: null,
+            production_date: null,
+            moved_to_installation_at: project.moved_to_installation_at,
+            handover_date: project.handover_date
+        };
+
+        // ===== TÌM DESIGN DATE từ nhiều nguồn =====
+        // 1. Từ door_drawings (bản vẽ đã tạo)
+        const [designDates1] = await db.query(
+            `SELECT MIN(created_at) as design_date
+             FROM door_drawings 
+             WHERE project_id = ? OR door_design_id IN (SELECT id FROM door_designs WHERE project_id = ?)`,
+            [id, id]
+        );
+        if (designDates1[0]?.design_date) {
+            timeline.design_date = designDates1[0].design_date;
+        }
+
+        // 2. Nếu chưa có, tìm từ door_designs (khi cửa được tạo)
+        if (!timeline.design_date) {
+            const [designDates2] = await db.query(
+                `SELECT MIN(created_at) as design_date
+                 FROM door_designs 
+                 WHERE project_id = ?`,
+                [id]
+            );
+            if (designDates2[0]?.design_date) {
+                timeline.design_date = designDates2[0].design_date;
+            }
+        }
+
+        // 3. Nếu chưa có, tìm từ project_items (khi item được tạo và có status DESIGNING trở lên)
+        if (!timeline.design_date) {
+            const [designDates3] = await db.query(
+                `SELECT MIN(created_at) as design_date
+                 FROM project_items 
+                 WHERE project_id = ? AND status IN ('DESIGNING', 'DESIGN_CONFIRMED', 'BOM_EXTRACTED', 'EXPORTED')`,
+                [id]
+            );
+            if (designDates3[0]?.design_date) {
+                timeline.design_date = designDates3[0].design_date;
+            }
+        }
+
+        // ===== TÌM BOM DATE từ nhiều nguồn =====
+        // 1. Từ bom_items (BOM đã được tạo)
+        const [bomDates1] = await db.query(
+            `SELECT MIN(created_at) as bom_date
+             FROM bom_items 
+             WHERE design_id IN (SELECT id FROM door_designs WHERE project_id = ?)`,
+            [id]
+        );
+        if (bomDates1[0]?.bom_date) {
+            timeline.bom_date = bomDates1[0].bom_date;
+        }
+
+        // 2. Nếu chưa có, tìm từ project_items khi status = 'BOM_EXTRACTED' (updated_at khi chuyển sang BOM_EXTRACTED)
+        if (!timeline.bom_date) {
+            const [bomDates2] = await db.query(
+                `SELECT MIN(updated_at) as bom_date
+                 FROM project_items 
+                 WHERE project_id = ? AND status = 'BOM_EXTRACTED'`,
+                [id]
+            );
+            if (bomDates2[0]?.bom_date) {
+                timeline.bom_date = bomDates2[0].bom_date;
+            }
+        }
+
+        // 3. Nếu chưa có, tìm từ door_bom_lines (BOM từ door_drawings)
+        if (!timeline.bom_date) {
+            try {
+                const [bomDates3] = await db.query(
+                    `SELECT MIN(created_at) as bom_date
+                     FROM door_bom_lines 
+                     WHERE door_drawing_id IN (
+                         SELECT id FROM door_drawings 
+                         WHERE project_id = ? OR door_design_id IN (SELECT id FROM door_designs WHERE project_id = ?)
+                     )`,
+                    [id, id]
+                );
+                if (bomDates3[0]?.bom_date) {
+                    timeline.bom_date = bomDates3[0].bom_date;
+                }
+            } catch (err) {
+                // Bảng door_bom_lines có thể không tồn tại, bỏ qua
+                console.log('door_bom_lines table not found, skipping');
+            }
+        }
+
+        // ===== TÌM PRODUCTION DATE =====
+        const [productionDates] = await db.query(
+            `SELECT MIN(created_at) as production_date
+             FROM production_orders 
+             WHERE project_id = ?`,
+            [id]
+        );
+        if (productionDates[0]?.production_date) {
+            timeline.production_date = productionDates[0].production_date;
+        }
+
+        // Try to get installation_date from installation_progress if moved_to_installation_at is null
+        if (!timeline.moved_to_installation_at) {
+            try {
+                const [installationDates] = await db.query(
+                    `SELECT MIN(installation_date) as installation_date, MIN(created_at) as installation_created_at
+                     FROM installation_progress 
+                     WHERE project_id = ? AND installation_date IS NOT NULL`,
+                    [id]
+                );
+                if (installationDates[0]?.installation_date) {
+                    timeline.moved_to_installation_at = installationDates[0].installation_date;
+                } else if (installationDates[0]?.installation_created_at) {
+                    // Fallback to created_at if installation_date is null
+                    timeline.moved_to_installation_at = installationDates[0].installation_created_at;
+                }
+            } catch (err) {
+                // Table might not exist, ignore error
+                console.log('Could not get installation date from installation_progress:', err.message);
+            }
+        }
+
+        // ===== FALLBACK: Tìm từ project_items với các status khác nhau =====
+        // Nếu vẫn chưa có design_date, thử tìm từ project_items.created_at (khi item được tạo)
+        if (!timeline.design_date) {
+            const [fallbackDesign] = await db.query(
+                `SELECT MIN(created_at) as design_date
+                 FROM project_items 
+                 WHERE project_id = ?`,
+                [id]
+            );
+            if (fallbackDesign[0]?.design_date) {
+                timeline.design_date = fallbackDesign[0].design_date;
+            }
+        }
+
+        // Nếu vẫn chưa có bom_date, thử tìm từ project_items khi có bom_override hoặc calc_cache
+        if (!timeline.bom_date) {
+            const [fallbackBom] = await db.query(
+                `SELECT MIN(updated_at) as bom_date
+                 FROM project_items 
+                 WHERE project_id = ? AND (bom_override IS NOT NULL OR calc_cache IS NOT NULL)`,
+                [id]
+            );
+            if (fallbackBom[0]?.bom_date) {
+                timeline.bom_date = fallbackBom[0].bom_date;
+            }
+        }
+
+        // Nếu vẫn chưa có production_date, thử tìm từ production_orders với các trạng thái khác
+        if (!timeline.production_date) {
+            const [fallbackProduction] = await db.query(
+                `SELECT MIN(order_date) as production_date
+                 FROM production_orders 
+                 WHERE project_id = ?`,
+                [id]
+            );
+            if (fallbackProduction[0]?.production_date) {
+                timeline.production_date = fallbackProduction[0].production_date;
+            }
+        }
+
+        res.json({
+            success: true,
+            data: {
+                project: {
+                    ...project,
+                    quotation: quotation ? { quotation_code: quotation.quotation_code } : null
+                },
+                products,
+                materials,
+                financial: {
+                    quotation_total,
+                    materials_total,
+                    net_total
+                },
+                timeline
+            }
+        });
+    } catch (err) {
+        console.error('Error getting project detail:', err);
+        res.status(500).json({
+            success: false,
+            message: "Lỗi server"
+        });
+    }
+};
+
 // GET by ID
 exports.getById = async (req, res) => {
     try {
@@ -1291,7 +1600,7 @@ exports.deleteDoor = async (req, res) => {
     }
 };
 
-// GET project logs
+// GET project logs (legacy - chỉ từ bảng project_logs)
 exports.getProjectLogs = async (req, res) => {
     try {
         const { id } = req.params;
@@ -1326,6 +1635,412 @@ exports.getProjectLogs = async (req, res) => {
         res.status(500).json({
             success: false,
             message: "Lỗi server"
+        });
+    }
+};
+
+// GET project logs full - Thu thập tất cả sự kiện từ các bảng liên quan
+exports.getProjectLogsFull = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const allLogs = [];
+
+        // 1. Lấy thông tin dự án (created_at, start_date, deadline, status changes)
+        const [projectRows] = await db.query(
+            `SELECT created_at, start_date, deadline, status, updated_at
+             FROM projects WHERE id = ?`,
+            [id]
+        );
+        if (projectRows.length > 0) {
+            const project = projectRows[0];
+            if (project.created_at) {
+                allLogs.push({
+                    event_type: 'project_created',
+                    timestamp: project.created_at,
+                    description: 'Dự án được tạo',
+                    details: { 
+                        'ID dự án': id,
+                        'Ngày tạo': new Date(project.created_at).toLocaleDateString('vi-VN'),
+                        'Trạng thái ban đầu': project.status || 'N/A'
+                    }
+                });
+            }
+            if (project.start_date) {
+                let timestamp = project.start_date;
+                if (typeof timestamp === 'string' && !timestamp.includes(' ')) {
+                    timestamp = timestamp + ' 00:00:00';
+                }
+                allLogs.push({
+                    event_type: 'project_started',
+                    timestamp: timestamp,
+                    description: 'Dự án bắt đầu thực hiện',
+                    details: { 
+                        'Ngày bắt đầu': new Date(project.start_date).toLocaleDateString('vi-VN'),
+                        'Hạn hoàn thành dự kiến': project.deadline ? new Date(project.deadline).toLocaleDateString('vi-VN') : 'Chưa có'
+                    }
+                });
+            }
+        }
+
+        // 2. Lấy báo giá (quotations)
+        try {
+            const [quotations] = await db.query(
+                `SELECT id, quotation_code, created_at, updated_at, status
+                 FROM quotations WHERE project_id = ? ORDER BY created_at`,
+                [id]
+            );
+            quotations.forEach(q => {
+                if (q.created_at) {
+                    allLogs.push({
+                        event_type: 'quotation_created',
+                        timestamp: q.created_at,
+                        description: `Tạo báo giá ${q.quotation_code || ''}`,
+                        details: { 
+                            quotation_code: q.quotation_code, 
+                            status: q.status,
+                            'Mã báo giá': q.quotation_code || 'N/A',
+                            'Trạng thái': q.status === 'approved' ? 'Đã duyệt' : 
+                                         q.status === 'pending' ? 'Chờ duyệt' :
+                                         q.status === 'rejected' ? 'Đã từ chối' :
+                                         q.status === 'expired' ? 'Hết hạn' : q.status
+                        }
+                    });
+                }
+                // Nếu status = 'approved', dùng updated_at làm ngày duyệt
+                if (q.status === 'approved' && q.updated_at) {
+                    allLogs.push({
+                        event_type: 'quotation_approved',
+                        timestamp: q.updated_at,
+                        description: `Duyệt báo giá ${q.quotation_code || ''}`,
+                        details: { 
+                            quotation_code: q.quotation_code,
+                            'Mã báo giá': q.quotation_code || 'N/A',
+                            'Ngày duyệt': new Date(q.updated_at).toLocaleDateString('vi-VN')
+                        }
+                    });
+                }
+            });
+        } catch (e) {
+            console.log('Error getting quotations:', e.message);
+        }
+
+        // 3. Lấy thiết kế (door_designs, door_drawings)
+        try {
+            const [designs] = await db.query(
+                `SELECT id, design_code, created_at, updated_at
+                 FROM door_designs WHERE project_id = ? ORDER BY created_at`,
+                [id]
+            );
+            designs.forEach(d => {
+                if (d.created_at) {
+                    allLogs.push({
+                        event_type: 'design_created',
+                        timestamp: d.created_at,
+                        description: `Tạo thiết kế ${d.design_code || ''}`,
+                        details: { 
+                            'Mã thiết kế': d.design_code || 'N/A',
+                            'Ngày tạo': new Date(d.created_at).toLocaleDateString('vi-VN')
+                        }
+                    });
+                }
+            });
+
+            // Lấy bản vẽ (door_drawings)
+            const [drawings] = await db.query(
+                `SELECT id, created_at, door_design_id
+                 FROM door_drawings 
+                 WHERE project_id = ? OR door_design_id IN (SELECT id FROM door_designs WHERE project_id = ?)
+                 ORDER BY created_at`,
+                [id, id]
+            );
+            drawings.forEach(dr => {
+                if (dr.created_at) {
+                    allLogs.push({
+                        event_type: 'design_completed',
+                        timestamp: dr.created_at,
+                        description: 'Hoàn thành bản vẽ thiết kế',
+                        details: { 
+                            'ID bản vẽ': dr.id,
+                            'Ngày hoàn thành': new Date(dr.created_at).toLocaleDateString('vi-VN')
+                        }
+                    });
+                }
+            });
+        } catch (e) {
+            console.log('Error getting designs:', e.message);
+        }
+
+        // 4. Lấy BOM (bom_items, project_items với status BOM_EXTRACTED)
+        try {
+            const [bomItems] = await db.query(
+                `SELECT MIN(created_at) as bom_date
+                 FROM bom_items 
+                 WHERE design_id IN (SELECT id FROM door_designs WHERE project_id = ?)`,
+                [id]
+            );
+            if (bomItems[0]?.bom_date) {
+                allLogs.push({
+                    event_type: 'bom_extracted',
+                    timestamp: bomItems[0].bom_date,
+                    description: 'Bóc tách vật tư (BOM)',
+                    details: {
+                        'Ngày bóc tách': new Date(bomItems[0].bom_date).toLocaleDateString('vi-VN'),
+                        'Mô tả': 'Đã tính toán và lập danh sách vật tư cần thiết'
+                    }
+                });
+            }
+
+            // Từ project_items
+            const [projectItems] = await db.query(
+                `SELECT MIN(updated_at) as bom_date
+                 FROM project_items 
+                 WHERE project_id = ? AND status = 'BOM_EXTRACTED'`,
+                [id]
+            );
+            if (projectItems[0]?.bom_date && (!bomItems[0]?.bom_date || new Date(projectItems[0].bom_date) < new Date(bomItems[0].bom_date))) {
+                allLogs.push({
+                    event_type: 'bom_extracted',
+                    timestamp: projectItems[0].bom_date,
+                    description: 'Bóc tách vật tư từ project items',
+                    details: {
+                        'Ngày bóc tách': new Date(projectItems[0].bom_date).toLocaleDateString('vi-VN'),
+                        'Mô tả': 'Đã tính toán và lập danh sách vật tư từ project items'
+                    }
+                });
+            }
+        } catch (e) {
+            console.log('Error getting BOM:', e.message);
+        }
+
+        // 5. Lấy sản xuất (production_orders)
+        try {
+            const [orders] = await db.query(
+                `SELECT id, order_code, created_at, order_date, actual_start_date, actual_completion_date, status
+                 FROM production_orders WHERE project_id = ? ORDER BY created_at`,
+                [id]
+            );
+            orders.forEach(order => {
+                if (order.created_at) {
+                    allLogs.push({
+                        event_type: 'production_ordered',
+                        timestamp: order.created_at,
+                        description: `Tạo lệnh sản xuất ${order.order_code || ''}`,
+                        details: { 
+                            'Mã lệnh sản xuất': order.order_code || 'N/A',
+                            'Trạng thái': order.status === 'completed' ? 'Hoàn thành' :
+                                         order.status === 'pending' ? 'Chờ xử lý' :
+                                         order.status || 'N/A',
+                            'Ngày tạo': new Date(order.created_at).toLocaleDateString('vi-VN')
+                        }
+                    });
+                }
+                if (order.actual_start_date) {
+                    let timestamp = order.actual_start_date;
+                    if (typeof timestamp === 'string' && !timestamp.includes(' ')) {
+                        timestamp = timestamp + ' 00:00:00';
+                    }
+                    allLogs.push({
+                        event_type: 'production_started',
+                        timestamp: timestamp,
+                        description: `Bắt đầu sản xuất ${order.order_code || ''}`,
+                        details: { 
+                            'Mã lệnh sản xuất': order.order_code || 'N/A',
+                            'Ngày bắt đầu': new Date(order.actual_start_date).toLocaleDateString('vi-VN')
+                        }
+                    });
+                }
+                if (order.actual_completion_date) {
+                    let timestamp = order.actual_completion_date;
+                    if (typeof timestamp === 'string' && !timestamp.includes(' ')) {
+                        timestamp = timestamp + ' 00:00:00';
+                    }
+                    allLogs.push({
+                        event_type: 'production_completed',
+                        timestamp: timestamp,
+                        description: `Hoàn thành sản xuất ${order.order_code || ''}`,
+                        details: { 
+                            'Mã lệnh sản xuất': order.order_code || 'N/A',
+                            'Ngày hoàn thành': new Date(order.actual_completion_date).toLocaleDateString('vi-VN')
+                        }
+                    });
+                }
+            });
+        } catch (e) {
+            console.log('Error getting production orders:', e.message);
+        }
+
+        // 6. Lấy lắp đặt (installation_progress)
+        try {
+            const [installations] = await db.query(
+                `SELECT id, created_at, installation_date, status, installer_name, notes
+                 FROM installation_progress WHERE project_id = ? ORDER BY created_at`,
+                [id]
+            );
+            installations.forEach(inst => {
+                if (inst.created_at) {
+                    allLogs.push({
+                        event_type: 'installation_started',
+                        timestamp: inst.created_at,
+                        description: 'Bắt đầu lắp đặt',
+                        details: { 
+                            'Người lắp đặt': inst.installer_name || 'Chưa xác định',
+                            'Trạng thái': inst.status === 'completed' ? 'Hoàn thành' :
+                                         inst.status === 'in_progress' ? 'Đang thực hiện' :
+                                         inst.status === 'pending' ? 'Chờ xử lý' : inst.status || 'N/A'
+                        },
+                        user_name: inst.installer_name,
+                        notes: inst.notes
+                    });
+                }
+                if (inst.installation_date) {
+                    // Đảm bảo timestamp hợp lệ
+                    let timestamp = inst.installation_date;
+                    if (typeof timestamp === 'string' && !timestamp.includes(' ')) {
+                        timestamp = timestamp + ' 00:00:00';
+                    }
+                    allLogs.push({
+                        event_type: 'installation_completed',
+                        timestamp: timestamp,
+                        description: 'Hoàn thành lắp đặt',
+                        details: { 
+                            'Người lắp đặt': inst.installer_name || 'Chưa xác định',
+                            'Ngày lắp đặt': new Date(inst.installation_date).toLocaleDateString('vi-VN')
+                        },
+                        user_name: inst.installer_name,
+                        notes: inst.notes
+                    });
+                }
+            });
+        } catch (e) {
+            console.log('Error getting installations:', e.message);
+        }
+
+        // 7. Lấy bàn giao (projects.handover_date)
+        try {
+            const [handoverRows] = await db.query(
+                `SELECT handover_date, handover_notes FROM projects WHERE id = ? AND handover_date IS NOT NULL`,
+                [id]
+            );
+            if (handoverRows.length > 0 && handoverRows[0].handover_date) {
+                // Đảm bảo timestamp hợp lệ
+                let timestamp = handoverRows[0].handover_date;
+                if (typeof timestamp === 'string' && !timestamp.includes(' ')) {
+                    timestamp = timestamp + ' 00:00:00';
+                }
+                allLogs.push({
+                    event_type: 'handover',
+                    timestamp: timestamp,
+                    description: 'Bàn giao dự án cho khách hàng',
+                    details: {
+                        'Ngày bàn giao': new Date(handoverRows[0].handover_date).toLocaleDateString('vi-VN'),
+                        'Ghi chú': handoverRows[0].handover_notes || 'Không có ghi chú'
+                    },
+                    notes: handoverRows[0].handover_notes
+                });
+            }
+        } catch (e) {
+            console.log('Error getting handover:', e.message);
+        }
+
+        // 8. Lấy project_logs (nếu có)
+        try {
+            const [projectLogs] = await db.query(
+                `SELECT pl.*, u.full_name AS created_by_name
+                 FROM project_logs pl
+                 LEFT JOIN users u ON pl.created_by = u.id
+                 WHERE pl.project_id = ?
+                 ORDER BY pl.created_at`,
+                [id]
+            );
+            projectLogs.forEach(log => {
+                allLogs.push({
+                    event_type: log.log_type || 'other',
+                    timestamp: log.created_at,
+                    description: log.title || log.content || 'Ghi chú',
+                    content: log.content,
+                    user_name: log.created_by_name
+                });
+            });
+        } catch (e) {
+            console.log('Error getting project_logs:', e.message);
+        }
+
+        // 9. Kiểm tra trạng thái completed
+        const [projectStatus] = await db.query(
+            `SELECT status, updated_at FROM projects WHERE id = ?`,
+            [id]
+        );
+        if (projectStatus.length > 0 && projectStatus[0].status === 'completed') {
+            // Tìm ngày hoàn thành gần nhất từ handover hoặc updated_at
+            const completedLogs = allLogs.filter(l => l.event_type === 'handover' || l.event_type === 'installation_completed');
+            let completionTimestamp = projectStatus[0].updated_at;
+            
+            if (completedLogs.length > 0) {
+                const latestCompleted = completedLogs.sort((a, b) => {
+                    try {
+                        return new Date(b.timestamp) - new Date(a.timestamp);
+                    } catch {
+                        return 0;
+                    }
+                })[0];
+                if (latestCompleted && latestCompleted.timestamp) {
+                    completionTimestamp = latestCompleted.timestamp;
+                }
+            }
+            
+            // Đảm bảo timestamp hợp lệ
+            if (completionTimestamp) {
+                allLogs.push({
+                    event_type: 'project_completed',
+                    timestamp: completionTimestamp,
+                    description: 'Dự án hoàn thành',
+                    details: {
+                        'Trạng thái': 'Hoàn thành',
+                        'Ngày hoàn thành': new Date(completionTimestamp).toLocaleDateString('vi-VN')
+                    }
+                });
+            }
+        }
+
+        // Sắp xếp theo thời gian (cũ nhất trước) và validate timestamp
+        allLogs.forEach(log => {
+            // Đảm bảo timestamp là string hợp lệ
+            if (log.timestamp) {
+                try {
+                    const date = new Date(log.timestamp);
+                    if (isNaN(date.getTime())) {
+                        // Nếu timestamp không hợp lệ, thử format lại
+                        console.warn('Invalid timestamp:', log.timestamp, 'for event:', log.event_type);
+                        log.timestamp = new Date().toISOString(); // Fallback to now
+                    } else {
+                        // Format lại timestamp thành ISO string để đảm bảo consistency
+                        log.timestamp = date.toISOString();
+                    }
+                } catch (e) {
+                    console.warn('Error parsing timestamp:', log.timestamp, e);
+                    log.timestamp = new Date().toISOString();
+                }
+            }
+        });
+        
+        allLogs.sort((a, b) => {
+            try {
+                return new Date(a.timestamp || 0) - new Date(b.timestamp || 0);
+            } catch {
+                return 0;
+            }
+        });
+
+        res.json({
+            success: true,
+            data: allLogs,
+            count: allLogs.length
+        });
+    } catch (err) {
+        console.error('Error getting project logs full:', err);
+        res.status(500).json({
+            success: false,
+            message: "Lỗi server: " + err.message
         });
     }
 };

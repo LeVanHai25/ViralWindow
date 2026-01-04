@@ -89,7 +89,19 @@ exports.getCustomerCRM = async (req, res) => {
  */
 exports.createAppointment = async (req, res) => {
     try {
-        const { customer_id, appointment_date, appointment_type, title, description, location } = req.body;
+        const { customerId } = req.params;
+        const { appointment_date, appointment_type, title, description, location } = req.body;
+
+        console.log('📅 createAppointment called with:', { customerId, params: req.params, body: req.body });
+
+        const customer_id = customerId || req.body.customer_id;
+
+        if (!customer_id) {
+            return res.status(400).json({
+                success: false,
+                message: "Thiếu customer_id"
+            });
+        }
 
         const [result] = await db.query(`
             INSERT INTO customer_appointments 
@@ -123,15 +135,28 @@ exports.createAppointment = async (req, res) => {
  */
 exports.updateAppointment = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id, customerId } = req.params;
         const { appointment_date, appointment_type, title, description, location, status } = req.body;
+
+        // Verify appointment belongs to customer
+        const [checkRows] = await db.query(
+            `SELECT id FROM customer_appointments WHERE id = ? AND customer_id = ?`,
+            [id, customerId]
+        );
+
+        if (checkRows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Không tìm thấy lịch hẹn"
+            });
+        }
 
         const [result] = await db.query(`
             UPDATE customer_appointments
             SET appointment_date = ?, appointment_type = ?, title = ?, 
                 description = ?, location = ?, status = ?
-            WHERE id = ?
-        `, [appointment_date, appointment_type, title, description, location, status || 'scheduled', id]);
+            WHERE id = ? AND customer_id = ?
+        `, [appointment_date, appointment_type, title, description, location, status || 'scheduled', id, customerId]);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({
@@ -154,11 +179,55 @@ exports.updateAppointment = async (req, res) => {
 };
 
 /**
+ * Xóa lịch hẹn
+ */
+exports.deleteAppointment = async (req, res) => {
+    try {
+        const { id, customerId } = req.params;
+
+        const [result] = await db.query(
+            `DELETE FROM customer_appointments WHERE id = ? AND customer_id = ?`,
+            [id, customerId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Không tìm thấy lịch hẹn"
+            });
+        }
+
+        res.json({
+            success: true,
+            message: "Xóa lịch hẹn thành công"
+        });
+    } catch (err) {
+        console.error('Error deleting appointment:', err);
+        res.status(500).json({
+            success: false,
+            message: "Lỗi khi xóa lịch hẹn: " + err.message
+        });
+    }
+};
+
+/**
  * Tạo tương tác với khách hàng
  */
 exports.createInteraction = async (req, res) => {
     try {
-        const { customer_id, interaction_type, interaction_date, title, description, related_quotation_id } = req.body;
+        const { customerId } = req.params;
+        const { interaction_type, interaction_date, title, description, related_quotation_id } = req.body;
+
+        console.log('💬 createInteraction called with:', { customerId, params: req.params, body: req.body });
+
+        const customer_id = customerId || req.body.customer_id;
+
+        if (!customer_id) {
+            return res.status(400).json({
+                success: false,
+                message: "Thiếu customer_id"
+            });
+        }
 
         const [result] = await db.query(`
             INSERT INTO customer_interactions 
@@ -183,6 +252,38 @@ exports.createInteraction = async (req, res) => {
         res.status(500).json({
             success: false,
             message: "Lỗi khi tạo tương tác: " + err.message
+        });
+    }
+};
+
+/**
+ * Xóa tương tác
+ */
+exports.deleteInteraction = async (req, res) => {
+    try {
+        const { id, customerId } = req.params;
+
+        const [result] = await db.query(
+            `DELETE FROM customer_interactions WHERE id = ? AND customer_id = ?`,
+            [id, customerId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Không tìm thấy tương tác"
+            });
+        }
+
+        res.json({
+            success: true,
+            message: "Xóa tương tác thành công"
+        });
+    } catch (err) {
+        console.error('Error deleting interaction:', err);
+        res.status(500).json({
+            success: false,
+            message: "Lỗi khi xóa tương tác: " + err.message
         });
     }
 };

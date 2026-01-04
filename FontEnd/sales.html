@@ -3606,8 +3606,27 @@
                 document.getElementById('customerCRMModal').classList.add('hidden');
             }
 
+            // Lưu customer ID hiện tại
+            let currentCustomerId = null;
+
             async function loadCustomerCRMData(customerId) {
+                currentCustomerId = customerId;
                 try {
+                    // Load customer info để lấy status
+                    const customerResponse = await fetch(`${API_BASE}/customers/${customerId}`);
+                    const customerResult = await customerResponse.json();
+                    
+                    if (customerResult.success) {
+                        const customer = customerResult.data;
+                        // Load status vào form
+                        if (customer.customer_status) {
+                            document.getElementById('crmCustomerStatus').value = customer.customer_status;
+                        }
+                        if (customer.next_followup_date) {
+                            document.getElementById('crmNextFollowup').value = customer.next_followup_date.split('T')[0];
+                        }
+                    }
+
                     // Load quotations
                     const quotesResponse = await fetch(`${API_BASE}/quotations?customer_id=${customerId}`);
                     const quotesResult = await quotesResponse.json();
@@ -3624,22 +3643,240 @@
 
                         // Display quotations
                         const tbody = document.getElementById('crmQuotationsList');
-                        tbody.innerHTML = quotations.map(q => `
-                        <tr>
-                            <td class="border border-gray-300 px-4 py-2 text-sm">${q.quotation_code}</td>
+                        tbody.innerHTML = quotations.length > 0 ? quotations.map(q => `
+                        <tr class="hover:bg-gray-50 cursor-pointer" onclick="viewQuotationDetail(${q.id})">
+                            <td class="border border-gray-300 px-4 py-2 text-sm font-medium">${q.quotation_code || 'N/A'}</td>
                             <td class="border border-gray-300 px-4 py-2 text-sm">${formatDate(q.quotation_date)}</td>
-                            <td class="border border-gray-300 px-4 py-2 text-sm text-center">${formatCurrency(q.total_amount)}</td>
+                            <td class="border border-gray-300 px-4 py-2 text-sm text-center font-semibold">${formatCurrency(q.total_amount)}</td>
                             <td class="border border-gray-300 px-4 py-2 text-sm text-center">
-                                <span class="px-2 py-1 rounded-full text-xs ${q.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
-                                    ${q.status === 'approved' ? 'Đã chốt' : 'Chờ duyệt'}
+                                <span class="px-2 py-1 rounded-full text-xs ${q.status === 'approved' ? 'bg-green-100 text-green-700' : q.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : q.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'}">
+                                    ${q.status === 'approved' ? 'Đã chốt' : q.status === 'pending' ? 'Chờ duyệt' : q.status === 'rejected' ? 'Từ chối' : q.status || 'N/A'}
                                 </span>
                             </td>
                         </tr>
-                    `).join('');
+                    `).join('') : '<tr><td colspan="4" class="border border-gray-300 px-4 py-4 text-center text-gray-500">Chưa có báo giá</td></tr>';
                     }
+
+                    // Load appointments
+                    await loadAppointments(customerId);
+                    
+                    // Load interactions
+                    await loadInteractions(customerId);
                 } catch (error) {
                     console.error('Lỗi khi tải dữ liệu CRM:', error);
+                    alert('Lỗi khi tải dữ liệu CRM: ' + error.message);
                 }
+            }
+
+            // Load appointments
+            async function loadAppointments(customerId) {
+                try {
+                    const response = await fetch(`${API_BASE}/customers/${customerId}/crm`);
+                    const result = await response.json();
+                    
+                    if (result.success && result.data.appointments) {
+                        const appointments = result.data.appointments;
+                        displayAppointments(appointments);
+                    } else {
+                        displayAppointments([]);
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi tải lịch hẹn:', error);
+                    displayAppointments([]);
+                }
+            }
+
+            // Display appointments
+            function displayAppointments(appointments) {
+                const container = document.getElementById('crmAppointmentsList');
+                
+                if (!appointments || appointments.length === 0) {
+                    container.innerHTML = '<div class="text-center py-8 text-gray-500">Chưa có lịch hẹn nào</div>';
+                    return;
+                }
+
+                const typeLabels = {
+                    'call': '📞 Gọi điện',
+                    'meeting': '🤝 Họp',
+                    'site_visit': '🏗️ Khảo sát',
+                    'followup': '📋 Theo dõi',
+                    'other': '📝 Khác'
+                };
+
+                const statusLabels = {
+                    'scheduled': { text: 'Đã lên lịch', color: 'bg-blue-100 text-blue-700' },
+                    'completed': { text: 'Hoàn thành', color: 'bg-green-100 text-green-700' },
+                    'cancelled': { text: 'Đã hủy', color: 'bg-red-100 text-red-700' },
+                    'rescheduled': { text: 'Đã dời', color: 'bg-yellow-100 text-yellow-700' }
+                };
+
+                container.innerHTML = appointments.map(apt => {
+                    const status = statusLabels[apt.status] || { text: apt.status, color: 'bg-gray-100 text-gray-700' };
+                    const appointmentDate = new Date(apt.appointment_date);
+                    const isPast = appointmentDate < new Date();
+                    
+                    return `
+                        <div class="bg-white border border-gray-200 rounded-lg p-4 mb-3 hover:shadow-md transition-shadow ${isPast && apt.status === 'scheduled' ? 'border-yellow-300 bg-yellow-50' : ''}">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="text-lg">${typeLabels[apt.appointment_type] || '📝 Lịch hẹn'}</span>
+                                        <span class="px-2 py-1 rounded-full text-xs ${status.color}">${status.text}</span>
+                                    </div>
+                                    <h4 class="font-semibold text-gray-800 mb-1">${apt.title || 'Không có tiêu đề'}</h4>
+                                    <div class="text-sm text-gray-600 space-y-1">
+                                        <div class="flex items-center gap-2">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                            <span>${formatDateTime(apt.appointment_date)}</span>
+                                        </div>
+                                        ${apt.location ? `
+                                        <div class="flex items-center gap-2">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            </svg>
+                                            <span>${apt.location}</span>
+                                        </div>
+                                        ` : ''}
+                                        ${apt.description ? `<p class="mt-2 text-gray-500">${apt.description}</p>` : ''}
+                                    </div>
+                                </div>
+                                <div class="flex gap-2 ml-4">
+                                    ${apt.status === 'scheduled' ? `
+                                    <button onclick="editAppointment(${apt.id})" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg" title="Chỉnh sửa">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
+                                    </button>
+                                    <button onclick="markAppointmentCompleted(${apt.id})" class="p-2 text-green-600 hover:bg-green-50 rounded-lg" title="Đánh dấu hoàn thành">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </button>
+                                    ` : ''}
+                                    <button onclick="deleteAppointment(${apt.id})" class="p-2 text-red-600 hover:bg-red-50 rounded-lg" title="Xóa">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Load interactions
+            async function loadInteractions(customerId) {
+                try {
+                    const response = await fetch(`${API_BASE}/customers/${customerId}/crm`);
+                    const result = await response.json();
+                    
+                    if (result.success && result.data.interactions) {
+                        const interactions = result.data.interactions;
+                        displayInteractions(interactions);
+                    } else {
+                        displayInteractions([]);
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi tải tương tác:', error);
+                    displayInteractions([]);
+                }
+            }
+
+            // Display interactions
+            function displayInteractions(interactions) {
+                const container = document.getElementById('crmInteractionsList');
+                
+                if (!interactions || interactions.length === 0) {
+                    container.innerHTML = '<div class="text-center py-8 text-gray-500">Chưa có tương tác nào</div>';
+                    return;
+                }
+
+                const typeLabels = {
+                    'call': { icon: '📞', label: 'Gọi điện', color: 'bg-blue-50 border-blue-200' },
+                    'email': { icon: '📧', label: 'Email', color: 'bg-purple-50 border-purple-200' },
+                    'meeting': { icon: '🤝', label: 'Họp', color: 'bg-green-50 border-green-200' },
+                    'quotation_sent': { icon: '📤', label: 'Gửi báo giá', color: 'bg-indigo-50 border-indigo-200' },
+                    'quotation_viewed': { icon: '👁️', label: 'Xem báo giá', color: 'bg-yellow-50 border-yellow-200' },
+                    'quotation_approved': { icon: '✅', label: 'Duyệt báo giá', color: 'bg-green-50 border-green-200' },
+                    'quotation_rejected': { icon: '❌', label: 'Từ chối báo giá', color: 'bg-red-50 border-red-200' },
+                    'note': { icon: '📝', label: 'Ghi chú', color: 'bg-gray-50 border-gray-200' }
+                };
+
+                container.innerHTML = interactions.map(inter => {
+                    const typeInfo = typeLabels[inter.interaction_type] || { icon: '📝', label: inter.interaction_type, color: 'bg-gray-50 border-gray-200' };
+                    
+                    return `
+                        <div class="bg-white border-l-4 ${typeInfo.color} rounded-lg p-4 mb-3 hover:shadow-md transition-shadow">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="text-xl">${typeInfo.icon}</span>
+                                        <span class="font-semibold text-gray-800">${typeInfo.label}</span>
+                                        ${inter.quotation_code ? `<span class="text-xs text-gray-500">(${inter.quotation_code})</span>` : ''}
+                                    </div>
+                                    <h4 class="font-medium text-gray-700 mb-1">${inter.title || 'Không có tiêu đề'}</h4>
+                                    <div class="text-sm text-gray-600 mb-2">
+                                        <div class="flex items-center gap-2">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                            <span>${formatDateTime(inter.interaction_date)}</span>
+                                        </div>
+                                    </div>
+                                    ${inter.description ? `<p class="text-sm text-gray-500 mt-2">${inter.description}</p>` : ''}
+                                </div>
+                                <div class="flex gap-2 ml-4">
+                                    <button onclick="editInteraction(${inter.id})" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg" title="Chỉnh sửa">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
+                                    </button>
+                                    <button onclick="deleteInteraction(${inter.id})" class="p-2 text-red-600 hover:bg-red-50 rounded-lg" title="Xóa">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Format functions
+            function formatDate(dateString) {
+                if (!dateString) return 'N/A';
+                try {
+                    const date = new Date(dateString);
+                    return date.toLocaleDateString('vi-VN');
+                } catch {
+                    return dateString;
+                }
+            }
+
+            function formatDateTime(dateString) {
+                if (!dateString) return 'N/A';
+                try {
+                    const date = new Date(dateString);
+                    return date.toLocaleString('vi-VN', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                } catch {
+                    return dateString;
+                }
+            }
+
+            function formatCurrency(amount) {
+                if (!amount) return '0';
+                return Math.round(parseFloat(amount)).toLocaleString('vi-VN');
             }
 
             function switchCRMTab(tabName, buttonElement) {
@@ -3651,46 +3888,329 @@
                     btn.classList.add('text-gray-600', 'border-transparent');
                 });
 
-                document.getElementById('crmTab' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.remove('hidden');
+                const tabId = 'crmTab' + tabName.charAt(0).toUpperCase() + tabName.slice(1);
+                const tabElement = document.getElementById(tabId);
+                if (tabElement) {
+                    tabElement.classList.remove('hidden');
+                }
                 buttonElement.classList.add('active', 'text-blue-600', 'border-blue-600');
                 buttonElement.classList.remove('text-gray-600', 'border-transparent');
+                
+                // Load data when switching tabs
+                if (currentCustomerId) {
+                    if (tabName === 'appointments') {
+                        loadAppointments(currentCustomerId);
+                    } else if (tabName === 'interactions') {
+                        loadInteractions(currentCustomerId);
+                    }
+                }
             }
 
-            function openAddAppointmentModal() {
-                document.getElementById('addAppointmentModal').classList.remove('hidden');
+            let editingAppointmentId = null;
+            let editingInteractionId = null;
+
+            function openAddAppointmentModal(appointmentId = null) {
+                editingAppointmentId = appointmentId;
+                const modal = document.getElementById('addAppointmentModal');
+                const form = document.getElementById('appointmentForm');
+                
+                if (appointmentId) {
+                    // Load appointment data
+                    loadAppointmentForEdit(appointmentId);
+                    document.querySelector('#addAppointmentModal h2').textContent = 'Chỉnh sửa lịch hẹn';
+                } else {
+                    form.reset();
+                    document.getElementById('appointmentCustomerId').value = currentCustomerId;
+                    document.querySelector('#addAppointmentModal h2').textContent = 'Thêm lịch hẹn';
+                }
+                
+                modal.classList.remove('hidden');
+            }
+
+            async function loadAppointmentForEdit(appointmentId) {
+                try {
+                    const response = await fetch(`${API_BASE}/customers/${currentCustomerId}/crm`);
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        const appointment = result.data.appointments.find(a => a.id === appointmentId);
+                        if (appointment) {
+                            document.getElementById('appointmentDate').value = new Date(appointment.appointment_date).toISOString().slice(0, 16);
+                            document.getElementById('appointmentType').value = appointment.appointment_type;
+                            document.getElementById('appointmentTitle').value = appointment.title || '';
+                            document.getElementById('appointmentDescription').value = appointment.description || '';
+                            document.getElementById('appointmentLocation').value = appointment.location || '';
+                            document.getElementById('appointmentCustomerId').value = appointment.customer_id;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi tải dữ liệu lịch hẹn:', error);
+                }
             }
 
             function closeAddAppointmentModal() {
                 document.getElementById('addAppointmentModal').classList.add('hidden');
                 document.getElementById('appointmentForm').reset();
+                editingAppointmentId = null;
             }
 
-            function openAddInteractionModal() {
-                document.getElementById('addInteractionModal').classList.remove('hidden');
+            function openAddInteractionModal(interactionId = null) {
+                editingInteractionId = interactionId;
+                const modal = document.getElementById('addInteractionModal');
+                const form = document.getElementById('interactionForm');
+                
+                if (interactionId) {
+                    loadInteractionForEdit(interactionId);
+                    document.querySelector('#addInteractionModal h2').textContent = 'Chỉnh sửa tương tác';
+                } else {
+                    form.reset();
+                    document.getElementById('interactionCustomerId').value = currentCustomerId;
+                    // Set default date to now
+                    const now = new Date();
+                    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                    document.getElementById('interactionDate').value = now.toISOString().slice(0, 16);
+                    document.querySelector('#addInteractionModal h2').textContent = 'Thêm tương tác';
+                }
+                
+                modal.classList.remove('hidden');
+            }
+
+            async function loadInteractionForEdit(interactionId) {
+                try {
+                    const response = await fetch(`${API_BASE}/customers/${currentCustomerId}/crm`);
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        const interaction = result.data.interactions.find(i => i.id === interactionId);
+                        if (interaction) {
+                            document.getElementById('interactionType').value = interaction.interaction_type;
+                            document.getElementById('interactionDate').value = new Date(interaction.interaction_date).toISOString().slice(0, 16);
+                            document.getElementById('interactionTitle').value = interaction.title || '';
+                            document.getElementById('interactionDescription').value = interaction.description || '';
+                            document.getElementById('interactionCustomerId').value = interaction.customer_id;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi tải dữ liệu tương tác:', error);
+                }
             }
 
             function closeAddInteractionModal() {
                 document.getElementById('addInteractionModal').classList.add('hidden');
                 document.getElementById('interactionForm').reset();
+                editingInteractionId = null;
             }
 
             async function saveAppointment(event) {
                 event.preventDefault();
-                // TODO: Implement save appointment
-                alert('Chức năng đang được phát triển');
-                closeAddAppointmentModal();
+                
+                const customerId = document.getElementById('appointmentCustomerId').value || currentCustomerId;
+                const appointmentDate = document.getElementById('appointmentDate').value;
+                const appointmentType = document.getElementById('appointmentType').value;
+                const title = document.getElementById('appointmentTitle').value;
+                const description = document.getElementById('appointmentDescription').value;
+                const location = document.getElementById('appointmentLocation').value;
+
+                if (!customerId || !appointmentDate || !title) {
+                    alert('Vui lòng điền đầy đủ thông tin bắt buộc');
+                    return;
+                }
+
+                try {
+                    const url = editingAppointmentId 
+                        ? `${API_BASE}/customers/${customerId}/appointments/${editingAppointmentId}`
+                        : `${API_BASE}/customers/${customerId}/appointments`;
+                    
+                    const method = editingAppointmentId ? 'PUT' : 'POST';
+                    
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            appointment_date: appointmentDate,
+                            appointment_type: appointmentType,
+                            title: title,
+                            description: description || null,
+                            location: location || null
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showSuccessNotification(editingAppointmentId ? 'Cập nhật lịch hẹn thành công!' : 'Tạo lịch hẹn thành công!');
+                        closeAddAppointmentModal();
+                        await loadAppointments(customerId);
+                    } else {
+                        alert('Lỗi: ' + (result.message || 'Không thể lưu lịch hẹn'));
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi lưu lịch hẹn:', error);
+                    alert('Lỗi khi lưu lịch hẹn: ' + error.message);
+                }
             }
 
             async function saveInteraction(event) {
                 event.preventDefault();
-                // TODO: Implement save interaction
-                alert('Chức năng đang được phát triển');
-                closeAddInteractionModal();
+                
+                const customerId = document.getElementById('interactionCustomerId').value || currentCustomerId;
+                const interactionType = document.getElementById('interactionType').value;
+                const interactionDate = document.getElementById('interactionDate').value;
+                const title = document.getElementById('interactionTitle').value;
+                const description = document.getElementById('interactionDescription').value;
+
+                if (!customerId || !interactionType || !interactionDate || !title) {
+                    alert('Vui lòng điền đầy đủ thông tin bắt buộc');
+                    return;
+                }
+
+                try {
+                    const url = `${API_BASE}/customers/${customerId}/interactions`;
+                    
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            interaction_type: interactionType,
+                            interaction_date: interactionDate,
+                            title: title,
+                            description: description || null
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showSuccessNotification(editingInteractionId ? 'Cập nhật tương tác thành công!' : 'Tạo tương tác thành công!');
+                        closeAddInteractionModal();
+                        await loadInteractions(customerId);
+                    } else {
+                        alert('Lỗi: ' + (result.message || 'Không thể lưu tương tác'));
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi lưu tương tác:', error);
+                    alert('Lỗi khi lưu tương tác: ' + error.message);
+                }
+            }
+
+            async function editAppointment(appointmentId) {
+                openAddAppointmentModal(appointmentId);
+            }
+
+            async function editInteraction(interactionId) {
+                openAddInteractionModal(interactionId);
+            }
+
+            async function markAppointmentCompleted(appointmentId) {
+                if (!confirm('Đánh dấu lịch hẹn này là đã hoàn thành?')) return;
+
+                try {
+                    const response = await fetch(`${API_BASE}/customers/${currentCustomerId}/appointments/${appointmentId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            status: 'completed'
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showSuccessNotification('Đã đánh dấu hoàn thành!');
+                        await loadAppointments(currentCustomerId);
+                    } else {
+                        alert('Lỗi: ' + (result.message || 'Không thể cập nhật'));
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi cập nhật:', error);
+                    alert('Lỗi khi cập nhật: ' + error.message);
+                }
+            }
+
+            async function deleteAppointment(appointmentId) {
+                if (!confirm('Bạn có chắc muốn xóa lịch hẹn này?')) return;
+
+                try {
+                    const response = await fetch(`${API_BASE}/customers/${currentCustomerId}/appointments/${appointmentId}`, {
+                        method: 'DELETE'
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showSuccessNotification('Đã xóa lịch hẹn!');
+                        await loadAppointments(currentCustomerId);
+                    } else {
+                        alert('Lỗi: ' + (result.message || 'Không thể xóa'));
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi xóa:', error);
+                    alert('Lỗi khi xóa: ' + error.message);
+                }
+            }
+
+            async function deleteInteraction(interactionId) {
+                if (!confirm('Bạn có chắc muốn xóa tương tác này?')) return;
+
+                try {
+                    const response = await fetch(`${API_BASE}/customers/${currentCustomerId}/interactions/${interactionId}`, {
+                        method: 'DELETE'
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showSuccessNotification('Đã xóa tương tác!');
+                        await loadInteractions(currentCustomerId);
+                    } else {
+                        alert('Lỗi: ' + (result.message || 'Không thể xóa'));
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi xóa:', error);
+                    alert('Lỗi khi xóa: ' + error.message);
+                }
             }
 
             async function updateCustomerStatus() {
-                // TODO: Implement update customer status
-                alert('Chức năng đang được phát triển');
+                const customerStatus = document.getElementById('crmCustomerStatus').value;
+                const nextFollowup = document.getElementById('crmNextFollowup').value;
+
+                if (!customerStatus) {
+                    alert('Vui lòng chọn trạng thái khách hàng');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${API_BASE}/customers/${currentCustomerId}/status`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            customer_status: customerStatus,
+                            next_followup_date: nextFollowup || null
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showSuccessNotification('Cập nhật trạng thái thành công!');
+                        // Reload customer data
+                        await loadCustomerCRMData(currentCustomerId);
+                    } else {
+                        alert('Lỗi: ' + (result.message || 'Không thể cập nhật trạng thái'));
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi cập nhật trạng thái:', error);
+                    alert('Lỗi khi cập nhật trạng thái: ' + error.message);
+                }
             }
 
             async function viewQuotationDetail(id) {

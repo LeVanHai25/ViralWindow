@@ -203,6 +203,7 @@ const server = app.listen(PORT, () => {
     console.log("   GET  /api/project-summaries/:projectId/financial");
     console.log("   ✅ GET  /api/project-materials/check-export-requirement/:projectId");
     console.log("   ✅ GET  /api/project-materials/exported");
+    console.log("   ✅ GET  /api/projects/:id/detail");
 });
 
 // Handle port already in use

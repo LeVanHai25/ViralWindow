@@ -13,9 +13,11 @@ router.get("/:id/doors/:doorId/accessories", doorCalcCtrl.getDoorAccessories);
 router.get("/:id/doors/:doorId/gaskets", doorCalcCtrl.getDoorGaskets);
 router.get("/:id/doors/:doorId/price", doorCalcCtrl.calculateDoorPrice);
 router.get("/:id/doors", projectCtrl.getProjectDoors);
+router.get("/:id/logs-full", projectCtrl.getProjectLogsFull); // Must be before /:id/logs
 router.get("/:id/logs", projectCtrl.getProjectLogs);
 router.get("/:id/materials", projectMaterialCtrl.getProjectMaterials);
 router.delete("/:id/materials/:materialId", projectMaterialCtrl.deleteProjectMaterial);
+router.get("/:id/detail", projectCtrl.getDetail); // Must be before /:id
 
 // Design files route - returns empty for now (placeholder)
 router.get("/:id/files", (req, res) => {
