@@ -407,7 +407,7 @@ exports.create = async (req, res) => {
         const insufficientMaterials = [];
 
         for (const mat of materials) {
-            const { material_type, material_id, material_name, quantity, unit, unit_price, notes } = mat;
+            let { material_type, material_id, material_name, quantity, unit, unit_price, notes } = mat;
 
             // DEBUG: Log tất cả dữ liệu nhận được từ frontend
             console.log(`📥 [RECEIVED MATERIAL]`, {
@@ -420,8 +420,100 @@ exports.create = async (req, res) => {
                 notes
             });
 
-            if (!material_type || !material_id || !quantity || quantity <= 0) {
+            if (!material_id || !quantity || quantity <= 0) {
                 console.log(`⚠️ [SKIP MATERIAL] Missing required fields:`, { material_type, material_id, quantity });
+                continue;
+            }
+
+            // TỰ ĐỘNG PHÁT HIỆN material_type nếu không có hoặc không đúng
+            // Kiểm tra xem ID có tồn tại trong bảng nào
+            if (!material_type) {
+                try {
+                    // Kiểm tra trong inventory (glass/other)
+                    const [invCheck] = await connection.query(
+                        `SELECT item_type FROM inventory WHERE id = ? LIMIT 1`,
+                        [material_id]
+                    );
+                    if (invCheck.length > 0) {
+                        const itemType = invCheck[0].item_type;
+                        if (itemType === 'glass') {
+                            material_type = 'glass';
+                        } else if (itemType) {
+                            material_type = 'other';
+                        }
+                    } else {
+                        // Kiểm tra trong accessories
+                        const [accCheck] = await connection.query(
+                            `SELECT id FROM accessories WHERE id = ? LIMIT 1`,
+                            [material_id]
+                        );
+                        if (accCheck.length > 0) {
+                            material_type = 'accessory';
+                        } else {
+                            // Kiểm tra trong aluminum_systems
+                            const [alumCheck] = await connection.query(
+                                `SELECT id FROM aluminum_systems WHERE id = ? LIMIT 1`,
+                                [material_id]
+                            );
+                            if (alumCheck.length > 0) {
+                                material_type = 'aluminum';
+                            }
+                        }
+                    }
+                    
+                    if (material_type) {
+                        console.log(`✅ [AUTO-DETECTED TYPE] ID ${material_id} -> ${material_type}`);
+                    }
+                } catch (detectErr) {
+                    console.warn(`Could not auto-detect material type:`, detectErr);
+                }
+            } else {
+                // Kiểm tra xem material_type có đúng không
+                try {
+                    let actualType = null;
+                    // Kiểm tra trong inventory (glass/other)
+                    const [invCheck] = await connection.query(
+                        `SELECT item_type FROM inventory WHERE id = ? LIMIT 1`,
+                        [material_id]
+                    );
+                    if (invCheck.length > 0) {
+                        const itemType = invCheck[0].item_type;
+                        if (itemType === 'glass') {
+                            actualType = 'glass';
+                        } else if (itemType) {
+                            actualType = 'other';
+                        }
+                    } else {
+                        // Kiểm tra trong accessories
+                        const [accCheck] = await connection.query(
+                            `SELECT id FROM accessories WHERE id = ? LIMIT 1`,
+                            [material_id]
+                        );
+                        if (accCheck.length > 0) {
+                            actualType = 'accessory';
+                        } else {
+                            // Kiểm tra trong aluminum_systems
+                            const [alumCheck] = await connection.query(
+                                `SELECT id FROM aluminum_systems WHERE id = ? LIMIT 1`,
+                                [material_id]
+                            );
+                            if (alumCheck.length > 0) {
+                                actualType = 'aluminum';
+                            }
+                        }
+                    }
+                    
+                    if (actualType && actualType !== material_type) {
+                        console.log(`⚠️ [TYPE MISMATCH] Frontend sent: ${material_type}, Actual: ${actualType}. Using actual type.`);
+                        material_type = actualType;
+                    }
+                } catch (detectErr) {
+                    console.warn(`Could not verify material type:`, detectErr);
+                }
+            }
+
+            if (!material_type) {
+                console.log(`❌ [SKIP MATERIAL] Cannot determine material type for ID: ${material_id}`);
                 continue;
             }
 
@@ -429,9 +521,6 @@ exports.create = async (req, res) => {
             
             // DEBUG: Log thông tin vật tư được xử lý
             console.log(`📦 [PROCESSING MATERIAL] Type: ${material_type}, ID: ${material_id}, Name: ${material_name}, Qty: ${requestedQty}, Unit: ${unit}`);
-            
-            // DEBUG: Log thông tin vật tư được gửi từ frontend
-            console.log(`📦 [ADD MATERIAL] Type: ${material_type}, ID: ${material_id}, Name: ${material_name}, Qty: ${requestedQty}, Unit: ${unit}`);
 
             // KIỂM TRA TỒN KHO TRƯỚC KHI THÊM
             let availableStock = 0;

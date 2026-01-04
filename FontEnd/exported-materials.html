@@ -1077,15 +1077,12 @@
                     }
                 }
 
-                // Update summary cards
+                // Update summary cards (Đã loại bỏ - giữ hàm rỗng để tránh lỗi nếu được gọi ở đâu đó)
                 function updateSummary() {
-                    const totalProjects = allProjects.length;
-                    const totalMaterials = allMaterials.length;
-                    const totalValue = allMaterials.reduce((sum, mat) => sum + parseFloat(mat.total_cost || 0), 0);
-
-                    document.getElementById('totalProjectsCount').textContent = totalProjects;
-                    document.getElementById('totalMaterialsCount').textContent = totalMaterials;
-                    document.getElementById('totalValue').textContent = formatCurrency(totalValue);
+                    // Các summary cards đã được loại bỏ theo yêu cầu thiết kế mới
+                    // Thống kê giờ được hiển thị ở mức độ chi tiết dự án
+                    // Giữ hàm rỗng để tránh lỗi nếu được gọi ở nơi khác
+                    console.log('updateSummary called - summary cards have been removed');
                 }
 
                 // Display projects
@@ -1198,6 +1195,102 @@
                         console.error('Error loading project materials:', error);
                         alert('Lỗi khi tải dữ liệu vật tư: ' + error.message);
                     }
+                }
+
+                /**
+                 * CẬP NHẬT THỐNG KÊ VẬT TƯ THEO LOẠI
+                 * Tính toán và hiển thị thống kê chi tiết khi xem dự án
+                 * @param {Array} exported - Danh sách vật tư đã xuất
+                 * @param {Array} insufficient - Danh sách vật tư chưa xuất (thiếu)
+                 */
+                function updateMaterialStatistics(exported, insufficient) {
+                    // Đếm theo loại vật tư
+                    const stats = {
+                        aluminum: { exported: 0, unexported: 0 },
+                        glass: { exported: 0, unexported: 0 },
+                        accessory: { exported: 0, unexported: 0 },
+                        other: { exported: 0, unexported: 0 }
+                    };
+
+                    // Tính tổng giá trị đã xuất
+                    let totalExportedValue = 0;
+
+                    // Đếm vật tư đã xuất theo loại
+                    exported.forEach(mat => {
+                        const type = mat.material_type || 'other';
+                        if (stats[type]) {
+                            stats[type].exported++;
+                        } else {
+                            stats.other.exported++;
+                        }
+                        // Cộng giá trị
+                        totalExportedValue += parseFloat(mat.total_cost || 0);
+                    });
+
+                    // Đếm vật tư chưa xuất theo loại
+                    insufficient.forEach(mat => {
+                        const type = mat.material_type || 'other';
+                        if (stats[type]) {
+                            stats[type].unexported++;
+                        } else {
+                            stats.other.unexported++;
+                        }
+                    });
+
+                    // Tổng số vật tư
+                    const totalExported = exported.length;
+                    const totalUnexported = insufficient.length;
+                    const grandTotal = totalExported + totalUnexported;
+                    const completionRate = grandTotal > 0 ? Math.round((totalExported / grandTotal) * 100) : 0;
+
+                    // Cập nhật các thống kê tổng quan
+                    const statExportedEl = document.getElementById('statExportedTotal');
+                    const statUnexportedEl = document.getElementById('statUnexportedTotal');
+                    const statValueEl = document.getElementById('statExportedValue');
+                    const statRateEl = document.getElementById('statCompletionRate');
+
+                    if (statExportedEl) statExportedEl.textContent = totalExported;
+                    if (statUnexportedEl) statUnexportedEl.textContent = totalUnexported;
+                    if (statValueEl) statValueEl.textContent = formatCurrency(totalExportedValue);
+                    if (statRateEl) statRateEl.textContent = completionRate + '%';
+
+                    // Cập nhật thống kê theo loại: Nhôm
+                    const aluminumExportedEl = document.getElementById('statAluminumExported');
+                    const aluminumUnexportedEl = document.getElementById('statAluminumUnexported');
+                    if (aluminumExportedEl) aluminumExportedEl.textContent = stats.aluminum.exported;
+                    if (aluminumUnexportedEl) aluminumUnexportedEl.textContent = stats.aluminum.unexported;
+
+                    // Cập nhật thống kê theo loại: Kính
+                    const glassExportedEl = document.getElementById('statGlassExported');
+                    const glassUnexportedEl = document.getElementById('statGlassUnexported');
+                    if (glassExportedEl) glassExportedEl.textContent = stats.glass.exported;
+                    if (glassUnexportedEl) glassUnexportedEl.textContent = stats.glass.unexported;
+
+                    // Cập nhật thống kê theo loại: Phụ kiện
+                    const accessoryExportedEl = document.getElementById('statAccessoryExported');
+                    const accessoryUnexportedEl = document.getElementById('statAccessoryUnexported');
+                    if (accessoryExportedEl) accessoryExportedEl.textContent = stats.accessory.exported;
+                    if (accessoryUnexportedEl) accessoryUnexportedEl.textContent = stats.accessory.unexported;
+
+                    // Cập nhật thống kê theo loại: Vật tư phụ
+                    const otherExportedEl = document.getElementById('statOtherExported');
+                    const otherUnexportedEl = document.getElementById('statOtherUnexported');
+                    if (otherExportedEl) otherExportedEl.textContent = stats.other.exported;
+                    if (otherUnexportedEl) otherUnexportedEl.textContent = stats.other.unexported;
+
+                    // Cập nhật badge đếm số lượng
+                    const exportedBadgeEl = document.getElementById('exportedCountBadge');
+                    const unexportedBadgeEl = document.getElementById('unexportedCountBadge');
+                    if (exportedBadgeEl) exportedBadgeEl.textContent = `${totalExported} vật tư`;
+                    if (unexportedBadgeEl) unexportedBadgeEl.textContent = `${totalUnexported} vật tư`;
+
+                    console.log('📊 Material Statistics Updated:', {
+                        totalExported,
+                        totalUnexported,
+                        totalExportedValue,
+                        completionRate: completionRate + '%',
+                        byType: stats
+                    });
                 }
 
                 // Hiển thị vật tư đã xuất
