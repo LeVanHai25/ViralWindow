@@ -2128,6 +2128,13 @@
                     return div.innerHTML;
                 };
 
+                // Helper function to format numbers: show integer if whole number, else 2 decimals
+                const formatNumber = (num) => {
+                    if (num === null || num === undefined || isNaN(num)) return '0';
+                    const n = parseFloat(num);
+                    return Number.isInteger(n) ? n.toString() : n.toFixed(2).replace(/\.?0+$/, '');
+                };
+
                 tbody.innerHTML = data.map(mat => {
                     try {
                         const materialName = mat.material_name || mat.item_name || mat.name || 'N/A';
@@ -2163,10 +2170,10 @@
                             <td class="px-4 py-3">
                                 <span class="px-2 py-1 text-xs rounded ${getTypeColor(materialType)}">${getTypeName(materialType)}</span>
                             </td>
-                            <td class="px-4 py-3">${quantity.toFixed(2)} ${unit}</td>
+                            <td class="px-4 py-3">${formatNumber(quantity)} ${unit}</td>
                             <td class="px-4 py-3">${formatCurrency(unitPrice)}</td>
                             <td class="px-4 py-3 font-medium text-green-600">${formatCurrency(totalCost)}</td>
-                            <td class="px-4 py-3 text-green-600 font-semibold">${availableStock.toFixed(2)} ${stockUnit}</td>
+                            <td class="px-4 py-3 text-green-600 font-semibold">${formatNumber(availableStock)} ${stockUnit}</td>
                             <td class="px-4 py-3 text-gray-500 text-sm">${escapeHtml(notes) || '-'}</td>
                             <td class="px-4 py-3">
                                 <div class="flex gap-2">
@@ -2272,6 +2279,13 @@
                     return div.innerHTML;
                 };
 
+                // Helper function to format numbers: show integer if whole number, else 2 decimals
+                const formatNumber = (num) => {
+                    if (num === null || num === undefined || isNaN(num)) return '0';
+                    const n = parseFloat(num);
+                    return Number.isInteger(n) ? n.toString() : n.toFixed(2).replace(/\.?0+$/, '');
+                };
+
                 tbody.innerHTML = data.map(mat => {
                     try {
                         const materialName = mat.material_name || mat.item_name || mat.name || 'N/A';
@@ -2282,7 +2296,8 @@
                         const totalExported = parseFloat(mat.total_exported) || parseFloat(mat.quantity) || 0;
                         let unit = mat.unit || mat.item_unit || 'cái';
                         const availableStock = parseFloat(mat.available_stock) || 0;
-                        const shortage = parseFloat(mat.shortage) || 0;
+                        // THIẾU = số lượng cần - tồn kho (khi kho=0, thiếu = cần)
+                        const shortage = Math.max(0, stillNeeded - availableStock);
                         const stockStatus = mat.stock_status || 'unknown';
                         const stockNote = mat.stock_note || '';
                         const notes = mat.notes || '';
@@ -2307,9 +2322,9 @@
                             <td class="px-4 py-3">
                                 <span class="px-2 py-1 text-xs rounded ${getTypeColor(materialType)}">${getTypeName(materialType)}</span>
                             </td>
-                            <td class="px-4 py-3 font-semibold text-blue-600">${stillNeeded.toFixed(2)} ${unit}</td>
-                            <td class="px-4 py-3 ${availableStock > 0 ? 'text-orange-600' : 'text-gray-500'}">${availableStock > 0 ? availableStock.toFixed(2) : '-'} ${stockUnit}</td>
-                            <td class="px-4 py-3 font-semibold text-red-600">${shortage.toFixed(2)} ${unit}</td>
+                            <td class="px-4 py-3 font-semibold text-blue-600">${formatNumber(stillNeeded)} ${unit}</td>
+                            <td class="px-4 py-3 ${availableStock > 0 ? 'text-orange-600' : 'text-gray-500'}">${formatNumber(availableStock)} ${stockUnit}</td>
+                            <td class="px-4 py-3 font-semibold text-red-600">${formatNumber(shortage)} ${unit}</td>
                             <td class="px-4 py-3">${getStockStatusBadge(stockStatus)}</td>
                             <td class="px-4 py-3 text-sm text-orange-600 font-medium">${escapeHtml(stockNote)}</td>
                             <td class="px-4 py-3">

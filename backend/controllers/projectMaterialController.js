@@ -170,7 +170,7 @@ exports.getByProject = async (req, res) => {
                         const [accRows] = await db.query(
                             `SELECT id, stock_quantity, COALESCE(sale_price, purchase_price, 0) as price 
                              FROM accessories 
-                             WHERE name LIKE ? OR code LIKE ? 
+                             WHERE (name LIKE ? OR code LIKE ?) AND is_active = 1
                              LIMIT 1`,
                             [`%${materialName}%`, `%${materialName}%`]
                         );
@@ -186,7 +186,7 @@ exports.getByProject = async (req, res) => {
                         const [alumRows] = await db.query(
                             `SELECT id, COALESCE(quantity, quantity_m, 0) as stock, unit_price as price 
                              FROM aluminum_systems 
-                             WHERE name LIKE ? OR code LIKE ? 
+                             WHERE (name LIKE ? OR code LIKE ?) AND is_active = 1
                              LIMIT 1`,
                             [`%${materialName}%`, `%${materialName}%`]
                         );
@@ -202,7 +202,7 @@ exports.getByProject = async (req, res) => {
                         const [invRows] = await db.query(
                             `SELECT id, CAST(quantity AS DECIMAL(10,2)) as stock, unit_price as price 
                              FROM inventory 
-                             WHERE item_name LIKE ? OR item_code LIKE ? 
+                             WHERE (item_name LIKE ? OR item_code LIKE ?) AND is_active = 1
                              LIMIT 1`,
                             [`%${materialName}%`, `%${materialName}%`]
                         );
@@ -600,7 +600,7 @@ exports.getByProject = async (req, res) => {
                     const [accRows] = await db.query(
                         `SELECT id, stock_quantity, COALESCE(sale_price, purchase_price, 0) as price 
                          FROM accessories 
-                         WHERE name LIKE ? OR code LIKE ? 
+                         WHERE (name LIKE ? OR code LIKE ?) AND is_active = 1
                          LIMIT 1`,
                         [`%${materialName}%`, `%${materialName}%`]
                     );
@@ -614,7 +614,7 @@ exports.getByProject = async (req, res) => {
                     const [alumRows] = await db.query(
                         `SELECT id, COALESCE(quantity, quantity_m, 0) as stock, unit_price as price 
                          FROM aluminum_systems 
-                         WHERE name LIKE ? OR code LIKE ? 
+                         WHERE (name LIKE ? OR code LIKE ?) AND is_active = 1
                          LIMIT 1`,
                         [`%${materialName}%`, `%${materialName}%`]
                     );
@@ -628,7 +628,7 @@ exports.getByProject = async (req, res) => {
                     const [invRows] = await db.query(
                         `SELECT id, CAST(quantity AS DECIMAL(10,2)) as stock, unit_price as price 
                          FROM inventory 
-                         WHERE item_name LIKE ? OR item_code LIKE ? 
+                         WHERE (item_name LIKE ? OR item_code LIKE ?) AND is_active = 1
                          LIMIT 1`,
                         [`%${materialName}%`, `%${materialName}%`]
                     );
