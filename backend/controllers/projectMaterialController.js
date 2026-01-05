@@ -221,7 +221,7 @@ exports.getByProject = async (req, res) => {
 
                     if (!foundInStock) {
                         stockStatus = 'not_found';
-                        stockNote = 'Không có trong kho - Cần bổ sung';
+                        stockNote = 'Vui lòng nhập vật tư này';
                     }
                 } else {
                     // Lấy tồn kho và giá từ bảng tương ứng bằng ID
@@ -237,7 +237,7 @@ exports.getByProject = async (req, res) => {
                             foundInInventory = true;
                         } else {
                             stockStatus = 'not_found';
-                            stockNote = 'Không có trong kho - Cần bổ sung';
+                            stockNote = 'Vui lòng nhập vật tư này';
                         }
                     } else if (materialType === 'aluminum') {
                         const [alumRows] = await db.query(
@@ -251,7 +251,7 @@ exports.getByProject = async (req, res) => {
                             foundInInventory = true;
                         } else {
                             stockStatus = 'not_found';
-                            stockNote = 'Không có trong kho - Cần bổ sung';
+                            stockNote = 'Vui lòng nhập vật tư này';
                         }
                     } else if (materialType === 'glass' || materialType === 'other') {
                         const [invRows] = await db.query(
@@ -270,7 +270,7 @@ exports.getByProject = async (req, res) => {
                             foundInInventory = true;
                         } else {
                             stockStatus = 'not_found';
-                            stockNote = 'Không có trong kho - Cần bổ sung';
+                            stockNote = 'Vui lòng nhập vật tư này';
                         }
                     }
                 }
@@ -285,27 +285,32 @@ exports.getByProject = async (req, res) => {
                     if (foundInInventory) {
                         // Đã tìm thấy vật tư trong kho
                         // So sánh: (tồn kho hiện tại) với (số lượng còn cần)
-                        if (stillNeeded === 0) {
-                            // Đã xuất đủ số lượng cần
+                        // QUAN TRỌNG: Nếu kho = 0, LUÔN là "shortage" bất kể đã xuất bao nhiêu
+                        if (remainingStock === 0) {
+                            // Hết kho - LUÔN đánh dấu là shortage
+                            stockStatus = 'shortage';
+                            stockNote = 'Kho đã hết hãy cung cấp';
+                        } else if (stillNeeded === 0 && remainingStock > 0) {
+                            // Đã xuất đủ số lượng cần VÀ kho vẫn còn
                             stockStatus = 'sufficient';
-                            stockNote = 'Đã xuất đủ';
-                        } else if (remainingStock >= stillNeeded) {
-                            // Tồn kho đủ cho số lượng còn cần
+                            stockNote = 'Vật tư còn đủ dùng';
+                        } else if (remainingStock >= stillNeeded && remainingStock > 0) {
+                            // Tồn kho đủ cho số lượng còn cần VÀ kho vẫn còn
                             stockStatus = 'sufficient';
-                            stockNote = 'Đủ kho';
+                            stockNote = 'Vật tư còn đủ dùng';
                         } else if (remainingStock > 0) {
                             // Tồn kho có nhưng không đủ
                             stockStatus = 'partial';
                             stockNote = `Thiếu ${shortage.toFixed(2)} ${item.unit || ''} - Cần bổ sung`;
                         } else {
-                            // Hết kho
+                            // Case an toàn - không nên đến đây
                             stockStatus = 'shortage';
-                            stockNote = 'Hết kho - Cần bổ sung';
+                            stockNote = 'Kho đã hết hãy cung cấp';
                         }
                     } else {
                         // Không tìm thấy vật tư trong kho
                         stockStatus = 'not_found';
-                        stockNote = 'Không có trong kho - Cần bổ sung';
+                        stockNote = 'Vui lòng nhập vật tư này';
                     }
                 }
                 // Nếu stockStatus đã là 'not_found', giữ nguyên (đã được set ở trên)
@@ -533,7 +538,9 @@ exports.getByProject = async (req, res) => {
             }
 
             // Xác định xem vật tư này đã xuất đủ chưa
-            const isFullyExported = totalExportedQty >= totalRequiredQty;
+            // CHỈ coi là "đã xuất đủ" khi stockStatus là 'sufficient' (kho đủ)
+            // Các trạng thái khác (partial, shortage, not_found, error) đều là "chưa đủ"
+            const isFullyExported = stockStatus === 'sufficient';
 
             return {
                 ...item,
@@ -544,9 +551,9 @@ exports.getByProject = async (req, res) => {
                 total_exported: totalExportedQty, // Tổng số lượng đã xuất (tất cả record)
                 still_needed: Math.max(0, totalRequiredQty - totalExportedQty), // Số lượng còn cần
                 available_stock: remainingStock, // Tồn kho hiện tại
-                stock_status: isFullyExported ? 'sufficient' : stockStatus, // Chỉ sufficient nếu đã xuất đủ
-                stock_note: stockNote || (isFullyExported ? 'Đã xuất đủ' : 'Đã xuất nhưng chưa đủ'),
-                shortage: isFullyExported ? 0 : shortage, // Có shortage nếu chưa xuất đủ
+                stock_status: stockStatus, // Giữ nguyên stockStatus đã tính toán
+                stock_note: stockNote, // Giữ nguyên stockNote đã tính toán  
+                shortage: shortage, // Số lượng thiếu
                 is_fully_exported: isFullyExported // Flag để phân loại
             };
         }));
@@ -640,15 +647,19 @@ exports.getByProject = async (req, res) => {
                 // Xác định trạng thái
                 if (foundInInventory) {
                     const shortage = Math.max(0, stillNeeded - availableStock);
-                    if (availableStock >= stillNeeded) {
+                    // QUAN TRỌNG: Nếu kho = 0, LUÔN là "shortage"
+                    if (availableStock === 0) {
+                        stockStatus = 'shortage';
+                        stockNote = 'Kho đã hết hãy cung cấp';
+                    } else if (availableStock >= stillNeeded && availableStock > 0) {
                         stockStatus = 'sufficient';
-                        stockNote = 'Đủ kho';
+                        stockNote = 'Vật tư còn đủ dùng';
                     } else if (availableStock > 0) {
                         stockStatus = 'partial';
                         stockNote = `Thiếu ${shortage.toFixed(2)} ${unit} - Cần bổ sung`;
                     } else {
                         stockStatus = 'shortage';
-                        stockNote = 'Hết kho - Cần bổ sung';
+                        stockNote = 'Kho đã hết hãy cung cấp';
                     }
                 }
             } catch (err) {

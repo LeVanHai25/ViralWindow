@@ -13,7 +13,7 @@
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         .sidebar {
@@ -391,7 +391,8 @@
                     <a href="design-new.html"
                         class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                         <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 4v16m8-8H4" />
                         </svg>
                         Tạo yêu cầu mới
                     </a>
@@ -462,15 +463,13 @@
     </div>
 
     <!-- View/Edit Modal -->
-    <div id="requestModal"
-        class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div id="requestModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div class="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
                 <h2 class="text-xl font-bold text-gray-900" id="modalTitle">Chi tiết Yêu Cầu Vật Tư</h2>
                 <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
@@ -480,7 +479,6 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="js/success-notification.js"></script>
     <script src="js/notification-header.js"></script>
     <script src="js/sidebar-enterprise.js"></script>
@@ -523,31 +521,10 @@
 
                     if (avatarInitial && avatarImage) {
                         if (user.avatar_url) {
-                            // Handle different URL formats
-                            let avatarUrl = user.avatar_url;
-
-                            // Check if it's a base64 data URL
-                            if (avatarUrl.startsWith('data:image')) {
-                                // Use base64 directly - don't modify it
-                                avatarImage.src = avatarUrl;
-                            } else if (!avatarUrl.startsWith('http') && !avatarUrl.startsWith('/')) {
-                                // Relative path - construct full URL
-                                avatarUrl = `${API_BASE.replace('/api', '')}/${avatarUrl}`;
-                                avatarImage.src = avatarUrl;
-                            } else if (avatarUrl.startsWith('/')) {
-                                // Absolute path from root
-                                avatarUrl = `${window.location.origin}${avatarUrl}`;
-                                avatarImage.src = avatarUrl;
-                            } else {
-                                // Full URL
-                                avatarImage.src = avatarUrl;
-                            }
+                            avatarImage.src = user.avatar_url;
                             avatarImage.onerror = () => {
                                 avatarImage.classList.add('hidden');
                                 avatarInitial.classList.remove('hidden');
-                                // Set initial if image fails
-                                const initial = (user.full_name || user.name || user.username || 'U').charAt(0).toUpperCase();
-                                avatarInitial.textContent = initial;
                             };
                             avatarImage.onload = () => {
                                 avatarImage.classList.remove('hidden');
@@ -591,8 +568,9 @@
                 const category = document.getElementById('categoryFilter').value;
                 const status = document.getElementById('statusFilter').value;
 
-                let url = `${API_BASE}/purchase-requests?`;
+                let url = `${API_BASE}/material-requests?`;
                 if (search) url += `search=${encodeURIComponent(search)}&`;
+                if (category) url += `category=${category}&`;
                 if (status) url += `status=${status}&`;
 
                 const response = await fetch(url, {
@@ -633,8 +611,7 @@
                     'nhom': 'Nhôm',
                     'kinh': 'Kính',
                     'phukien': 'Phụ kiện',
-                    'vattu': 'Vật tư phụ',
-                    'all': 'Tất cả'
+                    'vattu': 'Vật tư phụ'
                 };
 
                 const statusNames = {
@@ -652,6 +629,7 @@
                         <div class="flex-1">
                             <div class="flex items-center gap-3 mb-2">
                                 <h3 class="text-lg font-semibold text-gray-900">${escapeHtml(request.order_code)}</h3>
+                                <span class="category-badge category-${request.category}">${categoryNames[request.category] || request.category}</span>
                                 <span class="status-badge status-${request.status}">${statusNames[request.status] || request.status}</span>
                             </div>
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
@@ -661,7 +639,7 @@
                                 </div>
                                 <div>
                                     <span class="font-medium">Ngày tạo:</span>
-                                    <span class="ml-2">${formatDate(request.created_date || request.request_date || request.created_at)}</span>
+                                    <span class="ml-2">${formatDate(request.request_date)}</span>
                                 </div>
                                 <div>
                                     <span class="font-medium">Số lượng vật tư:</span>
@@ -721,7 +699,7 @@
 
         async function loadRequestDetail(id, isEdit) {
             try {
-                const response = await fetch(`${API_BASE}/purchase-requests/${id}`, {
+                const response = await fetch(`${API_BASE}/material-requests/${id}`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
                     }
@@ -757,42 +735,14 @@
                 'nhom': 'Nhôm',
                 'kinh': 'Kính',
                 'phukien': 'Phụ kiện',
-                'vattu': 'Vật tư phụ',
-                'all': 'Tất cả'
-            };
-
-            const statusNames = {
-                'draft': 'Bản nháp',
-                'submitted': 'Đã gửi',
-                'approved': 'Đã duyệt',
-                'rejected': 'Từ chối',
-                'completed': 'Hoàn thành'
+                'vattu': 'Vật tư phụ'
             };
 
             let itemsTable = '';
             if (request.items && request.items.length > 0) {
-                // Group items by material_type
-                const itemsByType = {
-                    nhom: [],
-                    kinh: [],
-                    phukien: [],
-                    vattu: []
-                };
-
-                request.items.forEach(item => {
-                    if (itemsByType[item.material_type]) {
-                        itemsByType[item.material_type].push(item);
-                    }
-                });
-
-                // Build tables for each category
-                let tablesHtml = '';
-
-                // Nhôm table
-                if (itemsByType.nhom.length > 0) {
-                    tablesHtml += `
-                        <h4 class="font-semibold mb-2 mt-4">Nhôm</h4>
-                        <table class="w-full text-sm border-collapse mb-4">
+                if (request.category === 'nhom') {
+                    itemsTable = `
+                        <table class="w-full text-sm border-collapse">
                             <thead>
                                 <tr class="bg-blue-500 text-white">
                                     <th class="border p-2">STT</th>
@@ -807,15 +757,15 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                ${itemsByType.nhom.map((item, index) => `
+                                ${request.items.map((item, index) => `
                                     <tr>
                                         <td class="border p-2 text-center">${index + 1}</td>
                                         <td class="border p-2">${escapeHtml(item.material_name)}</td>
                                         <td class="border p-2">${escapeHtml(item.material_code || '')}</td>
                                         <td class="border p-2 text-center">${item.density || ''}</td>
                                         <td class="border p-2 text-center">${item.length_m || ''}</td>
-                                        <td class="border p-2 text-center">${item.unit || ''}</td>
-                                        <td class="border p-2 text-center">${item.quantity || ''}</td>
+                                        <td class="border p-2 text-center">${item.unit}</td>
+                                        <td class="border p-2 text-center">${item.quantity}</td>
                                         <td class="border p-2 text-center">${item.weight || ''}</td>
                                         <td class="border p-2">${escapeHtml(item.notes || '')}</td>
                                     </tr>
@@ -823,13 +773,9 @@
                             </tbody>
                         </table>
                     `;
-                }
-
-                // Kính table
-                if (itemsByType.kinh.length > 0) {
-                    tablesHtml += `
-                        <h4 class="font-semibold mb-2 mt-4">Kính</h4>
-                        <table class="w-full text-sm border-collapse mb-4">
+                } else if (request.category === 'kinh') {
+                    itemsTable = `
+                        <table class="w-full text-sm border-collapse">
                             <thead>
                                 <tr class="bg-blue-500 text-white">
                                     <th class="border p-2">STT</th>
@@ -844,15 +790,15 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                ${itemsByType.kinh.map((item, index) => `
+                                ${request.items.map((item, index) => `
                                     <tr>
                                         <td class="border p-2 text-center">${index + 1}</td>
                                         <td class="border p-2">${escapeHtml(item.material_code || '')}</td>
-                                        <td class="border p-2">${escapeHtml(item.material_name || '')}</td>
+                                        <td class="border p-2">${escapeHtml(item.glass_type || '')}</td>
                                         <td class="border p-2 text-center">${item.width || ''}</td>
                                         <td class="border p-2 text-center">${item.height || ''}</td>
-                                        <td class="border p-2 text-center">${item.unit || ''}</td>
-                                        <td class="border p-2 text-center">${item.panels || item.quantity || ''}</td>
+                                        <td class="border p-2 text-center">${item.unit}</td>
+                                        <td class="border p-2 text-center">${item.panels || ''}</td>
                                         <td class="border p-2 text-center">${item.area || ''}</td>
                                         <td class="border p-2">${escapeHtml(item.notes || '')}</td>
                                     </tr>
@@ -860,14 +806,9 @@
                             </tbody>
                         </table>
                     `;
-                }
-
-                // Phụ kiện & Vật tư phụ table
-                const otherItems = [...itemsByType.phukien, ...itemsByType.vattu];
-                if (otherItems.length > 0) {
-                    tablesHtml += `
-                        <h4 class="font-semibold mb-2 mt-4">Phụ kiện & Vật tư phụ</h4>
-                        <table class="w-full text-sm border-collapse mb-4">
+                } else {
+                    itemsTable = `
+                        <table class="w-full text-sm border-collapse">
                             <thead>
                                 <tr class="bg-blue-500 text-white">
                                     <th class="border p-2">STT</th>
@@ -879,13 +820,13 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                ${otherItems.map((item, index) => `
+                                ${request.items.map((item, index) => `
                                     <tr>
                                         <td class="border p-2 text-center">${index + 1}</td>
                                         <td class="border p-2">${escapeHtml(item.material_code || '')}</td>
                                         <td class="border p-2">${escapeHtml(item.material_name)}</td>
-                                        <td class="border p-2 text-center">${item.unit || ''}</td>
-                                        <td class="border p-2 text-center">${item.quantity || ''}</td>
+                                        <td class="border p-2 text-center">${item.unit}</td>
+                                        <td class="border p-2 text-center">${item.quantity}</td>
                                         <td class="border p-2">${escapeHtml(item.notes || '')}</td>
                                     </tr>
                                 `).join('')}
@@ -893,8 +834,6 @@
                         </table>
                     `;
                 }
-
-                itemsTable = tablesHtml;
             }
 
             modalContent.innerHTML = `
@@ -908,7 +847,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Ngày tạo</label>
-                            <input type="date" id="editRequestDate" value="${formatDateForInput(request.created_date || request.request_date || request.created_at)}" 
+                            <input type="date" id="editRequestDate" value="${formatDateForInput(request.request_date)}" 
                                 ${!isEdit ? 'readonly' : ''}
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg ${!isEdit ? 'bg-gray-100' : ''}">
                         </div>
@@ -926,7 +865,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Loại vật tư</label>
-                            <input type="text" value="${categoryNames[request.category] || request.category || 'Tất cả'}" 
+                            <input type="text" value="${categoryNames[request.category] || request.category}" 
                                 readonly
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100">
                         </div>
@@ -941,7 +880,7 @@
                                     <option value="completed" ${request.status === 'completed' ? 'selected' : ''}>Hoàn thành</option>
                                 </select>
                             ` : `
-                                <input type="text" value="${statusNames[request.status] || request.status}" readonly
+                                <input type="text" value="${request.status}" readonly
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100">
                             `}
                         </div>
@@ -955,7 +894,7 @@
                     <div class="mt-4">
                         <h3 class="text-lg font-semibold mb-2">Danh sách vật tư</h3>
                         <div class="overflow-x-auto">
-                            ${itemsTable || '<p class="text-gray-500 text-center py-4">Không có vật tư nào</p>'}
+                            ${itemsTable}
                         </div>
                     </div>
                     ${isEdit ? `
@@ -996,7 +935,7 @@
                     status: document.getElementById('editStatus').value
                 };
 
-                const response = await fetch(`${API_BASE}/purchase-requests/${currentEditingId}`, {
+                const response = await fetch(`${API_BASE}/material-requests/${currentEditingId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1034,7 +973,7 @@
             if (!confirm('Bạn có chắc chắn muốn xóa yêu cầu này?')) return;
 
             try {
-                const response = await fetch(`${API_BASE}/purchase-requests/${id}`, {
+                const response = await fetch(`${API_BASE}/material-requests/${id}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
@@ -1060,6 +999,70 @@
             }
         }
 
+        async function exportRequestExcel(id) {
+            try {
+                showToast('Đang xuất Excel...', 'info');
+                
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    showToast('Vui lòng đăng nhập lại', 'error');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const url = `${API_BASE}/material-requests/${id}/export-excel`;
+                
+                // Tạo link tạm để download
+                const link = document.createElement('a');
+                link.href = url;
+                link.style.display = 'none';
+                
+                // Thêm token vào header bằng cách fetch và tạo blob
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    showToast('Phiên đăng nhập đã hết hạn', 'error');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Lỗi khi xuất Excel');
+                }
+
+                // Lấy filename từ Content-Disposition header
+                const contentDisposition = response.headers.get('Content-Disposition');
+                let filename = `Phieu_Yeu_Cau_Vat_Tu_${id}.xlsx`;
+                if (contentDisposition) {
+                    const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                    if (filenameMatch && filenameMatch[1]) {
+                        filename = filenameMatch[1].replace(/['"]/g, '');
+                    }
+                }
+
+                // Download file
+                const blob = await response.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+                link.href = blobUrl;
+                link.download = decodeURIComponent(filename);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(blobUrl);
+
+                showToast('Đã xuất Excel thành công!', 'success');
+            } catch (error) {
+                console.error('Error exporting Excel:', error);
+                showToast('Lỗi khi xuất Excel: ' + (error.message || error), 'error');
+            }
+        }
+
         function formatDate(dateString) {
             if (!dateString) return 'N/A';
             const date = new Date(dateString);
@@ -1069,6 +1072,7 @@
         function formatDateForInput(dateString) {
             if (!dateString) return '';
             const date = new Date(dateString);
+            // Format as yyyy-MM-dd for date input
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
@@ -1080,150 +1084,6 @@
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
-        }
-
-        async function exportRequestExcel(id) {
-            try {
-                showToast('Đang xuất Excel...', 'info');
-
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    showToast('Vui lòng đăng nhập lại', 'error');
-                    window.location.href = 'login.html';
-                    return;
-                }
-
-                // Get the request data first
-                const requestResponse = await fetch(`${API_BASE}/purchase-requests/${id}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (requestResponse.status === 401 || requestResponse.status === 403) {
-                    showToast('Phiên đăng nhập đã hết hạn', 'error');
-                    window.location.href = 'login.html';
-                    return;
-                }
-
-                if (!requestResponse.ok) {
-                    throw new Error('Không tìm thấy phiếu yêu cầu');
-                }
-
-                const requestResult = await requestResponse.json();
-                if (!requestResult.success || !requestResult.data) {
-                    throw new Error('Không tìm thấy phiếu yêu cầu');
-                }
-
-                const request = requestResult.data;
-
-                // Group items by type
-                const itemsByType = { nhom: [], kinh: [], phukien: [], vattu: [] };
-                if (request.items && request.items.length > 0) {
-                    request.items.forEach(item => {
-                        if (itemsByType[item.material_type]) {
-                            itemsByType[item.material_type].push({
-                                code: item.material_code || '',
-                                name: item.material_name || '',
-                                unit: item.unit || '',
-                                quantity: item.quantity || 0,
-                                density: item.density || '',
-                                length: item.length_m || 6,
-                                weight: item.weight || '',
-                                width: item.width || '',
-                                height: item.height || '',
-                                panels: item.panels || item.quantity || '',
-                                area: item.area || '',
-                                type: item.material_name || '',
-                                note: item.notes || ''
-                            });
-                        }
-                    });
-                }
-
-                // Determine which type to export
-                let exportType = 'nhom'; // default
-                let exportData = [];
-
-                if (itemsByType.nhom.length > 0) {
-                    exportType = 'nhom';
-                    exportData = itemsByType.nhom;
-                } else if (itemsByType.kinh.length > 0) {
-                    exportType = 'kinh';
-                    exportData = itemsByType.kinh;
-                } else if (itemsByType.phukien.length > 0) {
-                    exportType = 'phukien';
-                    exportData = itemsByType.phukien;
-                } else if (itemsByType.vattu.length > 0) {
-                    exportType = 'vattu';
-                    exportData = itemsByType.vattu;
-                }
-
-                if (exportData.length === 0) {
-                    showToast('Không có vật tư để xuất Excel', 'warning');
-                    return;
-                }
-
-                // Call backend API for professional Excel export with logo
-                const exportResponse = await fetch(`${API_BASE}/bom-export/purchase-request`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        type: exportType,
-                        data: exportData,
-                        projectInfo: {
-                            projectName: request.project_name || '',
-                            orderCode: request.order_code || '',
-                            productType: request.product_type || '',
-                            color: request.color || '',
-                            deliveryAddress: request.delivery_address || ''
-                        }
-                    })
-                });
-
-                if (!exportResponse.ok) {
-                    const errorResult = await exportResponse.json();
-                    throw new Error(errorResult.message || 'Lỗi khi xuất Excel');
-                }
-
-                // Get filename from response headers
-                const contentDisposition = exportResponse.headers.get('Content-Disposition');
-                let filename = `Phieu_Yeu_Cau_${exportType}_${request.order_code || id}.xlsx`;
-                if (contentDisposition) {
-                    const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-                    if (filenameMatch && filenameMatch[1]) {
-                        filename = decodeURIComponent(filenameMatch[1].replace(/['"]/g, ''));
-                    }
-                }
-
-                // Download file
-                const blob = await exportResponse.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
-
-                showToast('Đã xuất Excel thành công!', 'success');
-            } catch (error) {
-                console.error('Error exporting Excel:', error);
-                showToast('Lỗi khi xuất Excel: ' + (error.message || error), 'error');
-            }
-        }
-
-        function getStatusName(status) {
-            const statusNames = {
-                'draft': 'Bản nháp',
-                'submitted': 'Đã gửi',
-                'approved': 'Đã duyệt',
-                'rejected': 'Từ chối',
-                'completed': 'Hoàn thành'
-            };
-            return statusNames[status] || status;
         }
 
         // Show toast notification
@@ -1249,48 +1109,16 @@
         // Load company logo and name
         async function loadCompanyLogo() {
             try {
-                const token = localStorage.getItem('token');
-                const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-
-                const response = await fetch(`${API_BASE}/company-settings`, { headers });
-
-                if (!response.ok) {
-                    console.warn('Company settings API not available');
-                    const logoImg = document.getElementById('companyLogo');
-                    const logoIcon = document.getElementById('companyLogoIcon');
-                    if (logoImg && logoIcon) {
-                        logoImg.classList.add('hidden');
-                        logoIcon.classList.remove('hidden');
-                    }
-                    return;
-                }
-
+                const response = await fetch(`${API_BASE}/company-settings`);
                 const result = await response.json();
 
                 if (result.success && result.data) {
-                    const logoImg = document.getElementById('companyLogo');
-                    const logoIcon = document.getElementById('companyLogoIcon');
-
-                    if (logoImg && logoIcon) {
-                        if (result.data.logo_path) {
-                            let logoUrl = result.data.logo_path;
-
-                            // Check if it's a base64 data URL
-                            if (logoUrl.startsWith('data:image')) {
-                                // Use base64 directly - don't modify it
-                                logoImg.src = logoUrl;
-                            } else if (!logoUrl.startsWith('http') && !logoUrl.startsWith('/')) {
-                                // Relative path - construct full URL
-                                logoUrl = `${API_BASE.replace('/api', '')}/${logoUrl}`;
-                                logoImg.src = logoUrl;
-                            } else if (logoUrl.startsWith('/')) {
-                                // Absolute path from root
-                                logoUrl = `${window.location.origin}${logoUrl}`;
-                                logoImg.src = logoUrl;
-                            } else {
-                                // Full URL
-                                logoImg.src = logoUrl;
-                            }
+                    // Load logo
+                    if (result.data.logo_path) {
+                        const logoImg = document.getElementById('companyLogo');
+                        const logoIcon = document.getElementById('companyLogoIcon');
+                        if (logoImg && logoIcon) {
+                            logoImg.src = result.data.logo_path;
                             logoImg.onerror = () => {
                                 logoImg.classList.add('hidden');
                                 logoIcon.classList.remove('hidden');
@@ -1299,12 +1127,10 @@
                                 logoImg.classList.remove('hidden');
                                 logoIcon.classList.add('hidden');
                             };
-                        } else {
-                            logoImg.classList.add('hidden');
-                            logoIcon.classList.remove('hidden');
                         }
                     }
 
+                    // Load company name
                     if (result.data.company_name) {
                         const companyNameEl = document.getElementById('companyName');
                         if (companyNameEl) {
@@ -1314,12 +1140,6 @@
                 }
             } catch (error) {
                 console.error('Error loading company logo:', error);
-                const logoImg = document.getElementById('companyLogo');
-                const logoIcon = document.getElementById('companyLogoIcon');
-                if (logoImg && logoIcon) {
-                    logoImg.classList.add('hidden');
-                    logoIcon.classList.remove('hidden');
-                }
             }
         }
 
@@ -1329,6 +1149,7 @@
             loadCompanyLogo();
             loadMaterialRequests();
 
+            // Filter events
             document.getElementById('searchInput').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') loadMaterialRequests();
             });
@@ -1337,3 +1158,4 @@
 </body>
 
 </html>
+

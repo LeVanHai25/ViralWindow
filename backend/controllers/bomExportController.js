@@ -175,7 +175,7 @@ exports.exportAluminumBreakdown = async (req, res) => {
         aluminumItems.forEach((item, index) => {
             const row = currentRow;
             const quantity = parseFloat(item.quantity || 0);
-            const weight = parseFloat(item.weight || 0);
+            const weight = parseFloat(item.weight_kg || item.weight || 0); // ✅ Fixed: Accept both weight_kg (frontend) and weight
             totalQuantity += quantity;
             totalWeight += weight;
 
@@ -246,10 +246,10 @@ exports.exportAluminumBreakdown = async (req, res) => {
         // Set response headers
         const projectName = (project.project_name || 'Project').replace(/[^a-zA-Z0-9]/g, '_');
         const fileName = `Boc_tach_Nhom_${projectName}_${new Date().toISOString().split('T')[0]}.xlsx`;
-        
+
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
-        
+
         res.send(buffer);
     } catch (error) {
         console.error('Error exporting aluminum breakdown Excel:', error);
@@ -431,10 +431,10 @@ exports.exportGlassBreakdown = async (req, res) => {
         // Set response headers
         const projectName = (project.project_name || 'Project').replace(/[^a-zA-Z0-9]/g, '_');
         const fileName = `Boc_tach_Kinh_${projectName}_${new Date().toISOString().split('T')[0]}.xlsx`;
-        
+
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
-        
+
         res.send(buffer);
     } catch (error) {
         console.error('Error exporting glass breakdown Excel:', error);
@@ -603,10 +603,10 @@ exports.exportAccessoriesBreakdown = async (req, res) => {
         // Set response headers
         const projectName = (project.project_name || 'Project').replace(/[^a-zA-Z0-9]/g, '_');
         const fileName = `Boc_tach_Vat_Tu_Phu_${projectName}_${new Date().toISOString().split('T')[0]}.xlsx`;
-        
+
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
-        
+
         res.send(buffer);
     } catch (error) {
         console.error('Error exporting accessories breakdown Excel:', error);
@@ -684,7 +684,7 @@ exports.exportCombinedBreakdown = async (req, res) => {
         // Summary statistics
         const totalNhomTypes = nhom.length || 0;
         const totalNhomQty = nhom.reduce((sum, item) => sum + parseFloat(item.quantity || 0), 0);
-        const totalNhomWeight = nhom.reduce((sum, item) => sum + parseFloat(item.weight || 0), 0);
+        const totalNhomWeight = nhom.reduce((sum, item) => sum + parseFloat(item.weight_kg || item.weight || 0), 0);
         const totalKinhTypes = kinh.length || 0;
         const totalKinhPanels = kinh.reduce((sum, item) => sum + parseInt(item.quantity || item.panels || 0), 0);
         const totalKinhArea = kinh.reduce((sum, item) => sum + parseFloat(item.area_m2 || item.area || 0), 0);
@@ -756,7 +756,7 @@ exports.exportCombinedBreakdown = async (req, res) => {
                 nhomSheet.getCell(nhomRow, 5).value = parseFloat(item.length || item.length_m || 0);
                 nhomSheet.getCell(nhomRow, 6).value = item.unit || 'cây';
                 nhomSheet.getCell(nhomRow, 7).value = parseFloat(item.quantity || 0);
-                nhomSheet.getCell(nhomRow, 8).value = parseFloat(item.weight || 0);
+                nhomSheet.getCell(nhomRow, 8).value = parseFloat(item.weight_kg || item.weight || 0);
                 nhomSheet.getCell(nhomRow, 9).value = item.notes || '';
                 for (let col = 1; col <= 9; col++) {
                     const cell = nhomSheet.getCell(nhomRow, col);
@@ -874,10 +874,10 @@ exports.exportCombinedBreakdown = async (req, res) => {
         // Set response headers
         const projectName = (project.project_name || 'Project').replace(/[^a-zA-Z0-9]/g, '_');
         const fileName = `Boc_tach_Tong_hop_${projectName}_${new Date().toISOString().split('T')[0]}.xlsx`;
-        
+
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
-        
+
         res.send(buffer);
     } catch (error) {
         console.error('Error exporting combined breakdown Excel:', error);
@@ -918,7 +918,7 @@ exports.exportProductList = async (req, res) => {
         // Since projects table doesn't have user_id/created_by, we use the current logged-in user
         const currentUser = req.user || {};
         const designerName = currentUser.full_name || currentUser.email || 'N/A';
-        
+
         // Get current date
         const currentDate = new Date();
         const dateStr = formatDateVN(currentDate);
@@ -958,7 +958,7 @@ exports.exportProductList = async (req, res) => {
         worksheet.mergeCells(`B${currentRow}:D${currentRow}`);
         worksheet.getCell(`B${currentRow}`).value = project.project_name || '';
         worksheet.getCell(`B${currentRow}`).font = { name: 'Times New Roman', size: 11 };
-        
+
         // Right column - Ngày làm
         worksheet.getCell(`F${currentRow}`).value = 'Ngày làm:';
         worksheet.getCell(`F${currentRow}`).font = { name: 'Times New Roman', size: 11, bold: true };
@@ -972,7 +972,7 @@ exports.exportProductList = async (req, res) => {
         worksheet.mergeCells(`B${currentRow}:D${currentRow}`);
         worksheet.getCell(`B${currentRow}`).value = project.customer_name || '';
         worksheet.getCell(`B${currentRow}`).font = { name: 'Times New Roman', size: 11 };
-        
+
         // Right column - Người thiết kế
         worksheet.getCell(`F${currentRow}`).value = 'Người thiết kế:';
         worksheet.getCell(`F${currentRow}`).font = { name: 'Times New Roman', size: 11, bold: true };
@@ -986,7 +986,7 @@ exports.exportProductList = async (req, res) => {
         worksheet.mergeCells(`B${currentRow}:D${currentRow}`);
         worksheet.getCell(`B${currentRow}`).value = project.location || project.address || '';
         worksheet.getCell(`B${currentRow}`).font = { name: 'Times New Roman', size: 11 };
-        
+
         // Right column - Mã dự án
         worksheet.getCell(`F${currentRow}`).value = 'Mã dự án:';
         worksheet.getCell(`F${currentRow}`).font = { name: 'Times New Roman', size: 11, bold: true };
@@ -1029,17 +1029,17 @@ exports.exportProductList = async (req, res) => {
             // ✅ CRITICAL FIX: Lấy Ký hiệu với logic swap giống frontend
             let displayCode = item.product_code || item.code || item.item_code || item.design_code || item.material_code || item.door_code || '';
             let displayName = item.item_name || item.name || '';
-            
+
             // Logic swap: nếu item_name giống mã (ngắn, chứa dạng như D2-T1) và product_code giống tên sản phẩm (dài), thì hoán đổi
             const isNameLikeCode = displayName && displayName.length < 15 && /^[A-Z0-9_-]+$/i.test(displayName.replace(/\s/g, ''));
             const isCodeLikeName = displayCode && displayCode.length > 15;
-            
+
             if (isNameLikeCode && isCodeLikeName) {
                 const temp = displayCode;
                 displayCode = displayName;
                 displayName = temp;
             }
-            
+
             // Get quy cách (spec hoặc design hoặc item_name sau khi swap)
             const spec = item.spec || item.design || displayName || item.item_name || item.code || '';
 
@@ -1139,20 +1139,20 @@ exports.exportProductList = async (req, res) => {
         worksheet.getCell(`A${currentRow}`).font = { name: 'Times New Roman', size: 11, bold: true };
         worksheet.getCell(`A${currentRow}`).alignment = { vertical: 'middle', horizontal: 'center' };
         worksheet.getRow(currentRow).height = 60;
-        
+
         // Add signature line
         currentRow++;
         worksheet.mergeCells(`A${currentRow}:E${currentRow}`);
         worksheet.getCell(`A${currentRow}`).value = '(Ký, ghi rõ họ tên)';
         worksheet.getCell(`A${currentRow}`).font = { name: 'Times New Roman', size: 10, italic: true };
         worksheet.getCell(`A${currentRow}`).alignment = { vertical: 'top', horizontal: 'center' };
-        
+
         // Right side - Người kiểm tra
         worksheet.mergeCells(`F${currentRow - 1}:J${currentRow - 1}`);
         worksheet.getCell(`F${currentRow - 1}`).value = 'Người kiểm tra';
         worksheet.getCell(`F${currentRow - 1}`).font = { name: 'Times New Roman', size: 11, bold: true };
         worksheet.getCell(`F${currentRow - 1}`).alignment = { vertical: 'middle', horizontal: 'center' };
-        
+
         worksheet.mergeCells(`F${currentRow}:J${currentRow}`);
         worksheet.getCell(`F${currentRow}`).value = '(Ký, ghi rõ họ tên)';
         worksheet.getCell(`F${currentRow}`).font = { name: 'Times New Roman', size: 10, italic: true };
@@ -1164,10 +1164,10 @@ exports.exportProductList = async (req, res) => {
         // Set response headers
         const projectName = (project.project_name || 'Project').replace(/[^a-zA-Z0-9]/g, '_');
         const fileName = `DanhSachSanPham_${projectName}_${new Date().toISOString().split('T')[0]}.xlsx`;
-        
+
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
-        
+
         res.send(buffer);
     } catch (error) {
         console.error('Error exporting product list Excel:', error);
@@ -1370,10 +1370,10 @@ exports.exportMaterialRequest = async (req, res) => {
         const projectName = (project.project_name || 'Project').replace(/[^a-zA-Z0-9]/g, '_');
         const categoryLabel = (title || 'MaterialRequest').replace(/[^a-zA-Z0-9]/g, '_');
         const fileName = `${categoryLabel}_${projectName}_${new Date().toISOString().split('T')[0]}.xlsx`;
-        
+
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
-        
+
         res.send(buffer);
     } catch (error) {
         console.error('Error exporting material request Excel:', error);

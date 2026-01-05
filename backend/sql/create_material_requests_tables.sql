@@ -115,3 +115,4 @@ CREATE TABLE IF NOT EXISTS `material_request_items` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Chi tiết vật tư trong phiếu yêu cầu';
 
 
+

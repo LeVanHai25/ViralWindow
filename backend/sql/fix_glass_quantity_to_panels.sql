@@ -37,3 +37,4 @@ WHERE item_type = 'glass';
 -- - Nếu bạn muốn làm tròn thành số nguyên (4 tấm), chạy thêm:
 -- UPDATE inventory SET quantity = ROUND(quantity) WHERE item_type = 'glass';
 
+

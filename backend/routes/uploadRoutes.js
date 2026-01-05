@@ -222,8 +222,8 @@ router.get("/design/:projectId/list", async (req, res) => {
         const fileList = files
             .filter(filename => filename !== 'metadata.json') // Bỏ qua file metadata
             .map(filename => {
-                const filePath = path.join(designDir, filename);
-                const stats = fs.statSync(filePath);
+            const filePath = path.join(designDir, filename);
+            const stats = fs.statSync(filePath);
                 
                 // Lấy originalName từ metadata nếu có
                 const fileMetadata = metadata[filename] || {};
@@ -240,16 +240,16 @@ router.get("/design/:projectId/list", async (req, res) => {
 
                 console.log(`📄 File: ${filename} -> originalName: ${originalName}`);
 
-                return {
+            return {
                     name: filename,  // Tên unique trên server
                     originalName: originalName,  // Tên gốc để hiển thị
-                    url: `/uploads/designs/${projectId}/${filename}`,
-                    size: stats.size,
-                    type: path.extname(filename).toLowerCase(),
+                url: `/uploads/designs/${projectId}/${filename}`,
+                size: stats.size,
+                type: path.extname(filename).toLowerCase(),
                     uploadedAt: fileMetadata.uploadedAt || stats.mtime,
                     mimetype: fileMetadata.mimetype || 'application/octet-stream'
-                };
-            });
+            };
+        });
 
         res.json({
             success: true,

@@ -113,3 +113,4 @@ ADD COLUMN IF NOT EXISTS `last_contact_date` datetime DEFAULT NULL COMMENT 'Ngà
 CREATE INDEX IF NOT EXISTS `idx_customer_status` ON `customers` (`customer_status`);
 
 
+
