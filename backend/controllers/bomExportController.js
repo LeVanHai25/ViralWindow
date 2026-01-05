@@ -79,28 +79,813 @@ function addCompanyHeader(worksheet, workbook) {
  * Xuất Excel Bóc tách Nhôm
  */
 exports.exportAluminumBreakdown = async (req, res) => {
-    res.status(501).json({ success: false, message: 'Function not implemented yet' });
+    try {
+        const { projectId } = req.params;
+        const { data: aluminumItems } = req.body;
+
+        if (!aluminumItems || !Array.isArray(aluminumItems) || aluminumItems.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Không có dữ liệu nhôm để xuất'
+            });
+        }
+
+        // Get project info
+        const [projects] = await db.query(
+            `SELECT p.*, c.full_name AS customer_name, c.address AS customer_address 
+             FROM projects p 
+             LEFT JOIN customers c ON p.customer_id = c.id 
+             WHERE p.id = ?`,
+            [projectId]
+        );
+        const project = projects[0] || {};
+
+        // Tạo workbook
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Bóc tách Nhôm');
+
+        // Set column widths
+        worksheet.columns = [
+            { width: 6 },   // A - STT
+            { width: 15 },  // B - Mã VT
+            { width: 40 },  // C - Tên nhôm
+            { width: 12 },  // D - Tỷ trọng
+            { width: 12 },  // E - Dài (m)
+            { width: 10 },  // F - ĐVT
+            { width: 10 },  // G - SL
+            { width: 15 },  // H - KL (kg)
+            { width: 30 }   // I - Ghi chú
+        ];
+
+        let currentRow = addCompanyHeader(worksheet, workbook);
+
+        // Title
+        worksheet.mergeCells(`A${currentRow}:I${currentRow}`);
+        const titleCell = worksheet.getCell(`A${currentRow}`);
+        titleCell.value = 'BÓC TÁCH NHÔM';
+        titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+        titleCell.font = { name: 'Times New Roman', size: 16, bold: true };
+        worksheet.getRow(currentRow).height = 30;
+        currentRow += 2;
+
+        // Project info
+        worksheet.getCell(`A${currentRow}`).value = 'Dự án:';
+        worksheet.getCell(`A${currentRow}`).font = { name: 'Times New Roman', size: 11, bold: true };
+        worksheet.mergeCells(`B${currentRow}:D${currentRow}`);
+        worksheet.getCell(`B${currentRow}`).value = project.project_name || '';
+        worksheet.getCell(`B${currentRow}`).font = { name: 'Times New Roman', size: 11 };
+        currentRow++;
+
+        worksheet.getCell(`A${currentRow}`).value = 'Khách hàng:';
+        worksheet.getCell(`A${currentRow}`).font = { name: 'Times New Roman', size: 11, bold: true };
+        worksheet.mergeCells(`B${currentRow}:D${currentRow}`);
+        worksheet.getCell(`B${currentRow}`).value = project.customer_name || '';
+        worksheet.getCell(`B${currentRow}`).font = { name: 'Times New Roman', size: 11 };
+        currentRow++;
+
+        worksheet.getCell(`A${currentRow}`).value = 'Địa điểm:';
+        worksheet.getCell(`A${currentRow}`).font = { name: 'Times New Roman', size: 11, bold: true };
+        worksheet.mergeCells(`B${currentRow}:D${currentRow}`);
+        worksheet.getCell(`B${currentRow}`).value = project.location || project.address || '';
+        worksheet.getCell(`B${currentRow}`).font = { name: 'Times New Roman', size: 11 };
+        currentRow += 2;
+
+        // Header row
+        const headerRow = currentRow;
+        const headers = ['STT', 'Mã VT', 'Tên nhôm', 'Tỷ trọng', 'Dài (m)', 'ĐVT', 'SL', 'KL (kg)', 'Ghi chú'];
+        headers.forEach((header, index) => {
+            const cell = worksheet.getCell(headerRow, index + 1);
+            cell.value = header;
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFB4C7E7' } };
+            cell.font = { name: 'Times New Roman', size: 10, bold: true };
+            cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+            cell.border = {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            };
+        });
+        worksheet.getRow(headerRow).height = 25;
+        currentRow++;
+
+        // Data rows
+        let totalQuantity = 0;
+        let totalWeight = 0;
+        aluminumItems.forEach((item, index) => {
+            const row = currentRow;
+            const quantity = parseFloat(item.quantity || 0);
+            const weight = parseFloat(item.weight || 0);
+            totalQuantity += quantity;
+            totalWeight += weight;
+
+            worksheet.getCell(row, 1).value = index + 1; // STT
+            worksheet.getCell(row, 2).value = item.code || item.item_code || ''; // Mã VT
+            worksheet.getCell(row, 3).value = item.name || item.item_name || ''; // Tên nhôm
+            worksheet.getCell(row, 4).value = parseFloat(item.density || 0); // Tỷ trọng
+            worksheet.getCell(row, 5).value = parseFloat(item.length || item.length_m || 0); // Dài (m)
+            worksheet.getCell(row, 6).value = item.unit || 'cây'; // ĐVT
+            worksheet.getCell(row, 7).value = quantity; // SL
+            worksheet.getCell(row, 8).value = weight; // KL (kg)
+            worksheet.getCell(row, 9).value = item.notes || ''; // Ghi chú
+
+            // Style cells
+            for (let col = 1; col <= 9; col++) {
+                const cell = worksheet.getCell(row, col);
+                cell.font = { name: 'Times New Roman', size: 10 };
+                cell.alignment = {
+                    vertical: 'middle',
+                    horizontal: [1, 4, 5, 6, 7, 8].includes(col) ? 'center' : 'left',
+                    wrapText: true
+                };
+                cell.border = {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' }
+                };
+                if ([4, 5, 7, 8].includes(col)) {
+                    cell.numFmt = '0.00';
+                }
+            }
+            worksheet.getRow(row).height = 22;
+            currentRow++;
+        });
+
+        // Footer row - TỔNG CỘNG
+        const footerRow = currentRow;
+        worksheet.mergeCells(`A${footerRow}:F${footerRow}`);
+        worksheet.getCell(`A${footerRow}`).value = 'TỔNG CỘNG:';
+        worksheet.getCell(`A${footerRow}`).font = { name: 'Times New Roman', size: 11, bold: true };
+        worksheet.getCell(`A${footerRow}`).alignment = { horizontal: 'right', vertical: 'middle' };
+        worksheet.getCell(`G${footerRow}`).value = totalQuantity;
+        worksheet.getCell(`G${footerRow}`).font = { name: 'Times New Roman', size: 11, bold: true };
+        worksheet.getCell(`G${footerRow}`).alignment = { horizontal: 'center', vertical: 'middle' };
+        worksheet.getCell(`G${footerRow}`).numFmt = '0';
+        worksheet.getCell(`H${footerRow}`).value = totalWeight;
+        worksheet.getCell(`H${footerRow}`).font = { name: 'Times New Roman', size: 11, bold: true };
+        worksheet.getCell(`H${footerRow}`).alignment = { horizontal: 'center', vertical: 'middle' };
+        worksheet.getCell(`H${footerRow}`).numFmt = '0.00';
+
+        // Style footer
+        for (let col = 1; col <= 9; col++) {
+            const cell = worksheet.getCell(footerRow, col);
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFB4C7E7' } };
+            cell.border = {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            };
+        }
+        worksheet.getRow(footerRow).height = 25;
+
+        // Generate buffer
+        const buffer = await workbook.xlsx.writeBuffer();
+
+        // Set response headers
+        const projectName = (project.project_name || 'Project').replace(/[^a-zA-Z0-9]/g, '_');
+        const fileName = `Boc_tach_Nhom_${projectName}_${new Date().toISOString().split('T')[0]}.xlsx`;
+        
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
+        
+        res.send(buffer);
+    } catch (error) {
+        console.error('Error exporting aluminum breakdown Excel:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi khi xuất Excel: ' + error.message
+        });
+    }
 };
 
 /**
  * Xuất Excel Bóc tách Kính
  */
 exports.exportGlassBreakdown = async (req, res) => {
-    res.status(501).json({ success: false, message: 'Function not implemented yet' });
+    try {
+        const { projectId } = req.params;
+        const { data: glassItems } = req.body;
+
+        if (!glassItems || !Array.isArray(glassItems) || glassItems.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Không có dữ liệu kính để xuất'
+            });
+        }
+
+        // Get project info
+        const [projects] = await db.query(
+            `SELECT p.*, c.full_name AS customer_name, c.address AS customer_address 
+             FROM projects p 
+             LEFT JOIN customers c ON p.customer_id = c.id 
+             WHERE p.id = ?`,
+            [projectId]
+        );
+        const project = projects[0] || {};
+
+        // Tạo workbook
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Bóc tách Kính');
+
+        // Set column widths
+        worksheet.columns = [
+            { width: 6 },   // A - STT
+            { width: 15 },  // B - Mã kính
+            { width: 40 },  // C - Loại kính
+            { width: 12 },  // D - Rộng (mm)
+            { width: 12 },  // E - Cao (mm)
+            { width: 10 },  // F - ĐVT
+            { width: 10 },  // G - SL (tấm)
+            { width: 15 },  // H - Diện tích (m²)
+            { width: 30 }   // I - Ghi chú
+        ];
+
+        let currentRow = addCompanyHeader(worksheet, workbook);
+
+        // Title
+        worksheet.mergeCells(`A${currentRow}:I${currentRow}`);
+        const titleCell = worksheet.getCell(`A${currentRow}`);
+        titleCell.value = 'BÓC TÁCH KÍNH';
+        titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+        titleCell.font = { name: 'Times New Roman', size: 16, bold: true };
+        worksheet.getRow(currentRow).height = 30;
+        currentRow += 2;
+
+        // Project info
+        worksheet.getCell(`A${currentRow}`).value = 'Dự án:';
+        worksheet.getCell(`A${currentRow}`).font = { name: 'Times New Roman', size: 11, bold: true };
+        worksheet.mergeCells(`B${currentRow}:D${currentRow}`);
+        worksheet.getCell(`B${currentRow}`).value = project.project_name || '';
+        worksheet.getCell(`B${currentRow}`).font = { name: 'Times New Roman', size: 11 };
+        currentRow++;
+
+        worksheet.getCell(`A${currentRow}`).value = 'Khách hàng:';
+        worksheet.getCell(`A${currentRow}`).font = { name: 'Times New Roman', size: 11, bold: true };
+        worksheet.mergeCells(`B${currentRow}:D${currentRow}`);
+        worksheet.getCell(`B${currentRow}`).value = project.customer_name || '';
+        worksheet.getCell(`B${currentRow}`).font = { name: 'Times New Roman', size: 11 };
+        currentRow++;
+
+        worksheet.getCell(`A${currentRow}`).value = 'Địa điểm:';
+        worksheet.getCell(`A${currentRow}`).font = { name: 'Times New Roman', size: 11, bold: true };
+        worksheet.mergeCells(`B${currentRow}:D${currentRow}`);
+        worksheet.getCell(`B${currentRow}`).value = project.location || project.address || '';
+        worksheet.getCell(`B${currentRow}`).font = { name: 'Times New Roman', size: 11 };
+        currentRow += 2;
+
+        // Header row
+        const headerRow = currentRow;
+        const headers = ['STT', 'Mã kính', 'Loại kính', 'Rộng (mm)', 'Cao (mm)', 'ĐVT', 'SL (tấm)', 'Diện tích (m²)', 'Ghi chú'];
+        headers.forEach((header, index) => {
+            const cell = worksheet.getCell(headerRow, index + 1);
+            cell.value = header;
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFB4C7E7' } };
+            cell.font = { name: 'Times New Roman', size: 10, bold: true };
+            cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+            cell.border = {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            };
+        });
+        worksheet.getRow(headerRow).height = 25;
+        currentRow++;
+
+        // Data rows
+        let totalPanels = 0;
+        let totalArea = 0;
+        glassItems.forEach((item, index) => {
+            const row = currentRow;
+            const panels = parseInt(item.quantity || item.panels || 0);
+            const area = parseFloat(item.area_m2 || item.area || 0);
+            totalPanels += panels;
+            totalArea += area;
+
+            worksheet.getCell(row, 1).value = index + 1; // STT
+            worksheet.getCell(row, 2).value = item.code || item.glass_code || ''; // Mã kính
+            worksheet.getCell(row, 3).value = item.type || item.glass_type || ''; // Loại kính
+            worksheet.getCell(row, 4).value = parseFloat(item.width_mm || item.width || 0); // Rộng (mm)
+            worksheet.getCell(row, 5).value = parseFloat(item.height_mm || item.height || 0); // Cao (mm)
+            worksheet.getCell(row, 6).value = 'tấm'; // ĐVT
+            worksheet.getCell(row, 7).value = panels; // SL (tấm)
+            worksheet.getCell(row, 8).value = area; // Diện tích (m²)
+            worksheet.getCell(row, 9).value = item.notes || ''; // Ghi chú
+
+            // Style cells
+            for (let col = 1; col <= 9; col++) {
+                const cell = worksheet.getCell(row, col);
+                cell.font = { name: 'Times New Roman', size: 10 };
+                cell.alignment = {
+                    vertical: 'middle',
+                    horizontal: [1, 4, 5, 6, 7, 8].includes(col) ? 'center' : 'left',
+                    wrapText: true
+                };
+                cell.border = {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' }
+                };
+                if ([4, 5, 7, 8].includes(col)) {
+                    cell.numFmt = col === 7 ? '0' : '0.00';
+                }
+            }
+            worksheet.getRow(row).height = 22;
+            currentRow++;
+        });
+
+        // Footer row - TỔNG CỘNG
+        const footerRow = currentRow;
+        worksheet.mergeCells(`A${footerRow}:F${footerRow}`);
+        worksheet.getCell(`A${footerRow}`).value = 'TỔNG CỘNG:';
+        worksheet.getCell(`A${footerRow}`).font = { name: 'Times New Roman', size: 11, bold: true };
+        worksheet.getCell(`A${footerRow}`).alignment = { horizontal: 'right', vertical: 'middle' };
+        worksheet.getCell(`G${footerRow}`).value = totalPanels;
+        worksheet.getCell(`G${footerRow}`).font = { name: 'Times New Roman', size: 11, bold: true };
+        worksheet.getCell(`G${footerRow}`).alignment = { horizontal: 'center', vertical: 'middle' };
+        worksheet.getCell(`G${footerRow}`).numFmt = '0';
+        worksheet.getCell(`H${footerRow}`).value = totalArea;
+        worksheet.getCell(`H${footerRow}`).font = { name: 'Times New Roman', size: 11, bold: true };
+        worksheet.getCell(`H${footerRow}`).alignment = { horizontal: 'center', vertical: 'middle' };
+        worksheet.getCell(`H${footerRow}`).numFmt = '0.00';
+
+        // Style footer
+        for (let col = 1; col <= 9; col++) {
+            const cell = worksheet.getCell(footerRow, col);
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFB4C7E7' } };
+            cell.border = {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            };
+        }
+        worksheet.getRow(footerRow).height = 25;
+
+        // Generate buffer
+        const buffer = await workbook.xlsx.writeBuffer();
+
+        // Set response headers
+        const projectName = (project.project_name || 'Project').replace(/[^a-zA-Z0-9]/g, '_');
+        const fileName = `Boc_tach_Kinh_${projectName}_${new Date().toISOString().split('T')[0]}.xlsx`;
+        
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
+        
+        res.send(buffer);
+    } catch (error) {
+        console.error('Error exporting glass breakdown Excel:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi khi xuất Excel: ' + error.message
+        });
+    }
 };
 
 /**
- * Xuất Excel Bóc tách Phụ kiện
+ * Xuất Excel Bóc tách Phụ kiện/Vật tư Phụ
  */
 exports.exportAccessoriesBreakdown = async (req, res) => {
-    res.status(501).json({ success: false, message: 'Function not implemented yet' });
+    try {
+        const { projectId } = req.params;
+        const { data: accessoriesItems } = req.body;
+
+        if (!accessoriesItems || !Array.isArray(accessoriesItems) || accessoriesItems.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Không có dữ liệu vật tư phụ để xuất'
+            });
+        }
+
+        // Get project info
+        const [projects] = await db.query(
+            `SELECT p.*, c.full_name AS customer_name, c.address AS customer_address 
+             FROM projects p 
+             LEFT JOIN customers c ON p.customer_id = c.id 
+             WHERE p.id = ?`,
+            [projectId]
+        );
+        const project = projects[0] || {};
+
+        // Tạo workbook
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Bóc tách Vật tư Phụ');
+
+        // Set column widths
+        worksheet.columns = [
+            { width: 6 },   // A - STT
+            { width: 15 },  // B - Mã VT
+            { width: 40 },  // C - Tên vật tư
+            { width: 10 },  // D - ĐVT
+            { width: 12 },  // E - SL
+            { width: 30 }   // F - Ghi chú
+        ];
+
+        let currentRow = addCompanyHeader(worksheet, workbook);
+
+        // Title
+        worksheet.mergeCells(`A${currentRow}:F${currentRow}`);
+        const titleCell = worksheet.getCell(`A${currentRow}`);
+        titleCell.value = 'BÓC TÁCH VẬT TƯ PHỤ';
+        titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+        titleCell.font = { name: 'Times New Roman', size: 16, bold: true };
+        worksheet.getRow(currentRow).height = 30;
+        currentRow += 2;
+
+        // Project info
+        worksheet.getCell(`A${currentRow}`).value = 'Dự án:';
+        worksheet.getCell(`A${currentRow}`).font = { name: 'Times New Roman', size: 11, bold: true };
+        worksheet.mergeCells(`B${currentRow}:D${currentRow}`);
+        worksheet.getCell(`B${currentRow}`).value = project.project_name || '';
+        worksheet.getCell(`B${currentRow}`).font = { name: 'Times New Roman', size: 11 };
+        currentRow++;
+
+        worksheet.getCell(`A${currentRow}`).value = 'Khách hàng:';
+        worksheet.getCell(`A${currentRow}`).font = { name: 'Times New Roman', size: 11, bold: true };
+        worksheet.mergeCells(`B${currentRow}:D${currentRow}`);
+        worksheet.getCell(`B${currentRow}`).value = project.customer_name || '';
+        worksheet.getCell(`B${currentRow}`).font = { name: 'Times New Roman', size: 11 };
+        currentRow++;
+
+        worksheet.getCell(`A${currentRow}`).value = 'Địa điểm:';
+        worksheet.getCell(`A${currentRow}`).font = { name: 'Times New Roman', size: 11, bold: true };
+        worksheet.mergeCells(`B${currentRow}:D${currentRow}`);
+        worksheet.getCell(`B${currentRow}`).value = project.location || project.address || '';
+        worksheet.getCell(`B${currentRow}`).font = { name: 'Times New Roman', size: 11 };
+        currentRow += 2;
+
+        // Header row
+        const headerRow = currentRow;
+        const headers = ['STT', 'Mã VT', 'Tên vật tư', 'ĐVT', 'SL', 'Ghi chú'];
+        headers.forEach((header, index) => {
+            const cell = worksheet.getCell(headerRow, index + 1);
+            cell.value = header;
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFB4C7E7' } };
+            cell.font = { name: 'Times New Roman', size: 10, bold: true };
+            cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+            cell.border = {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            };
+        });
+        worksheet.getRow(headerRow).height = 25;
+        currentRow++;
+
+        // Data rows
+        let totalQuantity = 0;
+        accessoriesItems.forEach((item, index) => {
+            const row = currentRow;
+            const quantity = parseFloat(item.quantity || 0);
+            totalQuantity += quantity;
+
+            worksheet.getCell(row, 1).value = index + 1; // STT
+            worksheet.getCell(row, 2).value = item.code || item.item_code || ''; // Mã VT
+            worksheet.getCell(row, 3).value = item.name || item.item_name || ''; // Tên vật tư
+            worksheet.getCell(row, 4).value = item.unit || 'cái'; // ĐVT
+            worksheet.getCell(row, 5).value = quantity; // SL
+            worksheet.getCell(row, 6).value = item.notes || ''; // Ghi chú
+
+            // Style cells
+            for (let col = 1; col <= 6; col++) {
+                const cell = worksheet.getCell(row, col);
+                cell.font = { name: 'Times New Roman', size: 10 };
+                cell.alignment = {
+                    vertical: 'middle',
+                    horizontal: [1, 4, 5].includes(col) ? 'center' : 'left',
+                    wrapText: true
+                };
+                cell.border = {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' }
+                };
+                if (col === 5) {
+                    cell.numFmt = '0';
+                }
+            }
+            worksheet.getRow(row).height = 22;
+            currentRow++;
+        });
+
+        // Footer row - TỔNG CỘNG
+        const footerRow = currentRow;
+        worksheet.mergeCells(`A${footerRow}:D${footerRow}`);
+        worksheet.getCell(`A${footerRow}`).value = 'TỔNG CỘNG:';
+        worksheet.getCell(`A${footerRow}`).font = { name: 'Times New Roman', size: 11, bold: true };
+        worksheet.getCell(`A${footerRow}`).alignment = { horizontal: 'right', vertical: 'middle' };
+        worksheet.getCell(`E${footerRow}`).value = totalQuantity;
+        worksheet.getCell(`E${footerRow}`).font = { name: 'Times New Roman', size: 11, bold: true };
+        worksheet.getCell(`E${footerRow}`).alignment = { horizontal: 'center', vertical: 'middle' };
+        worksheet.getCell(`E${footerRow}`).numFmt = '0';
+
+        // Style footer
+        for (let col = 1; col <= 6; col++) {
+            const cell = worksheet.getCell(footerRow, col);
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFB4C7E7' } };
+            cell.border = {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            };
+        }
+        worksheet.getRow(footerRow).height = 25;
+
+        // Generate buffer
+        const buffer = await workbook.xlsx.writeBuffer();
+
+        // Set response headers
+        const projectName = (project.project_name || 'Project').replace(/[^a-zA-Z0-9]/g, '_');
+        const fileName = `Boc_tach_Vat_Tu_Phu_${projectName}_${new Date().toISOString().split('T')[0]}.xlsx`;
+        
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
+        
+        res.send(buffer);
+    } catch (error) {
+        console.error('Error exporting accessories breakdown Excel:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi khi xuất Excel: ' + error.message
+        });
+    }
 };
 
 /**
- * Xuất Excel Bóc tách Tổng hợp
+ * Xuất Excel Bóc tách Tổng hợp (Nhôm + Kính + Vật tư Phụ)
  */
 exports.exportCombinedBreakdown = async (req, res) => {
-    res.status(501).json({ success: false, message: 'Function not implemented yet' });
+    try {
+        const { projectId } = req.params;
+        const { nhom = [], kinh = [], vattu = [] } = req.body;
+
+        // Check if there's any data
+        if ((!nhom || nhom.length === 0) && (!kinh || kinh.length === 0) && (!vattu || vattu.length === 0)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Không có dữ liệu bóc tách để xuất'
+            });
+        }
+
+        // Get project info
+        const [projects] = await db.query(
+            `SELECT p.*, c.full_name AS customer_name, c.address AS customer_address 
+             FROM projects p 
+             LEFT JOIN customers c ON p.customer_id = c.id 
+             WHERE p.id = ?`,
+            [projectId]
+        );
+        const project = projects[0] || {};
+
+        // Tạo workbook
+        const workbook = new ExcelJS.Workbook();
+
+        // Sheet 1: Tổng hợp
+        const summarySheet = workbook.addWorksheet('Tổng hợp');
+        let currentRow = addCompanyHeader(summarySheet, workbook);
+
+        // Title
+        summarySheet.mergeCells(`A${currentRow}:I${currentRow}`);
+        const titleCell = summarySheet.getCell(`A${currentRow}`);
+        titleCell.value = 'BÓC TÁCH VẬT TƯ TỔNG HỢP';
+        titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+        titleCell.font = { name: 'Times New Roman', size: 16, bold: true };
+        summarySheet.getRow(currentRow).height = 30;
+        currentRow += 2;
+
+        // Project info
+        summarySheet.getCell(`A${currentRow}`).value = 'Dự án:';
+        summarySheet.getCell(`A${currentRow}`).font = { name: 'Times New Roman', size: 11, bold: true };
+        summarySheet.mergeCells(`B${currentRow}:D${currentRow}`);
+        summarySheet.getCell(`B${currentRow}`).value = project.project_name || '';
+        summarySheet.getCell(`B${currentRow}`).font = { name: 'Times New Roman', size: 11 };
+        currentRow++;
+
+        summarySheet.getCell(`A${currentRow}`).value = 'Khách hàng:';
+        summarySheet.getCell(`A${currentRow}`).font = { name: 'Times New Roman', size: 11, bold: true };
+        summarySheet.mergeCells(`B${currentRow}:D${currentRow}`);
+        summarySheet.getCell(`B${currentRow}`).value = project.customer_name || '';
+        summarySheet.getCell(`B${currentRow}`).font = { name: 'Times New Roman', size: 11 };
+        currentRow++;
+
+        summarySheet.getCell(`A${currentRow}`).value = 'Địa điểm:';
+        summarySheet.getCell(`A${currentRow}`).font = { name: 'Times New Roman', size: 11, bold: true };
+        summarySheet.mergeCells(`B${currentRow}:D${currentRow}`);
+        summarySheet.getCell(`B${currentRow}`).value = project.location || project.address || '';
+        summarySheet.getCell(`B${currentRow}`).font = { name: 'Times New Roman', size: 11 };
+        currentRow += 2;
+
+        // Summary statistics
+        const totalNhomTypes = nhom.length || 0;
+        const totalNhomQty = nhom.reduce((sum, item) => sum + parseFloat(item.quantity || 0), 0);
+        const totalNhomWeight = nhom.reduce((sum, item) => sum + parseFloat(item.weight || 0), 0);
+        const totalKinhTypes = kinh.length || 0;
+        const totalKinhPanels = kinh.reduce((sum, item) => sum + parseInt(item.quantity || item.panels || 0), 0);
+        const totalKinhArea = kinh.reduce((sum, item) => sum + parseFloat(item.area_m2 || item.area || 0), 0);
+        const totalVatTuTypes = vattu.length || 0;
+        const totalVatTuQty = vattu.reduce((sum, item) => sum + parseFloat(item.quantity || 0), 0);
+
+        summarySheet.getCell(`A${currentRow}`).value = 'TỔNG KẾT:';
+        summarySheet.getCell(`A${currentRow}`).font = { name: 'Times New Roman', size: 12, bold: true };
+        currentRow++;
+
+        summarySheet.getCell(`A${currentRow}`).value = 'Nhôm:';
+        summarySheet.getCell(`A${currentRow}`).font = { name: 'Times New Roman', size: 11, bold: true };
+        summarySheet.getCell(`B${currentRow}`).value = `${totalNhomTypes} loại, ${totalNhomQty} cây, ${totalNhomWeight.toFixed(2)} kg`;
+        summarySheet.getCell(`B${currentRow}`).font = { name: 'Times New Roman', size: 11 };
+        currentRow++;
+
+        summarySheet.getCell(`A${currentRow}`).value = 'Kính:';
+        summarySheet.getCell(`A${currentRow}`).font = { name: 'Times New Roman', size: 11, bold: true };
+        summarySheet.getCell(`B${currentRow}`).value = `${totalKinhTypes} loại, ${totalKinhPanels} tấm, ${totalKinhArea.toFixed(2)} m²`;
+        summarySheet.getCell(`B${currentRow}`).font = { name: 'Times New Roman', size: 11 };
+        currentRow++;
+
+        summarySheet.getCell(`A${currentRow}`).value = 'Vật tư phụ:';
+        summarySheet.getCell(`A${currentRow}`).font = { name: 'Times New Roman', size: 11, bold: true };
+        summarySheet.getCell(`B${currentRow}`).value = `${totalVatTuTypes} loại, ${totalVatTuQty} cái`;
+        summarySheet.getCell(`B${currentRow}`).font = { name: 'Times New Roman', size: 11 };
+        currentRow += 2;
+
+        // Set column widths for summary sheet
+        summarySheet.columns = [
+            { width: 20 },
+            { width: 60 }
+        ];
+
+        // Sheet 2: Nhôm (nếu có)
+        if (nhom && nhom.length > 0) {
+            const nhomSheet = workbook.addWorksheet('Nhôm');
+            nhomSheet.columns = [
+                { width: 6 }, { width: 15 }, { width: 40 }, { width: 12 }, { width: 12 },
+                { width: 10 }, { width: 10 }, { width: 15 }, { width: 30 }
+            ];
+            let nhomRow = addCompanyHeader(nhomSheet, workbook);
+            nhomSheet.mergeCells(`A${nhomRow}:I${nhomRow}`);
+            nhomSheet.getCell(`A${nhomRow}`).value = 'BÓC TÁCH NHÔM';
+            nhomSheet.getCell(`A${nhomRow}`).alignment = { vertical: 'middle', horizontal: 'center' };
+            nhomSheet.getCell(`A${nhomRow}`).font = { name: 'Times New Roman', size: 16, bold: true };
+            nhomSheet.getRow(nhomRow).height = 30;
+            nhomRow += 2;
+
+            // Header
+            const nhomHeaders = ['STT', 'Mã VT', 'Tên nhôm', 'Tỷ trọng', 'Dài (m)', 'ĐVT', 'SL', 'KL (kg)', 'Ghi chú'];
+            nhomHeaders.forEach((header, index) => {
+                const cell = nhomSheet.getCell(nhomRow, index + 1);
+                cell.value = header;
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFB4C7E7' } };
+                cell.font = { name: 'Times New Roman', size: 10, bold: true };
+                cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+                cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+            });
+            nhomSheet.getRow(nhomRow).height = 25;
+            nhomRow++;
+
+            // Data
+            nhom.forEach((item, index) => {
+                nhomSheet.getCell(nhomRow, 1).value = index + 1;
+                nhomSheet.getCell(nhomRow, 2).value = item.code || item.item_code || '';
+                nhomSheet.getCell(nhomRow, 3).value = item.name || item.item_name || '';
+                nhomSheet.getCell(nhomRow, 4).value = parseFloat(item.density || 0);
+                nhomSheet.getCell(nhomRow, 5).value = parseFloat(item.length || item.length_m || 0);
+                nhomSheet.getCell(nhomRow, 6).value = item.unit || 'cây';
+                nhomSheet.getCell(nhomRow, 7).value = parseFloat(item.quantity || 0);
+                nhomSheet.getCell(nhomRow, 8).value = parseFloat(item.weight || 0);
+                nhomSheet.getCell(nhomRow, 9).value = item.notes || '';
+                for (let col = 1; col <= 9; col++) {
+                    const cell = nhomSheet.getCell(nhomRow, col);
+                    cell.font = { name: 'Times New Roman', size: 10 };
+                    cell.alignment = { vertical: 'middle', horizontal: [1, 4, 5, 6, 7, 8].includes(col) ? 'center' : 'left', wrapText: true };
+                    cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+                    if ([4, 5, 7, 8].includes(col)) cell.numFmt = '0.00';
+                }
+                nhomSheet.getRow(nhomRow).height = 22;
+                nhomRow++;
+            });
+        }
+
+        // Sheet 3: Kính (nếu có)
+        if (kinh && kinh.length > 0) {
+            const kinhSheet = workbook.addWorksheet('Kính');
+            kinhSheet.columns = [
+                { width: 6 }, { width: 15 }, { width: 40 }, { width: 12 }, { width: 12 },
+                { width: 10 }, { width: 10 }, { width: 15 }, { width: 30 }
+            ];
+            let kinhRow = addCompanyHeader(kinhSheet, workbook);
+            kinhSheet.mergeCells(`A${kinhRow}:I${kinhRow}`);
+            kinhSheet.getCell(`A${kinhRow}`).value = 'BÓC TÁCH KÍNH';
+            kinhSheet.getCell(`A${kinhRow}`).alignment = { vertical: 'middle', horizontal: 'center' };
+            kinhSheet.getCell(`A${kinhRow}`).font = { name: 'Times New Roman', size: 16, bold: true };
+            kinhSheet.getRow(kinhRow).height = 30;
+            kinhRow += 2;
+
+            // Header
+            const kinhHeaders = ['STT', 'Mã kính', 'Loại kính', 'Rộng (mm)', 'Cao (mm)', 'ĐVT', 'SL (tấm)', 'Diện tích (m²)', 'Ghi chú'];
+            kinhHeaders.forEach((header, index) => {
+                const cell = kinhSheet.getCell(kinhRow, index + 1);
+                cell.value = header;
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFB4C7E7' } };
+                cell.font = { name: 'Times New Roman', size: 10, bold: true };
+                cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+                cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+            });
+            kinhSheet.getRow(kinhRow).height = 25;
+            kinhRow++;
+
+            // Data
+            kinh.forEach((item, index) => {
+                kinhSheet.getCell(kinhRow, 1).value = index + 1;
+                kinhSheet.getCell(kinhRow, 2).value = item.code || item.glass_code || '';
+                kinhSheet.getCell(kinhRow, 3).value = item.type || item.glass_type || '';
+                kinhSheet.getCell(kinhRow, 4).value = parseFloat(item.width_mm || item.width || 0);
+                kinhSheet.getCell(kinhRow, 5).value = parseFloat(item.height_mm || item.height || 0);
+                kinhSheet.getCell(kinhRow, 6).value = 'tấm';
+                kinhSheet.getCell(kinhRow, 7).value = parseInt(item.quantity || item.panels || 0);
+                kinhSheet.getCell(kinhRow, 8).value = parseFloat(item.area_m2 || item.area || 0);
+                kinhSheet.getCell(kinhRow, 9).value = item.notes || '';
+                for (let col = 1; col <= 9; col++) {
+                    const cell = kinhSheet.getCell(kinhRow, col);
+                    cell.font = { name: 'Times New Roman', size: 10 };
+                    cell.alignment = { vertical: 'middle', horizontal: [1, 4, 5, 6, 7, 8].includes(col) ? 'center' : 'left', wrapText: true };
+                    cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+                    if ([4, 5, 7, 8].includes(col)) cell.numFmt = col === 7 ? '0' : '0.00';
+                }
+                kinhSheet.getRow(kinhRow).height = 22;
+                kinhRow++;
+            });
+        }
+
+        // Sheet 4: Vật tư Phụ (nếu có)
+        if (vattu && vattu.length > 0) {
+            const vattuSheet = workbook.addWorksheet('Vật tư Phụ');
+            vattuSheet.columns = [
+                { width: 6 }, { width: 15 }, { width: 40 }, { width: 10 }, { width: 12 }, { width: 30 }
+            ];
+            let vattuRow = addCompanyHeader(vattuSheet, workbook);
+            vattuSheet.mergeCells(`A${vattuRow}:F${vattuRow}`);
+            vattuSheet.getCell(`A${vattuRow}`).value = 'BÓC TÁCH VẬT TƯ PHỤ';
+            vattuSheet.getCell(`A${vattuRow}`).alignment = { vertical: 'middle', horizontal: 'center' };
+            vattuSheet.getCell(`A${vattuRow}`).font = { name: 'Times New Roman', size: 16, bold: true };
+            vattuSheet.getRow(vattuRow).height = 30;
+            vattuRow += 2;
+
+            // Header
+            const vattuHeaders = ['STT', 'Mã VT', 'Tên vật tư', 'ĐVT', 'SL', 'Ghi chú'];
+            vattuHeaders.forEach((header, index) => {
+                const cell = vattuSheet.getCell(vattuRow, index + 1);
+                cell.value = header;
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFB4C7E7' } };
+                cell.font = { name: 'Times New Roman', size: 10, bold: true };
+                cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+                cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+            });
+            vattuSheet.getRow(vattuRow).height = 25;
+            vattuRow++;
+
+            // Data
+            vattu.forEach((item, index) => {
+                vattuSheet.getCell(vattuRow, 1).value = index + 1;
+                vattuSheet.getCell(vattuRow, 2).value = item.code || item.item_code || '';
+                vattuSheet.getCell(vattuRow, 3).value = item.name || item.item_name || '';
+                vattuSheet.getCell(vattuRow, 4).value = item.unit || 'cái';
+                vattuSheet.getCell(vattuRow, 5).value = parseFloat(item.quantity || 0);
+                vattuSheet.getCell(vattuRow, 6).value = item.notes || '';
+                for (let col = 1; col <= 6; col++) {
+                    const cell = vattuSheet.getCell(vattuRow, col);
+                    cell.font = { name: 'Times New Roman', size: 10 };
+                    cell.alignment = { vertical: 'middle', horizontal: [1, 4, 5].includes(col) ? 'center' : 'left', wrapText: true };
+                    cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+                    if (col === 5) cell.numFmt = '0';
+                }
+                vattuSheet.getRow(vattuRow).height = 22;
+                vattuRow++;
+            });
+        }
+
+        // Generate buffer
+        const buffer = await workbook.xlsx.writeBuffer();
+
+        // Set response headers
+        const projectName = (project.project_name || 'Project').replace(/[^a-zA-Z0-9]/g, '_');
+        const fileName = `Boc_tach_Tong_hop_${projectName}_${new Date().toISOString().split('T')[0]}.xlsx`;
+        
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
+        
+        res.send(buffer);
+    } catch (error) {
+        console.error('Error exporting combined breakdown Excel:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi khi xuất Excel: ' + error.message
+        });
+    }
 };
 
 /**

@@ -1093,7 +1093,7 @@
                                         <th class="px-3 py-3 text-left font-medium">Mã kính</th>
                                         <th class="px-3 py-3 text-left font-medium">Loại kính</th>
                                         <th class="px-3 py-3 text-center font-medium">ĐVT</th>
-                                        <th class="px-3 py-3 text-center font-medium">Cần (m²)</th>
+                                        <th class="px-3 py-3 text-center font-medium">Cần (tấm)</th>
                                         <th class="px-3 py-3 text-center font-medium">Tồn kho</th>
                                         <th class="px-3 py-3 text-center font-medium">Thiếu</th>
                                         <th class="px-3 py-3 text-center font-medium">Trạng thái</th>
@@ -8039,36 +8039,56 @@
                 try {
                     console.log('📥 Loading inventory data from multiple sources...');
 
-                    // Load từ nhiều nguồn: accessories, aluminum_systems, và inventory table
-                    const [accessoriesRes, aluminumRes, glassRes, inventoryRes] = await Promise.all([
+                    // Load từ nhiều nguồn: accessories, aluminum_systems, glass, vật tư phụ, và inventory table
+                    const [accessoriesRes, aluminumRes, glassRes, vatTuPhuRes, inventoryRes] = await Promise.all([
                         fetch(`${API_BASE}/project-materials/inventory/accessory`).catch(e => ({ ok: false, json: () => ({ success: false, data: [] }) })),
                         fetch(`${API_BASE}/project-materials/inventory/aluminum`).catch(e => ({ ok: false, json: () => ({ success: false, data: [] }) })),
                         fetch(`${API_BASE}/project-materials/inventory/glass`).catch(e => ({ ok: false, json: () => ({ success: false, data: [] }) })),
+                        fetch(`${API_BASE}/project-materials/inventory/other`).catch(e => ({ ok: false, json: () => ({ success: false, data: [] }) })), // ✅ Bổ sung: Vật tư phụ (Ke, Gioăng, Nhựa ốp, Keo, Khác)
                         fetch(`${API_BASE}/inventory?item_type=all`).catch(e => ({ ok: false, json: () => ({ success: false, data: [] }) }))
                     ]);
 
-                    const [accessoriesData, aluminumData, glassData, inventoryRawData] = await Promise.all([
+                    const [accessoriesData, aluminumData, glassData, vatTuPhuData, inventoryRawData] = await Promise.all([
                         accessoriesRes.json().then(r => r.success ? r.data : []).catch(() => []),
                         aluminumRes.json().then(r => r.success ? r.data : []).catch(() => []),
                         glassRes.json().then(r => r.success ? r.data : []).catch(() => []),
+                        vatTuPhuRes.json().then(r => r.success ? r.data : []).catch(() => []), // ✅ Vật tư phụ
                         inventoryRes.json().then(r => r.success ? r.data : []).catch(() => [])
                     ]);
 
-                    console.log(`📦 Loaded: ${accessoriesData.length} accessories, ${aluminumData.length} aluminum, ${glassData.length} glass, ${inventoryRawData.length} inventory items`);
+                    console.log(`📦 Loaded: ${accessoriesData.length} accessories, ${aluminumData.length} aluminum, ${glassData.length} glass, ${vatTuPhuData.length} vật tư phụ, ${inventoryRawData.length} inventory items`);
 
                     // Normalize tất cả về cùng format: { item_code, item_name, item_type, quantity, stock_quantity, ... }
                     inventoryData = [];
 
-                    // 1. Phụ kiện từ bảng accessories
+                    // 1. Phụ kiện từ bảng accessories (không bao gồm vật tư phụ)
+                    const vatTuPhuCategories = ['Ke', 'Gioăng', 'Nhựa ốp', 'Keo', 'Khác'];
                     accessoriesData.forEach(item => {
+                        // ✅ Chỉ thêm nếu không phải vật tư phụ (category không thuộc Vật tư phụ)
+                        if (!vatTuPhuCategories.includes(item.category)) {
+                            inventoryData.push({
+                                item_code: item.code || item.item_code,
+                                item_name: item.name || item.item_name,
+                                item_type: 'accessory', // Phụ kiện thông thường
+                                quantity: parseFloat(item.stock || item.stock_quantity || item.quantity || 0),
+                                stock_quantity: parseFloat(item.stock || item.stock_quantity || item.quantity || 0),
+                                unit: item.unit || 'cái',
+                                category: item.category,
+                                unit_price: parseFloat(item.price || 0)
+                            });
+                        }
+                    });
+
+                    // 1b. ✅ Bổ sung: Vật tư phụ từ bảng accessories (category thuộc Vật tư phụ)
+                    vatTuPhuData.forEach(item => {
                         inventoryData.push({
                             item_code: item.code || item.item_code,
                             item_name: item.name || item.item_name,
-                            item_type: 'accessory', // Hoặc 'material'
+                            item_type: 'material', // Vật tư phụ
                             quantity: parseFloat(item.stock || item.stock_quantity || item.quantity || 0),
                             stock_quantity: parseFloat(item.stock || item.stock_quantity || item.quantity || 0),
                             unit: item.unit || 'cái',
-                            category: item.category,
+                            category: item.category, // Ke, Gioăng, Nhựa ốp, Keo, Khác
                             unit_price: parseFloat(item.price || 0)
                         });
                     });
@@ -8093,9 +8113,9 @@
                             item_code: item.code || item.item_code,
                             item_name: item.name || item.item_name,
                             item_type: 'glass',
-                            quantity: parseFloat(item.stock || item.quantity || 0),
-                            stock_quantity: parseFloat(item.stock || item.quantity || 0),
-                            unit: item.unit || 'm²',
+                            quantity: parseFloat(item.stock || item.quantity || 0), // Số lượng tấm
+                            stock_quantity: parseFloat(item.stock || item.quantity || 0), // Số lượng tấm
+                            unit: item.unit || 'tấm', // ✅ Đơn vị là tấm, không phải m²
                             unit_price: parseFloat(item.price || 0)
                         });
                     });
@@ -8114,9 +8134,9 @@
                                         item_code: item.item_code,
                                         item_name: item.item_name,
                                         item_type: 'glass',
-                                        quantity: parseFloat(item.quantity || 0),
-                                        stock_quantity: parseFloat(item.stock_quantity || item.quantity || 0),
-                                        unit: item.unit || 'm²',
+                                        quantity: parseFloat(item.quantity || 0), // Số lượng tấm
+                                        stock_quantity: parseFloat(item.stock_quantity || item.quantity || 0), // Số lượng tấm
+                                        unit: item.unit || 'tấm', // ✅ Đơn vị là tấm, không phải m²
                                         unit_price: parseFloat(item.unit_price || 0)
                                     });
                                 }
@@ -8200,28 +8220,33 @@
                 // Check Kính
                 if (bocTachData.kinh && bocTachData.kinh.length > 0) {
                     bocTachData.kinh.forEach(item => {
-                        const required = parseFloat(item.area_m2) || 0;
-                        const unit = 'm²';
+                        // ✅ CRITICAL: Lấy số lượng tấm (quantity) thay vì m² để so sánh với kho
+                        const requiredPanels = parseInt(item.quantity || item.panels || item.qty || 0) || 0;
+                        const requiredAreaM2 = parseFloat(item.area_m2 || ((item.width_mm || 0) * (item.height_mm || 0) / 1000000 * requiredPanels)) || 0;
+                        const unit = 'tấm'; // Đơn vị chính là tấm
                         const bomCode = item.code || item.glass_code || '';
                         const bomName = item.type || item.glass_type || '';
 
-                        console.log(`🔍 Checking kính: code="${bomCode}", name="${bomName}", required=${required} m²`);
+                        console.log(`🔍 Checking kính: code="${bomCode}", name="${bomName}", required=${requiredPanels} tấm (${requiredAreaM2.toFixed(2)} m²)`);
 
                         const stockItem = findInventoryItem(bomCode, bomName, 'glass');
                         const found = stockItem !== null && stockItem !== undefined;
+                        // Kho lưu theo tấm, nên lấy trực tiếp quantity
                         const available = found ? parseFloat(stockItem.stock_quantity || stockItem.quantity || 0) : 0;
-                        const shortage = found ? Math.max(0, required - available) : required; // Nếu không tìm thấy, shortage = required
-                        const status = getStockStatus(required, available, found);
+                        // So sánh số lượng tấm với kho (đơn vị tấm)
+                        const shortage = found ? Math.max(0, requiredPanels - available) : requiredPanels; // Nếu không tìm thấy, shortage = required
+                        const status = getStockStatus(requiredPanels, available, found);
 
-                        console.log(`📊 Kính result: required=${required} m², available=${available} m², shortage=${shortage} m², status=${status}, found=${found}`);
+                        console.log(`📊 Kính result: required=${requiredPanels} tấm, available=${available} tấm, shortage=${shortage} tấm, status=${status}, found=${found}`);
 
                         inventoryCheckResults.kinh.push({
                             code: bomCode,
                             name: bomName,
                             unit: unit,
-                            required: required,
-                            available: available,
-                            shortage: shortage,
+                            required: requiredPanels, // Số lượng tấm (để so sánh với kho)
+                            required_area_m2: requiredAreaM2, // Diện tích m² (thông tin bổ sung)
+                            available: available, // Số lượng tấm trong kho
+                            shortage: shortage, // Số lượng tấm thiếu
                             status: status,
                             stockItem: stockItem,
                             found: found
@@ -8379,6 +8404,42 @@
                     }
                 }
 
+                // ✅ Bổ sung: Nếu vẫn chưa tìm thấy vật tư phụ, thử tìm linh hoạt hơn (code có thể nằm trong name hoặc ngược lại)
+                if (!item && type === 'material' && (code || name)) {
+                    item = inventoryData.find(inv => {
+                        // Vật tư phụ: có thể là 'material', 'accessory' (nếu category thuộc vật tư phụ), 'consumable', 'other'
+                        const isVatTuPhu = inv.item_type === 'material' ||
+                            inv.item_type === 'accessory' ||
+                            inv.item_type === 'consumable' ||
+                            inv.item_type === 'other';
+                        if (!isVatTuPhu) return false;
+
+                        // Try matching code in name or name in code
+                        if (code) {
+                            const codeInName = inv.item_name && inv.item_name.toUpperCase().includes(code.toUpperCase());
+                            const nameInCode = inv.item_code && inv.item_code.toUpperCase().includes(code.toUpperCase());
+                            const codeMatch = inv.item_code && inv.item_code.toUpperCase() === code.toUpperCase();
+                            if (codeInName || nameInCode || codeMatch) return true;
+                        }
+
+                        // Try matching name
+                        if (name) {
+                            const nameLower = name.toLowerCase().trim();
+                            const invNameLower = inv.item_name ? inv.item_name.toLowerCase().trim() : '';
+                            const nameMatch = invNameLower === nameLower ||
+                                invNameLower.includes(nameLower) ||
+                                nameLower.includes(invNameLower);
+                            if (nameMatch) return true;
+                        }
+
+                        return false;
+                    });
+                    if (item) {
+                        console.log(`✅ Found vật tư phụ by flexible match: ${item.item_code} (${item.item_name}), quantity: ${item.quantity}, category: ${item.category}`);
+                        return item;
+                    }
+                }
+
                 // If still not found, log warning and similar items
                 if (!item) {
                     console.warn(`❌ Not found: code="${code}", name="${name}", type="${type}"`);
@@ -8386,6 +8447,22 @@
                     const similarItems = inventoryData.filter(inv => {
                         if (type === 'glass' && inv.item_type === 'glass') {
                             // For glass, check if code or name contains search terms
+                            if (code && inv.item_code) {
+                                return inv.item_code.toLowerCase().includes(code.toLowerCase()) ||
+                                    code.toLowerCase().includes(inv.item_code.toLowerCase());
+                            }
+                            if (name && inv.item_name) {
+                                return inv.item_name.toLowerCase().includes(name.toLowerCase()) ||
+                                    name.toLowerCase().includes(inv.item_name.toLowerCase());
+                            }
+                        } else if (type === 'material') {
+                            // ✅ Bổ sung: Tìm vật tư phụ tương tự
+                            const isVatTuPhu = inv.item_type === 'material' ||
+                                inv.item_type === 'accessory' ||
+                                inv.item_type === 'consumable' ||
+                                inv.item_type === 'other';
+                            if (!isVatTuPhu) return false;
+
                             if (code && inv.item_code) {
                                 return inv.item_code.toLowerCase().includes(code.toLowerCase()) ||
                                     code.toLowerCase().includes(inv.item_code.toLowerCase());
@@ -8405,6 +8482,7 @@
                             code: i.item_code,
                             name: i.item_name,
                             type: i.item_type,
+                            category: i.category, // ✅ Thêm category để debug vật tư phụ
                             quantity: i.quantity || i.stock_quantity
                         })));
                     }
@@ -8523,14 +8601,23 @@
                             item.available > 0 ? 'text-orange-600' : 'text-red-600';
                     }
 
+                    // ✅ Hiển thị số lượng tấm (chính) và m² (thông tin bổ sung)
+                    const requiredPanels = item.required || 0; // Số lượng tấm
+                    const requiredAreaM2 = item.required_area_m2 || 0; // Diện tích m² (thông tin bổ sung)
+                    const availablePanels = item.status === 'not_found' ? 0 : (item.available || 0); // Số lượng tấm trong kho
+                    const shortagePanels = item.shortage || 0; // Số lượng tấm thiếu
+
                     return `
                         <tr class="hover:bg-gray-50 ${rowClass}">
                             <td class="px-3 py-3 text-sm font-mono text-cyan-600">${escapeHtml(item.code)}</td>
                             <td class="px-3 py-3 text-sm text-gray-900">${escapeHtml(item.name)}</td>
-                            <td class="px-3 py-3 text-sm text-center text-gray-600">${escapeHtml(item.unit)}</td>
-                            <td class="px-3 py-3 text-sm text-center font-semibold text-cyan-600">${item.required.toFixed(2)}</td>
-                            <td class="px-3 py-3 text-sm text-center font-semibold ${availableColor}">${item.status === 'not_found' ? '-' : item.available.toFixed(2)}</td>
-                            <td class="px-3 py-3 text-sm text-center font-semibold ${item.shortage > 0 ? 'text-red-600' : 'text-gray-400'}">${item.shortage.toFixed(2)}</td>
+                            <td class="px-3 py-3 text-sm text-center text-gray-600">${escapeHtml(item.unit || 'tấm')}</td>
+                            <td class="px-3 py-3 text-sm text-center font-semibold text-cyan-600">
+                                <div>${requiredPanels} tấm</div>
+                                <div class="text-xs text-gray-500 mt-0.5">(${requiredAreaM2.toFixed(2)} m²)</div>
+                            </td>
+                            <td class="px-3 py-3 text-sm text-center font-semibold ${availableColor}">${item.status === 'not_found' ? '-' : availablePanels + ' tấm'}</td>
+                            <td class="px-3 py-3 text-sm text-center font-semibold ${item.shortage > 0 ? 'text-red-600' : 'text-gray-400'}">${shortagePanels} tấm</td>
                             <td class="px-3 py-3 text-center">${statusBadge}</td>
                         </tr>
                     `;
@@ -9646,9 +9733,9 @@
 
                 tbody.innerHTML = rowsHtml;
 
-                // Add change listeners
+                // Add change and input listeners for realtime update
                 tbody.querySelectorAll('.nhom-edit').forEach(input => {
-                    input.addEventListener('change', function () {
+                    const updateHandler = function () {
                         const row = this.closest('tr');
                         const index = parseInt(row.dataset.index);
                         const field = this.dataset.field;
@@ -9668,7 +9755,17 @@
                                 }
                             }
                         }
+                        // Update summary in realtime
                         updateNhomSummary();
+                    };
+
+                    // Realtime update on input (for quantity, density, length_m)
+                    if (input.dataset.field === 'quantity' || input.dataset.field === 'density' || input.dataset.field === 'length_m') {
+                        input.addEventListener('input', updateHandler);
+                    }
+                    // Save on change (when user finishes editing)
+                    input.addEventListener('change', function() {
+                        updateHandler.call(this);
                         autoSaveBOMData();
                     });
                 });
@@ -9721,9 +9818,9 @@
 
                 tbody.innerHTML = rowsHtml;
 
-                // Add change listeners
+                // Add change and input listeners for realtime update
                 tbody.querySelectorAll('.kinh-edit').forEach(input => {
-                    input.addEventListener('change', function () {
+                    const updateHandler = function () {
                         const row = this.closest('tr');
                         const index = parseInt(row.dataset.index);
                         const field = this.dataset.field;
@@ -9746,7 +9843,17 @@
                                 }
                             }
                         }
+                        // Update summary in realtime
                         updateKinhSummary();
+                    };
+
+                    // Realtime update on input (for quantity, width_mm, height_mm)
+                    if (input.dataset.field === 'quantity' || input.dataset.field === 'width_mm' || input.dataset.field === 'height_mm') {
+                        input.addEventListener('input', updateHandler);
+                    }
+                    // Save on change (when user finishes editing)
+                    input.addEventListener('change', function() {
+                        updateHandler.call(this);
                         autoSaveBOMData();
                     });
                 });
@@ -9756,13 +9863,32 @@
 
             // Update summary functions
             function updateNhomSummary() {
-                let totalQty = 0;
-                let totalWeight = 0;
+                if (!bocTachData || !bocTachData.nhom) {
+                    bocTachData = bocTachData || { nhom: [], kinh: [], vattu: [] };
+                    bocTachData.nhom = bocTachData.nhom || [];
+                }
+
+                let totalTypes = bocTachData.nhom.length; // Tổng loại nhôm
+                let totalQty = 0; // Tổng số cây
+                let totalWeight = 0; // Tổng khối lượng
+
                 bocTachData.nhom.forEach(item => {
                     totalQty += parseInt(item.quantity) || 0;
-                    totalWeight += parseFloat(item.weight_kg || (item.density || 0) * (item.quantity || 0));
+                    // Tính lại weight nếu chưa có hoặc cần cập nhật
+                    const weight = item.weight_kg || ((item.density || 0) * (item.quantity || 0));
+                    totalWeight += parseFloat(weight);
                 });
 
+                // Cập nhật các thẻ tổng hợp ở trên
+                const totalTypesEl = document.getElementById('nhomTotalTypes');
+                const totalPcsEl = document.getElementById('nhomTotalPcs');
+                const totalWeightEl = document.getElementById('nhomTotalWeight');
+                
+                if (totalTypesEl) totalTypesEl.textContent = totalTypes;
+                if (totalPcsEl) totalPcsEl.textContent = totalQty;
+                if (totalWeightEl) totalWeightEl.textContent = totalWeight.toFixed(2) + ' kg';
+
+                // Cập nhật footer
                 const footerQty = document.getElementById('nhomFooterQty');
                 const footerWeight = document.getElementById('nhomFooterWeight');
                 if (footerQty) footerQty.textContent = totalQty;
@@ -9770,23 +9896,34 @@
             }
 
             function updateKinhSummary() {
-                let totalTypes = bocTachData.kinh.length;
-                let totalPcs = 0;
-                let totalArea = 0;
+                if (!bocTachData || !bocTachData.kinh) {
+                    bocTachData = bocTachData || { nhom: [], kinh: [], vattu: [] };
+                    bocTachData.kinh = bocTachData.kinh || [];
+                }
+
+                let totalTypes = bocTachData.kinh.length; // Tổng loại kính
+                let totalPcs = 0; // Tổng số tấm
+                let totalArea = 0; // Tổng diện tích
+
                 bocTachData.kinh.forEach(item => {
                     totalPcs += parseInt(item.quantity) || 0;
-                    totalArea += parseFloat(item.area_m2 || ((item.width_mm || 0) * (item.height_mm || 0) / 1000000 * (item.quantity || 0)));
+                    // Tính lại area nếu chưa có hoặc cần cập nhật
+                    const area = item.area_m2 || ((item.width_mm || 0) * (item.height_mm || 0) / 1000000 * (item.quantity || 0));
+                    totalArea += parseFloat(area);
                 });
 
+                // Cập nhật các thẻ tổng hợp ở trên
                 const totalTypesEl = document.getElementById('kinhTotalTypes');
                 const totalPcsEl = document.getElementById('kinhTotalPcs');
                 const totalAreaEl = document.getElementById('kinhTotalArea');
-                const footerQty = document.getElementById('kinhFooterQty');
-                const footerArea = document.getElementById('kinhFooterArea');
-
+                
                 if (totalTypesEl) totalTypesEl.textContent = totalTypes;
                 if (totalPcsEl) totalPcsEl.textContent = totalPcs;
                 if (totalAreaEl) totalAreaEl.textContent = totalArea.toFixed(2) + ' m²';
+
+                // Cập nhật footer
+                const footerQty = document.getElementById('kinhFooterQty');
+                const footerArea = document.getElementById('kinhFooterArea');
                 if (footerQty) footerQty.textContent = totalPcs;
                 if (footerArea) footerArea.textContent = totalArea.toFixed(2);
             }
@@ -9844,10 +9981,17 @@
                 }
 
                 try {
+                    // ✅ Lấy token từ localStorage
+                    const token = localStorage.getItem('token');
+                    if (!token) {
+                        throw new Error('Không có token xác thực. Vui lòng đăng nhập lại.');
+                    }
+
                     const response = await fetch(`${API_BASE}/bom-export/${currentProject.id}/aluminum`, {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}` // ✅ Thêm Authorization header
                         },
                         body: JSON.stringify({
                             data: bocTachData.nhom
@@ -9897,10 +10041,17 @@
                 }
 
                 try {
+                    // ✅ Lấy token từ localStorage
+                    const token = localStorage.getItem('token');
+                    if (!token) {
+                        throw new Error('Không có token xác thực. Vui lòng đăng nhập lại.');
+                    }
+
                     const response = await fetch(`${API_BASE}/bom-export/${currentProject.id}/glass`, {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}` // ✅ Thêm Authorization header
                         },
                         body: JSON.stringify({
                             data: bocTachData.kinh
@@ -9948,10 +10099,17 @@
                 }
 
                 try {
+                    // ✅ Lấy token từ localStorage
+                    const token = localStorage.getItem('token');
+                    if (!token) {
+                        throw new Error('Không có token xác thực. Vui lòng đăng nhập lại.');
+                    }
+
                     const response = await fetch(`${API_BASE}/bom-export/${currentProject.id}/accessories`, {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}` // ✅ Thêm Authorization header
                         },
                         body: JSON.stringify({
                             data: bocTachData.vattu
@@ -10004,10 +10162,17 @@
                 }
 
                 try {
+                    // ✅ Lấy token từ localStorage
+                    const token = localStorage.getItem('token');
+                    if (!token) {
+                        throw new Error('Không có token xác thực. Vui lòng đăng nhập lại.');
+                    }
+
                     const response = await fetch(`${API_BASE}/bom-export/${currentProject.id}/combined`, {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}` // ✅ Thêm Authorization header
                         },
                         body: JSON.stringify({
                             nhom: bocTachData.nhom || [],
