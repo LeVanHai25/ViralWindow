@@ -20,30 +20,25 @@ class NotificationEventService {
      */
     static async emit(eventType, payload, options = {}) {
         try {
-            // 1. Tìm rule cho event này
-            const rule = await this.getRule(eventType);
+            // 1. Tìm rule cho event này (optional)
+            let rule = await this.getRule(eventType);
 
-            if (!rule || !rule.is_active) {
-                console.log(`⚠️ No active rule for event: ${eventType}`);
-                return null;
-            }
-
-            // 2. Tạo notification
+            // 2. Tạo notification (even without rule)
             const notification = await this.createNotification(eventType, payload, rule, options);
             if (!notification) {
                 console.error(`❌ Failed to create notification for: ${eventType}`);
                 return null;
             }
 
-            // 3. Tìm recipients theo rule
-            const recipients = await this.getRecipients(rule, options);
+            console.log(`✅ Notification ${notification.id} created for event: ${eventType}`);
 
-            // 4. Gửi notification cho recipients
-            if (recipients.length > 0) {
-                await this.addRecipients(notification.id, recipients);
-                console.log(`✅ Notification ${notification.id} sent to ${recipients.length} recipients`);
-            } else {
-                console.log(`⚠️ No recipients found for event: ${eventType}`);
+            // 3. If rule exists, handle recipients
+            if (rule && rule.is_active) {
+                const recipients = await this.getRecipients(rule, options);
+                if (recipients.length > 0) {
+                    await this.addRecipients(notification.id, recipients);
+                    console.log(`✅ Notification ${notification.id} sent to ${recipients.length} recipients`);
+                }
             }
 
             return notification;
@@ -76,57 +71,68 @@ class NotificationEventService {
         try {
             const { title, message, level } = this.generateNotificationContent(eventType, payload);
 
-            // Map level to color and priority
-            const colorMap = { 'info': 'blue', 'important': 'green', 'urgent': 'red' };
-            const priorityMap = { 'info': 'normal', 'important': 'high', 'urgent': 'urgent' };
-
-            // Kiểm tra xem bảng có cột icon không
-            let hasIconColumn = false;
+            // Detect available columns dynamically
+            let availableColumns = [];
             try {
                 const [columns] = await db.query(
                     `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
                      WHERE TABLE_SCHEMA = DATABASE() 
-                     AND TABLE_NAME = 'notifications' 
-                     AND COLUMN_NAME = 'icon'`
+                     AND TABLE_NAME = 'notifications'`
                 );
-                hasIconColumn = columns.length > 0;
-            } catch (checkError) {
-                // Nếu không kiểm tra được, giả sử không có cột icon
-                hasIconColumn = false;
+                availableColumns = columns.map(c => c.COLUMN_NAME.toLowerCase());
+            } catch (e) {
+                console.error('Could not detect columns, using minimal set');
+                availableColumns = ['id', 'type', 'title', 'message', 'is_read', 'created_at'];
             }
 
-            // Tạo query INSERT tùy theo có cột icon hay không
-            let query, params;
-            if (hasIconColumn) {
-                query = `INSERT INTO notifications 
-                         (user_id, type, title, message, link, icon, color, priority, is_read, created_at)
-                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, NOW())`;
-                params = [
-                    null, // broadcast to all
-                    eventType,
-                    title,
-                    message,
-                    options.link || null,
-                    '📢',
-                    colorMap[level] || 'blue',
-                    priorityMap[level] || 'normal'
-                ];
-            } else {
-                query = `INSERT INTO notifications 
-                         (user_id, type, title, message, link, color, priority, is_read, created_at)
-                         VALUES (?, ?, ?, ?, ?, ?, ?, 0, NOW())`;
-                params = [
-                    null, // broadcast to all
-                    eventType,
-                    title,
-                    message,
-                    options.link || null,
-                    colorMap[level] || 'blue',
-                    priorityMap[level] || 'normal'
-                ];
+            // Build INSERT dynamically based on available columns
+            const insertCols = ['type', 'title', 'message', 'is_read', 'created_at'];
+            const insertVals = [eventType, title, message, 0, new Date()];
+
+            if (availableColumns.includes('user_id')) {
+                insertCols.push('user_id');
+                insertVals.push(null); // broadcast to all
+            }
+            if (availableColumns.includes('link') && options.link) {
+                insertCols.push('link');
+                insertVals.push(options.link);
+            }
+            if (availableColumns.includes('icon')) {
+                insertCols.push('icon');
+                insertVals.push('📢');
+            }
+            if (availableColumns.includes('color')) {
+                const colorMap = { 'info': 'blue', 'important': 'green', 'urgent': 'red' };
+                insertCols.push('color');
+                insertVals.push(colorMap[level] || 'blue');
+            }
+            if (availableColumns.includes('priority')) {
+                const priorityMap = { 'info': 'normal', 'important': 'high', 'urgent': 'urgent' };
+                insertCols.push('priority');
+                insertVals.push(priorityMap[level] || 'normal');
+            }
+            if (availableColumns.includes('severity')) {
+                insertCols.push('severity');
+                insertVals.push(level || 'info');
+            }
+            if (availableColumns.includes('entity_type') && options.entityType) {
+                insertCols.push('entity_type');
+                insertVals.push(options.entityType);
+            }
+            if (availableColumns.includes('entity_id') && options.entityId) {
+                insertCols.push('entity_id');
+                insertVals.push(options.entityId);
             }
 
-            const [result] = await db.query(query, params);
+            const placeholders = insertVals.map(() => '?').join(', ');
+            const query = `INSERT INTO notifications (${insertCols.join(', ')}) VALUES (${placeholders})`;
+
+            console.log('📝 Creating notification with query:', query);
+            console.log('📝 Values:', insertVals);
+
+            const [result] = await db.query(query, insertVals);
+
+            console.log('✅ Notification created with ID:', result.insertId);
 
             return {
                 id: result.insertId,
@@ -135,7 +141,8 @@ class NotificationEventService {
                 message
             };
         } catch (error) {
-            console.error('Error creating notification:', error);
+            console.error('❌ Error creating notification:', error.message);
+            console.error('Full error:', error);
             return null;
         }
     }

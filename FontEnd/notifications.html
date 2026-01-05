@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -51,9 +52,12 @@
         }
 
         @keyframes pulse {
-            0%, 100% {
+
+            0%,
+            100% {
                 opacity: 1;
             }
+
             50% {
                 opacity: 0.5;
             }
@@ -74,7 +78,7 @@
 <body>
     <!-- HEADER -->
     <div class="header-gradient text-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-6 py-5">
+        <div class="w-full px-6 py-5">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
                     <a href="javascript:void(0)" onclick="history.back()" title="Quay lại trang trước"
@@ -106,7 +110,7 @@
 
     <!-- STATS BAR -->
     <div class="bg-white shadow-sm border-b">
-        <div class="max-w-7xl mx-auto px-6 py-4">
+        <div class="w-full px-6 py-4">
             <div class="grid grid-cols-4 gap-6">
                 <div class="text-center">
                     <p class="text-sm text-gray-600 mb-1">Tổng thông báo</p>
@@ -130,7 +134,7 @@
 
     <!-- FILTERS -->
     <div class="bg-white shadow-sm border-b">
-        <div class="max-w-7xl mx-auto px-6 py-3">
+        <div class="w-full px-6 py-3">
             <div class="flex items-center gap-3 overflow-x-auto">
                 <button onclick="filterNotifications('all')" id="filterAll"
                     class="filter-btn active px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap">
@@ -169,7 +173,7 @@
     </div>
 
     <!-- NOTIFICATIONS LIST -->
-    <div class="max-w-7xl mx-auto px-6 py-6">
+    <div class="w-full px-6 py-6">
         <div id="notificationsList" class="space-y-3">
             <!-- Notifications will be loaded here -->
             <div class="text-center py-12 text-gray-500">
@@ -197,17 +201,21 @@
         // Load notifications on page load
         document.addEventListener('DOMContentLoaded', () => {
             loadNotifications();
-            
+
             // Auto refresh every 30 seconds
             setInterval(loadNotifications, 30000);
         });
 
         async function loadNotifications() {
             try {
-                const response = await fetch(`${API_BASE}/notifications`);
-                
+                // Get token for authentication
+                const token = localStorage.getItem('token');
+                const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+                const response = await fetch(`${API_BASE}/notifications`, { headers });
+
                 if (!response.ok) {
-                    console.warn('API not available, using demo data');
+                    console.warn('API not available or unauthorized, using demo data');
                     loadDemoNotifications();
                     return;
                 }
@@ -497,8 +505,10 @@
 
         async function markAsRead(id) {
             try {
+                const token = localStorage.getItem('token');
                 await fetch(`${API_BASE}/notifications/${id}/read`, {
-                    method: 'PUT'
+                    method: 'POST',
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
                 });
 
                 // Update local data
@@ -518,8 +528,10 @@
             if (!confirm('Đánh dấu tất cả thông báo là đã đọc?')) return;
 
             try {
-                await fetch(`${API_BASE}/notifications/mark-all-read`, {
-                    method: 'PUT'
+                const token = localStorage.getItem('token');
+                await fetch(`${API_BASE}/notifications/read-all`, {
+                    method: 'POST',
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
                 });
 
                 allNotifications.forEach(n => n.is_read = true);
@@ -533,12 +545,14 @@
 
         async function deleteNotification(id, event) {
             event.stopPropagation();
-            
+
             if (!confirm('Xóa thông báo này?')) return;
 
             try {
+                const token = localStorage.getItem('token');
                 await fetch(`${API_BASE}/notifications/${id}`, {
-                    method: 'DELETE'
+                    method: 'DELETE',
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
                 });
 
                 allNotifications = allNotifications.filter(n => n.id !== id);
@@ -552,7 +566,7 @@
 
         async function deleteAllRead() {
             const readNotifications = allNotifications.filter(n => n.is_read);
-            
+
             if (readNotifications.length === 0) {
                 alert('Không có thông báo đã đọc để xóa');
                 return;
@@ -561,8 +575,10 @@
             if (!confirm(`Xóa ${readNotifications.length} thông báo đã đọc?`)) return;
 
             try {
+                const token = localStorage.getItem('token');
                 await fetch(`${API_BASE}/notifications/delete-read`, {
-                    method: 'DELETE'
+                    method: 'DELETE',
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
                 });
 
                 allNotifications = allNotifications.filter(n => !n.is_read);
@@ -576,12 +592,12 @@
 
         function getTimeAgo(date) {
             const seconds = Math.floor((new Date() - date) / 1000);
-            
+
             if (seconds < 60) return 'Vừa xong';
             if (seconds < 3600) return Math.floor(seconds / 60) + ' phút trước';
             if (seconds < 86400) return Math.floor(seconds / 3600) + ' giờ trước';
             if (seconds < 604800) return Math.floor(seconds / 86400) + ' ngày trước';
-            
+
             return date.toLocaleDateString('vi-VN');
         }
 
@@ -592,7 +608,7 @@
                 error: 'bg-red-500',
                 info: 'bg-blue-500'
             };
-            
+
             toast.className = `fixed top-4 right-4 ${bgColors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
             toast.textContent = message;
             document.body.appendChild(toast);
@@ -601,5 +617,5 @@
         }
     </script>
 </body>
-</html>
 
+</html>

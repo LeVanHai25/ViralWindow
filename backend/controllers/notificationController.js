@@ -231,12 +231,25 @@ exports.markAllAsRead = async (req, res) => {
             });
         }
 
-        const [result] = await db.query(
-            `UPDATE notifications 
-             SET is_read = 1, updated_at = NOW()
-             WHERE (user_id = ? OR user_id IS NULL) AND is_read = 0`,
-            [userId]
-        );
+        // Check available columns
+        const cols = await getNotificationColumns();
+        const hasUpdatedAtCol = cols.includes('updated_at');
+        const hasUserIdCol = cols.includes('user_id');
+
+        // Build SET clause based on available columns
+        const setCols = hasUpdatedAtCol ? 'is_read = 1, updated_at = NOW()' : 'is_read = 1';
+
+        // Build WHERE clause based on available columns
+        let query, params;
+        if (hasUserIdCol) {
+            query = `UPDATE notifications SET ${setCols} WHERE (user_id = ? OR user_id IS NULL) AND is_read = 0`;
+            params = [userId];
+        } else {
+            query = `UPDATE notifications SET ${setCols} WHERE is_read = 0`;
+            params = [];
+        }
+
+        const [result] = await db.query(query, params);
 
         res.json({
             success: true,
@@ -247,7 +260,7 @@ exports.markAllAsRead = async (req, res) => {
         console.error('Error marking all as read:', err);
         res.status(500).json({
             success: false,
-            message: "Lỗi server"
+            message: "Lỗi server: " + err.message
         });
     }
 };

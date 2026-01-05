@@ -112,6 +112,11 @@
                     </svg>
                     <p>Không có thông báo nào</p>
                 </div>
+                <div class="header-notifications-footer">
+                    <a href="notifications.html" class="text-blue-600 hover:text-blue-800 font-medium" style="margin-left: auto;">
+                        📋 Xem lịch sử thông báo →
+                    </a>
+                </div>
             `;
             return;
         }
@@ -153,10 +158,10 @@
         html += `
             <div class="header-notifications-footer">
                 <button onclick="markAllHeaderNotificationsRead()" class="text-blue-600 hover:text-blue-800">
-                    Đánh dấu tất cả đã đọc
+                    ✓ Đánh dấu đã đọc
                 </button>
-                <a href="notifications.html" class="text-blue-600 hover:text-blue-800">
-                    Xem tất cả →
+                <a href="notifications.html" class="text-blue-600 hover:text-blue-800 font-medium">
+                    📋 Xem lịch sử thông báo →
                 </a>
             </div>
         `;
