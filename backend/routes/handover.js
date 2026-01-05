@@ -36,6 +36,20 @@ router.get('/', async (req, res) => {
 // GET /api/handover/projects - Lấy danh sách dự án với sản phẩm (cho frontend)
 router.get('/projects', async (req, res) => {
     try {
+        // Thêm các columns mới nếu chưa có (migration)
+        try {
+            await db.query(`ALTER TABLE projects ADD COLUMN handover_person VARCHAR(255) NULL`);
+        } catch (e) { /* Column exists */ }
+        try {
+            await db.query(`ALTER TABLE projects ADD COLUMN receiver_name VARCHAR(255) NULL`);
+        } catch (e) { /* Column exists */ }
+        try {
+            await db.query(`ALTER TABLE projects ADD COLUMN receiver_phone VARCHAR(50) NULL`);
+        } catch (e) { /* Column exists */ }
+        try {
+            await db.query(`ALTER TABLE projects ADD COLUMN handover_photos JSON NULL`);
+        } catch (e) { /* Column exists */ }
+
         // Lấy danh sách dự án ở giai đoạn installation hoặc handover
         const projectQuery = `
             SELECT 
@@ -47,6 +61,10 @@ router.get('/projects', async (req, res) => {
                 p.handover_date,
                 p.handover_status,
                 p.handover_notes,
+                p.handover_person,
+                p.receiver_name,
+                p.receiver_phone,
+                p.handover_photos,
                 p.progress_percent,
                 p.created_at,
                 p.updated_at,
@@ -111,10 +129,22 @@ router.get('/projects', async (req, res) => {
 
                 project.products = products;
                 project.total_products = products.length;
+
+                // Parse handover_photos JSON
+                try {
+                    if (project.handover_photos && typeof project.handover_photos === 'string') {
+                        project.handover_photos = JSON.parse(project.handover_photos);
+                    } else if (!project.handover_photos) {
+                        project.handover_photos = [];
+                    }
+                } catch (e) {
+                    project.handover_photos = [];
+                }
             } catch (err) {
                 console.log('Lỗi lấy sản phẩm cho dự án', project.id, err.message);
                 project.products = [];
                 project.total_products = 0;
+                project.handover_photos = [];
             }
         }
 
@@ -193,6 +223,38 @@ router.put('/:id/complete', async (req, res) => {
             handover_date || new Date(),
             id
         ]);
+
+        res.json({
+            success: true,
+            message: 'Đã hoàn thành bàn giao dự án'
+        });
+    } catch (error) {
+        console.error('Lỗi hoàn thành bàn giao:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi server',
+            error: error.message
+        });
+    }
+});
+
+// POST /api/handover/projects/:id/complete - Hoàn thành bàn giao (match frontend)
+router.post('/projects/:id/complete', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const query = `
+            UPDATE projects 
+            SET 
+                status = 'completed',
+                handover_status = 'completed',
+                handover_date = COALESCE(handover_date, NOW()),
+                progress_percent = 100,
+                updated_at = NOW()
+            WHERE id = ?
+        `;
+
+        await db.query(query, [id]);
 
         res.json({
             success: true,
