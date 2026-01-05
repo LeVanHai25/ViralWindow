@@ -496,6 +496,10 @@
                                         <button onclick="cancelPayment(${payment.id})" class="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
                                             Hủy
                                         </button>
+                                    ` : status === 'posted' ? `
+                                        <button onclick="cancelPayment(${payment.id})" class="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+                                            Hủy
+                                        </button>
                                     ` : ''}
                                 </div>
                             </td>
@@ -608,34 +612,66 @@
                 amount: parseFloat(document.getElementById('paymentAmount').value),
                 description: document.getElementById('paymentDescription').value || null,
                 project_id: document.getElementById('paymentProject').value || null,
-                payment_method: document.getElementById('paymentAccount').value,
-                status: draft ? 'draft' : 'posted'
+                payment_method: document.getElementById('paymentAccount').value
             };
 
             try {
-                const url = currentPaymentId
-                    ? `${API_BASE}/financial/transactions/${currentPaymentId}`
-                    : `${API_BASE}/financial/transactions`;
-                const method = currentPaymentId ? 'PUT' : 'POST';
-
                 const token = localStorage.getItem('token');
-                const res = await fetch(url, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(data)
-                });
+                let transactionId = currentPaymentId;
 
-                const result = await res.json();
-                if (result.success) {
-                    showAlert(draft ? 'Lưu nháp thành công!' : 'Ghi sổ thành công!');
-                    closePaymentModal();
-                    loadPayments();
+                // Tạo mới hoặc cập nhật (luôn lưu với status = 'draft' trước)
+                if (transactionId) {
+                    // Update existing
+                    const res = await fetch(`${API_BASE}/financial/transactions/${transactionId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    const result = await res.json();
+                    if (!result.success) {
+                        showAlert('Lỗi: ' + (result.message || 'Không thể cập nhật phiếu chi'));
+                        return;
+                    }
                 } else {
-                    showAlert('Lỗi: ' + (result.message || 'Không thể lưu phiếu chi'));
+                    // Create new
+                    const res = await fetch(`${API_BASE}/financial/transactions`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ ...data, status: 'draft' })
+                    });
+                    const result = await res.json();
+                    if (!result.success) {
+                        showAlert('Lỗi: ' + (result.message || 'Không thể tạo phiếu chi'));
+                        return;
+                    }
+                    transactionId = result.data?.id;
                 }
+
+                // Nếu không phải draft, gọi API post để ghi sổ
+                if (!draft && transactionId) {
+                    const postRes = await fetch(`${API_BASE}/financial/transactions/${transactionId}/post`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    const postResult = await postRes.json();
+                    if (!postResult.success) {
+                        showAlert('Lỗi: ' + (postResult.message || 'Không thể ghi sổ'));
+                        return;
+                    }
+                }
+
+                showAlert(draft ? 'Lưu nháp thành công!' : 'Ghi sổ thành công!');
+                closePaymentModal();
+                loadPayments();
             } catch (error) {
                 console.error('Error saving payment:', error);
                 showAlert('Lỗi kết nối server');
@@ -658,13 +694,12 @@
 
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch(`${API_BASE}/financial/transactions/${id}`, {
-                    method: 'PUT',
+                const res = await fetch(`${API_BASE}/financial/transactions/${id}/post`, {
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ status: 'posted' })
+                    }
                 });
 
                 const result = await res.json();
@@ -682,22 +717,28 @@
 
         // Cancel payment
         async function cancelPayment(id) {
+            const cancelReason = prompt('Vui lòng nhập lý do hủy:');
+            if (!cancelReason || !cancelReason.trim()) {
+                showAlert('Vui lòng nhập lý do hủy');
+                return;
+            }
+
             if (!confirm('Bạn có chắc muốn hủy phiếu chi này?')) return;
 
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch(`${API_BASE}/financial/transactions/${id}`, {
-                    method: 'PUT',
+                const res = await fetch(`${API_BASE}/financial/transactions/${id}/cancel`, {
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ status: 'cancelled' })
+                    body: JSON.stringify({ cancel_reason: cancelReason.trim() })
                 });
 
                 const result = await res.json();
                 if (result.success) {
-                    showAlert('Hủy phiếu chi thành công!');
+                    showAlert(result.message || 'Hủy phiếu chi thành công!');
                     loadPayments();
                 } else {
                     showAlert('Lỗi: ' + (result.message || 'Không thể hủy phiếu chi'));

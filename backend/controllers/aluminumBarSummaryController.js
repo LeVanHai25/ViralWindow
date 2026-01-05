@@ -362,13 +362,51 @@ exports.saveToFinance = async (req, res) => {
         const transactionDate = transaction_date || new Date().toISOString().split('T')[0];
         const year = new Date(transactionDate).getFullYear();
         
-        // Đếm số giao dịch trong năm để tạo mã
-        const [countRows] = await db.query(
-            "SELECT COUNT(*) as count FROM financial_transactions WHERE YEAR(transaction_date) = ? AND transaction_type = 'expense'",
-            [year]
-        );
-        const count = countRows[0].count + 1;
-        const transaction_code = `CHI-${year}-${String(count).padStart(4, '0')}`;
+        // Generate unique transaction code
+        let transaction_code;
+        let maxAttempts = 10;
+        let attempt = 0;
+        
+        while (attempt < maxAttempts) {
+            const [maxCodeRows] = await db.query(`
+                SELECT transaction_code 
+                FROM financial_transactions 
+                WHERE transaction_code LIKE ? AND transaction_type = 'expense'
+                ORDER BY CAST(SUBSTRING(transaction_code, 9) AS UNSIGNED) DESC
+                LIMIT 1
+            `, [`CHI-${year}-%`]);
+            
+            let nextNumber = 1;
+            if (maxCodeRows.length > 0 && maxCodeRows[0].transaction_code) {
+                const match = maxCodeRows[0].transaction_code.match(/CHI-\d+-(\d+)/);
+                if (match) {
+                    nextNumber = parseInt(match[1], 10) + 1;
+                }
+            }
+            
+            transaction_code = `CHI-${year}-${String(nextNumber).padStart(4, '0')}`;
+            
+            // Kiểm tra xem code đã tồn tại chưa
+            const [checkExisting] = await db.query(
+                "SELECT id FROM financial_transactions WHERE transaction_code = ?",
+                [transaction_code]
+            );
+            
+            if (checkExisting.length === 0) {
+                // Code chưa tồn tại, có thể sử dụng
+                break;
+            }
+            
+            // Code đã tồn tại, thử số tiếp theo
+            nextNumber++;
+            attempt++;
+        }
+        
+        if (attempt >= maxAttempts) {
+            // Fallback: sử dụng timestamp để đảm bảo unique
+            const timestamp = Date.now().toString().slice(-6);
+            transaction_code = `CHI-${year}-${timestamp}`;
+        }
 
         // Tạo mô tả chi tiết
         const detailDescription = description || `Chi phí nhôm nguyên cây cho dự án ${project.project_name || projectId}`;

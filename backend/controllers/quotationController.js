@@ -549,7 +549,12 @@ exports.update = async (req, res) => {
 
     try {
         const { id } = req.params;
-        const { customer_id, project_id, quotation_date, validity_days, status, profit_margin_percent, items, notes, quotation_code } = req.body;
+        const {
+            customer_id, project_id, quotation_date, validity_days, status,
+            profit_margin_percent, items, notes, quotation_code,
+            discount_percent, vat_percent, shipping_fee, total_amount: clientTotalAmount,
+            creator_name
+        } = req.body;
 
         // Tính lại tổng tiền
         let subtotal = 0;
@@ -561,7 +566,34 @@ exports.update = async (req, res) => {
 
         const profit_margin = profit_margin_percent || 20;
         const profit_amount = (subtotal * profit_margin) / 100;
-        const total_amount = subtotal + profit_amount;
+
+        // ✅ CRITICAL FIX: Tính lại total_amount dựa trên VAT, discount, shipping
+        // Công thức: total = (subtotal - chiết_khấu) + VAT + phí_vận_chuyển
+        const discountPct = discount_percent !== undefined && discount_percent !== null
+            ? parseFloat(discount_percent) : 0;
+        const vatPct = vat_percent !== undefined && vat_percent !== null
+            ? parseFloat(vat_percent) : 10;
+        const shippingAmt = shipping_fee !== undefined && shipping_fee !== null
+            ? parseFloat(shipping_fee) : 0;
+
+        const discountAmount = (subtotal * discountPct) / 100;
+        const afterDiscount = subtotal - discountAmount;
+        const vatAmount = (afterDiscount * vatPct) / 100;
+
+        // Tính total_amount chính xác từ server (không dùng clientTotalAmount nữa)
+        const total_amount = afterDiscount + vatAmount + shippingAmt;
+
+        console.log('📊 Backend calculating total_amount:', {
+            subtotal,
+            discount_percent: discountPct,
+            discountAmount,
+            afterDiscount,
+            vat_percent: vatPct,
+            vatAmount,
+            shipping_fee: shippingAmt,
+            total_amount,
+            clientTotalAmount // Log để so sánh
+        });
 
         // Cập nhật báo giá
         const updateFields = [];
@@ -604,6 +636,43 @@ exports.update = async (req, res) => {
         updateValues.push(total_amount);
         updateFields.push('notes = ?');
         updateValues.push(notes || null);
+
+        // ✅ CRITICAL FIX: Luôn cập nhật discount_percent, vat_percent, shipping_fee
+        // Sử dụng ?? thay vì || để xử lý đúng giá trị 0 (0 là falsy với ||)
+        // BUG cũ: parseFloat(0) || 10 = 10 (SAI! vì 0 là falsy)
+        // FIX: parseFloat(0) ?? 10 = 0 (ĐÚNG! vì 0 không phải null/undefined)
+
+        // Luôn thêm các field này vào UPDATE (không kiểm tra undefined)
+        updateFields.push('discount_percent = ?');
+        const discountValue = discount_percent !== undefined && discount_percent !== null
+            ? parseFloat(discount_percent)
+            : 0;
+        updateValues.push(isNaN(discountValue) ? 0 : discountValue);
+
+        updateFields.push('vat_percent = ?');
+        const vatValue = vat_percent !== undefined && vat_percent !== null
+            ? parseFloat(vat_percent)
+            : 10;
+        updateValues.push(isNaN(vatValue) ? 10 : vatValue);
+
+        updateFields.push('shipping_fee = ?');
+        const shippingValue = shipping_fee !== undefined && shipping_fee !== null
+            ? parseFloat(shipping_fee)
+            : 0;
+        updateValues.push(isNaN(shippingValue) ? 0 : shippingValue);
+
+        // Log để debug
+        console.log('💾 Saving VAT/discount values:', {
+            discount_percent: discountValue,
+            vat_percent: vatValue,
+            shipping_fee: shippingValue,
+            original: { discount_percent, vat_percent, shipping_fee }
+        });
+        if (creator_name !== undefined) {
+            updateFields.push('creator_name = ?');
+            updateValues.push(creator_name || null);
+        }
+
         updateValues.push(id);
 
         const [result] = await connection.query(

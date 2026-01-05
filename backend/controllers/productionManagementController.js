@@ -5,9 +5,10 @@ const db = require("../config/db");
  */
 exports.getProductionProjects = async (req, res) => {
     try {
-        // Lấy TẤT CẢ dự án (không lọc theo status) - loại trừ cancelled và closed
+        // Lấy các dự án có production_order HOẶC đã đến giai đoạn sản xuất
+        // Logic này phải khớp với logic đếm trong dashboard
         const [projects] = await db.query(`
-            SELECT 
+            SELECT DISTINCT
                 p.id,
                 p.project_code,
                 p.project_name,
@@ -19,7 +20,17 @@ exports.getProductionProjects = async (req, res) => {
                 c.phone AS customer_phone
             FROM projects p
             LEFT JOIN customers c ON p.customer_id = c.id
+            LEFT JOIN production_orders po ON po.project_id = p.id
             WHERE p.status NOT IN ('cancelled', 'closed')
+            AND (
+                -- Có production_order và status không phải completed/cancelled/closed
+                (po.id IS NOT NULL AND (po.status IS NULL OR po.status = '' OR po.status NOT IN ('completed', 'cancelled', 'closed')))
+                OR
+                -- Hoặc dự án đã đến giai đoạn sản xuất
+                p.status IN ('in_production', 'cutting', 'welding', 'gluing', 'accessories', 'finishing', 'packaging')
+                OR
+                (p.status = 'designing' AND p.progress_percent >= 40)
+            )
             ORDER BY p.created_at DESC
         `);
 

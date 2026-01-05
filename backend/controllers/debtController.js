@@ -315,19 +315,60 @@ exports.recordPayment = async (req, res) => {
         // Create financial transaction
         const transactionType = debt.debt_type === 'receivable' ? 'revenue' : 'expense';
         const year = new Date(payment_date || new Date()).getFullYear();
-        const [countRows] = await db.query(
-            "SELECT COUNT(*) as count FROM financial_transactions WHERE YEAR(transaction_date) = ?",
-            [year]
-        );
-        const count = countRows[0].count + 1;
         const prefix = transactionType === 'revenue' ? 'THU' : 'CHI';
-        const transaction_code = `${prefix}-${year}-${String(count).padStart(4, '0')}`;
+        
+        // Generate unique transaction code
+        let transaction_code;
+        let maxAttempts = 10;
+        let attempt = 0;
+        
+        while (attempt < maxAttempts) {
+            const [maxCodeRows] = await db.query(`
+                SELECT transaction_code 
+                FROM financial_transactions 
+                WHERE transaction_code LIKE ? AND transaction_type = ?
+                ORDER BY CAST(SUBSTRING(transaction_code, 9) AS UNSIGNED) DESC
+                LIMIT 1
+            `, [`${prefix}-${year}-%`, transactionType]);
+            
+            let nextNumber = 1;
+            if (maxCodeRows.length > 0 && maxCodeRows[0].transaction_code) {
+                const match = maxCodeRows[0].transaction_code.match(new RegExp(`${prefix}-\\d+-(\\d+)`));
+                if (match) {
+                    nextNumber = parseInt(match[1], 10) + 1;
+                }
+            }
+            
+            transaction_code = `${prefix}-${year}-${String(nextNumber).padStart(4, '0')}`;
+            
+            // Kiểm tra xem code đã tồn tại chưa
+            const [checkExisting] = await db.query(
+                "SELECT id FROM financial_transactions WHERE transaction_code = ?",
+                [transaction_code]
+            );
+            
+            if (checkExisting.length === 0) {
+                // Code chưa tồn tại, có thể sử dụng
+                break;
+            }
+            
+            // Code đã tồn tại, thử số tiếp theo
+            nextNumber++;
+            attempt++;
+        }
+        
+        if (attempt >= maxAttempts) {
+            // Fallback: sử dụng timestamp để đảm bảo unique
+            const timestamp = Date.now().toString().slice(-6);
+            transaction_code = `${prefix}-${year}-${timestamp}`;
+        }
 
+        // Tạo financial transaction với status = 'posted' vì đây là thanh toán thực tế
         await db.query(`
             INSERT INTO financial_transactions
             (transaction_code, transaction_date, transaction_type, category, amount, description,
-             project_id, customer_id, payment_method, reference_number)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             project_id, customer_id, payment_method, reference_number, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'posted')
         `, [
             transaction_code,
             payment_date || new Date().toISOString().split('T')[0],
@@ -392,6 +433,8 @@ exports.delete = async (req, res) => {
 exports.getStatistics = async (req, res) => {
     try {
         // Receivable statistics
+        // Chỉ tính các debts chưa thanh toán xong (status != 'paid')
+        // "Tổng phải thu" = Tổng số tiền ban đầu từ các debts chưa thanh toán xong
         const [receivableRows] = await db.query(`
             SELECT 
                 COUNT(*) as total_count,
@@ -399,10 +442,11 @@ exports.getStatistics = async (req, res) => {
                 COALESCE(SUM(paid_amount), 0) as paid_amount,
                 COALESCE(SUM(remaining_amount), 0) as remaining_amount
             FROM debts
-            WHERE debt_type = 'receivable'
+            WHERE debt_type = 'receivable' AND status != 'paid'
         `);
 
         // Payable statistics
+        // Chỉ tính các debts chưa thanh toán xong (status != 'paid')
         const [payableRows] = await db.query(`
             SELECT 
                 COUNT(*) as total_count,
@@ -410,7 +454,7 @@ exports.getStatistics = async (req, res) => {
                 COALESCE(SUM(paid_amount), 0) as paid_amount,
                 COALESCE(SUM(remaining_amount), 0) as remaining_amount
             FROM debts
-            WHERE debt_type = 'payable'
+            WHERE debt_type = 'payable' AND status != 'paid'
         `);
 
         // Overdue debts

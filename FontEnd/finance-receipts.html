@@ -490,6 +490,10 @@
                                         <button onclick="cancelReceipt(${receipt.id})" class="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
                                             Hủy
                                         </button>
+                                    ` : status === 'posted' ? `
+                                        <button onclick="cancelReceipt(${receipt.id})" class="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+                                            Hủy
+                                        </button>
                                     ` : ''}
                                 </div>
                             </td>
@@ -649,34 +653,66 @@
                 description: document.getElementById('receiptDescription').value || null,
                 customer_id: document.getElementById('receiptCustomer').value || null,
                 project_id: document.getElementById('receiptProject').value || null,
-                payment_method: document.getElementById('receiptAccount').value,
-                status: draft ? 'draft' : 'posted'
+                payment_method: document.getElementById('receiptAccount').value
             };
 
             try {
-                const url = currentReceiptId
-                    ? `${API_BASE}/financial/transactions/${currentReceiptId}`
-                    : `${API_BASE}/financial/transactions`;
-                const method = currentReceiptId ? 'PUT' : 'POST';
-
                 const token = localStorage.getItem('token');
-                const res = await fetch(url, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(data)
-                });
+                let transactionId = currentReceiptId;
 
-                const result = await res.json();
-                if (result.success) {
-                    showAlert(draft ? 'Lưu nháp thành công!' : 'Ghi sổ thành công!');
-                    closeReceiptModal();
-                    loadReceipts();
+                // Tạo mới hoặc cập nhật (luôn lưu với status = 'draft' trước)
+                if (transactionId) {
+                    // Update existing
+                    const res = await fetch(`${API_BASE}/financial/transactions/${transactionId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    const result = await res.json();
+                    if (!result.success) {
+                        showAlert('Lỗi: ' + (result.message || 'Không thể cập nhật phiếu thu'));
+                        return;
+                    }
                 } else {
-                    showAlert('Lỗi: ' + (result.message || 'Không thể lưu phiếu thu'));
+                    // Create new
+                    const res = await fetch(`${API_BASE}/financial/transactions`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ ...data, status: 'draft' })
+                    });
+                    const result = await res.json();
+                    if (!result.success) {
+                        showAlert('Lỗi: ' + (result.message || 'Không thể tạo phiếu thu'));
+                        return;
+                    }
+                    transactionId = result.data?.id;
                 }
+
+                // Nếu không phải draft, gọi API post để ghi sổ
+                if (!draft && transactionId) {
+                    const postRes = await fetch(`${API_BASE}/financial/transactions/${transactionId}/post`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    const postResult = await postRes.json();
+                    if (!postResult.success) {
+                        showAlert('Lỗi: ' + (postResult.message || 'Không thể ghi sổ'));
+                        return;
+                    }
+                }
+
+                showAlert(draft ? 'Lưu nháp thành công!' : 'Ghi sổ thành công!');
+                closeReceiptModal();
+                loadReceipts();
             } catch (error) {
                 console.error('Error saving receipt:', error);
                 showAlert('Lỗi kết nối server');
@@ -699,13 +735,12 @@
 
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch(`${API_BASE}/financial/transactions/${id}`, {
-                    method: 'PUT',
+                const res = await fetch(`${API_BASE}/financial/transactions/${id}/post`, {
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ status: 'posted' })
+                    }
                 });
 
                 const result = await res.json();
@@ -723,22 +758,28 @@
 
         // Cancel receipt
         async function cancelReceipt(id) {
+            const cancelReason = prompt('Vui lòng nhập lý do hủy:');
+            if (!cancelReason || !cancelReason.trim()) {
+                showAlert('Vui lòng nhập lý do hủy');
+                return;
+            }
+
             if (!confirm('Bạn có chắc muốn hủy phiếu thu này?')) return;
 
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch(`${API_BASE}/financial/transactions/${id}`, {
-                    method: 'PUT',
+                const res = await fetch(`${API_BASE}/financial/transactions/${id}/cancel`, {
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ status: 'cancelled' })
+                    body: JSON.stringify({ cancel_reason: cancelReason.trim() })
                 });
 
                 const result = await res.json();
                 if (result.success) {
-                    showAlert('Hủy phiếu thu thành công!');
+                    showAlert(result.message || 'Hủy phiếu thu thành công!');
                     loadReceipts();
                 } else {
                     showAlert('Lỗi: ' + (result.message || 'Không thể hủy phiếu thu'));
