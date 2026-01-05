@@ -10558,10 +10558,12 @@
                     console.log('📊 Exporting product list to Excel with logo...');
                     showToast('Đang xuất Excel...', 'info');
 
+                    const token = localStorage.getItem('token') || '';
                     const response = await fetch(`${API_BASE}/bom-export/${currentProject.id}/product-list`, {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
                         },
                         body: JSON.stringify({
                             data: quotationItemsForDesign
