@@ -86,7 +86,7 @@ exports.getAllProjects = async (req, res) => {
 exports.getDetail = async (req, res) => {
     try {
         const { id } = req.params;
-        
+
         // 1. Get project info
         const [projectRows] = await db.query(
             `SELECT 
@@ -129,10 +129,16 @@ exports.getDetail = async (req, res) => {
                     qi.id,
                     qi.code,
                     qi.item_name as name,
+                    qi.spec,
+                    qi.glass,
+                    qi.aluminum_system,
+                    qi.accessories,
                     qi.width,
                     qi.height,
+                    qi.area,
                     qi.quantity,
                     qi.unit_price,
+                    qi.accessory_price,
                     qi.total_price
                 FROM quotation_items qi
                 WHERE qi.quotation_id = ?
@@ -142,10 +148,16 @@ exports.getDetail = async (req, res) => {
             products = quotationItems.map(item => ({
                 code: item.code || `SP-${item.id}`,
                 name: item.name || 'Sản phẩm',
+                spec: item.spec || '',
+                glass_spec: item.glass || '',
+                aluminum_system_name: item.aluminum_system || '',
+                accessory_name: item.accessories || '',
                 width: item.width || 0,
                 height: item.height || 0,
+                area_m2: item.area || 0,
                 quantity: item.quantity || 1,
                 unit_price: item.unit_price || 0,
+                accessory_price: item.accessory_price || 0,
                 total_price: item.total_price || 0
             }));
         }
@@ -1658,7 +1670,7 @@ exports.getProjectLogsFull = async (req, res) => {
                     event_type: 'project_created',
                     timestamp: project.created_at,
                     description: 'Dự án được tạo',
-                    details: { 
+                    details: {
                         'ID dự án': id,
                         'Ngày tạo': new Date(project.created_at).toLocaleDateString('vi-VN'),
                         'Trạng thái ban đầu': project.status || 'N/A'
@@ -1674,7 +1686,7 @@ exports.getProjectLogsFull = async (req, res) => {
                     event_type: 'project_started',
                     timestamp: timestamp,
                     description: 'Dự án bắt đầu thực hiện',
-                    details: { 
+                    details: {
                         'Ngày bắt đầu': new Date(project.start_date).toLocaleDateString('vi-VN'),
                         'Hạn hoàn thành dự kiến': project.deadline ? new Date(project.deadline).toLocaleDateString('vi-VN') : 'Chưa có'
                     }
@@ -1695,14 +1707,14 @@ exports.getProjectLogsFull = async (req, res) => {
                         event_type: 'quotation_created',
                         timestamp: q.created_at,
                         description: `Tạo báo giá ${q.quotation_code || ''}`,
-                        details: { 
-                            quotation_code: q.quotation_code, 
+                        details: {
+                            quotation_code: q.quotation_code,
                             status: q.status,
                             'Mã báo giá': q.quotation_code || 'N/A',
-                            'Trạng thái': q.status === 'approved' ? 'Đã duyệt' : 
-                                         q.status === 'pending' ? 'Chờ duyệt' :
-                                         q.status === 'rejected' ? 'Đã từ chối' :
-                                         q.status === 'expired' ? 'Hết hạn' : q.status
+                            'Trạng thái': q.status === 'approved' ? 'Đã duyệt' :
+                                q.status === 'pending' ? 'Chờ duyệt' :
+                                    q.status === 'rejected' ? 'Đã từ chối' :
+                                        q.status === 'expired' ? 'Hết hạn' : q.status
                         }
                     });
                 }
@@ -1712,7 +1724,7 @@ exports.getProjectLogsFull = async (req, res) => {
                         event_type: 'quotation_approved',
                         timestamp: q.updated_at,
                         description: `Duyệt báo giá ${q.quotation_code || ''}`,
-                        details: { 
+                        details: {
                             quotation_code: q.quotation_code,
                             'Mã báo giá': q.quotation_code || 'N/A',
                             'Ngày duyệt': new Date(q.updated_at).toLocaleDateString('vi-VN')
@@ -1737,7 +1749,7 @@ exports.getProjectLogsFull = async (req, res) => {
                         event_type: 'design_created',
                         timestamp: d.created_at,
                         description: `Tạo thiết kế ${d.design_code || ''}`,
-                        details: { 
+                        details: {
                             'Mã thiết kế': d.design_code || 'N/A',
                             'Ngày tạo': new Date(d.created_at).toLocaleDateString('vi-VN')
                         }
@@ -1759,7 +1771,7 @@ exports.getProjectLogsFull = async (req, res) => {
                         event_type: 'design_completed',
                         timestamp: dr.created_at,
                         description: 'Hoàn thành bản vẽ thiết kế',
-                        details: { 
+                        details: {
                             'ID bản vẽ': dr.id,
                             'Ngày hoàn thành': new Date(dr.created_at).toLocaleDateString('vi-VN')
                         }
@@ -1825,11 +1837,11 @@ exports.getProjectLogsFull = async (req, res) => {
                         event_type: 'production_ordered',
                         timestamp: order.created_at,
                         description: `Tạo lệnh sản xuất ${order.order_code || ''}`,
-                        details: { 
+                        details: {
                             'Mã lệnh sản xuất': order.order_code || 'N/A',
                             'Trạng thái': order.status === 'completed' ? 'Hoàn thành' :
-                                         order.status === 'pending' ? 'Chờ xử lý' :
-                                         order.status || 'N/A',
+                                order.status === 'pending' ? 'Chờ xử lý' :
+                                    order.status || 'N/A',
                             'Ngày tạo': new Date(order.created_at).toLocaleDateString('vi-VN')
                         }
                     });
@@ -1843,7 +1855,7 @@ exports.getProjectLogsFull = async (req, res) => {
                         event_type: 'production_started',
                         timestamp: timestamp,
                         description: `Bắt đầu sản xuất ${order.order_code || ''}`,
-                        details: { 
+                        details: {
                             'Mã lệnh sản xuất': order.order_code || 'N/A',
                             'Ngày bắt đầu': new Date(order.actual_start_date).toLocaleDateString('vi-VN')
                         }
@@ -1858,7 +1870,7 @@ exports.getProjectLogsFull = async (req, res) => {
                         event_type: 'production_completed',
                         timestamp: timestamp,
                         description: `Hoàn thành sản xuất ${order.order_code || ''}`,
-                        details: { 
+                        details: {
                             'Mã lệnh sản xuất': order.order_code || 'N/A',
                             'Ngày hoàn thành': new Date(order.actual_completion_date).toLocaleDateString('vi-VN')
                         }
@@ -1882,11 +1894,11 @@ exports.getProjectLogsFull = async (req, res) => {
                         event_type: 'installation_started',
                         timestamp: inst.created_at,
                         description: 'Bắt đầu lắp đặt',
-                        details: { 
+                        details: {
                             'Người lắp đặt': inst.installer_name || 'Chưa xác định',
                             'Trạng thái': inst.status === 'completed' ? 'Hoàn thành' :
-                                         inst.status === 'in_progress' ? 'Đang thực hiện' :
-                                         inst.status === 'pending' ? 'Chờ xử lý' : inst.status || 'N/A'
+                                inst.status === 'in_progress' ? 'Đang thực hiện' :
+                                    inst.status === 'pending' ? 'Chờ xử lý' : inst.status || 'N/A'
                         },
                         user_name: inst.installer_name,
                         notes: inst.notes
@@ -1902,7 +1914,7 @@ exports.getProjectLogsFull = async (req, res) => {
                         event_type: 'installation_completed',
                         timestamp: timestamp,
                         description: 'Hoàn thành lắp đặt',
-                        details: { 
+                        details: {
                             'Người lắp đặt': inst.installer_name || 'Chưa xác định',
                             'Ngày lắp đặt': new Date(inst.installation_date).toLocaleDateString('vi-VN')
                         },
@@ -1974,7 +1986,7 @@ exports.getProjectLogsFull = async (req, res) => {
             // Tìm ngày hoàn thành gần nhất từ handover hoặc updated_at
             const completedLogs = allLogs.filter(l => l.event_type === 'handover' || l.event_type === 'installation_completed');
             let completionTimestamp = projectStatus[0].updated_at;
-            
+
             if (completedLogs.length > 0) {
                 const latestCompleted = completedLogs.sort((a, b) => {
                     try {
@@ -1987,7 +1999,7 @@ exports.getProjectLogsFull = async (req, res) => {
                     completionTimestamp = latestCompleted.timestamp;
                 }
             }
-            
+
             // Đảm bảo timestamp hợp lệ
             if (completionTimestamp) {
                 allLogs.push({
@@ -2022,7 +2034,7 @@ exports.getProjectLogsFull = async (req, res) => {
                 }
             }
         });
-        
+
         allLogs.sort((a, b) => {
             try {
                 return new Date(a.timestamp || 0) - new Date(b.timestamp || 0);

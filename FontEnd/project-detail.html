@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <title>Chi tiết dự án - Hệ thống quản lý cửa nhôm kính</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="css/sidebar-enterprise.css">
@@ -55,7 +56,8 @@
     <div class="header-notification-container">
         <button id="headerNotificationButton" class="header-notification-button" onclick="toggleHeaderNotifications()">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
             <span id="headerNotificationBadge" class="header-notification-badge hidden">0</span>
         </button>
@@ -334,15 +336,21 @@
                 <p class="text-sm text-gray-500 mt-1">Thông tin chi tiết về dự án, sản phẩm, vật tư và tài chính</p>
             </div>
             <div class="flex items-center gap-4">
-                <button onclick="exportReport()" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2 hover:bg-blue-700 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <button onclick="exportReport()"
+                    class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2 hover:bg-blue-700 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                     Xuất báo cáo
                 </button>
-                <a href="#" id="logs-link" class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2 hover:bg-green-700 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <a href="#" id="logs-link"
+                    class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2 hover:bg-green-700 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     Xem nhật ký
                 </a>
@@ -373,15 +381,32 @@
                     <h2 class="text-xl font-bold text-gray-800 mb-4">Danh sách sản phẩm</h2>
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+                            <thead class="bg-blue-600 text-white">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">STT</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã SP</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên sản phẩm</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kích thước</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số lượng</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Đơn giá</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thành tiền</th>
+                                    <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">STT
+                                    </th>
+                                    <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Ký hiệu
+                                    </th>
+                                    <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Quy
+                                        cách</th>
+                                    <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Kính
+                                    </th>
+                                    <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">Phụ
+                                        kiện</th>
+                                    <th class="px-3 py-3 text-center text-xs font-medium uppercase tracking-wider">Rộng
+                                    </th>
+                                    <th class="px-3 py-3 text-center text-xs font-medium uppercase tracking-wider">Cao
+                                    </th>
+                                    <th class="px-3 py-3 text-center text-xs font-medium uppercase tracking-wider">Diện
+                                        tích (m²)</th>
+                                    <th class="px-3 py-3 text-center text-xs font-medium uppercase tracking-wider">Số bộ
+                                    </th>
+                                    <th class="px-3 py-3 text-right text-xs font-medium uppercase tracking-wider">Đơn
+                                        giá</th>
+                                    <th class="px-3 py-3 text-right text-xs font-medium uppercase tracking-wider">Phụ
+                                        kiện</th>
+                                    <th class="px-3 py-3 text-right text-xs font-medium uppercase tracking-wider">Thành
+                                        tiền</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200" id="products-table-body"></tbody>
@@ -396,12 +421,24 @@
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loại</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên vật tư</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số lượng</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Đơn vị</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Đơn giá</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thành tiền</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Loại</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Tên vật tư</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Số lượng</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Đơn vị</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Đơn giá</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Thành tiền</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200" id="materials-table-body"></tbody>
@@ -474,7 +511,7 @@
 
             try {
                 const response = await fetch(`${API_BASE}/projects/${projectId}/detail`);
-                
+
                 if (!response.ok) {
                     if (response.status === 404) {
                         showError('API endpoint không tồn tại: GET /api/projects/' + projectId + '/detail');
@@ -561,30 +598,51 @@
             let productsHtml = '';
             if (products && products.length > 0) {
                 products.forEach((product, index) => {
+                    const spec = product.spec || product.name || 'N/A';
+                    const areaM2 = product.area_m2 || ((product.width * product.height) / 1000000).toFixed(2);
                     productsHtml += `
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${index + 1}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${product.code || 'N/A'}</td>
-                            <td class="px-6 py-4 text-sm text-gray-900">${product.name || 'N/A'}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${product.width || 0} x ${product.height || 0} mm</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${product.quantity || 1}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatCurrency(product.unit_price || 0)}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">${formatCurrency(product.total_price || 0)}</td>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-900">${index + 1}</td>
+                            <td class="px-3 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${product.code || 'N/A'}</td>
+                            <td class="px-3 py-3 text-sm text-gray-900">${spec}</td>
+                            <td class="px-3 py-3 text-sm text-gray-900">${product.glass_spec || '-'}</td>
+                            <td class="px-3 py-3 text-sm text-gray-900">${product.accessory_name || '-'}</td>
+                            <td class="px-3 py-3 text-center text-sm text-gray-900">${product.width || 0}</td>
+                            <td class="px-3 py-3 text-center text-sm text-gray-900">${product.height || 0}</td>
+                            <td class="px-3 py-3 text-center text-sm text-gray-900">${areaM2}</td>
+                            <td class="px-3 py-3 text-center text-sm text-gray-900">${product.quantity || 1}</td>
+                            <td class="px-3 py-3 text-right text-sm text-gray-900">${formatCurrency(product.unit_price || 0)}</td>
+                            <td class="px-3 py-3 text-right text-sm text-gray-900">${formatCurrency(product.accessory_price || 0)}</td>
+                            <td class="px-3 py-3 text-right text-sm font-semibold text-blue-600">${formatCurrency(product.total_price || 0)}</td>
                         </tr>
                     `;
                 });
             } else {
-                productsHtml = '<tr><td colspan="7" class="px-6 py-4 text-center text-gray-500">Chưa có sản phẩm</td></tr>';
+                productsHtml = '<tr><td colspan="12" class="px-6 py-4 text-center text-gray-500">Chưa có sản phẩm</td></tr>';
             }
             document.getElementById('products-table-body').innerHTML = productsHtml;
 
             // Vật tư
+            // Hàm chuyển loại vật tư sang tiếng Việt
+            function getMaterialTypeName(type) {
+                const typeMap = {
+                    'accessory': 'Phụ kiện',
+                    'aluminum': 'Nhôm',
+                    'glass': 'Kính',
+                    'gasket': 'Gioăng',
+                    'sealant': 'Keo',
+                    'hardware': 'Phụ kiện',
+                    'other': 'Khác'
+                };
+                return typeMap[type?.toLowerCase()] || type || 'N/A';
+            }
+
             let materialsHtml = '';
             if (materials && materials.length > 0) {
                 materials.forEach((material) => {
                     materialsHtml += `
                         <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${material.material_type || 'N/A'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${getMaterialTypeName(material.material_type)}</td>
                             <td class="px-6 py-4 text-sm text-gray-900">${material.material_name || 'N/A'}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${material.quantity || 0}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${material.unit || 'N/A'}</td>
@@ -728,7 +786,7 @@
             loadCompanyLogo();
             loadSidebarUserInfo();
             loadProjectDetail();
-            
+
             // Set logs link
             const logsLink = document.getElementById('logs-link');
             if (logsLink) {

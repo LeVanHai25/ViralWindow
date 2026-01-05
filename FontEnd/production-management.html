@@ -541,9 +541,9 @@
                     <div class="flex-1">
                         <div class="flex items-center gap-3 mb-2">
                             <h2 class="text-xl font-bold text-gray-900">${escapeHtml(project.project_code || 'N/A')}</h2>
-                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                                Đang sản xuất
-                            </span>
+                            ${project.status === 'completed' || project.status === 'handover' ?
+                            '<span class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">✓ Hoàn thành</span>' :
+                            '<span class="px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">Đang sản xuất</span>'}
                         </div>
                         <p class="text-gray-600 mb-1">${escapeHtml(project.project_name || 'N/A')}</p>
                         <p class="text-sm text-gray-500">
@@ -596,11 +596,15 @@
                         Sản phẩm trong dự án
                     </button>
                     <div>
-                        ${project.all_products_completed ?
+                        ${project.all_products_completed && project.status !== 'installation' && project.status !== 'handover' && project.status !== 'completed' ?
                         `<button onclick="moveToNextStage(${project.id})" 
                                 class="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition-all">
                                 Chuyển sang Lắp đặt →
                             </button>` :
+                        project.all_products_completed && (project.status === 'installation' || project.status === 'handover' || project.status === 'completed') ?
+                        `<p class="text-sm text-gray-500 text-center px-6 py-2">
+                            Đã chuyển sang giai đoạn tiếp theo
+                        </p>` :
                         `<button disabled 
                                 class="bg-gray-300 text-gray-500 px-6 py-2 rounded-lg font-semibold cursor-not-allowed">
                                 Chưa thể chuyển (còn sản phẩm chưa hoàn thành)

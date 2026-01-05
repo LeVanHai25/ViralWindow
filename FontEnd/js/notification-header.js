@@ -224,14 +224,20 @@
      */
     window.toggleHeaderNotifications = function () {
         const dropdown = document.getElementById('headerNotificationsDropdown');
-        if (!dropdown) return;
+        if (!dropdown) {
+            console.error('Notification dropdown not found');
+            return;
+        }
 
-        isDropdownOpen = !dropdown.classList.contains('show');
+        // Check current state
+        const isCurrentlyOpen = dropdown.classList.contains('show');
 
-        if (isDropdownOpen) {
+        if (isCurrentlyOpen) {
+            // Currently open, so close it
             dropdown.classList.remove('show');
             isDropdownOpen = false;
         } else {
+            // Currently closed, so open it
             dropdown.classList.add('show');
             isDropdownOpen = true;
             renderNotificationDropdown();

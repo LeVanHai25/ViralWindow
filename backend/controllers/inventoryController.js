@@ -128,6 +128,7 @@ exports.getStatistics = async (req, res) => {
             data: {
                 total_items: stats.totalItems,
                 low_stock: stats.lowStockCount,
+                items_in_stock: stats.itemsInStock, // Số vật tư có stock > 0
                 total_value: stats.totalValue,
                 breakdown: stats.breakdown
             }

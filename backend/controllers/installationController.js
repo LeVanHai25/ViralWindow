@@ -23,7 +23,7 @@ exports.getInstallationProjects = async (req, res) => {
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         `);
 
-        // Lấy các dự án ở giai đoạn lắp đặt
+        // Lấy TẤT CẢ dự án (không lọc theo status) - loại trừ cancelled và closed
         const [projects] = await db.query(`
             SELECT 
                 p.id,
@@ -38,7 +38,7 @@ exports.getInstallationProjects = async (req, res) => {
                 c.address AS customer_address
             FROM projects p
             LEFT JOIN customers c ON p.customer_id = c.id
-            WHERE p.status = 'installation'
+            WHERE p.status NOT IN ('cancelled', 'closed')
             ORDER BY p.created_at DESC
         `);
 

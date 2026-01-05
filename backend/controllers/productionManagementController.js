@@ -5,7 +5,7 @@ const db = require("../config/db");
  */
 exports.getProductionProjects = async (req, res) => {
     try {
-        // Lấy các dự án ở giai đoạn sản xuất
+        // Lấy TẤT CẢ dự án (không lọc theo status) - loại trừ cancelled và closed
         const [projects] = await db.query(`
             SELECT 
                 p.id,
@@ -19,7 +19,7 @@ exports.getProductionProjects = async (req, res) => {
                 c.phone AS customer_phone
             FROM projects p
             LEFT JOIN customers c ON p.customer_id = c.id
-            WHERE p.status = 'in_production'
+            WHERE p.status NOT IN ('cancelled', 'closed')
             ORDER BY p.created_at DESC
         `);
 

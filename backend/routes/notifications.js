@@ -14,4 +14,13 @@ router.delete("/:id", authenticateToken, notificationCtrl.deleteNotification);
 router.delete("/delete-read", authenticateToken, notificationCtrl.deleteAllRead);
 router.post("/", authenticateToken, notificationCtrl.create);
 
+// NEW: Notification detail with audit log info
+router.get("/:id/detail", authenticateToken, notificationCtrl.getDetail);
+
+// NEW: Audit log routes
+router.get("/audit-logs", authenticateToken, notificationCtrl.getAuditLogs);
+router.get("/audit-logs/entity/:type/:id", authenticateToken, notificationCtrl.getEntityHistory);
+router.get("/event-types", authenticateToken, notificationCtrl.getEventTypes);
+
 module.exports = router;
+

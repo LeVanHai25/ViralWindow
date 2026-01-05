@@ -19,6 +19,7 @@ exports.getAggregatedStatistics = async () => {
             SELECT 
                 COUNT(*) as total_count,
                 SUM(CASE WHEN stock_quantity <= min_stock_level THEN 1 ELSE 0 END) as low_stock_count,
+                SUM(CASE WHEN stock_quantity > 0 THEN 1 ELSE 0 END) as items_in_stock,
                 COALESCE(SUM(
                     CASE 
                         WHEN stock_quantity > 0 AND (sale_price > 0 OR purchase_price > 0)
@@ -38,6 +39,7 @@ exports.getAggregatedStatistics = async () => {
                 SELECT 
                     COUNT(*) as total_count,
                     0 as low_stock_count, -- Sẽ tính sau dựa trên min_stock_level nếu có
+                    SUM(CASE WHEN COALESCE(quantity, 0) > 0 OR COALESCE(quantity_m, 0) > 0 THEN 1 ELSE 0 END) as items_in_stock,
                     COALESCE(SUM(
                         CASE 
                             WHEN quantity IS NOT NULL AND quantity > 0 AND unit_price IS NOT NULL AND unit_price > 0
@@ -51,7 +53,7 @@ exports.getAggregatedStatistics = async () => {
         } catch (err) {
             // Nếu có lỗi, log và trả về 0
             console.warn('Error calculating aluminum stats:', err.message);
-            aluminumStats = [{ total_count: 0, low_stock_count: 0, total_value: 0 }];
+            aluminumStats = [{ total_count: 0, low_stock_count: 0, items_in_stock: 0, total_value: 0 }];
         }
 
         // Tính cảnh báo cho nhôm (nếu có min_stock_level hoặc quantity_m < threshold)
@@ -78,11 +80,12 @@ exports.getAggregatedStatistics = async () => {
             [glassStats] = await db.query(`
                 SELECT 
                     COUNT(*) as total_count,
-                    SUM(CASE WHEN quantity <= min_stock_level THEN 1 ELSE 0 END) as low_stock_count,
+                    SUM(CASE WHEN CAST(quantity AS DECIMAL(10,2)) <= COALESCE(min_stock_level, 0) THEN 1 ELSE 0 END) as low_stock_count,
+                    SUM(CASE WHEN CAST(quantity AS DECIMAL(10,2)) > 0 THEN 1 ELSE 0 END) as items_in_stock,
                     COALESCE(SUM(
                         CASE 
-                            WHEN quantity > 0 AND unit_price > 0
-                            THEN quantity * unit_price
+                            WHEN CAST(quantity AS DECIMAL(10,2)) > 0 AND unit_price > 0
+                            THEN CAST(quantity AS DECIMAL(10,2)) * unit_price
                             ELSE 0
                         END
                     ), 0) as total_value
@@ -91,7 +94,7 @@ exports.getAggregatedStatistics = async () => {
             `);
         } catch (err) {
             // Nếu không có bảng hoặc cột, trả về 0
-            glassStats = [{ total_count: 0, low_stock_count: 0, total_value: 0 }];
+            glassStats = [{ total_count: 0, low_stock_count: 0, items_in_stock: 0, total_value: 0 }];
         }
 
         // 4. KHÁC (inventory với item_type = 'other' hoặc không phải glass)
@@ -100,11 +103,12 @@ exports.getAggregatedStatistics = async () => {
             [otherStats] = await db.query(`
                 SELECT 
                     COUNT(*) as total_count,
-                    SUM(CASE WHEN quantity <= min_stock_level THEN 1 ELSE 0 END) as low_stock_count,
+                    SUM(CASE WHEN CAST(quantity AS DECIMAL(10,2)) <= COALESCE(min_stock_level, 0) THEN 1 ELSE 0 END) as low_stock_count,
+                    SUM(CASE WHEN CAST(quantity AS DECIMAL(10,2)) > 0 THEN 1 ELSE 0 END) as items_in_stock,
                     COALESCE(SUM(
                         CASE 
-                            WHEN quantity > 0 AND unit_price > 0
-                            THEN quantity * unit_price
+                            WHEN CAST(quantity AS DECIMAL(10,2)) > 0 AND unit_price > 0
+                            THEN CAST(quantity AS DECIMAL(10,2)) * unit_price
                             ELSE 0
                         END
                     ), 0) as total_value
@@ -114,14 +118,14 @@ exports.getAggregatedStatistics = async () => {
             `);
         } catch (err) {
             console.error('Error querying other stats:', err);
-            otherStats = [{ total_count: 0, low_stock_count: 0, total_value: 0 }];
+            otherStats = [{ total_count: 0, low_stock_count: 0, items_in_stock: 0, total_value: 0 }];
         }
 
         // Tổng hợp kết quả
-        const accessories = accessoriesStats[0] || { total_count: 0, low_stock_count: 0, total_value: 0 };
-        const aluminum = aluminumStats[0] || { total_count: 0, low_stock_count: 0, total_value: 0 };
-        const glass = glassStats[0] || { total_count: 0, low_stock_count: 0, total_value: 0 };
-        const other = otherStats[0] || { total_count: 0, low_stock_count: 0, total_value: 0 };
+        const accessories = accessoriesStats[0] || { total_count: 0, low_stock_count: 0, items_in_stock: 0, total_value: 0 };
+        const aluminum = aluminumStats[0] || { total_count: 0, low_stock_count: 0, items_in_stock: 0, total_value: 0 };
+        const glass = glassStats[0] || { total_count: 0, low_stock_count: 0, items_in_stock: 0, total_value: 0 };
+        const other = otherStats[0] || { total_count: 0, low_stock_count: 0, items_in_stock: 0, total_value: 0 };
         const aluminumLow = aluminumLowStock[0] || { count: 0 };
 
         console.log('Aggregation results:', {
@@ -145,37 +149,49 @@ exports.getAggregatedStatistics = async () => {
             parseInt(glass.low_stock_count || 0) +
             parseInt(other.low_stock_count || 0);
 
+        // Tính số vật tư trong kho (có stock > 0) - kể cả cảnh báo
+        const itemsInStock = 
+            parseInt(accessories.items_in_stock || 0) +
+            parseInt(aluminum.items_in_stock || 0) +
+            parseInt(glass.items_in_stock || 0) +
+            parseInt(other.items_in_stock || 0);
+
         const totalValue = 
             parseFloat(accessories.total_value || 0) +
             parseFloat(aluminum.total_value || 0) +
             parseFloat(glass.total_value || 0) +
             parseFloat(other.total_value || 0);
 
-        console.log('Final stats:', { totalItems, lowStockCount, totalValue });
+        console.log('Final stats:', { totalItems, lowStockCount, itemsInStock, totalValue });
 
         return {
             totalItems,
             lowStockCount,
+            itemsInStock, // Số vật tư có stock > 0 (kể cả cảnh báo)
             totalValue,
             breakdown: {
                 accessories: {
                     count: parseInt(accessories.total_count || 0),
                     lowStock: parseInt(accessories.low_stock_count || 0),
+                    itemsInStock: parseInt(accessories.items_in_stock || 0),
                     value: parseFloat(accessories.total_value || 0)
                 },
                 aluminum: {
                     count: parseInt(aluminum.total_count || 0),
                     lowStock: parseInt(aluminumLow.count || 0),
+                    itemsInStock: parseInt(aluminum.items_in_stock || 0),
                     value: parseFloat(aluminum.total_value || 0)
                 },
                 glass: {
                     count: parseInt(glass.total_count || 0),
                     lowStock: parseInt(glass.low_stock_count || 0),
+                    itemsInStock: parseInt(glass.items_in_stock || 0),
                     value: parseFloat(glass.total_value || 0)
                 },
                 other: {
                     count: parseInt(other.total_count || 0),
                     lowStock: parseInt(other.low_stock_count || 0),
+                    itemsInStock: parseInt(other.items_in_stock || 0),
                     value: parseFloat(other.total_value || 0)
                 }
             }

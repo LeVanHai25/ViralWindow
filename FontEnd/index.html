@@ -741,7 +741,7 @@
                     <div class="stat-trend trend-up"><span>↑ 12%</span> so với tuần trước</div>
                 </a>
 
-                <a href="quotation-new.html" class="stat-card stat-card-pink">
+                <a href="pending-quotations.html" class="stat-card stat-card-pink">
                     <div class="stat-card-content">
                         <div class="stat-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor">
@@ -771,7 +771,7 @@
                     <div class="stat-trend trend-up"><span>↑ 5%</span> so với tuần trước</div>
                 </a>
 
-                <a href="sales.html?tab=completed" class="stat-card stat-card-green">
+                <a href="completed-projects.html" class="stat-card stat-card-green">
                     <div class="stat-card-content">
                         <div class="stat-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor">
@@ -1382,12 +1382,14 @@
                 if (totalProjEl && projResult.success) totalProjEl.textContent = projResult.data?.length || 0;
 
                 // Load inventory count and calculate total value
-                const invRes = await fetch(`${API_BASE}/inventory`);
+                // Sử dụng API stats để lấy số vật tư có stock > 0
+                const invRes = await fetch(`${API_BASE}/inventory/stats`);
                 const invResult = await invRes.json();
                 const totalInvEl = document.getElementById('totalInventory');
                 if (totalInvEl && invResult.success && invResult.data) {
-                    // Show total items count
-                    totalInvEl.textContent = invResult.data.length || 0;
+                    // Hiển thị số vật tư trong kho (có stock > 0) - kể cả cảnh báo
+                    const itemsInStock = parseInt(invResult.data.items_in_stock || 0);
+                    totalInvEl.textContent = itemsInStock;
                 }
 
                 // Calculate monthly revenue from quotations

@@ -849,7 +849,8 @@ exports.getStatistics = async (req, res) => {
 // GET pending quotations with stats
 exports.getPendingQuotations = async (req, res) => {
     try {
-        // Get all pending and sent quotations
+        // Get all draft, pending, sent, and revision_requested quotations
+        // Exclude approved and contract_signed (already finalized)
         const [quotations] = await db.query(`
             SELECT 
                 q.*,
@@ -861,7 +862,7 @@ exports.getPendingQuotations = async (req, res) => {
             FROM quotations q
             LEFT JOIN customers c ON q.customer_id = c.id
             LEFT JOIN projects p ON q.project_id = p.id
-            WHERE q.status IN ('pending', 'sent', 'revision_requested')
+            WHERE q.status IN ('draft', 'pending', 'sent', 'revision_requested')
             ORDER BY q.quotation_date DESC
         `);
 
@@ -1317,19 +1318,19 @@ exports.updateQuotationItem = async (req, res) => {
 
         // Thêm các cột mở rộng
         const additionalFields = [];
-        
+
         additionalFields.push('glass = ?');
         updateParams.push(glass_type || '');
-        
+
         additionalFields.push('accessories = ?');
         updateParams.push(accessories || '');
-        
+
         additionalFields.push('color = ?');
         updateParams.push(color || '');
-        
+
         additionalFields.push('aluminum_system = ?');
         updateParams.push(aluminum_system || '');
-        
+
         additionalFields.push('location = ?');
         updateParams.push(location || '');
 

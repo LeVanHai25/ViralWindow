@@ -50,7 +50,7 @@ router.get('/projects', async (req, res) => {
             await db.query(`ALTER TABLE projects ADD COLUMN handover_photos JSON NULL`);
         } catch (e) { /* Column exists */ }
 
-        // Lấy danh sách dự án ở giai đoạn installation hoặc handover
+        // Lấy TẤT CẢ dự án (không lọc theo status) - loại trừ cancelled và closed
         const projectQuery = `
             SELECT 
                 p.id,
@@ -74,7 +74,7 @@ router.get('/projects', async (req, res) => {
                 c.email as customer_email
             FROM projects p
             LEFT JOIN customers c ON p.customer_id = c.id
-            WHERE p.status IN ('installation', 'handover', 'bàn giao', 'lắp đặt')
+            WHERE p.status NOT IN ('cancelled', 'closed')
             ORDER BY p.updated_at DESC
         `;
 
@@ -83,14 +83,18 @@ router.get('/projects', async (req, res) => {
         // Lấy sản phẩm cho mỗi dự án (từ quotation_items với tách quantity)
         for (let project of projects) {
             try {
-                // Lấy quotation_id
+                // Lấy quotation_id và total_amount
                 const [quotationRows] = await db.query(`
-                    SELECT id FROM quotations WHERE project_id = ? ORDER BY created_at DESC LIMIT 1
+                    SELECT id, total_amount FROM quotations WHERE project_id = ? ORDER BY created_at DESC LIMIT 1
                 `, [project.id]);
 
                 let products = [];
+                let totalAmount = 0;
 
                 if (quotationRows.length > 0) {
+                    // Lấy tổng số tiền từ quotation
+                    totalAmount = parseFloat(quotationRows[0].total_amount || 0);
+                    
                     const [items] = await db.query(`
                         SELECT 
                             qi.id,
@@ -127,8 +131,38 @@ router.get('/projects', async (req, res) => {
                     }
                 }
 
+                // Nếu không có quotation_items, fallback sang door_designs
+                if (products.length === 0) {
+                    const [doors] = await db.query(`
+                        SELECT 
+                            dd.id,
+                            dd.design_code,
+                            dd.width_mm,
+                            dd.height_mm,
+                            dt.name AS template_name,
+                            dt.code AS template_code
+                        FROM door_designs dd
+                        LEFT JOIN door_templates dt ON dd.template_id = dt.id
+                        WHERE dd.project_id = ?
+                        ORDER BY dd.design_code
+                    `, [project.id]);
+
+                    for (const door of doors) {
+                        products.push({
+                            id: `door_${door.id}`,
+                            item_name: door.template_name || 'Cửa',
+                            spec: door.template_name || null,
+                            design_code: door.design_code || `DOOR-${door.id}`,
+                            width_mm: parseFloat(door.width_mm) || 0,
+                            height_mm: parseFloat(door.height_mm) || 0,
+                            quantity: 1
+                        });
+                    }
+                }
+
                 project.products = products;
                 project.total_products = products.length;
+                project.total_amount = totalAmount;
 
                 // Parse handover_photos JSON
                 try {
@@ -144,6 +178,7 @@ router.get('/projects', async (req, res) => {
                 console.log('Lỗi lấy sản phẩm cho dự án', project.id, err.message);
                 project.products = [];
                 project.total_products = 0;
+                project.total_amount = 0;
                 project.handover_photos = [];
             }
         }

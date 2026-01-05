@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bàn giao dự án - Hệ thống quản lý cửa nhôm kính</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="css/sidebar-enterprise.css">
     <link rel="stylesheet" href="css/notification-system.css">
     <link rel="stylesheet" href="css/notification-header.css">
@@ -566,6 +567,77 @@
             }
 
             // Format date
+            // Hàm format số tiền với dấu chấm ngăn cách
+            function formatCurrency(amount) {
+                if (!amount) return '0 ₫';
+                const num = parseFloat(amount) || 0;
+                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' ₫';
+            }
+
+            // Hàm đọc số tiền bằng chữ tiếng Việt
+            function readNumberInVietnamese(num) {
+                const ones = ['', 'một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám', 'chín'];
+                const tens = ['', 'mười', 'hai mươi', 'ba mươi', 'bốn mươi', 'năm mươi', 'sáu mươi', 'bảy mươi', 'tám mươi', 'chín mươi'];
+                const hundreds = ['', 'một trăm', 'hai trăm', 'ba trăm', 'bốn trăm', 'năm trăm', 'sáu trăm', 'bảy trăm', 'tám trăm', 'chín trăm'];
+
+                function readThreeDigits(n) {
+                    let result = '';
+                    const hundred = Math.floor(n / 100);
+                    const ten = Math.floor((n % 100) / 10);
+                    const one = n % 10;
+
+                    if (hundred > 0) {
+                        result += hundreds[hundred] + ' ';
+                    }
+
+                    if (ten === 0 && one > 0) {
+                        result += ones[one];
+                    } else if (ten === 1) {
+                        result += 'mười ';
+                        if (one === 5) {
+                            result += 'lăm';
+                        } else if (one > 0) {
+                            result += ones[one];
+                        }
+                    } else if (ten > 1) {
+                        result += tens[ten] + ' ';
+                        if (one === 1) {
+                            result += 'mốt';
+                        } else if (one === 5) {
+                            result += 'lăm';
+                        } else if (one > 0) {
+                            result += ones[one];
+                        }
+                    }
+
+                    return result.trim();
+                }
+
+                if (num === 0) return 'không';
+                if (num < 0) return 'âm ' + readNumberInVietnamese(-num);
+
+                let result = '';
+                const billions = Math.floor(num / 1000000000);
+                const millions = Math.floor((num % 1000000000) / 1000000);
+                const thousands = Math.floor((num % 1000000) / 1000);
+                const remainder = num % 1000;
+
+                if (billions > 0) {
+                    result += readThreeDigits(billions) + ' tỷ ';
+                }
+                if (millions > 0) {
+                    result += readThreeDigits(millions) + ' triệu ';
+                }
+                if (thousands > 0) {
+                    result += readThreeDigits(thousands) + ' nghìn ';
+                }
+                if (remainder > 0) {
+                    result += readThreeDigits(remainder);
+                }
+
+                return result.trim() || 'không';
+            }
+
             function formatDate(dateString) {
                 if (!dateString) return 'Chưa có';
                 const date = new Date(dateString);
@@ -629,7 +701,9 @@
                         <div class="flex-1">
                             <div class="flex items-center gap-3 mb-2">
                                 <h3 class="text-xl font-bold text-gray-900">${escapeHtml(project.project_name || 'N/A')}</h3>
-                                ${isHandovered ?
+                                ${project.status === 'completed' ?
+                        '<span class="status-badge bg-green-100 text-green-800">✓ Hoàn thành</span>' :
+                        isHandovered ?
                         '<span class="status-badge bg-green-100 text-green-800">Đã bàn giao</span>' :
                         '<span class="status-badge bg-yellow-100 text-yellow-800">Chờ bàn giao</span>'
                     }
@@ -685,12 +759,12 @@
                                 Xác nhận bàn giao
                             </button>
                         ` : `
-                            <button onclick="printHandoverDocument(${project.id})"
+                            <button onclick="exportHandoverToExcel(${project.id})"
                                 class="flex-1 bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-purple-700 transition-all duration-300 shadow-lg">
                                 <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
-                                In phiếu bàn giao
+                                Xuất file bàn giao khách hàng (Excel)
                             </button>
                         `}
                     </div>
@@ -1013,9 +1087,192 @@
                 }
             }
 
-            // Print handover document
-            function printHandoverDocument(projectId) {
-                window.open(`${API_BASE}/handover/projects/${projectId}/print`, '_blank');
+            // Export handover document to Excel
+            async function exportHandoverToExcel(projectId) {
+                try {
+                    // Lấy thông tin dự án
+                    const projectRes = await fetch(`${API_BASE}/handover/projects`);
+                    const projectResult = await projectRes.json();
+                    
+                    if (!projectResult.success || !projectResult.data) {
+                        alert('Không thể tải thông tin dự án!');
+                        return;
+                    }
+                    
+                    const project = projectResult.data.find(p => p.id === projectId);
+                    if (!project) {
+                        alert('Không tìm thấy dự án!');
+                        return;
+                    }
+                    
+                    // Lấy thông tin công ty
+                    const companyRes = await fetch(`${API_BASE}/company-settings`);
+                    const companyResult = await companyRes.json();
+                    const companyInfo = companyResult.success && companyResult.data ? companyResult.data : {
+                        company_name: 'CÔNG TY CỔ PHẦN VIRALWINDOW',
+                        address: 'KM 03, Đường Cienco5, KĐT Thanh Hà, Hà Đông, HN',
+                        phone: '1800 282839',
+                        email: 'viralwindow.vn@gmail.com',
+                        website: 'viralwindow.vn',
+                        logo_path: 'http://localhost:3001/assets/LogoViralWindow.png'
+                    };
+                    
+                    // Tạo workbook
+                    const wb = XLSX.utils.book_new();
+                    
+                    // Tạo data array cho Excel
+                    const wsData = [];
+                    
+                    // Dòng trống đầu tiên
+                    wsData.push([]);
+                    
+                    // Header với logo (sẽ thêm logo sau nếu có thể)
+                    wsData.push([companyInfo.company_name || 'CÔNG TY CỔ PHẦN VIRALWINDOW']);
+                    wsData.push(['Địa chỉ:', companyInfo.address || '']);
+                    wsData.push(['Hotline:', companyInfo.phone || '']);
+                    wsData.push(['Email:', companyInfo.email || '']);
+                    wsData.push(['Website:', companyInfo.website || '']);
+                    wsData.push([]);
+                    
+                    // Tiêu đề
+                    wsData.push(['PHIẾU BÀN GIAO DỰ ÁN']);
+                    wsData.push([]);
+                    
+                    // Thông tin dự án
+                    wsData.push(['THÔNG TIN DỰ ÁN']);
+                    wsData.push(['Mã dự án:', project.project_code || '']);
+                    wsData.push(['Tên dự án:', project.project_name || '']);
+                    wsData.push(['Ngày bàn giao:', project.handover_date ? formatDate(project.handover_date) : '']);
+                    wsData.push(['Hạn hoàn thành:', project.deadline ? formatDate(project.deadline) : '']);
+                    wsData.push([]);
+                    
+                    // Thông tin khách hàng
+                    wsData.push(['THÔNG TIN KHÁCH HÀNG']);
+                    wsData.push(['Tên khách hàng:', project.customer_name || '']);
+                    wsData.push(['Địa chỉ:', project.customer_address || '']);
+                    wsData.push(['Số điện thoại:', project.customer_phone || '']);
+                    wsData.push(['Email:', project.customer_email || '']);
+                    wsData.push([]);
+                    
+                    // Thông tin bàn giao
+                    if (project.handover_person || project.receiver_name) {
+                        wsData.push(['THÔNG TIN BÀN GIAO']);
+                        if (project.handover_person) {
+                            wsData.push(['Người bàn giao:', project.handover_person]);
+                        }
+                        if (project.receiver_name) {
+                            wsData.push(['Người nhận:', project.receiver_name]);
+                        }
+                        if (project.receiver_phone) {
+                            wsData.push(['SĐT người nhận:', project.receiver_phone]);
+                        }
+                        wsData.push([]);
+                    }
+                    
+                    // Bảng sản phẩm
+                    wsData.push(['DANH SÁCH SẢN PHẨM']);
+                    wsData.push(['STT', 'Mã sản phẩm', 'Tên sản phẩm', 'Kích thước (mm)', 'Ghi chú']);
+                    
+                    if (project.products && project.products.length > 0) {
+                        project.products.forEach((product, index) => {
+                            const productName = product.template_name || product.spec || product.item_name || 'Sản phẩm';
+                            const productCode = product.design_code || product.code || 'N/A';
+                            const dimensions = `${product.width_mm || 'N/A'} x ${product.height_mm || 'N/A'}`;
+                            
+                            wsData.push([
+                                index + 1,
+                                productCode,
+                                productName,
+                                dimensions,
+                                product.notes || ''
+                            ]);
+                        });
+                    } else {
+                        wsData.push(['', 'Không có sản phẩm', '', '', '']);
+                    }
+                    
+                    wsData.push([]);
+                    wsData.push(['Tổng số sản phẩm:', project.total_products || 0]);
+                    
+                    // Tổng số tiền
+                    if (project.total_amount && project.total_amount > 0) {
+                        const totalAmount = parseFloat(project.total_amount) || 0;
+                        const formattedAmount = formatCurrency(totalAmount);
+                        const amountInWords = readNumberInVietnamese(totalAmount);
+                        
+                        wsData.push([]);
+                        wsData.push(['TỔNG SỐ TIỀN:', formattedAmount]);
+                        wsData.push(['(Bằng chữ:', amountInWords + ')']);
+                    }
+                    
+                    wsData.push([]);
+                    
+                    // Ghi chú
+                    if (project.handover_notes) {
+                        wsData.push(['GHI CHÚ']);
+                        wsData.push([project.handover_notes]);
+                        wsData.push([]);
+                    }
+                    
+                    // Chữ ký
+                    wsData.push([]);
+                    wsData.push([]);
+                    wsData.push(['', '', 'Người bàn giao', '', 'Người nhận']);
+                    wsData.push([]);
+                    wsData.push([]);
+                    wsData.push(['', '', '(Ký, ghi rõ họ tên)', '', '(Ký, ghi rõ họ tên)']);
+                    
+                    if (project.handover_person) {
+                        wsData.push(['', '', project.handover_person, '', '']);
+                    }
+                    if (project.receiver_name) {
+                        wsData.push(['', '', '', '', project.receiver_name]);
+                    }
+                    
+                    // Tạo worksheet
+                    const ws = XLSX.utils.aoa_to_sheet(wsData);
+                    
+                    // Set độ rộng cột
+                    ws['!cols'] = [
+                        { wch: 5 },   // STT
+                        { wch: 20 },  // Mã sản phẩm
+                        { wch: 40 },  // Tên sản phẩm
+                        { wch: 20 },  // Kích thước
+                        { wch: 30 }   // Ghi chú
+                    ];
+                    
+                    // Tính toán số dòng cho merge cells (tìm các dòng tiêu đề)
+                    const merges = [];
+                    for (let i = 0; i < wsData.length; i++) {
+                        const row = wsData[i];
+                        if (row && row.length > 0 && row[0]) {
+                            const firstCell = String(row[0]).trim();
+                            // Merge các dòng tiêu đề
+                            if (firstCell === 'PHIẾU BÀN GIAO DỰ ÁN' ||
+                                firstCell === 'THÔNG TIN DỰ ÁN' ||
+                                firstCell === 'THÔNG TIN KHÁCH HÀNG' ||
+                                firstCell === 'THÔNG TIN BÀN GIAO' ||
+                                firstCell === 'DANH SÁCH SẢN PHẨM' ||
+                                firstCell === 'GHI CHÚ') {
+                                merges.push({ s: { r: i, c: 0 }, e: { r: i, c: 4 } });
+                            }
+                        }
+                    }
+                    
+                    ws['!merges'] = merges;
+                    
+                    // Append worksheet
+                    XLSX.utils.book_append_sheet(wb, ws, 'Phiếu bàn giao');
+                    
+                    // Download file
+                    const fileName = `Phieu_ban_giao_${project.project_code || projectId}_${new Date().toISOString().split('T')[0]}.xlsx`;
+                    XLSX.writeFile(wb, fileName);
+                    
+                    alert(`✅ Đã xuất file: ${fileName}`);
+                } catch (error) {
+                    console.error('Error exporting handover to Excel:', error);
+                    alert('Lỗi khi xuất file Excel: ' + error.message);
+                }
             }
 
             // Load projects on page load
