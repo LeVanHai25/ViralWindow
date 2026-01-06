@@ -1343,6 +1343,18 @@
                         // Format ngày xuất
                         const exportDateStr = mat.created_at ? formatExportDateTime(mat.created_at) : '-';
 
+                        // Parse notes: nếu là JSON thì lấy user_notes, nếu không thì dùng nguyên
+                        let displayNotes = '';
+                        if (mat.notes) {
+                            try {
+                                const notesObj = JSON.parse(mat.notes);
+                                displayNotes = notesObj.user_notes || '';
+                            } catch (e) {
+                                // Không phải JSON, dùng nguyên
+                                displayNotes = mat.notes;
+                            }
+                        }
+
                         return `
                     <tr class="hover:bg-gray-50">
                         <td class="px-4 py-3 font-medium">${escapeHtml(mat.material_name || 'N/A')}</td>
@@ -1358,7 +1370,7 @@
                             ${remainingStockBadge}
                         </td>
                         <td class="px-4 py-3 text-gray-500 text-sm whitespace-nowrap">${exportDateStr}</td>
-                        <td class="px-4 py-3 text-gray-500 text-sm">${escapeHtml(mat.notes || '') || '-'}</td>
+                        <td class="px-4 py-3 text-gray-500 text-sm">${escapeHtml(displayNotes) || '-'}</td>
                     </tr>`;
                     }).join('');
                 }
@@ -1390,11 +1402,14 @@
                     container.innerHTML = materials.map(mat => {
                         const typeName = getTypeName(mat.material_type);
                         const typeColor = getTypeColor(mat.material_type);
-                        const requiredQty = parseFloat(mat.quantity) || 0;
+                        // FIX: Sử dụng still_needed (số lượng còn cần) thay vì quantity
+                        const requiredQty = parseFloat(mat.still_needed) || parseFloat(mat.total_required) || parseFloat(mat.quantity) || 0;
                         const availableStock = parseFloat(mat.available_stock) || 0;
-                        const shortage = parseFloat(mat.shortage) || 0;
+                        // FIX: Tính shortage = số lượng cần - tồn kho (thay vì lấy từ backend)
+                        const shortage = Math.max(0, requiredQty - availableStock);
                         const stockStatus = mat.stock_status || 'unknown';
                         const stockNote = mat.stock_note || '';
+                        const unit = mat.unit || 'cái';
 
                         return `
                     <tr class="hover:bg-gray-50 ${stockStatus === 'not_found' ? 'bg-gray-50' : ''}">
@@ -1402,9 +1417,9 @@
                         <td class="px-4 py-3">
                             <span class="px-2 py-1 text-xs rounded ${typeColor}">${typeName}</span>
                         </td>
-                        <td class="px-4 py-3">${requiredQty.toFixed(2)} ${mat.unit || 'cái'}</td>
-                        <td class="px-4 py-3">${stockStatus === 'not_found' ? '-' : availableStock.toFixed(2)} ${stockStatus === 'not_found' ? '' : mat.unit || 'cái'}</td>
-                        <td class="px-4 py-3 text-red-600 font-semibold">${shortage > 0 ? shortage.toFixed(2) + ' ' + (mat.unit || 'cái') : '-'}</td>
+                        <td class="px-4 py-3">${requiredQty.toFixed(2)} ${unit}</td>
+                        <td class="px-4 py-3">${stockStatus === 'not_found' ? '-' : availableStock.toFixed(2) + ' ' + unit}</td>
+                        <td class="px-4 py-3 text-red-600 font-semibold">${shortage.toFixed(2)} ${unit}</td>
                         <td class="px-4 py-3">${getStockStatusBadge(stockStatus)}</td>
                         <td class="px-4 py-3 text-gray-500 text-sm">${escapeHtml(stockNote) || '-'}</td>
                     </tr>`;

@@ -38,3 +38,4 @@ WHERE item_type = 'glass';
 -- UPDATE inventory SET quantity = ROUND(quantity) WHERE item_type = 'glass';
 
 
+

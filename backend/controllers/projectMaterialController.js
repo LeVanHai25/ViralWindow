@@ -48,6 +48,7 @@ exports.getByProject = async (req, res) => {
             `SELECT 
                 pm.id,
                 pm.project_id,
+                pm.material_code,
                 -- Xử lý cả dữ liệu cũ và mới: ưu tiên cột mới, nếu null thì dùng cột cũ
                 COALESCE(pm.material_name, pm.item_name) as material_name,
                 COALESCE(pm.quantity, pm.quantity_used) as quantity,
@@ -132,6 +133,7 @@ exports.getByProject = async (req, res) => {
         const exportedMaterials = await Promise.all(exportedRows.map(async (item) => {
             const materialType = item.material_type;
             let materialId = item.material_id;
+            const materialCode = (item.material_code || '').trim(); // Mã vật tư để sync với kho
             const materialName = (item.material_name || '').trim(); // Loại bỏ khoảng trắng thừa
             const exportedQty = parseFloat(item.quantity) || 0; // Số lượng đã xuất (cho record này)
 
@@ -166,13 +168,15 @@ exports.getByProject = async (req, res) => {
                     let foundInStock = false;
 
                     if (materialType === 'accessory') {
-                        // Tìm trong accessories theo tên
+                        // Tìm trong accessories - ƯU TIÊN TÌM THEO CODE, nếu không có thì tìm theo tên
+                        const searchTerm = materialCode || materialName;
                         const [accRows] = await db.query(
                             `SELECT id, stock_quantity, COALESCE(sale_price, purchase_price, 0) as price 
                              FROM accessories 
-                             WHERE (name LIKE ? OR code LIKE ?) AND is_active = 1
+                             WHERE (code = ? OR name = ? OR code LIKE ? OR name LIKE ?) AND is_active = 1
+                             ORDER BY CASE WHEN code = ? THEN 0 ELSE 1 END
                              LIMIT 1`,
-                            [`%${materialName}%`, `%${materialName}%`]
+                            [searchTerm, searchTerm, `%${searchTerm}%`, `%${searchTerm}%`, searchTerm]
                         );
                         if (accRows.length > 0) {
                             materialId = accRows[0].id; // Cập nhật material_id để dùng sau này
@@ -182,13 +186,15 @@ exports.getByProject = async (req, res) => {
                             foundInInventory = true;
                         }
                     } else if (materialType === 'aluminum') {
-                        // Tìm trong aluminum_systems theo tên
+                        // Tìm trong aluminum_systems - ƯU TIÊN TÌM THEO CODE
+                        const searchTerm = materialCode || materialName;
                         const [alumRows] = await db.query(
                             `SELECT id, COALESCE(quantity, quantity_m, 0) as stock, unit_price as price 
                              FROM aluminum_systems 
-                             WHERE (name LIKE ? OR code LIKE ?) AND is_active = 1
+                             WHERE (code = ? OR name = ? OR code LIKE ? OR name LIKE ?) AND is_active = 1
+                             ORDER BY CASE WHEN code = ? THEN 0 ELSE 1 END
                              LIMIT 1`,
-                            [`%${materialName}%`, `%${materialName}%`]
+                            [searchTerm, searchTerm, `%${searchTerm}%`, `%${searchTerm}%`, searchTerm]
                         );
                         if (alumRows.length > 0) {
                             materialId = alumRows[0].id; // Cập nhật material_id để dùng sau này
@@ -198,13 +204,15 @@ exports.getByProject = async (req, res) => {
                             foundInInventory = true;
                         }
                     } else if (materialType === 'glass' || materialType === 'other') {
-                        // Tìm trong inventory theo tên
+                        // Tìm trong inventory - ƯU TIÊN TÌM THEO CODE
+                        const searchTerm = materialCode || materialName;
                         const [invRows] = await db.query(
                             `SELECT id, CAST(quantity AS DECIMAL(10,2)) as stock, unit_price as price 
                              FROM inventory 
-                             WHERE (item_name LIKE ? OR item_code LIKE ?) AND is_active = 1
+                             WHERE (item_code = ? OR item_name = ? OR item_code LIKE ? OR item_name LIKE ?)
+                             ORDER BY CASE WHEN item_code = ? THEN 0 ELSE 1 END
                              LIMIT 1`,
-                            [`%${materialName}%`, `%${materialName}%`]
+                            [searchTerm, searchTerm, `%${searchTerm}%`, `%${searchTerm}%`, searchTerm]
                         );
                         if (invRows.length > 0) {
                             materialId = invRows[0].id; // Cập nhật material_id để dùng sau này
@@ -546,6 +554,7 @@ exports.getByProject = async (req, res) => {
                 ...item,
                 project_code: project.project_code,
                 project_name: project.project_name,
+                material_code: materialCode, // Mã vật tư để sync với kho
                 quantity: exportedQty, // Số lượng đã xuất (cho record này)
                 total_required: totalRequiredQty, // Tổng số lượng cần (từ BOM)
                 total_exported: totalExportedQty, // Tổng số lượng đã xuất (tất cả record)
@@ -568,6 +577,7 @@ exports.getByProject = async (req, res) => {
             const materialType = bom.material_type;
             const materialName = bom.material_name;
             const totalRequiredQty = bom.total_required;
+            const materialCode = bom.item_code || ''; // Mã vật tư từ BOM
             const unit = bom.unit;
 
             // Kiểm tra xem vật tư này đã được xuất chưa (tìm theo tên)
@@ -628,7 +638,7 @@ exports.getByProject = async (req, res) => {
                     const [invRows] = await db.query(
                         `SELECT id, CAST(quantity AS DECIMAL(10,2)) as stock, unit_price as price 
                          FROM inventory 
-                         WHERE (item_name LIKE ? OR item_code LIKE ?) AND is_active = 1
+                         WHERE (item_name LIKE ? OR item_code LIKE ?)
                          LIMIT 1`,
                         [`%${materialName}%`, `%${materialName}%`]
                     );
@@ -673,6 +683,7 @@ exports.getByProject = async (req, res) => {
                 project_id: projectId,
                 project_code: project.project_code,
                 project_name: project.project_name,
+                material_code: materialCode, // Mã vật tư từ BOM
                 material_name: materialName,
                 material_type: materialType,
                 material_id: materialId,
@@ -703,6 +714,7 @@ exports.getByProject = async (req, res) => {
             project_id: item.project_id,
             project_code: item.project_code,
             project_name: item.project_name,
+            material_code: item.material_code, // Mã vật tư
             material_name: item.material_name,
             material_type: item.material_type,
             material_id: item.material_id,
@@ -846,7 +858,7 @@ exports.create = async (req, res) => {
         const insufficientMaterials = [];
 
         for (const mat of materials) {
-            let { material_type, material_id, material_name, quantity, unit, unit_price, notes } = mat;
+            let { material_type, material_id, material_code, material_name, quantity, unit, unit_price, notes } = mat;
 
             // DEBUG: Log tất cả dữ liệu nhận được từ frontend
             console.log(`📥 [RECEIVED MATERIAL]`, {
@@ -1123,9 +1135,9 @@ exports.create = async (req, res) => {
                 // 1. Thêm vào project_materials
                 const [result] = await connection.query(
                     `INSERT INTO project_materials 
-                 (project_id, material_type, material_id, material_name, quantity, unit, unit_price, total_cost, notes)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                    [project_id, material_type, material_id, material_name, requestedQty, unit || 'cái', finalUnitPrice, totalCost, notes || null]
+                 (project_id, material_type, material_id, material_code, material_name, quantity, unit, unit_price, total_cost, notes)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [project_id, material_type, material_id, material_code || null, material_name, requestedQty, unit || 'cái', finalUnitPrice, totalCost, notes || null]
                 );
 
                 insertedIds.push(result.insertId);
@@ -1807,10 +1819,11 @@ exports.saveBOMData = async (req, res) => {
             for (const item of nhom) {
                 await connection.query(
                     `INSERT INTO project_materials 
-                    (project_id, material_type, material_id, material_name, quantity, unit, notes)
-                    VALUES (?, 'aluminum', 0, ?, ?, ?, ?)`,
+                    (project_id, material_type, material_id, material_code, material_name, quantity, unit, notes)
+                    VALUES (?, 'aluminum', 0, ?, ?, ?, ?, ?)`,
                     [
                         projectId,
+                        item.code || item.item_code || null,
                         item.name || item.item_name || '',
                         item.quantity || 0,
                         item.unit || 'cây',
@@ -1831,10 +1844,11 @@ exports.saveBOMData = async (req, res) => {
             for (const item of kinh) {
                 await connection.query(
                     `INSERT INTO project_materials 
-                    (project_id, material_type, material_id, material_name, quantity, unit, notes)
-                    VALUES (?, 'glass', 0, ?, ?, ?, ?)`,
+                    (project_id, material_type, material_id, material_code, material_name, quantity, unit, notes)
+                    VALUES (?, 'glass', 0, ?, ?, ?, ?, ?)`,
                     [
                         projectId,
+                        item.code || item.glass_code || null,
                         item.type || item.glass_type || '',
                         item.quantity || 1,
                         item.unit || 'tấm',
@@ -1855,10 +1869,11 @@ exports.saveBOMData = async (req, res) => {
             for (const item of vattu) {
                 await connection.query(
                     `INSERT INTO project_materials 
-                    (project_id, material_type, material_id, material_name, quantity, unit, notes)
-                    VALUES (?, 'accessory', 0, ?, ?, ?, ?)`,
+                    (project_id, material_type, material_id, material_code, material_name, quantity, unit, notes)
+                    VALUES (?, 'accessory', 0, ?, ?, ?, ?, ?)`,
                     [
                         projectId,
+                        item.code || item.item_code || null,
                         item.name || item.item_name || '',
                         item.quantity || 0,
                         item.unit || 'cái',

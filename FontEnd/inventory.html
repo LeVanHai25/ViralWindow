@@ -988,6 +988,8 @@
                             <table class="w-full">
                                 <thead class="bg-gray-50">
                                     <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">MÃ
+                                            VT</th>
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">TÊN
                                             VẬT TƯ</th>
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">LOẠI
@@ -1008,7 +1010,7 @@
                                 </thead>
                                 <tbody class="divide-y divide-gray-200" id="exportedMaterialsTable">
                                     <tr>
-                                        <td colspan="8" class="px-4 py-8 text-center text-gray-500">
+                                        <td colspan="9" class="px-4 py-8 text-center text-gray-500">
                                             Chọn dự án để xem vật tư đã xuất
                                         </td>
                                     </tr>
@@ -1028,6 +1030,8 @@
                             <table class="w-full">
                                 <thead class="bg-gray-50">
                                     <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">MÃ
+                                            VT</th>
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">TÊN
                                             VẬT TƯ</th>
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">LOẠI
@@ -1048,7 +1052,7 @@
                                 </thead>
                                 <tbody class="divide-y divide-gray-200" id="insufficientMaterialsTable">
                                     <tr>
-                                        <td colspan="8" class="px-4 py-8 text-center text-gray-500">
+                                        <td colspan="9" class="px-4 py-8 text-center text-gray-500">
                                             Không có vật tư chưa đủ
                                         </td>
                                     </tr>
@@ -2093,7 +2097,7 @@
                 if (!data || data.length === 0) {
                     tbody.innerHTML = `
                     <tr>
-                        <td colspan="8" class="px-4 py-8 text-center text-gray-500">
+                        <td colspan="9" class="px-4 py-8 text-center text-gray-500">
                             Chưa có vật tư nào đã xuất (đủ kho)
                         </td>
                     </tr>`;
@@ -2137,6 +2141,7 @@
 
                 tbody.innerHTML = data.map(mat => {
                     try {
+                        const materialCode = mat.material_code || '';
                         const materialName = mat.material_name || mat.item_name || mat.name || 'N/A';
                         const materialType = mat.material_type || 'other';
                         const quantity = parseFloat(mat.quantity) || 0;
@@ -2166,6 +2171,7 @@
 
                         return `
                         <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-3 text-blue-600 font-medium">${escapeHtml(materialCode) || '-'}</td>
                             <td class="px-4 py-3 font-medium">${escapeHtml(materialName)}</td>
                             <td class="px-4 py-3">
                                 <span class="px-2 py-1 text-xs rounded ${getTypeColor(materialType)}">${getTypeName(materialType)}</span>
@@ -2235,7 +2241,7 @@
                 if (!data || data.length === 0) {
                     tbody.innerHTML = `
                     <tr>
-                        <td colspan="8" class="px-4 py-8 text-center text-gray-500">
+                        <td colspan="9" class="px-4 py-8 text-center text-gray-500">
                             Không có vật tư chưa đủ (tất cả đều đủ kho)
                         </td>
                     </tr>`;
@@ -2288,6 +2294,7 @@
 
                 tbody.innerHTML = data.map(mat => {
                     try {
+                        const materialCode = mat.material_code || '';
                         const materialName = mat.material_name || mat.item_name || mat.name || 'N/A';
                         const materialType = mat.material_type || 'other';
                         // Sử dụng still_needed (số lượng còn cần) thay vì quantity (số lượng đã xuất)
@@ -2318,6 +2325,7 @@
 
                         return `
                         <tr class="hover:bg-gray-50 ${stockStatus === 'not_found' ? 'bg-gray-50' : stockStatus === 'shortage' ? 'bg-red-50' : 'bg-yellow-50'}">
+                            <td class="px-4 py-3 text-blue-600 font-medium">${escapeHtml(materialCode) || '-'}</td>
                             <td class="px-4 py-3 font-medium">${escapeHtml(materialName)}</td>
                             <td class="px-4 py-3">
                                 <span class="px-2 py-1 text-xs rounded ${getTypeColor(materialType)}">${getTypeName(materialType)}</span>
@@ -6129,7 +6137,7 @@
                         return;
                     }
 
-                    const response = await fetch(`${API_BASE}/inventory/${id}`, {
+                    const response = await fetch(`${API_BASE}/accessories/${id}`, {
                         headers: {
                             'Authorization': `Bearer ${token}`
                         }
@@ -6149,37 +6157,33 @@
                         const item = result.data;
                         const codeEl = document.getElementById('otherCode');
                         if (codeEl) {
-                            codeEl.value = item.item_code || '';
+                            // Accessories uses 'code' instead of 'item_code'
+                            codeEl.value = item.code || item.item_code || '';
                             codeEl.readOnly = false; // Cho phép chỉnh sửa mã khi edit
                         }
 
-                        // Parse description to extract sub-category
-                        const description = item.description || '';
+                        // Parse category (accessories uses 'category' instead of 'description')
+                        const category = item.category || item.description || '';
                         const subCategoryEl = document.getElementById('otherSubCategory');
 
-                        // Check if description contains sub-category
+                        // Check if category matches sub-category
                         const subCategories = ['Ke', 'Gioăng', 'Nhựa ốp', 'Keo', 'Khác'];
-                        let foundSubCategory = 'Ke'; // Default
-
-                        for (const subCat of subCategories) {
-                            if (description.includes(subCat)) {
-                                foundSubCategory = subCat;
-                                break;
-                            }
-                        }
+                        let foundSubCategory = subCategories.includes(category) ? category : 'Ke';
 
                         if (subCategoryEl) {
                             subCategoryEl.value = foundSubCategory;
                         }
 
-                        document.getElementById('otherName').value = item.item_name || '';
+                        // Accessories uses 'name' instead of 'item_name'
+                        document.getElementById('otherName').value = item.name || item.item_name || '';
                         document.getElementById('otherUnit').value = item.unit || '';
-                        document.getElementById('otherPrice').value = item.unit_price || '';
-                        // Hiển thị tồn kho - ưu tiên quantity, sau đó stock_quantity
-                        const stockValue = item.quantity || item.stock_quantity || 0;
+                        // Accessories uses 'sale_price' or 'purchase_price' instead of 'unit_price'
+                        document.getElementById('otherPrice').value = item.sale_price || item.purchase_price || item.unit_price || '';
+                        // Hiển thị tồn kho - accessories uses 'stock_quantity'
+                        const stockValue = item.stock_quantity || item.quantity || 0;
                         document.getElementById('otherStock').value = stockValue;
-                        document.getElementById('otherMinStock').value = item.min_stock_level || 10;
-                        document.getElementById('otherDescription').value = item.notes || '';
+                        document.getElementById('otherMinStock').value = item.min_stock || item.min_stock_level || 10;
+                        document.getElementById('otherDescription').value = item.description || item.notes || '';
                     }
                 } catch (error) {
                     console.error('Lỗi:', error);
@@ -6230,19 +6234,17 @@
                 // Get sub-category
                 const subCategory = subCategoryEl ? subCategoryEl.value : '';
 
-                // Use subCategory as description
-                const description = subCategory || null;
-
+                // Use accessories API format
                 const data = {
-                    item_code: codeEl.value.trim(),
-                    item_name: nameEl.value.trim(),
-                    item_type: 'other',
+                    code: codeEl.value.trim(),          // accessories uses 'code'
+                    name: nameEl.value.trim(),          // accessories uses 'name'
+                    category: subCategory,              // accessories uses 'category'
                     unit: unitEl.value.trim(),
-                    quantity: quantity, // Tồn kho - PHẢI là number
-                    min_stock_level: parseInt(document.getElementById('otherMinStock').value) || 10,
-                    unit_price: unitPrice, // Giá - PHẢI là number
-                    description: description || null,
-                    notes: document.getElementById('otherDescription').value ? document.getElementById('otherDescription').value.trim() : null
+                    stock_quantity: quantity,           // accessories uses 'stock_quantity'
+                    min_stock: parseInt(document.getElementById('otherMinStock').value) || 10,
+                    sale_price: unitPrice,              // accessories uses 'sale_price'
+                    purchase_price: unitPrice,          // accessories uses 'purchase_price'
+                    description: document.getElementById('otherDescription').value ? document.getElementById('otherDescription').value.trim() : null
                 };
 
                 try {
@@ -6253,7 +6255,7 @@
                         return;
                     }
 
-                    const url = id ? `${API_BASE}/inventory/${id}` : `${API_BASE}/inventory`;
+                    const url = id ? `${API_BASE}/accessories/${id}` : `${API_BASE}/accessories`;
                     const method = id ? 'PUT' : 'POST';
 
                     const response = await fetch(url, {
@@ -6308,7 +6310,7 @@
                         return;
                     }
 
-                    const response = await fetch(`${API_BASE}/inventory/${id}`, {
+                    const response = await fetch(`${API_BASE}/accessories/${id}`, {
                         method: 'DELETE',
                         headers: {
                             'Authorization': `Bearer ${token}`
