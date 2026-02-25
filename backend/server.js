@@ -261,6 +261,38 @@ app.use('/api', notFoundHandler);
 // Centralized error handler
 app.use(errorHandler);
 
+// ============================================
+// STARTUP DB MIGRATIONS (fix TiDB compatibility)
+// ============================================
+async function runStartupMigrations() {
+    const db = require('./config/db');
+    const migrations = [
+        {
+            name: 'user_sessions AUTO_INCREMENT',
+            sql: "ALTER TABLE user_sessions MODIFY id int(11) NOT NULL AUTO_INCREMENT"
+        },
+        {
+            name: 'login_history AUTO_INCREMENT',
+            sql: "ALTER TABLE login_history MODIFY id int(11) NOT NULL AUTO_INCREMENT"
+        }
+    ];
+
+    for (const m of migrations) {
+        try {
+            await db.query(m.sql);
+            console.log(`✅ Migration: ${m.name}`);
+        } catch (err) {
+            // Ignore if already applied or table doesn't exist
+            if (!err.message.includes('already exists') && !err.message.includes("doesn't exist")) {
+                console.log(`⚠️ Migration ${m.name}: ${err.message}`);
+            }
+        }
+    }
+}
+
+// Run migrations on startup
+runStartupMigrations().catch(err => console.error('Migration error:', err));
+
 const PORT = process.env.PORT || 3001;
 
 // Handle port already in use error
