@@ -8,7 +8,11 @@
 (function () {
     'use strict';
 
-    const API_BASE = window.API_BASE || 'http://localhost:3001/api';
+    // Lazy getter - must be called at runtime, not at load time
+    // because config.js may not have loaded yet when this IIFE runs
+    function getApiBase() {
+        return window.API_BASE || 'http://localhost:3001/api';
+    }
 
     // Mapping giữa page và permissions cần thiết
     // LƯU Ý: Permission codes phải KHỚP CHÍNH XÁC với database (bảng permissions)
@@ -111,17 +115,17 @@
     let isAdmin = false;
 
     /**
-     * Get token from sessionStorage
+     * Get token from sessionStorage or localStorage (for Remember Me)
      */
     function getToken() {
-        return sessionStorage.getItem('token');
+        return sessionStorage.getItem('token') || localStorage.getItem('token');
     }
 
     /**
-     * Get user from sessionStorage
+     * Get user from sessionStorage or localStorage
      */
     function getUser() {
-        const userStr = sessionStorage.getItem('user');
+        const userStr = sessionStorage.getItem('user') || localStorage.getItem('user');
         try {
             return userStr ? JSON.parse(userStr) : null;
         } catch (e) {
@@ -134,13 +138,13 @@
      */
     async function loadMyPermissions() {
         try {
-            const token = sessionStorage.getItem('token');
+            const token = getToken();
             if (!token) {
                 redirectToLogin();
                 return [];
             }
 
-            const response = await fetch(`${API_BASE}/permissions/my`, {
+            const response = await fetch(`${getApiBase()}/permissions/my`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
