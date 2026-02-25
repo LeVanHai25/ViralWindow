@@ -14,11 +14,10 @@ exports.getAllQuotations = async (req, res) => {
                 c.phone AS customer_phone,
                 c.email AS customer_email,
                 p.project_name,
-                COUNT(qi.id) as item_count
+                (SELECT COUNT(*) FROM quotation_items qi WHERE qi.quotation_id = q.id) as item_count
             FROM quotations q
             LEFT JOIN customers c ON q.customer_id = c.id
             LEFT JOIN projects p ON q.project_id = p.id
-            LEFT JOIN quotation_items qi ON q.id = qi.quotation_id
         `;
         let conditions = [];
         let params = [];
@@ -43,7 +42,7 @@ exports.getAllQuotations = async (req, res) => {
             query += " WHERE " + conditions.join(" AND ");
         }
 
-        query += " GROUP BY q.id ORDER BY q.created_at DESC";
+        query += " ORDER BY q.created_at DESC";
 
         const [rows] = await db.query(query, params);
 

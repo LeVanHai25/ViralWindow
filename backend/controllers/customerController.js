@@ -74,13 +74,11 @@ exports.getAllCustomers = async (req, res) => {
                 a.name as agency_name,
                 a.code as agency_code,
                 a.region as agency_region,
-                COUNT(DISTINCT q.id) as total_quotations,
-                COUNT(DISTINCT p.id) as total_projects,
-                SUM(CASE WHEN q.status = 'approved' THEN 1 ELSE 0 END) as approved_quotations
+                (SELECT COUNT(*) FROM quotations q WHERE q.customer_id = c.id) as total_quotations,
+                (SELECT COUNT(*) FROM projects p WHERE p.customer_id = c.id) as total_projects,
+                (SELECT COUNT(*) FROM quotations q2 WHERE q2.customer_id = c.id AND q2.status = 'approved') as approved_quotations
             FROM customers c
             LEFT JOIN agencies a ON c.agency_id = a.id
-            LEFT JOIN quotations q ON c.id = q.customer_id
-            LEFT JOIN projects p ON c.id = p.customer_id
         `;
         let params = [];
 
@@ -90,7 +88,7 @@ exports.getAllCustomers = async (req, res) => {
             params = [searchTerm, searchTerm, searchTerm, searchTerm];
         }
 
-        query += " GROUP BY c.id ORDER BY c.created_at DESC";
+        query += " ORDER BY c.created_at DESC";
 
         const [rows] = await db.query(query, params);
 
