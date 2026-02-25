@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API - ViralWindow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .response-box {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: monospace;
+            font-size: 0.875rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6">Test API - ViralWindow</h1>
+
+        <!-- Test Hệ Nhôm -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4">1. API Hệ Nhôm</h2>
+            <div class="space-y-4">
+                <button onclick="testGetAluminumSystems()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    GET - Lấy tất cả hệ nhôm
+                </button>
+                <button onclick="testGetAluminumSystemById()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    GET - Lấy hệ nhôm theo ID (id=1)
+                </button>
+                <button onclick="testSearchAluminumSystems()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    GET - Tìm kiếm (search=xingfa)
+                </button>
+                <div id="aluminum-response" class="response-box hidden"></div>
+            </div>
+        </div>
+
+        <!-- Test Phụ Kiện -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4">2. API Phụ Kiện</h2>
+            <div class="space-y-4">
+                <button onclick="testGetAccessories()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                    GET - Lấy tất cả phụ kiện
+                </button>
+                <button onclick="testGetAccessoryStats()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                    GET - Lấy thống kê phụ kiện
+                </button>
+                <button onclick="testSearchAccessories()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                    GET - Tìm kiếm (search=khóa)
+                </button>
+                <div id="accessory-response" class="response-box hidden"></div>
+            </div>
+        </div>
+
+        <!-- Test Dự Án -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4">3. API Dự Án</h2>
+            <div class="space-y-4">
+                <button onclick="testGetProjects()" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+                    GET - Lấy tất cả dự án
+                </button>
+                <button onclick="testGetProjectStats()" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+                    GET - Lấy thống kê dự án
+                </button>
+                <button onclick="testFilterProjects()" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+                    GET - Lọc dự án (status=approved, progress=50-75)
+                </button>
+                <div id="project-response" class="response-box hidden"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost/viralwindow_api/api';
+
+        // Test Hệ Nhôm
+        async function testGetAluminumSystems() {
+            const response = await fetch(`${API_BASE}/aluminum-systems.php`);
+            const data = await response.json();
+            showResponse('aluminum-response', data);
+        }
+
+        async function testGetAluminumSystemById() {
+            const response = await fetch(`${API_BASE}/aluminum-systems.php?id=1`);
+            const data = await response.json();
+            showResponse('aluminum-response', data);
+        }
+
+        async function testSearchAluminumSystems() {
+            const response = await fetch(`${API_BASE}/aluminum-systems.php?search=xingfa`);
+            const data = await response.json();
+            showResponse('aluminum-response', data);
+        }
+
+        // Test Phụ Kiện
+        async function testGetAccessories() {
+            const response = await fetch(`${API_BASE}/accessories.php`);
+            const data = await response.json();
+            showResponse('accessory-response', data);
+        }
+
+        async function testGetAccessoryStats() {
+            const response = await fetch(`${API_BASE}/accessories.php?stats=true`);
+            const data = await response.json();
+            showResponse('accessory-response', data);
+        }
+
+        async function testSearchAccessories() {
+            const response = await fetch(`${API_BASE}/accessories.php?search=khóa`);
+            const data = await response.json();
+            showResponse('accessory-response', data);
+        }
+
+        // Test Dự Án
+        async function testGetProjects() {
+            const response = await fetch(`${API_BASE}/projects.php`);
+            const data = await response.json();
+            showResponse('project-response', data);
+        }
+
+        async function testGetProjectStats() {
+            const response = await fetch(`${API_BASE}/projects.php?stats=true`);
+            const data = await response.json();
+            showResponse('project-response', data);
+        }
+
+        async function testFilterProjects() {
+            const response = await fetch(`${API_BASE}/projects.php?status=approved&progress=50-75`);
+            const data = await response.json();
+            showResponse('project-response', data);
+        }
+
+        function showResponse(elementId, data) {
+            const element = document.getElementById(elementId);
+            element.classList.remove('hidden');
+            element.textContent = JSON.stringify(data, null, 2);
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+

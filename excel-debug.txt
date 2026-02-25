@@ -1,0 +1,261 @@
+Total rows: 140
+
+=== DETAILED ROWS 1-50 ===
+
+Row 1:
+  Col A: Sản phẩm
+  Col C: Giá theo kích thước (VND)
+
+Row 2:
+  Col A: VRA
+  Col C: 0--0,25\nm2
+  Col D: 0,25--0,5\nm2
+  Col E: 0,5--0,75\nm2
+  Col F: 0,75--1\nm2
+  Col G: 1--1,25\nm2
+  Col H: 1,25--1,5\nm2
+
+Row 3:
+  Col A: VÁCH KÍNH CỐ ĐỊNH dùng nhôm Viralwindow VRA50\n - Độ dày: 1,2 -1,4mm \n - Màu sơn Xám Metalic, bảo h
+  Col C: 2523000
+  Col D: 2072000
+  Col E: 1642000
+  Col F: 1410000
+  Col G: 1294000
+  Col H: 1226000
+
+Row 4:
+  Col A: VÁCH KÍNH CỐ ĐỊNH dùng nhôm Viralwindow VRA55\n - Độ dày: 1,4mm\n - Màu sơn Xám Metalic, bảo hành 20
+  Col C: 2523000
+  Col D: 2072000
+  Col E: 1642000
+  Col F: 1410000
+  Col G: 1294000
+  Col H: 1226000
+
+Row 5:
+  Col A: VÁCH KÍNH CỐ ĐỊNH dùng nhôm Viralwindow VRA64\n - Độ dày: 1,2-1,4mm\n - Màu sơn Xám Metalic, bảo hàn
+  Col C: 2523000
+  Col D: 2072000
+  Col E: 1642000
+  Col F: 1410000
+  Col G: 1294000
+  Col H: 1226000
+
+Row 6:
+  Col A: VÁCH KÍNH CỐ ĐỊNH dùng nhôm Viralwindow VRA94\n - Độ dày: 1,6mm\n - Màu sơn Xám Metalic, bảo hành 20
+  Col D: 2558000
+  Col E: 2002000
+  Col F: 1700000
+  Col G: 1549000
+  Col H: 1458000
+
+Row 7:
+  Col A: Cửa sổ mở trượt 64
+
+Row 8:
+  Col A: CỬA SỔ MỞ TRƯỢT 2 CÁNH dùng nhôm Viralwindow VRA64\n - Độ dày: 1,2 - 1,4mm\n - Màu sơn Xám Metalic, 
+  Col D: 4707000
+  Col E: 3462000
+  Col F: 2903000
+  Col G: 2622000
+  Col H: 2377000
+
+Row 9:
+  Col A: CỬA SỔ MỞ TRƯỢT 3 CÁNH dùng nhôm Viralwindow VRA64\n - Độ dày: 1,2 - 1,4mm\n - Màu sơn Xám Metalic, 
+  Col H: 2777000
+
+Row 10:
+  Col A: CỬA SỔ MỞ TRƯỢT 4 CÁNH dùng nhôm Viralwindow VRA64\n - Độ dày: 1,2 - 1,4mm\n - Màu sơn Xám Metalic, 
+
+Row 11:
+  Col A: Cửa sổ mở hất 50
+
+Row 12:
+  Col A: CỬA SỔ MỞ HẤT 1 CÁNH dùng nhôm Viralwindow VRA50\n - Độ dày: 1,2 -1,4mm\n - Màu sơn Xám Metalic, bảo
+  Col D: 2882000
+  Col E: 2228000
+  Col F: 1860000
+  Col G: 1708000
+  Col H: 1590000
+
+Row 13:
+  Col A: CỬA SỔ MỞ HẤT 1 CÁNH dùng nhôm Viralwindow VRA50\n - Độ dày: 1,2 -1,4mm\n - Màu sơn Xám Metalic, bảo
+  Col D: 2882000
+  Col E: 2228000
+  Col F: 1860000
+  Col G: 1708000
+  Col H: 1590000
+
+Row 14:
+  Col A: CỬA SỔ MỞ HẤT 2 CÁNH dùng nhôm Viralwindow VRA50\n - Độ dày: 1,2 -1,4mm\n - Màu sơn Xám Metalic, bảo
+  Col E: 2602000
+  Col F: 2231000
+  Col G: 2038000
+  Col H: 1922000
+
+Row 15:
+  Col A: Cửa sổ mở quay 50
+
+Row 16:
+  Col A: CỬA SỔ MỞ QUAY 1 CÁNH dùng nhôm Viralwindow VRA50\n - Độ dày: 1,2 -1,4mm\n - Màu sơn Xám Metalic, bả
+  Col D: 2882000
+  Col E: 2228000
+  Col F: 1860000
+  Col G: 1708000
+  Col H: 1590000
+
+Row 17:
+  Col A: CỬA SỔ MỞ QUAY 2 CÁNH dùng nhôm Viralwindow VRA50\n - Độ dày: 1,2 -1,4mm\n - Màu sơn Xám Metalic, bả
+  Col E: 2602000
+  Col F: 2231000
+  Col G: 2038000
+  Col H: 1922000
+
+Row 18:
+  Col A: Cửa đi mở quay 50
+
+Row 19:
+  Col A: CỬA ĐI MỞ QUAY 1 CÁNH dùng nhôm Viralwindow VRA50\n - Độ dày: 1,2 -1,4mm\n - Màu sơn Xám Metalic, bả
+  Col F: 1932000
+  Col G: 1705000
+  Col H: 1601000
+
+Row 20:
+  Col A: CỬA ĐI MỞ QUAY 1 CÁNH dùng nhôm Viralwindow VRA50\n - Độ dày: 1,2 -1,4mm\n - Màu sơn Xám Metalic, bả
+  Col F: 1932000
+  Col G: 1705000
+  Col H: 1601000
+
+Row 21:
+  Col A: CỬA ĐI MỞ QUAY 2 CÁNH dùng nhôm Viralwindow VRA50\n - Độ dày: Dùng khung cửa đi VRA55, dày 2mm\n - M
+  Col H: 2027000
+
+Row 22:
+  Col A: Cửa sổ mở hất 55
+
+Row 23:
+  Col A: CỬA SỔ MỞ HẤT 1 CÁNH dùng nhôm Viralwindow VRA55\n - Độ dày: 1,4mm\n - Màu sơn Xám Metalic, bảo hành
+  Col D: 3443000
+  Col E: 2616000
+  Col F: 2198000
+  Col G: 1998000
+  Col H: 1816000
+
+Row 24:
+  Col A: CỬA SỔ MỞ HẤT 2 CÁNH dùng nhôm Viralwindow VRA55\n - Độ dày: 1,4mm\n - Màu sơn Xám Metalic, bảo hành
+  Col E: 3245000
+  Col F: 2737000
+  Col G: 2484000
+  Col H: 2331000
+
+Row 25:
+  Col A: CỬA SỔ MỞ HẤT 3 CÁNH dùng nhôm Viralwindow VRA55\n - Độ dày: 1,4 mm\n - Màu sơn Xám Metalic, bảo hàn
+  Col H: 2583000
+
+Row 26:
+  Col A: CỬA SỔ MỞ HẤT 4 CÁNH dùng nhôm Viralwindow VRA55\n - Độ dày: 1,4mm\n - Màu sơn Xám Metalic, bảo hành
+
+Row 27:
+  Col A: Cửa sổ mở quay 55
+
+Row 28:
+  Col A: CỬA SỔ MỞ QUAY 1 CÁNH dùng nhôm Viralwindow VRA55\n - Độ dày: 1,4 mm\n - Màu sơn Xám Metalic, bảo hà
+  Col D: 3443000
+  Col E: 2616000
+  Col F: 2198000
+  Col G: 1998000
+  Col H: 1816000
+
+Row 29:
+  Col A: CỬA SỔ MỞ QUAY 2 CÁNH dùng nhôm Viralwindow VRA55\n - Độ dày: 1,4  mm\n - Màu sơn Xám Metalic, bảo h
+  Col E: 3245000
+  Col F: 2737000
+  Col G: 2484000
+  Col H: 2331000
+
+Row 30:
+  Col A: CỬA SỔ MỞ QUAY 3 CÁNH mở hất ở giữa mở quay 2 bên dùng nhôm Viralwindow VRA55\n - Độ dày: 1,4mm\n - 
+  Col H: 2583000
+
+Row 31:
+  Col A: CỬA SỔ MỞ QUAY 3 CÁNH dùng nhôm Viralwindow VRA55 ( 3 cánh một phía)\n - Độ dày: 1,4  mm\n - Màu sơn
+  Col H: 2583000
+
+Row 32:
+  Col A: CỬA SỔ MỞ QUAY 4 CÁNH dùng nhôm Viralwindow VRA55\n - Độ dày: 1,4 mm\n - Màu sơn Xám Metalic, bảo hà
+
+Row 33:
+  Col A: Cửa đi mở quay 55
+
+Row 34:
+  Col A: CỬA ĐI MỞ QUAY 1 CÁNH dùng nhôm Viralwindow VRA55\n - Độ dày: 2,0 mm\n - Màu sơn Xám Metalic, bảo hà
+  Col F: 2548000
+  Col G: 2363000
+  Col H: 2205000
+
+Row 35:
+  Col A: CỬA ĐI MỞ QUAY 1 CÁNH dùng nhôm Viralwindow VRA55\n - Độ dày: 2,0mm\n - Màu sơn Xám Metalic, bảo hàn
+  Col F: 2548000
+  Col G: 2363000
+  Col H: 2205000
+
+Row 36:
+  Col A: CỬA ĐI MỞ QUAY 2 CÁNH dùng nhôm Viralwindow VRA55\n - Độ dày: 2,0mm\n - Màu sơn Xám Metalic, bảo hàn
+
+Row 37:
+  Col A: CỬA ĐI MỞ QUAY 3 CÁNH dùng nhôm Viralwindow VRA55\n - Độ dày: 2,0mm\n - Màu sơn Xám Metalic, bảo hàn
+
+Row 38:
+  Col A: CỬA ĐI MỞ QUAY 4 CÁNH dùng nhôm Viralwindow VRA55\n - Độ dày: 2,0mm\n - Màu sơn Xám Metalic, bảo hàn
+
+Row 39:
+  Col A: Cửa đi mở trượt 94
+
+Row 40:
+  Col A: CỬA ĐI MỞ TRƯỢT 2 CÁNH dùng nhôm Viralwindow VRA94\n - Độ dày: 1,6mm\n - Màu sơn Xám Metalic, bảo hà
+
+Row 41:
+  Col A: CỬA ĐI MỞ TRƯỢT 3 CÁNH dùng nhôm Viralwindow VRA94\n - Độ dày: 1,6mm\n - Màu sơn Xám Metalic, bảo hà
+
+Row 42:
+  Col A: CỬA ĐI MỞ TRƯỢT 4 CÁNH dùng nhôm Viralwindow VRA94\n - Độ dày: 1,6mm\n - Màu sơn Xám Metalic, bảo hà
+
+Row 43:
+  Col A: CỬA ĐI MỞ QUAY TRƯỢT 2 CÁNH VR100\n - Độ dày: 1,6 - 3,5 mm\n - Màu sơn Xám Metalic, bảo hành 20 năm
+
+Row 44:
+  Col A: CỬA ĐI MỞ QUAY TRƯỢT 4 CÁNH VR100\n - Độ dày: 1,6 - 3,5 mm\n - Màu sơn Xám Metalic, bảo hành 20 năm
+
+Row 45:
+  Col A: CHỚP NHÔM CỐ ĐỊNH
+
+Row 46:
+  Col A: VRE
+
+Row 47:
+  Col A: Vách kính cố định
+
+Row 48:
+  Col A: VÁCH KÍNH CỐ ĐỊNH dùng nhôm Viralwindow VRE65\n - Độ dày: 1,6 mm\n - Màu sơn Xám Metalic, bảo hành 2
+  Col D: 3989000
+  Col E: 3020000
+  Col F: 2496000
+  Col G: 2233000
+  Col H: 2076000
+
+Row 49:
+  Col A: VÁCH KÍNH CỐ ĐỊNH dùng nhôm Viralwindow VRE94\n - Độ dày: 1,6mm\n - Màu sơn Xám Metalic, bảo hành 20
+  Col D: 2669000
+  Col E: 2089000
+  Col F: 1774000
+  Col G: 1616000
+  Col H: 1522000
+
+Row 50:
+  Col A: VÁCH KÍNH CỐ ĐỊNH dùng nhôm Viralwindow VRE120\n - Độ dày: 1,6mm\n - Màu sơn Xám Metalic, bảo hành 2
+  Col D: 3914000
+  Col E: 3000000
+  Col F: 2497000
+  Col G: 2245000
+  Col H: 2092000

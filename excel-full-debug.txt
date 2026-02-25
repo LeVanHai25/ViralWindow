@@ -1,0 +1,34 @@
+=== ALL COLUMNS IN HEADER ROW (Row 2) ===
+Col 0: VRA
+Col 3: Hopo
+Col 4: Viralwindow
+Col 5: Cmech
+Col 41: 9,75--10,0|m2
+Col 42: 10--10.25|m2
+Col 43: 10.25--10.5|m2
+Col 44: 10.5--10.75|m2
+Col 45: 10.75--11|m2
+Col 46: 11--11.25|m2
+Col 47: 11.25--11.5|m2
+Col 48: 11.5--12|m2
+Col 49: 12--12.5|m2
+Col 50: 12.5--13|m2
+Col 51: 13--14|m2
+Col 52: 14--15|m2
+
+=== FULL DATA ROW 8-10 (Products with accessory prices) ===
+
+Row 8:
+  Col 0: CỬA SỔ MỞ TRƯỢT 2 CÁNH dùng nhôm Viralwindow VRA64| - Độ dày: 1,2 - 1,4mm| - M
+  Col 2: CỬA SỔ MỞ TRƯỢT 2 CÁNH dùng nhôm Viralwindow VRA64| - Độ dày: 1,2 - 1,4mm| - M
+  Col 4: 711000
+
+Row 9:
+  Col 0: CỬA SỔ MỞ TRƯỢT 3 CÁNH dùng nhôm Viralwindow VRA64| - Độ dày: 1,2 - 1,4mm| - M
+  Col 2: CỬA SỔ MỞ TRƯỢT 3 CÁNH dùng nhôm Viralwindow VRA64| - Độ dày: 1,2 - 1,4mm| - M
+  Col 4: 803000
+
+Row 10:
+  Col 0: CỬA SỔ MỞ TRƯỢT 4 CÁNH dùng nhôm Viralwindow VRA64| - Độ dày: 1,2 - 1,4mm| - M
+  Col 2: CỬA SỔ MỞ TRƯỢT 4 CÁNH dùng nhôm Viralwindow VRA64| - Độ dày: 1,2 - 1,4mm| - M
+  Col 4: 1174000

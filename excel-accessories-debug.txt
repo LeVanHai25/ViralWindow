@@ -1,0 +1,96 @@
+Total rows: 140
+
+=== COLUMN STRUCTURE (Row 2-3) ===
+
+Row 1:
+  Col 0 (A): Sản phẩm
+  Col 3 (D): Phụ kiện
+
+Row 2:
+  Col 0 (A): VRA
+  Col 3 (D): Hopo
+  Col 4 (E): Viralwindow
+  Col 5 (F): Cmech
+  Col 41 (Z): 9,75--10,0\nm2
+  Col 42 (Z): 10--10.25\nm2
+  Col 43 (Z): 10.25--10.5\nm2
+  Col 44 (Z): 10.5--10.75\nm2
+  Col 45 (Z): 10.75--11\nm2
+  Col 46 (Z): 11--11.25\nm2
+  Col 47 (Z): 11.25--11.5\nm2
+  Col 48 (Z): 11.5--12\nm2
+  Col 49 (Z): 12--12.5\nm2
+  Col 50 (Z): 12.5--13\nm2
+  Col 51 (Z): 13--14\nm2
+  Col 52 (Z): 14--15\nm2
+
+Row 3:
+  Col 0 (A): VÁCH KÍNH CỐ ĐỊNH dùng nhôm Viralwindow VRA50\n - Độ dày: 1,
+  Col 2 (C): VÁCH KÍNH CỐ ĐỊNH dùng nhôm Viralwindow VRA50\n - Độ dày: 1,
+
+=== SAMPLE DATA WITH ACCESSORIES (Row 4-12) ===
+
+Row 4:
+  A (Tên SP): VÁCH KÍNH CỐ ĐỊNH dùng nhôm Viralwindow VRA55\n - Độ dày: 1,...
+  Col 2: VÁCH KÍNH CỐ ĐỊNH dùng nhôm Viralwindow VRA55
+ - Độ dày: 1,4mm
+ - Màu sơn Xám Metalic, bảo hành 20 năm
+ - Sử dụng kính Viralwindow sản xuất tại nhà máy kính Hải Long/Việt Nhật VSG hoặc tương đương.
+
+Row 5:
+  A (Tên SP): VÁCH KÍNH CỐ ĐỊNH dùng nhôm Viralwindow VRA64\n - Độ dày: 1,...
+  Col 2: VÁCH KÍNH CỐ ĐỊNH dùng nhôm Viralwindow VRA64
+ - Độ dày: 1,2-1,4mm
+ - Màu sơn Xám Metalic, bảo hành 20 năm
+ - Sử dụng kính Viralwindow sản xuất tại nhà máy kính Hải Long/Việt Nhật VSG hoặc tương đương.
+
+Row 6:
+  A (Tên SP): VÁCH KÍNH CỐ ĐỊNH dùng nhôm Viralwindow VRA94\n - Độ dày: 1,...
+  Col 2: VÁCH KÍNH CỐ ĐỊNH dùng nhôm Viralwindow VRA94
+ - Độ dày: 1,6mm
+ - Màu sơn Xám Metalic, bảo hành 20 năm
+ - Sử dụng kính Viralwindow sản xuất tại nhà máy kính Hải Long/Việt Nhật VSG hoặc tương đương.
+
+Row 7:
+  A (Tên SP): Cửa sổ mở trượt 64...
+  Col 2: Cửa sổ mở trượt 64
+
+Row 8:
+  A (Tên SP): CỬA SỔ MỞ TRƯỢT 2 CÁNH dùng nhôm Viralwindow VRA64\n - Độ dà...
+  Col 2: CỬA SỔ MỞ TRƯỢT 2 CÁNH dùng nhôm Viralwindow VRA64
+ - Độ dày: 1,2 - 1,4mm
+ - Màu sơn Xám Metalic, bảo hành 20 năm
+ - Sử dụng kính Viralwindow sản xuất tại nhà máy kính Hải Long/Việt Nhật VSG hoặc tương đương.
+ - Phụ kiện: 2 chốt âm , 4 bánh xe đơn.
+  Col 4: 711000
+
+Row 9:
+  A (Tên SP): CỬA SỔ MỞ TRƯỢT 3 CÁNH dùng nhôm Viralwindow VRA64\n - Độ dà...
+  Col 2: CỬA SỔ MỞ TRƯỢT 3 CÁNH dùng nhôm Viralwindow VRA64
+ - Độ dày: 1,2 - 1,4mm
+ - Màu sơn Xám Metalic, bảo hành 20 năm
+ - Sử dụng kính Viralwindow sản xuất tại nhà máy kính Hải Long/Việt Nhật VSG hoặc tương đương.
+ - Phụ kiện: 2 chốt âm , 6 bánh xe đơn.
+  Col 4: 803000
+
+Row 10:
+  A (Tên SP): CỬA SỔ MỞ TRƯỢT 4 CÁNH dùng nhôm Viralwindow VRA64\n - Độ dà...
+  Col 2: CỬA SỔ MỞ TRƯỢT 4 CÁNH dùng nhôm Viralwindow VRA64
+ - Độ dày: 1,2 - 1,4mm
+ - Màu sơn Xám Metalic, bảo hành 20 năm
+ - Sử dụng kính Viralwindow sản xuất tại nhà máy kính Hải Long/Việt Nhật VSG hoặc tương đương.
+ - Phụ kiện: 3 chốt âm, 8 bánh xe đơn.
+  Col 4: 1174000
+
+Row 11:
+  A (Tên SP): Cửa sổ mở hất 50...
+  Col 2: Cửa sổ mở hất 50
+
+Row 12:
+  A (Tên SP): CỬA SỔ MỞ HẤT 1 CÁNH dùng nhôm Viralwindow VRA50\n - Độ dày:...
+  Col 2: CỬA SỔ MỞ HẤT 1 CÁNH dùng nhôm Viralwindow VRA50
+ - Độ dày: 1,2 -1,4mm
+ - Màu sơn Xám Metalic, bảo hành 20 năm
+ - Sử dụng kính Viralwindow sản xuất tại nhà máy kính Hải Long/Việt Nhật VSG hoặc tương đương.
+ - Phụ kiện: tay nắm đa điểm, 2 bản lề A, 2 chống gió.
+  Col 4: 662000

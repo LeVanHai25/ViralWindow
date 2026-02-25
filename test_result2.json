@@ -1,0 +1,410 @@
+﻿{
+    "success":  true,
+    "data":  {
+                 "project":  {
+                                 "id":  15,
+                                 "project_code":  "VR015",
+                                 "project_name":  "Anh Hoàng dự án 2",
+                                 "customer_id":  11,
+                                 "start_date":  "2026-02-01T17:00:00.000Z",
+                                 "deadline":  "2026-03-01T17:00:00.000Z",
+                                 "status":  "completed",
+                                 "progress_percent":  100,
+                                 "quote_locked":  0,
+                                 "contract_locked":  0,
+                                 "total_value":  "8806000.00",
+                                 "material_cost":  "0.00",
+                                 "assigned_to":  null,
+                                 "notes":  null,
+                                 "created_at":  "2026-02-02T10:43:32.000Z",
+                                 "updated_at":  "2026-02-03T07:47:38.000Z",
+                                 "handover_date":  "2026-02-02T17:00:00.000Z",
+                                 "handover_status":  "completed",
+                                 "handover_notes":  null,
+                                 "moved_to_installation_at":  "2026-02-03T07:42:38.000Z",
+                                 "handover_by":  null,
+                                 "received_by":  null,
+                                 "receiver_phone":  null,
+                                 "handover_person":  null,
+                                 "receiver_name":  null,
+                                 "handover_photos":  null,
+                                 "completed_at":  null,
+                                 "installation_step":  "completed",
+                                 "installation_date":  null,
+                                 "installer_name":  null,
+                                 "installation_notes":  null,
+                                 "installation_photos":  null,
+                                 "production_step":  "completed",
+                                 "production_started_at":  "2026-02-03T07:42:03.000Z",
+                                 "agency_id":  null,
+                                 "operation_status":  1,
+                                 "operation_notes":  null,
+                                 "operation_updated_at":  null,
+                                 "construction_province":  "Thái Bình",
+                                 "construction_district":  null,
+                                 "construction_address":  "Nhà số 10 Thái Bình",
+                                 "fix_compatible":  null,
+                                 "manual_weight":  null,
+                                 "excel_note":  null,
+                                 "production_notes":  null,
+                                 "production_progress":  100,
+                                 "production_photos":  null,
+                                 "cancelled_at":  null,
+                                 "cancel_reason":  null,
+                                 "previous_status":  null,
+                                 "customer_name":  "Nguyễn Việt Hoàng",
+                                 "customer_phone":  "0866025123",
+                                 "customer_email":  "hoang@gmail.com",
+                                 "customer_address":  "TP. Thái Bình",
+                                 "quotation":  {
+                                                   "quotation_code":  "VRBG015",
+                                                   "id":  33
+                                               }
+                             },
+                 "products":  [
+                                  {
+                                      "code":  "VRA_VR002",
+                                      "name":  "VÁCH KÍNH CỐ ĐỊNH dùng nhôm Viralwindow VRA55\n - Độ dày: 1,4mm\n - Màu sơn Xám Metalic, bảo hành 20 năm\n - Sử dụng kính Viralwindow sản xuất tại nhà máy kính Hải Long/Việt Nhật VSG hoặc tương đương.",
+                                      "spec":  "VÁCH KÍNH CỐ ĐỊNH dùng nhôm Viralwindow VRA55\n - Độ dày: 1,4mm\n - Màu sơn Xám Metalic, bảo hành 20 năm\n - Sử dụng kính Viralwindow sản xuất tại nhà máy kính Hải Long/Việt Nhật VSG hoặc tương đương.",
+                                      "glass_spec":  "",
+                                      "aluminum_system_name":  "",
+                                      "accessory_name":  "",
+                                      "width":  "1000.00",
+                                      "height":  "1000.00",
+                                      "area_m2":  "1.0000",
+                                      "quantity":  "2.00",
+                                      "unit_price":  "1294000.00",
+                                      "accessory_price":  "0.00",
+                                      "total_price":  "2588000.00"
+                                  },
+                                  {
+                                      "code":  "VRA_VR006",
+                                      "name":  "CỬA SỔ MỞ TRƯỢT 3 CÁNH dùng nhôm Viralwindow VRA64\n - Độ dày: 1,2 - 1,4mm\n - Màu sơn Xám Metalic, bảo hành 20 năm\n - Sử dụng kính Viralwindow sản xuất tại nhà máy kính Hải Long/Việt Nhật VSG hoặc tương đương.\n - Phụ kiện: 2 chốt âm , 6 bánh xe đơn.",
+                                      "spec":  "CỬA SỔ MỞ TRƯỢT 3 CÁNH dùng nhôm Viralwindow VRA64\n - Độ dày: 1,2 - 1,4mm\n - Màu sơn Xám Metalic, bảo hành 20 năm\n - Sử dụng kính Viralwindow sản xuất tại nhà máy kính Hải Long/Việt Nhật VSG hoặc tương đương.\n - Phụ kiện: 2 chốt âm , 6 bánh xe đơn.",
+                                      "glass_spec":  "Kính dán 16.38mm euro grey",
+                                      "aluminum_system_name":  "",
+                                      "accessory_name":  "Viralwindow",
+                                      "width":  "1000.00",
+                                      "height":  "1000.00",
+                                      "area_m2":  "1.0000",
+                                      "quantity":  "2.00",
+                                      "unit_price":  "2306000.00",
+                                      "accessory_price":  "803000.00",
+                                      "total_price":  "6218000.00"
+                                  }
+                              ],
+                 "materials":  [
+                                   {
+                                       "material_type":  "accessory",
+                                       "material_name":  "Gioăng Lông 5*4 màu đen",
+                                       "quantity":  "10.00",
+                                       "unit":  "Cuộn",
+                                       "unit_price":  "0.00",
+                                       "total_cost":  "0.00"
+                                   },
+                                   {
+                                       "material_type":  "accessory",
+                                       "material_name":  "Ke cánh hệ lùa 12006 (31*42.3)",
+                                       "quantity":  "10.00",
+                                       "unit":  "Cái",
+                                       "unit_price":  "0.00",
+                                       "total_cost":  "0.00"
+                                   },
+                                   {
+                                       "material_type":  "aluminum",
+                                       "material_name":  "Chắn nước",
+                                       "quantity":  "2.00",
+                                       "unit":  "cây",
+                                       "unit_price":  "0.00",
+                                       "total_cost":  "0.00"
+                                   },
+                                   {
+                                       "material_type":  "aluminum",
+                                       "material_name":  "Đố T",
+                                       "quantity":  "2.00",
+                                       "unit":  "cây",
+                                       "unit_price":  "0.00",
+                                       "total_cost":  "0.00"
+                                   },
+                                   {
+                                       "material_type":  "aluminum",
+                                       "material_name":  "Ốp chân cánh cửa đi (mới)",
+                                       "quantity":  "3.00",
+                                       "unit":  "cây",
+                                       "unit_price":  "0.00",
+                                       "total_cost":  "0.00"
+                                   },
+                                   {
+                                       "material_type":  "glass",
+                                       "material_name":  "Kính dán 12.38mm Solar control",
+                                       "quantity":  "1.00",
+                                       "unit":  "tấm",
+                                       "unit_price":  "0.00",
+                                       "total_cost":  "0.00"
+                                   },
+                                   {
+                                       "material_type":  "glass",
+                                       "material_name":  "Kính dán an toàn 2 lớp 8.38mm",
+                                       "quantity":  "1.00",
+                                       "unit":  "tấm",
+                                       "unit_price":  "0.00",
+                                       "total_cost":  "0.00"
+                                   },
+                                   {
+                                       "material_type":  "phukien",
+                                       "material_name":  "Bản lề 4D Cmech màu bạc (010)",
+                                       "quantity":  "2.00",
+                                       "unit":  "Chiếc",
+                                       "unit_price":  "0.00",
+                                       "total_cost":  "0.00"
+                                   },
+                                   {
+                                       "material_type":  "phukien",
+                                       "material_name":  "Bản lề 4D Cmech màu đồng (012)",
+                                       "quantity":  "10.00",
+                                       "unit":  "Chiếc",
+                                       "unit_price":  "0.00",
+                                       "total_cost":  "0.00"
+                                   },
+                                   {
+                                       "material_type":  "phukien",
+                                       "material_name":  "Bánh xe đôi cmech",
+                                       "quantity":  "2.00",
+                                       "unit":  "Chiếc",
+                                       "unit_price":  "0.00",
+                                       "total_cost":  "0.00"
+                                   },
+                                   {
+                                       "material_type":  "phukien",
+                                       "material_name":  "Ke cánh hệ lùa 12006 (31*42.3)",
+                                       "quantity":  "10.00",
+                                       "unit":  "Cái",
+                                       "unit_price":  "0.00",
+                                       "total_cost":  "0.00"
+                                   },
+                                   {
+                                       "material_type":  "phukien",
+                                       "material_name":  "Keo trắng trong A500",
+                                       "quantity":  "2.00",
+                                       "unit":  "Chai",
+                                       "unit_price":  "0.00",
+                                       "total_cost":  "0.00"
+                                   }
+                               ],
+                 "financial":  {
+                                   "quotation_total":  8806000,
+                                   "materials_total":  0,
+                                   "net_total":  8806000
+                               },
+                 "timeline":  {
+                                  "created_at":  "2026-02-02T10:43:32.000Z",
+                                  "start_date":  "2026-02-01T17:00:00.000Z",
+                                  "deadline":  "2026-03-01T17:00:00.000Z",
+                                  "quotation_date":  "2026-02-02T10:57:55.000Z",
+                                  "design_date":  null,
+                                  "bom_date":  null,
+                                  "production_date":  null,
+                                  "moved_to_installation_at":  "2026-02-03T07:42:38.000Z",
+                                  "handover_date":  "2026-02-02T17:00:00.000Z"
+                              },
+                 "quotationDetails":  {
+                                          "id":  33,
+                                          "quotation_code":  "VRBG015",
+                                          "total_amount":  "9686600.00",
+                                          "status":  "contract_signed",
+                                          "created_at":  "2026-02-02T10:57:55.000Z",
+                                          "items":  [
+                                                        {
+                                                            "id":  618,
+                                                            "code":  "VRA_VR002",
+                                                            "item_name":  "VÁCH KÍNH CỐ ĐỊNH dùng nhôm Viralwindow VRA55\n - Độ dày: 1,4mm\n - Màu sơn Xám Metalic, bảo hành 20 năm\n - Sử dụng kính Viralwindow sản xuất tại nhà máy kính Hải Long/Việt Nhật VSG hoặc tương đương.",
+                                                            "spec":  "VÁCH KÍNH CỐ ĐỊNH dùng nhôm Viralwindow VRA55\n - Độ dày: 1,4mm\n - Màu sơn Xám Metalic, bảo hành 20 năm\n - Sử dụng kính Viralwindow sản xuất tại nhà máy kính Hải Long/Việt Nhật VSG hoặc tương đương.",
+                                                            "glass":  null,
+                                                            "aluminum_system":  null,
+                                                            "accessories":  null,
+                                                            "width":  "1000.00",
+                                                            "height":  "1000.00",
+                                                            "area":  "1.0000",
+                                                            "quantity":  "2.00",
+                                                            "unit_price":  "1294000.00",
+                                                            "accessory_price":  "0.00",
+                                                            "total_price":  "2588000.00"
+                                                        },
+                                                        {
+                                                            "id":  619,
+                                                            "code":  "VRA_VR006",
+                                                            "item_name":  "CỬA SỔ MỞ TRƯỢT 3 CÁNH dùng nhôm Viralwindow VRA64\n - Độ dày: 1,2 - 1,4mm\n - Màu sơn Xám Metalic, bảo hành 20 năm\n - Sử dụng kính Viralwindow sản xuất tại nhà máy kính Hải Long/Việt Nhật VSG hoặc tương đương.\n - Phụ kiện: 2 chốt âm , 6 bánh xe đơn.",
+                                                            "spec":  "CỬA SỔ MỞ TRƯỢT 3 CÁNH dùng nhôm Viralwindow VRA64\n - Độ dày: 1,2 - 1,4mm\n - Màu sơn Xám Metalic, bảo hành 20 năm\n - Sử dụng kính Viralwindow sản xuất tại nhà máy kính Hải Long/Việt Nhật VSG hoặc tương đương.\n - Phụ kiện: 2 chốt âm , 6 bánh xe đơn.",
+                                                            "glass":  "Kính dán 16.38mm euro grey",
+                                                            "aluminum_system":  null,
+                                                            "accessories":  "Viralwindow",
+                                                            "width":  "1000.00",
+                                                            "height":  "1000.00",
+                                                            "area":  "1.0000",
+                                                            "quantity":  "2.00",
+                                                            "unit_price":  "2306000.00",
+                                                            "accessory_price":  "803000.00",
+                                                            "total_price":  "6218000.00"
+                                                        }
+                                                    ]
+                                      },
+                 "exportedMaterials":  {
+                                           "aluminum":  [
+                                                            {
+                                                                "id":  8442,
+                                                                "code":  "AL5506",
+                                                                "name":  "Đố T",
+                                                                "quantity_required":  2,
+                                                                "quantity_exported":  2,
+                                                                "unit":  "cây",
+                                                                "unit_price":  0,
+                                                                "total_cost":  0,
+                                                                "status":  "exported",
+                                                                "exported_at":  "2026-02-03T03:40:24.000Z"
+                                                            },
+                                                            {
+                                                                "id":  8443,
+                                                                "code":  "ALUK-EU-C6518",
+                                                                "name":  "Chắn nước",
+                                                                "quantity_required":  2,
+                                                                "quantity_exported":  2,
+                                                                "unit":  "cây",
+                                                                "unit_price":  0,
+                                                                "total_cost":  0,
+                                                                "status":  "exported",
+                                                                "exported_at":  "2026-02-03T03:40:24.000Z"
+                                                            },
+                                                            {
+                                                                "id":  8444,
+                                                                "code":  "C22900",
+                                                                "name":  "Ốp chân cánh cửa đi (mới)",
+                                                                "quantity_required":  3,
+                                                                "quantity_exported":  3,
+                                                                "unit":  "cây",
+                                                                "unit_price":  0,
+                                                                "total_cost":  0,
+                                                                "status":  "exported",
+                                                                "exported_at":  "2026-02-03T03:40:24.000Z"
+                                                            }
+                                                        ],
+                                           "glass":  [
+                                                         {
+                                                             "id":  8445,
+                                                             "code":  "K22",
+                                                             "name":  "Kính dán 12.38mm Solar control",
+                                                             "quantity_required":  1,
+                                                             "quantity_exported":  1,
+                                                             "unit":  "tấm",
+                                                             "unit_price":  0,
+                                                             "total_cost":  0,
+                                                             "status":  "exported",
+                                                             "exported_at":  "2026-02-03T03:40:24.000Z"
+                                                         },
+                                                         {
+                                                             "id":  8446,
+                                                             "code":  "K-002",
+                                                             "name":  "Kính dán an toàn 2 lớp 8.38mm",
+                                                             "quantity_required":  1,
+                                                             "quantity_exported":  1,
+                                                             "unit":  "tấm",
+                                                             "unit_price":  0,
+                                                             "total_cost":  0,
+                                                             "status":  "exported",
+                                                             "exported_at":  "2026-02-03T03:40:24.000Z"
+                                                         }
+                                                     ],
+                                           "accessory":  [
+                                                             {
+                                                                 "id":  8448,
+                                                                 "code":  "GL-5x4-D",
+                                                                 "name":  "Gioăng Lông 5*4 màu đen",
+                                                                 "quantity_required":  10,
+                                                                 "quantity_exported":  10,
+                                                                 "unit":  "Cuộn",
+                                                                 "unit_price":  0,
+                                                                 "total_cost":  0,
+                                                                 "status":  "exported",
+                                                                 "exported_at":  "2026-02-03T03:40:24.000Z"
+                                                             },
+                                                             {
+                                                                 "id":  8447,
+                                                                 "code":  "KE-CL12006",
+                                                                 "name":  "Ke cánh hệ lùa 12006 (31*42.3)",
+                                                                 "quantity_required":  10,
+                                                                 "quantity_exported":  10,
+                                                                 "unit":  "Cái",
+                                                                 "unit_price":  0,
+                                                                 "total_cost":  0,
+                                                                 "status":  "exported",
+                                                                 "exported_at":  "2026-02-03T03:40:24.000Z"
+                                                             },
+                                                             {
+                                                                 "id":  8449,
+                                                                 "code":  "CM-BL4D-B",
+                                                                 "name":  "Bản lề 4D Cmech màu bạc (010)",
+                                                                 "quantity_required":  2,
+                                                                 "quantity_exported":  2,
+                                                                 "unit":  "Chiếc",
+                                                                 "unit_price":  0,
+                                                                 "total_cost":  0,
+                                                                 "status":  "exported",
+                                                                 "exported_at":  "2026-02-03T03:40:24.000Z"
+                                                             },
+                                                             {
+                                                                 "id":  8450,
+                                                                 "code":  "CM-BL4D-D",
+                                                                 "name":  "Bản lề 4D Cmech màu đồng (012)",
+                                                                 "quantity_required":  10,
+                                                                 "quantity_exported":  10,
+                                                                 "unit":  "Chiếc",
+                                                                 "unit_price":  0,
+                                                                 "total_cost":  0,
+                                                                 "status":  "exported",
+                                                                 "exported_at":  "2026-02-03T03:40:24.000Z"
+                                                             },
+                                                             {
+                                                                 "id":  8451,
+                                                                 "code":  "CM-BXD",
+                                                                 "name":  "Bánh xe đôi cmech",
+                                                                 "quantity_required":  2,
+                                                                 "quantity_exported":  2,
+                                                                 "unit":  "Chiếc",
+                                                                 "unit_price":  0,
+                                                                 "total_cost":  0,
+                                                                 "status":  "exported",
+                                                                 "exported_at":  "2026-02-03T03:40:24.000Z"
+                                                             },
+                                                             {
+                                                                 "id":  8452,
+                                                                 "code":  "KE-CL12006",
+                                                                 "name":  "Ke cánh hệ lùa 12006 (31*42.3)",
+                                                                 "quantity_required":  10,
+                                                                 "quantity_exported":  10,
+                                                                 "unit":  "Cái",
+                                                                 "unit_price":  0,
+                                                                 "total_cost":  0,
+                                                                 "status":  "exported",
+                                                                 "exported_at":  "2026-02-03T03:40:24.000Z"
+                                                             },
+                                                             {
+                                                                 "id":  8453,
+                                                                 "code":  "KEO-A500TT",
+                                                                 "name":  "Keo trắng trong A500",
+                                                                 "quantity_required":  2,
+                                                                 "quantity_exported":  2,
+                                                                 "unit":  "Chai",
+                                                                 "unit_price":  0,
+                                                                 "total_cost":  0,
+                                                                 "status":  "exported",
+                                                                 "exported_at":  "2026-02-03T03:40:24.000Z"
+                                                             }
+                                                         ],
+                                           "auxiliary":  [
+
+                                                         ]
+                                       },
+                 "inventoryStatus":  [
+
+                                     ]
+             }
+}
