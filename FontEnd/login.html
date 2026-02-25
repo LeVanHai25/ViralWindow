@@ -1,0 +1,402 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/modal-system.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập - Hệ thống quản lý cửa nhôm kính</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #a78bfa 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .left-panel::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
+            animation: pulse 15s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 0.3;
+            }
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .feature-item {
+            transition: all 0.3s ease;
+        }
+
+        .feature-item:hover {
+            transform: translateX(5px);
+        }
+
+        .right-panel {
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+
+        .login-form-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-field {
+            transition: all 0.3s ease;
+            border: 2px solid #e5e7eb;
+        }
+
+        .input-field:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+        }
+
+        .icon-container {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+    <script src="js/config.js"></script>
+</head>
+
+<body class="flex min-h-screen">
+    <!-- Left Panel - Branding -->
+    <div class="left-panel hidden lg:flex lg:w-3/5 flex-col justify-center items-center p-12 text-white relative">
+        <div class="z-10 text-center max-w-xl">
+            <!-- Logo Icon / Dynamic Company Logo -->
+            <div class="icon-container w-24 h-24 rounded-2xl flex items-center justify-center mx-auto mb-8"
+                id="logoContainer">
+                <!-- Company Logo (hidden by default, shown when loaded) -->
+                <img id="companyLogoLeft" src="" alt="Logo" class="w-20 h-20 object-contain hidden rounded-xl">
+                <!-- Default Icon (shown when no logo) -->
+                <svg id="defaultLogoIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" class="w-12 h-12">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+            </div>
+
+            <h1 class="text-5xl font-bold mb-4" id="companyNameLeft">VIRALWINDOW</h1>
+            <p class="text-xl opacity-90 mb-12">Hệ thống quản lý doanh nghiệp cửa nhôm kính<br>thông minh, hiện đại và
+                chuyên nghiệp</p>
+
+            <!-- Features -->
+            <div class="space-y-4">
+                <div class="feature-item glass-card rounded-xl p-4 flex items-center gap-4">
+                    <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                        </svg>
+                    </div>
+                    <span class="text-lg font-medium">Quản lý dự án toàn diện</span>
+                </div>
+
+                <div class="feature-item glass-card rounded-xl p-4 flex items-center gap-4">
+                    <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <span class="text-lg font-medium">Báo giá & Thiết kế thông minh</span>
+                </div>
+
+                <div class="feature-item glass-card rounded-xl p-4 flex items-center gap-4">
+                    <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                    </div>
+                    <span class="text-lg font-medium">Quản lý Kho & Sản xuất</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Panel - Login Form -->
+    <div class="right-panel w-full lg:w-2/5 flex items-center justify-center p-6 lg:p-12">
+        <div class="login-form-container w-full max-w-md p-8">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">Chào mừng trở lại!</h2>
+                <p class="text-gray-500">Đăng nhập để tiếp tục quản lý công việc</p>
+            </div>
+
+            <!-- Error/Success Messages -->
+            <div id="alertMessage" class="hidden mb-4 p-4 rounded-lg"></div>
+
+            <!-- Login Form -->
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-5">
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                        Email
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" class="w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                        </span>
+                        <input type="email" id="email" name="email" required placeholder="Nhập email của bạn"
+                            class="input-field w-full pl-12 pr-4 py-3 rounded-xl focus:outline-none">
+                    </div>
+                    <p id="emailError" class="text-red-500 text-sm mt-1 hidden"></p>
+                </div>
+
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                        Mật khẩu
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" class="w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                        </span>
+                        <input type="password" id="password" name="password" required placeholder="Nhập mật khẩu"
+                            class="input-field w-full pl-12 pr-12 py-3 rounded-xl focus:outline-none">
+                        <button type="button" onclick="togglePasswordVisibility()"
+                            class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                            <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" class="w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <p id="passwordError" class="text-red-500 text-sm mt-1 hidden"></p>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" id="rememberMe"
+                            class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                        <span class="ml-2 text-sm text-gray-600">Ghi nhớ đăng nhập</span>
+                    </label>
+                    <a href="forgot-password.html" class="text-sm text-blue-600 hover:text-blue-800 font-medium">Quên
+                        mật khẩu?</a>
+                </div>
+
+                <button type="submit" id="loginButton"
+                    class="btn-primary w-full text-white py-3.5 rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    <span id="loginButtonText">Đăng nhập</span>
+                    <span id="loginButtonLoader" class="hidden">
+                        <svg class="animate-spin h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            </circle>
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                            </path>
+                        </svg>
+                    </span>
+                </button>
+            </form>
+
+            <div class="mt-8 text-center">
+                <p class="text-gray-600">
+                    Chưa có tài khoản?
+                    <a href="register.html" class="text-blue-600 font-semibold hover:text-blue-800">Đăng ký ngay</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.API_BASE || 'http://localhost:3001/api';
+
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = document.getElementById('eyeIcon');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                `;
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                `;
+            }
+        }
+
+        // Load company name and logo
+        async function loadCompanyName() {
+            try {
+                const response = await fetch(`${API_BASE}/company-settings`);
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    // Update company name
+                    if (result.data.company_name) {
+                        document.getElementById('companyNameLeft').textContent = result.data.company_name.toUpperCase();
+                    }
+
+                    // Update company logo
+                    if (result.data.logo_path) {
+                        const logoImg = document.getElementById('companyLogoLeft');
+                        const defaultIcon = document.getElementById('defaultLogoIcon');
+
+                        if (logoImg && defaultIcon) {
+                            logoImg.src = result.data.logo_path;
+                            logoImg.classList.remove('hidden');
+                            defaultIcon.classList.add('hidden');
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Lỗi load company settings:', error);
+            }
+        }
+
+        function showAlert(message, type = 'error') {
+            const alertDiv = document.getElementById('alertMessage');
+            alertDiv.className = `mb-4 p-4 rounded-xl ${type === 'error' ? 'bg-red-50 text-red-800 border border-red-200' : 'bg-green-50 text-green-800 border border-green-200'}`;
+            alertDiv.textContent = message;
+            alertDiv.classList.remove('hidden');
+
+            setTimeout(() => {
+                alertDiv.classList.add('hidden');
+            }, 5000);
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
+
+            // Hide previous errors
+            document.getElementById('emailError').classList.add('hidden');
+            document.getElementById('passwordError').classList.add('hidden');
+
+            // Show loading
+            const loginButton = document.getElementById('loginButton');
+            const loginButtonText = document.getElementById('loginButtonText');
+            const loginButtonLoader = document.getElementById('loginButtonLoader');
+
+            loginButton.disabled = true;
+            loginButtonText.classList.add('hidden');
+            loginButtonLoader.classList.remove('hidden');
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password, remember_me: rememberMe })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Use AuthHelper to save auth data with Remember Me support
+                    if (window.AuthHelper) {
+                        window.AuthHelper.saveAuth(result.data.token, result.data.user, rememberMe);
+                    } else {
+                        // Fallback if AuthHelper not loaded
+                        sessionStorage.setItem('token', result.data.token);
+                        sessionStorage.setItem('user', JSON.stringify(result.data.user));
+                    }
+
+                    showAlert('Đăng nhập thành công!', 'success');
+
+                    // Redirect after 1 second
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+                } else {
+                    showAlert(result.message || 'Email hoặc mật khẩu không đúng');
+                    loginButton.disabled = false;
+                    loginButtonText.classList.remove('hidden');
+                    loginButtonLoader.classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Lỗi:', error);
+                showAlert('Lỗi kết nối server. Vui lòng thử lại sau.');
+                loginButton.disabled = false;
+                loginButtonText.classList.remove('hidden');
+                loginButtonLoader.classList.add('hidden');
+            }
+        }
+
+        // Check if already logged in and load company name
+        document.addEventListener('DOMContentLoaded', function () {
+            // Use AuthHelper to check authentication (checks both storages)
+            const isLoggedIn = window.AuthHelper ? window.AuthHelper.isAuthenticated() : !!sessionStorage.getItem('token');
+            if (isLoggedIn) {
+                window.location.href = 'index.html';
+            }
+            loadCompanyName();
+
+            // Restore Remember Me checkbox preference
+            const rememberMePreference = localStorage.getItem('rememberMe');
+            if (rememberMePreference === 'true') {
+                document.getElementById('rememberMe').checked = true;
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1583 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <script src="js/modal-system.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/user-settings.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh mục sản phẩm - ViralWindow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/products-data.js"></script>
+    <link rel="stylesheet" href="css/sidebar-enterprise.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: #f1f5f9;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* Tabs */
+        .tabs-container {
+            display: flex;
+            gap: 4px;
+            background: #e2e8f0;
+            padding: 4px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            background: transparent;
+            border: none;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #4f46e5;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-btn .count {
+            background: #e0e7ff;
+            color: #4338ca;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+
+        .tab-btn.active .count {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 250px;
+            padding: 10px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #818cf8;
+            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
+        }
+
+        .filter-select {
+            padding: 10px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            min-width: 150px;
+        }
+
+        .btn-primary {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 16px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            border-color: #818cf8;
+        }
+
+        .product-card .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 8px;
+        }
+
+        .product-card .code {
+            font-weight: 700;
+            color: #4f46e5;
+            font-size: 16px;
+        }
+
+        .product-card .name {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 12px;
+            line-height: 1.4;
+            font-size: 13px;
+        }
+
+        .product-card .price-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 3px;
+            font-size: 9px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .product-card .price-item {
+            background: #f8fafc;
+            padding: 4px 6px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .product-card .price-item .size {
+            color: #64748b;
+            font-size: 9px;
+        }
+
+        .product-card .price-item .price {
+            color: #059669;
+            font-weight: 600;
+            font-size: 11px;
+        }
+
+        .product-card .price-item.empty {
+            opacity: 0.5;
+        }
+
+        .product-card .actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn-edit {
+            padding: 6px 12px;
+            background: #dbeafe;
+            color: #1e40af;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .btn-delete {
+            padding: 6px 12px;
+            background: #fee2e2;
+            color: #991b1b;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .simple-table {
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .simple-table th {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 14px 16px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .simple-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .simple-table tr:hover td {
+            background: #f8fafc;
+        }
+
+        .simple-table .price {
+            font-weight: 600;
+            color: #059669;
+        }
+
+        /* Groups Table Special Styling */
+        .groups-table thead tr {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important;
+        }
+
+        .groups-table thead th {
+            background: transparent !important;
+            color: white !important;
+            font-weight: 700 !important;
+            padding: 14px 12px !important;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .groups-table tbody tr:hover {
+            background: #ede9fe !important;
+        }
+
+        /* Glass Table Special Styling */
+        .glass-table thead tr {
+            background: linear-gradient(135deg, #0369a1, #0284c7) !important;
+        }
+
+        .glass-table thead th {
+            background: transparent !important;
+            color: white !important;
+            font-weight: 700 !important;
+            padding: 14px 12px !important;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .glass-table tbody tr:hover {
+            background: #e0f2fe !important;
+        }
+
+        /* Materials Table Special Styling */
+        .materials-table thead tr {
+            background: linear-gradient(135deg, #9333ea, #a855f7) !important;
+        }
+
+        .materials-table thead th {
+            background: transparent !important;
+            color: white !important;
+            font-weight: 700 !important;
+            padding: 14px 12px !important;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .materials-table tbody tr:hover {
+            background: #f3e8ff !important;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #818cf8;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn-cancel {
+            padding: 10px 20px;
+            background: #f1f5f9;
+            color: #475569;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-save {
+            padding: 10px 20px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+        }
+    </style>
+    <script src="js/permission-guard.js"></script>
+    <script src="js/config.js"></script>
+</head>
+
+<body>
+    <!-- SIDEBAR -->
+    <div class="sidebar text-white">
+        <!-- Logo -->
+        <a href="settings.html" class="sidebar-logo block">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-blue-400 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0"
+                    id="companyLogoContainer">
+                    <span class="text-xl font-bold">VW</span>
+                </div>
+                <span class="text-xl font-bold" id="companyName">VIRALWINDOW</span>
+            </div>
+        </a>
+
+        <!-- User Profile -->
+        <div class="p-4 border-b border-blue-600 relative">
+            <div class="flex items-center gap-3 cursor-pointer hover:bg-blue-700 rounded-lg p-2">
+                <div class="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center font-semibold overflow-hidden"
+                    id="sidebarUserAvatar">U</div>
+                <div class="flex-1 min-w-0">
+                    <div class="font-medium text-sm" id="sidebarUserName">Lê Văn Hải</div>
+                    <div class="text-xs text-blue-200">Quản lý</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="sidebar-nav">
+            <!-- TỔNG QUAN -->
+            <a href="index.html" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span>TỔNG QUAN</span>
+            </a>
+
+            <!-- THEO DÕI DỰ ÁN -->
+            <a href="production-excel-view.html" class="nav-item">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>THEO DÕI DỰ ÁN</span>
+            </a>
+
+
+
+            <!-- KINH DOANH -->
+            <div class="nav-item has-submenu expanded">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span>KINH DOANH</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu expanded">
+                <a href="sales.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>Khách hàng</span>
+                </a>
+                <a href="projects-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>Dự án</span>
+                </a>
+                <a href="production.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                    <span>Quy trình dự án</span>
+                </a>
+
+                <a href="product-catalog-v2.html" class="submenu-item active">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>Sản phẩm</span>
+                </a>
+                <a href="quotation-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Báo giá</span>
+                </a>
+                <a href="pending-quotations.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <span>Báo giá chờ duyệt</span>
+                </a>
+            </div>
+
+            <!-- KỸ THUẬT -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>KỸ THUẬT</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="design-new.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    <span>Thiết kế & Bóc tách</span>
+                </a>
+                <a href="material-requests.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Yêu cầu vật tư</span>
+                </a>
+                <a href="purchase-request.html" class="submenu-item" data-page="purchase-request">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Tạo phiếu yêu cầu VT</span>
+                </a>
+            </div>
+
+            <!-- KHO & VẬT TƯ -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>KHO & VẬT TƯ</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="inventory.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>Kho vật tư</span>
+                </a>
+                <a href="exported-materials.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                    <span>Xuất vật tư</span>
+                </a>
+            </div>
+
+            <!-- THI CÔNG & NGHIỆM THU -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span>THI CÔNG & NGHIỆM THU</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="product-manufacturing.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <span>Sản xuất sản phẩm</span>
+                </a>
+                <a href="installation.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Lắp đặt</span>
+                </a>
+                <a href="handover.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>Bàn giao</span>
+                </a>
+            </div>
+
+            <!-- TÀI CHÍNH -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>TÀI CHÍNH</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="finance-dashboard.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>Tài chính</span>
+                </a>
+            </div>
+
+            <!-- QUẢN TRỊ -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>QUẢN TRỊ</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="admin-management.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>Phân quyền</span>
+                </a>
+                <a href="settings.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Cài đặt hệ thống</span>
+                </a>
+                <a href="agencies.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>Chi nhánh</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800"> Danh mục sản phẩm</h1>
+                <p class="text-gray-500 text-sm">Quản lý sản phẩm trong công ty</p>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs-container">
+            <button class="tab-btn active" data-tab="products" onclick="switchTab('products')">
+                🚪 Sản phẩm cửa <span class="count" id="countProducts">0</span>
+            </button>
+            <button class="tab-btn" data-tab="groups" onclick="switchTab('groups')">
+                📁 Nhóm SP <span class="count" id="countGroups">0</span>
+            </button>
+            <button class="tab-btn" data-tab="glass" onclick="switchTab('glass')">
+                🪟 Bảng kính <span class="count" id="countGlass">0</span>
+            </button>
+            <button class="tab-btn" data-tab="materials" onclick="switchTab('materials')">
+                🔧 Vật tư <span class="count" id="countMaterials">0</span>
+            </button>
+        </div>
+
+        <!-- Tab 1: Products -->
+        <div class="tab-content active" id="tab-products">
+            <div class="toolbar">
+                <input type="text" class="search-input" id="searchProducts"
+                    placeholder=" 🔍︎ Tìm theo mã, tên sản phẩm..." oninput="filterProducts()">
+                <select class="filter-select" id="sortProducts" onchange="filterProducts()">
+                    <option value="code">Sắp xếp theo Mã</option>
+                    <option value="name">Sắp xếp theo Tên</option>
+                    <option value="price">Sắp xếp theo Giá</option>
+                </select>
+                <button class="btn-primary" onclick="openModal('product')">➕ Thêm sản phẩm</button>
+            </div>
+            <div class="card-grid" id="productsGrid"></div>
+        </div>
+
+        <!-- Tab 2: Groups -->
+        <div class="tab-content" id="tab-groups">
+            <div class="toolbar">
+                <input type="text" class="search-input" id="searchGroups" placeholder="🔍︎ Tìm nhóm sản phẩm..."
+                    oninput="filterGroups()">
+                <select class="filter-select" id="filterGroupCode" onchange="filterGroups()"
+                    style="min-width:150px;background:linear-gradient(135deg,#c4b5fd,#e9d5ff);border:2px solid #8b5cf6;font-weight:600">
+                    <option value="">Tất cả Mã nhóm</option>
+                    <option value="VRA">VRA</option>
+                    <option value="VRE">VRE</option>
+                    <option value="CHOP">CHOP</option>
+                </select>
+                <button class="btn-primary" onclick="openModal('group')">➕ Thêm nhóm</button>
+            </div>
+            <table class="simple-table groups-table">
+                <thead>
+                    <tr>
+                        <th style="width:60px;text-align:center">STT</th>
+                        <th style="width:120px;text-align:center">Mã nhóm</th>
+                        <th style="text-align:left">Tên nhóm</th>
+                        <th style="width:180px;text-align:center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="groupsTable"></tbody>
+            </table>
+        </div>
+
+        <!-- Tab 3: Glass -->
+        <div class="tab-content" id="tab-glass">
+            <div class="toolbar">
+                <input type="text" class="search-input" id="searchGlass" placeholder="🔍︎ Tìm loại kính..."
+                    oninput="filterGlass()">
+                <select class="filter-select" id="sortGlass" onchange="filterGlass()">
+                    <option value="id">Sắp xếp theo STT</option>
+                    <option value="name">Sắp xếp theo Tên</option>
+                    <option value="price">Sắp xếp theo Giá</option>
+                </select>
+                <button class="btn-primary" onclick="openModal('glass')">➕ Thêm kính</button>
+            </div>
+            <table class="simple-table glass-table">
+                <thead>
+                    <tr>
+                        <th style="width:60px;text-align:center">STT</th>
+                        <th style="width:40%;text-align:left">Tên kính</th>
+                        <th style="width:25%;text-align:left">Cấu tạo</th>
+                        <th style="width:120px;text-align:right">Giá (VND)</th>
+                        <th style="width:150px;text-align:center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="glassTable"></tbody>
+            </table>
+        </div>
+
+        <!-- Tab 4: Materials -->
+        <div class="tab-content" id="tab-materials">
+            <div class="toolbar">
+                <input type="text" class="search-input" id="searchMaterials" placeholder="🔍︎ Tìm vật tư..."
+                    oninput="filterMaterials()">
+                <select class="filter-select" id="sortMaterials" onchange="filterMaterials()">
+                    <option value="name">Sắp xếp theo Tên</option>
+                    <option value="price">Sắp xếp theo Giá</option>
+                </select>
+                <button class="btn-primary" onclick="openModal('material')">➕ Thêm vật tư</button>
+            </div>
+            <table class="simple-table materials-table">
+                <thead>
+                    <tr>
+                        <th style="width:60px;text-align:center">STT</th>
+                        <th style="text-align:left">Vật tư</th>
+                        <th style="width:150px;text-align:right">Giá (VND)</th>
+                        <th style="width:180px;text-align:center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="materialsTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 id="modalTitle">Thêm mới</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeModal()">Hủy</button>
+                <button class="btn-save" onclick="saveItem()">Lưu</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // SIZE COLUMNS từ Excel (đầy đủ 51 columns)
+        const SIZE_COLUMNS = [
+            '0-0.25', '0.25-0.5', '0.5-0.75', '0.75-1', '1-1.25', '1.25-1.5', '1.5-1.75', '1.75-2', '2-2.25', '2.25-2.5',
+            '2.5-2.75', '2.75-3', '3-3.25', '3.25-3.5', '3.5-3.75', '3.75-4', '4-4.25', '4.25-4.5', '4.5-4.75', '4.75-5',
+            '5-5.25', '5.25-5.5', '5.5-5.75', '5.75-6', '6-6.25', '6.25-6.5', '6.5-6.75', '6.75-7', '7-7.25', '7.25-7.5',
+            '7.5-7.75', '7.75-8', '8-8.25', '8.25-8.5', '8.5-8.75', '8.75-9', '9-9.25', '9.25-9.5', '9.5-9.75', '9.75-10',
+            '10-10.25', '10.25-10.5', '10.5-10.75', '10.75-11', '11-11.25', '11.25-11.5', '11.5-12', '12-12.5', '12.5-13', '13-14', '14-15'
+        ];
+
+        // NHÓM SẢN PHẨM (Mã nhóm + Tên nhóm) - CHÍNH XÁC TỪ EXCEL
+        let groups = [
+            // VRA - Nhôm hệ VRA
+            { id: 1, code: 'VRA', name: 'Vách kính cố định' },
+            { id: 2, code: 'VRA', name: 'Cửa sổ mở trượt 84' },
+            { id: 3, code: 'VRA', name: 'Cửa sổ mở trượt 64' },
+            { id: 4, code: 'VRA', name: 'Cửa sổ mở hất 50' },
+            { id: 5, code: 'VRA', name: 'Cửa sổ mở quay 50' },
+            { id: 6, code: 'VRA', name: 'Cửa sổ mở lật 50' },
+            { id: 7, code: 'VRA', name: 'Cửa đi mở quay 50' },
+            { id: 8, code: 'VRA', name: 'Cửa sổ mở hất 55' },
+            { id: 9, code: 'VRA', name: 'Cửa sổ mở quay 55' },
+            { id: 10, code: 'VRA', name: 'Cửa sổ mở lật 55' },
+            { id: 11, code: 'VRA', name: 'Cửa đi mở quay 55' },
+            { id: 12, code: 'VRA', name: 'Cửa đi mở trượt 94' },
+            // VRE - Nhôm hệ VRE (Phần 1: các series 50/55/64/94)
+            { id: 13, code: 'VRE', name: 'Cửa sổ mở trượt 64' },
+            { id: 14, code: 'VRE', name: 'Cửa sổ mở hất 50' },
+            { id: 15, code: 'VRE', name: 'Cửa sổ mở quay 50' },
+            { id: 16, code: 'VRE', name: 'Cửa đi mở quay 50' },
+            { id: 17, code: 'VRE', name: 'Cửa sổ mở hất 55' },
+            { id: 18, code: 'VRE', name: 'Cửa sổ mở quay 55' },
+            { id: 19, code: 'VRE', name: 'Cửa đi mở quay 55' },
+            { id: 20, code: 'VRE', name: 'Cửa đi mở trượt 94' },
+            // VRE - Nhôm hệ VRE (Phần 2: series 65/94/120)
+            { id: 21, code: 'VRE', name: 'Vách kính cố định' },
+            { id: 22, code: 'VRE', name: 'Cửa sổ mở quay 65' },
+            { id: 23, code: 'VRE', name: 'Cửa sổ mở hất 65' },
+            { id: 24, code: 'VRE', name: 'Cửa sổ mở quay/ lật 65' },
+            { id: 25, code: 'VRE', name: 'Cửa đi mở quay 65' },
+            { id: 26, code: 'VRE', name: 'Cửa sổ mở trượt 94' },
+            { id: 27, code: 'VRE', name: 'Cửa đi mở trượt 120' },
+            // CHỐP NHÔM CỐ ĐỊNH
+            { id: 28, code: 'CHOP', name: 'Chốp nhôm cố định' },
+        ];
+
+        // ĐẦY ĐỦ SẢN PHẨM với Mã nhóm, Tên nhóm, Tên SP - Load từ products-data.js
+        let products = typeof PRODUCTS_DATA !== 'undefined' ? PRODUCTS_DATA : [];
+
+        // ĐẦY ĐỦ BẢNG KÍNH từ Excel
+        let glasses = [
+            // Kính dán an toàn 2 lớp
+            { id: 1, name: 'Kính dán an toàn 2 lớp 6.38mm', structure: '3+3', price: 0 },
+            { id: 2, name: 'Kính dán an toàn 2 lớp 8.38mm', structure: '4+4', price: 54000 },
+            { id: 3, name: 'Kính dán an toàn 2 lớp 10.38mm', structure: '5+5', price: 101000 },
+            { id: 4, name: 'Kính dán an toàn 2 lớp 12.38mm', structure: '6+6', price: 165000 },
+            { id: 5, name: 'Kính dán an toàn 2 lớp 13.38mm', structure: '5+8', price: 191000 },
+            { id: 6, name: 'Kính dán an toàn 2 lớp 16.38mm', structure: '8+8', price: 275000 },
+            { id: 7, name: 'Kính dán an toàn 2 lớp 20.76mm', structure: '10+10 (Khổ < 1.5 m2)', price: 443000 },
+            { id: 8, name: 'Kính dán an toàn 2 lớp 24.76mm', structure: '12+12 (Khổ < 1.5 m2)', price: 537000 },
+            // Kính dán phim màu trắng sữa
+            { id: 9, name: 'Kính dán an toàn 2 lớp 6.38mm phim màu trắng sữa', structure: '3+3', price: 9000 },
+            { id: 10, name: 'Kính dán an toàn 2 lớp 8.38mm phim màu trắng sữa', structure: '4+4', price: 62000 },
+            { id: 11, name: 'Kính dán an toàn 2 lớp 10.38mm phim màu trắng sữa', structure: '5+5', price: 110000 },
+            { id: 12, name: 'Kính dán an toàn 2 lớp 12.38mm phim màu trắng sữa', structure: '6+6', price: 174000 },
+            // Kính dán phim màu HL
+            { id: 13, name: 'Kính dán an toàn 2 lớp 6.38mm phim màu HL (HL01-HL10)', structure: '3+3', price: 9000 },
+            { id: 14, name: 'Kính dán an toàn 2 lớp 8.38mm phim màu HL (HL01-HL10)', structure: '4+4', price: 62000 },
+            { id: 15, name: 'Kính dán an toàn 2 lớp 10.38mm phim màu HL (HL01-HL10)', structure: '5+5', price: 110000 },
+            { id: 16, name: 'Kính dán an toàn 2 lớp 12.38mm phim màu HL (HL01-HL10)', structure: '6+6', price: 174000 },
+            // Kính dán phun cát
+            { id: 17, name: 'Kính dán an toàn 2 lớp 6.38mm phun cát', structure: '3+3', price: 27000 },
+            { id: 18, name: 'Kính dán an toàn 2 lớp 8.38mm phun cát', structure: '4+4', price: 80000 },
+            { id: 19, name: 'Kính dán an toàn 2 lớp 10.38mm phun cát', structure: '5+5', price: 128000 },
+            { id: 20, name: 'Kính dán an toàn 2 lớp 12.38mm phun cát', structure: '6+6', price: 192000 },
+            // Kính dán xanh đen
+            { id: 21, name: 'Kính dán 8.38mm xanh đen (4+4)', structure: '4+4', price: 195000 },
+            { id: 22, name: 'Kính dán 8.38mm xanh đen (5+3)', structure: '5+3', price: 230000 },
+            { id: 23, name: 'Kính dán 10.38mm xanh đen', structure: '5+5', price: 298000 },
+            { id: 24, name: 'Kính dán 16.38mm xanh đen', structure: '8+8', price: 642000 },
+            { id: 25, name: 'Kính dán 20.76mm xanh đen', structure: '10+10', price: 830000 },
+            { id: 26, name: 'Kính dán 24.76mm xanh đen', structure: '12+12', price: 1010000 },
+            // Kính dán xanh lá
+            { id: 27, name: 'Kính dán 8.38mm xanh lá', structure: '4+4', price: 189000 },
+            { id: 28, name: 'Kính dán 8.38mm xanh lá', structure: '5+3', price: 189000 },
+            { id: 29, name: 'Kính dán 10.38mm xanh lá', structure: '5+5', price: 264000 },
+            { id: 30, name: 'Kính dán 12.38mm xanh lá', structure: '6+6', price: 358000 },
+            { id: 31, name: 'Kính dán 16.38mm xanh lá', structure: '8+8', price: 613000 },
+            { id: 32, name: 'Kính dán 20.76mm xanh lá', structure: '10+10', price: 880000 },
+            { id: 33, name: 'Kính dán 24.76mm xanh lá', structure: '12+12', price: 1071000 },
+            // Kính dán euro grey
+            { id: 34, name: 'Kính dán 6.38mm film màu grey', structure: '3+3', price: 0 },
+            { id: 35, name: 'Kính dán 8.38mm film màu grey', structure: '4+4', price: 211000 },
+            { id: 36, name: 'Kính dán 10.38mm euro grey', structure: '5+5', price: 277000 },
+            { id: 37, name: 'Kính dán 12.38mm euro grey', structure: '6+6', price: 371000 },
+            { id: 38, name: 'Kính dán 16.38mm euro grey', structure: '8+8', price: 558000 },
+            { id: 39, name: 'Kính dán 20.76mm euro grey', structure: '10+10', price: 793000 },
+            // Kính dán Solar control
+            { id: 40, name: 'Kính dán 6,38mm Solar control', structure: '3+3', price: 0 },
+            { id: 41, name: 'Kính dán 8,38mm Solar control', structure: '5+3', price: 336000 },
+            { id: 42, name: 'Kính dán 10,38mm Solar control', structure: '5+5', price: 402000 },
+            { id: 43, name: 'Kính dán 12,38mm Solar control', structure: '6+6', price: 485000 },
+            { id: 44, name: 'Kính dán 16,38mm Solar control', structure: '8+8', price: 716000 },
+            { id: 45, name: 'Kính dán 20,76mm Solar control', structure: '10+10 (Khổ < 1.5 m2)', price: 952000 },
+            { id: 46, name: 'Kính dán 24,76mm Solar control', structure: '12+12 (Khổ < 1.5 m2)', price: 1129000 },
+            // Kính dán PQ
+            { id: 47, name: 'Kính dán 8,38mm PQ (M1)', structure: '5+3', price: 303000 },
+            { id: 48, name: 'Kính dán 8,38mm PQ (M2)', structure: '5+3', price: 342000 },
+            { id: 49, name: 'Kính dán 8,38mm PQ (M4)', structure: '5+3', price: 349000 },
+            { id: 50, name: 'Kính dán 8,38mm PQ (M6)', structure: '5+3', price: 333000 },
+            { id: 51, name: 'Kính dán 8,38mm PQ (M10)', structure: '5+3', price: 320000 },
+            { id: 52, name: 'Kính dán 10,38mm PQ (M1)', structure: '5+5', price: 370000 },
+            { id: 53, name: 'Kính dán 10,38mm PQ (M4)', structure: '5+5', price: 414000 },
+            { id: 54, name: 'Kính dán 10,38mm PQ (M6)', structure: '5+5', price: 398000 },
+            { id: 55, name: 'Kính dán 10,38mm PQ (M10)', structure: '5+5', price: 385000 },
+            { id: 56, name: 'Kính dán 10,38mm PQ (M3)', structure: '6+4', price: 392000 },
+            { id: 57, name: 'Kính dán 12,38mm PQ (M1)', structure: '6+6', price: 511000 },
+            { id: 58, name: 'Kính dán 12,38mm PQ (M4)', structure: '6+6', price: 530000 },
+            { id: 59, name: 'Kính dán 12,38mm PQ (M6)', structure: '6+6', price: 539000 },
+            { id: 60, name: 'Kính dán 12,38mm PQ (M9)', structure: '6+6', price: 524000 },
+            { id: 61, name: 'Kính dán 12,38mm PQ (M3)', structure: '6+6', price: 0 },
+            { id: 62, name: 'Kính dán 16,38mm PQ (M1)', structure: '8+8', price: 755000 },
+            { id: 63, name: 'Kính dán 16,38mm PQ (M6)', structure: '8+8', price: 792000 },
+            // Kính dán cản nhiệt
+            { id: 64, name: 'Kính dán 8,38mm cản nhiệt (N01)', structure: '4+4', price: 0 },
+            { id: 65, name: 'Kính dán 8,38mm cản nhiệt (N01, N04)', structure: '5+3', price: 407000 },
+            { id: 66, name: 'Kính dán 10,38mm cản nhiệt (N01, N04)', structure: '5+5', price: 476000 },
+            { id: 67, name: 'Kính dán 10,38mm cản nhiệt (N05, N07)', structure: '6+4', price: 638000 },
+            { id: 68, name: 'Kính dán 10,38mm cản nhiệt (N06, N08)', structure: '6+4', price: 651000 },
+            { id: 69, name: 'Kính dán 12,38mm cản nhiệt (N01, N04)', structure: '6+6', price: 616000 },
+            { id: 70, name: 'Kính dán 12,38mm cản nhiệt (N05, N07)', structure: '6+6', price: 707000 },
+            { id: 71, name: 'Kính dán 12,38mm cản nhiệt (N06, N08)', structure: '6+6', price: 720000 },
+            { id: 72, name: 'Kính dán 12,38mm cản nhiệt (N03)', structure: '6+6', price: 0 },
+            { id: 73, name: 'Kính dán 16,38mm cản nhiệt (N01)', structure: '8+8', price: 923000 },
+            { id: 74, name: 'Kính dán 16,38mm cản nhiệt (N05)', structure: '8+8', price: 1026000 },
+            // Kính cường lực trắng
+            { id: 75, name: 'Kính cường lực 4mm', structure: '4', price: 0 },
+            { id: 76, name: 'Kính cường lực 5mm', structure: '5', price: 10000 },
+            { id: 77, name: 'Kính cường lực 6mm', structure: '6', price: 41000 },
+            { id: 78, name: 'Kính cường lực 8mm', structure: '8', price: 67000 },
+            { id: 79, name: 'Kính cường lực 10mm', structure: '10', price: 113000 },
+            { id: 80, name: 'Kính cường lực 12mm < 2438x3658', structure: '12', price: 161000 },
+            { id: 81, name: '2438x3658 < CL 12mm < 2700x4876', structure: '12', price: 249000 },
+            { id: 82, name: '2700x4876 < CL 12mm < 5600x3300', structure: '12', price: 576000 },
+            { id: 83, name: 'Kính cường lực 15mm < 2438x3658', structure: '15', price: 625000 },
+            { id: 84, name: '2438x3658 < CL 15mm < 3300x7000', structure: '15', price: 890000 },
+            { id: 85, name: 'Kính cường lực 19mm', structure: '19', price: 1497000 },
+            // Kính cường lực Solar Control
+            { id: 86, name: 'Kính cường lực 4mm Solar Control', structure: '4', price: 165000 },
+            { id: 87, name: 'Kính cường lực 5mm Solar Control', structure: '5', price: 213000 },
+            { id: 88, name: 'Kính cường lực 6mm Solar Control', structure: '6', price: 251000 },
+            { id: 89, name: 'Kính cường lực 8mm Solar Control', structure: '8', price: 390000 },
+            { id: 90, name: 'Kính cường lực 10mm Solar Control', structure: '10', price: 490000 },
+            { id: 91, name: 'Kính cường lực 12mm Solar Control', structure: '12', price: 595000 },
+            // Kính cường lực xanh đen
+            { id: 92, name: 'Kính cường lực 4mm Xanh đen', structure: '4', price: 101000 },
+            { id: 93, name: 'Kính cường lực 5mm Xanh đen', structure: '5', price: 152000 },
+            { id: 94, name: 'Kính cường lực 8mm Xanh đen (KT≤ 3658mm x 2438mm)', structure: '8', price: 381000 },
+            { id: 95, name: 'Kính cường lực 10mm Xanh đen (KT ≤ 3658mm x 2438mm)', structure: '10', price: 566000 },
+            { id: 96, name: 'Kính cường lực 12mm Xanh đen (KT ≤ 3658mm x 2438mm)', structure: '12', price: 0 },
+            // Kính cường lực xanh lá
+            { id: 97, name: 'Kính cường lực 4mm xanh lá', structure: '4', price: 59000 },
+            { id: 98, name: 'Kính cường lực 5mm xanh lá', structure: '5', price: 94000 },
+            { id: 99, name: 'Kính cường lực 6mm xanh lá', structure: '6', price: 138000 },
+            { id: 100, name: 'Kính cường lực 8mm xanh lá (KT≤ 3658mm x 2438mm)', structure: '8', price: 267000 },
+            { id: 101, name: 'Kính cường lực 10mm xanh lá (KT ≤ 3658mm x 2438mm)', structure: '10', price: 389000 },
+            { id: 102, name: 'Kính cường lực 12mm xanh lá (KT ≤ 3658mm x 2438mm)', structure: '12', price: 482000 },
+            { id: 103, name: 'Kính cường lực 12mm xanh lá (KT ≤ 5600mm x 3210mm)', structure: '12', price: 699000 },
+            // Kính cường lực euro grey
+            { id: 104, name: 'Kính cường lực 5mm euro grey', structure: '5', price: 125000 },
+            { id: 105, name: 'Kính cường lực 6mm euro grey', structure: '6', price: 181000 },
+            { id: 106, name: 'Kính cường lực 8mm euro grey', structure: '8', price: 352000 },
+            { id: 107, name: 'Kính cường lực 10mm euro grey', structure: '10', price: 471000 },
+            // Cường lực dán
+            { id: 108, name: 'Cường lực dán 9,14mm', structure: 'CL 4mm trắng + 1,14mm PVB trắng + CL 4mm trắng', price: 359000 },
+            { id: 109, name: 'Cường lực dán 11,14mm', structure: 'CL 5mm trắng + 1,14mm PVB trắng + CL 5mm trắng', price: 395000 },
+            { id: 110, name: 'Cường lực dán 11,52mm', structure: 'CL 5mm trắng + 1,52mm PVB trắng + CL 5mm trắng', price: 446000 },
+            { id: 111, name: 'Cường lực dán 13,14mm', structure: 'CL 6mm trắng + 1,14mm PVB trắng + CL 6mm trắng', price: 444000 },
+            { id: 112, name: 'Cường lực dán 15,52mm', structure: 'CL 6mm trắng + 1,52mm PVB trắng + CL 8mm trắng', price: 554000 },
+            { id: 113, name: 'Cường lực dán 17,52mm', structure: 'CL 8mm trắng + 1,52mm PVB trắng + CL 8mm trắng', price: 632000 },
+            { id: 114, name: 'Cường lực dán 19,52mm', structure: 'CL 8mm trắng + 1,52mm PVB trắng + CL 10mm trắng', price: 706000 },
+            { id: 115, name: 'Cường lực dán 21,52mm', structure: 'CL 10mm trắng + 1,52mm PVB trắng + CL 10mm trắng', price: 757000 },
+            { id: 116, name: 'Cường lực dán 23,52mm', structure: 'CL 10mm trắng + 1,52mm PVB trắng + CL 12mm trắng', price: 824000 },
+            { id: 117, name: 'Cường lực dán 25,52mm', structure: 'CL 12mm trắng + 1,52mm PVB trắng + CL 12mm trắng', price: 883000 },
+            // Kính hộp Temper trắng trong
+            { id: 118, name: 'Kính hộp 14mm Temper trắng trong', structure: '4mm trắng CL + 6CK + 4mm trắng CL', price: 272000 },
+            { id: 119, name: 'Kính hộp 17mm Temper trắng trong', structure: '4mm trắng CL + 9CK + 4mm trắng CL', price: 286000 },
+            { id: 120, name: 'Kính hộp 20mm Temper trắng trong', structure: '4mm trắng CL + 12CK + 4mm trắng CL', price: 310000 },
+            { id: 121, name: 'Kính hộp 23mm Temper trắng trong', structure: '4mm trắng CL + 15CK + 4mm trắng CL', price: 361000 },
+            { id: 122, name: 'Kính hộp 16mm Temper trắng trong', structure: '5mm trắng CL + 6CK + 5mm trắng CL', price: 314000 },
+            { id: 123, name: 'Kính hộp 19mm Temper trắng trong', structure: '5mm trắng CL + 9CK + 5mm trắng CL', price: 328000 },
+            { id: 124, name: 'Kính hộp 22mm Temper trắng trong', structure: '5mm trắng CL + 12CK + 5mm trắng CL', price: 352000 },
+            { id: 125, name: 'Kính hộp 25mm Temper trắng trong', structure: '5mm trắng CL + 15CK + 5mm trắng CL', price: 403000 },
+            { id: 126, name: 'Kính hộp 18mm Temper trắng trong', structure: '6mm trắng CL + 6CK + 6mm trắng CL', price: 356000 },
+            { id: 127, name: 'Kính hộp 21mm Temper trắng trong', structure: '6mm trắng CL + 9CK + 6mm trắng CL', price: 371000 },
+            { id: 128, name: 'Kính hộp 24mm Temper trắng trong', structure: '6mm trắng CL + 12CK + 6mm trắng CL', price: 394000 },
+            { id: 129, name: 'Kính hộp 27mm Temper trắng trong', structure: '6mm trắng CL + 15CK + 6mm trắng CL', price: 445000 },
+            { id: 130, name: 'Kính hộp 22mm Temper trắng trong', structure: '8mm trắng CL + 6CK + 8mm trắng CL', price: 474000 },
+            { id: 131, name: 'Kính hộp 25mm Temper trắng trong', structure: '8mm trắng CL + 9CK + 8mm trắng CL', price: 487000 },
+            { id: 132, name: 'Kính hộp 28mm Temper trắng trong', structure: '8mm trắng CL + 12CK + 8mm trắng CL', price: 510000 },
+            { id: 133, name: 'Kính hộp 31mm Temper trắng trong', structure: '8mm trắng CL + 15CK + 8mm trắng CL', price: 563000 },
+            // Kính hộp Temper + dán trắng
+            { id: 134, name: 'Kính hộp 17.38mm Temper trắng trong', structure: '5mm trắng CL + 6CK + 6.38mm trắng', price: 379000 },
+            { id: 135, name: 'Kính hộp 20.38mm Temper trắng trong', structure: '5mm trắng CL + 9CK + 6.38mm trắng', price: 394000 },
+            { id: 136, name: 'Kính hộp 23.38mm Temper trắng trong', structure: '5mm trắng CL + 12CK + 6.38mm trắng', price: 417000 },
+            { id: 137, name: 'Kính hộp 26.38mm Temper trắng trong', structure: '5mm trắng CL + 15CK + 6.38mm trắng', price: 468000 },
+            { id: 138, name: 'Kính hộp 19.38mm Temper trắng trong', structure: '5mm trắng CL + 6CK + 8.38mm trắng', price: 415000 },
+            { id: 139, name: 'Kính hộp 22.38mm Temper trắng trong', structure: '5mm trắng CL + 9CK + 8.38mm trắng', price: 429000 },
+            { id: 140, name: 'Kính hộp 25.38mm Temper trắng trong', structure: '5mm trắng CL + 12CK + 8.38mm trắng', price: 453000 },
+            { id: 141, name: 'Kính hộp 28.38mm Temper trắng trong', structure: '5mm trắng CL + 15CK + 8.38mm trắng', price: 504000 },
+            { id: 142, name: 'Kính hộp 18.38mm Temper trắng trong', structure: '6mm trắng CL + 6CK + 6.38mm trắng', price: 399000 },
+            { id: 143, name: 'Kính hộp 21.38mm Temper trắng trong', structure: '6mm trắng CL + 9CK + 6.38mm trắng', price: 414000 },
+            { id: 144, name: 'Kính hộp 24.38mm Temper trắng trong', structure: '6mm trắng CL + 12CK + 6.38mm trắng', price: 437000 },
+            { id: 145, name: 'Kính hộp 27.38mm Temper trắng trong', structure: '6mm trắng CL + 15CK + 6.38mm trắng', price: 488000 },
+            { id: 146, name: 'Kính hộp 20.38mm Temper trắng trong', structure: '6mm trắng CL + 6CK + 8.38mm trắng', price: 445000 },
+            { id: 147, name: 'Kính hộp 23.38mm Temper trắng trong', structure: '6mm trắng CL + 9CK + 8.38mm trắng', price: 459000 },
+            { id: 148, name: 'Kính hộp 26.38mm Temper trắng trong', structure: '6mm trắng CL + 12CK + 8.38mm trắng', price: 483000 },
+            { id: 149, name: 'Kính hộp 29.38mm Temper trắng trong', structure: '6mm trắng CL + 15CK + 8.38mm trắng', price: 534000 },
+            // Kính hộp dán + dán trắng
+            { id: 150, name: 'Kính hộp 18.76mm trắng trong', structure: '6.38mm trắng + 6CK + 6.38mm trắng', price: 448000 },
+            { id: 151, name: 'Kính hộp 21.76mm trắng trong', structure: '6.38mm trắng + 9CK + 6.38mm trắng', price: 462000 },
+            { id: 152, name: 'Kính hộp 24.76mm trắng trong', structure: '6.38mm trắng + 12CK + 6.38mm trắng', price: 485000 },
+            { id: 153, name: 'Kính hộp 27.76mm trắng trong', structure: '6.38mm trắng + 15CK + 6.38mm trắng', price: 537000 },
+            { id: 154, name: 'Kính hộp 20.76mm trắng trong', structure: '6.38mm trắng + 6CK + 8.38mm trắng', price: 483000 },
+            { id: 155, name: 'Kính hộp 23.76mm trắng trong', structure: '6.38mm trắng + 9CK + 8.38mm trắng', price: 497000 },
+            { id: 156, name: 'Kính hộp 26.76mm trắng trong', structure: '6.38mm trắng + 12CK + 8.38mm trắng', price: 520000 },
+            { id: 157, name: 'Kính hộp 29.76mm trắng trong', structure: '6.38mm trắng + 15CK + 8.38mm trắng', price: 571000 },
+            { id: 158, name: 'Kính hộp 22.76mm trắng trong', structure: '8.38mm trắng + 6CK + 8.38mm trắng', price: 520000 },
+            { id: 159, name: 'Kính hộp 25.76mm trắng trong', structure: '8.38mm trắng + 9CK + 8.38mm trắng', price: 534000 },
+            { id: 160, name: 'Kính hộp 28.76mm trắng trong', structure: '8.38mm trắng + 12CK + 8.38mm trắng', price: 558000 },
+            { id: 161, name: 'Kính hộp 31.76mm trắng trong', structure: '8.38mm trắng + 15CK + 8.38mm trắng', price: 609000 },
+            // Kính hộp phản quang M1
+            { id: 162, name: 'Kính hộp 17.38mm Phản quang M1 Temper', structure: '5mm CLPQ1 + 6CK + 6.38mm trắng', price: 628000 },
+            { id: 163, name: 'Kính hộp 20.38mm Phản quang M1 Temper', structure: '5mm CLPQ1 + 9CK + 6.38mm trắng', price: 642000 },
+            { id: 164, name: 'Kính hộp 23.38mm Phản quang M1 Temper', structure: '5mm CLPQ1 + 12CK + 6.38mm trắng', price: 666000 },
+            { id: 165, name: 'Kính hộp 26.38mm Phản quang M1 Temper', structure: '5mm CLPQ1 + 15CK + 6.38mm trắng', price: 717000 },
+            { id: 166, name: 'Kính hộp 19.38mm Phản quang M1', structure: '5mm CL trắng + 6CK + 8.38mm Phản quang M1', price: 680000 },
+            { id: 167, name: 'Kính hộp 22.38mm Phản quang M1', structure: '5mm CL trắng + 9CK + 8.38mm Phản quang M1', price: 694000 },
+            { id: 168, name: 'Kính hộp 25.38mm Phản quang M1', structure: '5mm CL trắng + 12CK + 8.38mm Phản quang M1', price: 718000 },
+            { id: 169, name: 'Kính hộp 28.38mm Phản quang M1', structure: '5mm CL trắng + 15CK + 8.38mm Phản quang M1', price: 770000 },
+            { id: 170, name: 'Kính hộp 16mm Temper Phản quang M1', structure: '5mm CL trắng + 6CK + 5mm CL phản quang M1', price: 579000 },
+            { id: 171, name: 'Kính hộp 19mm Temper Phản quang M1', structure: '5mm CL trắng + 9CK + 5mm CL phản quang M1', price: 592000 },
+            { id: 172, name: 'Kính hộp 22mm Temper Phản quang M1', structure: '5mm CL trắng + 12CK + 5mm CL phản quang M1', price: 615000 },
+            { id: 173, name: 'Kính hộp 25mm Temper Phản quang M1', structure: '5mm CL trắng + 15CK + 5mm CL phản quang M1', price: 667000 },
+            // Kính hộp phản quang M2
+            { id: 174, name: 'Kính hộp 17.38mm Phản quang M2 Temper', structure: '5mm CLPQM2 + 6CK + 6.38mm trắng', price: 675000 },
+            { id: 175, name: 'Kính hộp 20.38mm Phản quang M2 Temper', structure: '5mm CLPQM2 + 9CK + 6.38mm trắng', price: 689000 },
+            { id: 176, name: 'Kính hộp 23.38mm Phản quang M2 Temper', structure: '5mm CLPQM2 + 12CK + 6.38mm trắng', price: 712000 },
+            { id: 177, name: 'Kính hộp 26.38mm Phản quang M2 Temper', structure: '5mm CLPQM2 + 15CK + 6.38mm trắng', price: 763000 },
+            { id: 178, name: 'Kính hộp 19.38mm Phản quang M2', structure: '5mm CL trắng + 6CK + 8.38mm Phản quang M2', price: 728000 },
+            { id: 179, name: 'Kính hộp 22.38mm Phản quang M2', structure: '5mm CL trắng + 9CK + 8.38mm Phản quang M2', price: 741000 },
+            { id: 180, name: 'Kính hộp 25.38mm Phản quang M2', structure: '5mm CL trắng + 12CK + 8.38mm Phản quang M2', price: 764000 },
+            { id: 181, name: 'Kính hộp 28.38mm Phản quang M2', structure: '5mm CL trắng + 15CK + 8.38mm Phản quang M2', price: 816000 },
+            { id: 182, name: 'Kính hộp 16mm Temper Phản quang M2', structure: '5mm CL trắng + 6CK + 5mm CL phản quang M2', price: 625000 },
+            { id: 183, name: 'Kính hộp 19mm Temper Phản quang M2', structure: '5mm CL trắng + 9CK + 5mm CL phản quang M2', price: 639000 },
+            { id: 184, name: 'Kính hộp 22mm Temper Phản quang M2', structure: '5mm CL trắng + 12CK + 5mm CL phản quang M2', price: 663000 },
+            { id: 185, name: 'Kính hộp 25mm Temper Phản quang M2', structure: '5mm CL trắng + 15CK + 5mm CL phản quang M2', price: 714000 },
+            // Kính hộp phản quang 6mm
+            { id: 186, name: 'Kính hộp 18mm Phản quang M1 Temper', structure: '6mm CL trắng + 6CK + 6mm CL phản quang M1', price: 702000 },
+            { id: 187, name: 'Kính hộp 21mm Phản quang M1 Temper', structure: '6mm CL trắng + 9CK + 6mm CL phản quang M1', price: 717000 },
+            { id: 188, name: 'Kính hộp 24mm Phản quang M1 Temper', structure: '6mm CL trắng + 12CK + 6mm CL phản quang M1', price: 740000 },
+            { id: 189, name: 'Kính hộp 27mm Phản quang M1 Temper', structure: '6mm CL trắng + 15CK + 6mm CL phản quang M1', price: 792000 },
+            { id: 190, name: 'Kính hộp 18mm Phản quang M2 Temper', structure: '6mm CL trắng + 6CK + 6mm CL phản quang M2', price: 750000 },
+            { id: 191, name: 'Kính hộp 21mm Phản quang M2 Temper', structure: '6mm CL trắng + 9CK + 6mm CL phản quang M2', price: 763000 },
+            { id: 192, name: 'Kính hộp 24mm Phản quang M2 Temper', structure: '6mm CL trắng + 12CK + 6mm CL phản quang M2', price: 788000 },
+            { id: 193, name: 'Kính hộp 27mm Phản quang M2 Temper', structure: '6mm CL trắng + 15CK + 6mm CL phản quang M2', price: 839000 },
+            // Kính hộp cản nhiệt Bỉ N1/N4
+            { id: 194, name: 'Kính hộp 19.38mm Cản nhiệt Bỉ N1/N4', structure: '5mm CL trắng + 6CK + 8.38mm Cản nhiệt Bỉ N1/N4', price: 731000 },
+            { id: 195, name: 'Kính hộp 22.38mm Cản nhiệt Bỉ N1/N4', structure: '5mm CL trắng + 9CK + 8.38mm Cản nhiệt Bỉ N1/N4', price: 746000 },
+            { id: 196, name: 'Kính hộp 25.38mm Cản nhiệt Bỉ N1/N4', structure: '5mm CL trắng + 12CK + 8.38mm Cản nhiệt Bỉ N1/N4', price: 769000 },
+            { id: 197, name: 'Kính hộp 28.38mm Cản nhiệt Bỉ N1/N4', structure: '5mm CL trắng + 15CK + 8.38mm Cản nhiệt Bỉ N1/N4', price: 820000 },
+            { id: 198, name: 'Kính hộp 20.76mm Cản nhiệt Bỉ N1/N4', structure: '6.38mm trắng + 6CK + 8.38mm Cản nhiệt Bỉ N1/N4', price: 862000 },
+            { id: 199, name: 'Kính hộp 23.76mm Cản nhiệt Bỉ N1/N4', structure: '6.38mm trắng + 9CK + 8.38mm Cản nhiệt Bỉ N1/N5', price: 876000 },
+            { id: 200, name: 'Kính hộp 26.76mm Cản nhiệt Bỉ N1/N4', structure: '6.38mm trắng + 12CK + 8.38mm Cản nhiệt Bỉ N1/N5', price: 900000 },
+            { id: 201, name: 'Kính hộp 29.76mm Cản nhiệt Bỉ N1/N4', structure: '6.38mm trắng + 15CK + 8.38mm Cản nhiệt Bỉ N1/N5', price: 951000 },
+            { id: 202, name: 'Kính hộp 18mm Cản nhiệt Bỉ N1/N4 Temper', structure: '6mm trắng CL + 6CK + 6mm CL Cản nhiệt Bỉ N1/N4', price: 806000 },
+            { id: 203, name: 'Kính hộp 21mm Cản nhiệt Bỉ N1/N4 Temper', structure: '6mm trắng CL + 9CK + 6mm CL Cản nhiệt Bỉ N1/N4', price: 821000 },
+            { id: 204, name: 'Kính hộp 24mm Cản nhiệt Bỉ N1/N4 Temper', structure: '6mm trắng CL + 12CK + 6mm CL Cản nhiệt Bỉ N1/N4', price: 844000 },
+            { id: 205, name: 'Kính hộp 27mm Cản nhiệt Bỉ N1/N4 Temper', structure: '6mm trắng CL + 15CK + 6mm CL Cản nhiệt Bỉ N1/N4', price: 896000 },
+            // Kính hộp cản nhiệt Bỉ N5678
+            { id: 206, name: 'Kính hộp 18mm Cản nhiệt Bỉ N5678 Temper', structure: '6mm CL trắng + 6CK + 6mm CL Cản nhiệt Bỉ N05/06/07/08', price: 902000 },
+            { id: 207, name: 'Kính hộp 21mm Cản nhiệt Bỉ N5678 Temper', structure: '6mm CL trắng + 9CK + 6mm CL Cản nhiệt Bỉ N05/06/07/08', price: 917000 },
+            { id: 208, name: 'Kính hộp 24mm Cản nhiệt Bỉ N5678 Temper', structure: '6mm CL trắng + 12CK + 6mm CL Cản nhiệt Bỉ N05/06/07/08', price: 940000 },
+            { id: 209, name: 'Kính hộp 27mm Cản nhiệt Bỉ N5678 Temper', structure: '6mm CL trắng + 15CK + 6mm CL Cản nhiệt Bỉ N05/06/07/08', price: 991000 },
+            // Kính hộp Solar control
+            { id: 210, name: 'Kính hộp 16mm Solar control', structure: '5mmCL trắng+6CK+5mm CL Solar control', price: 615000 },
+            { id: 211, name: 'Kính hộp 19mm Solar control', structure: '5mmCL trắng+9CK+5mm CL Solar control', price: 630000 },
+            { id: 212, name: 'Kính hộp 22mm Solar control', structure: '5mmCL trắng+12CK+5mm CL Solar control', price: 653000 },
+            { id: 213, name: 'Kính hộp 25mm Solar control', structure: '5mmCL trắng+15CK+5mm CL Solar control', price: 705000 },
+            { id: 214, name: 'Kính hộp 19.38mm Solar control', structure: '5mmCL trắng+6CK+8.38mm CL Solar control', price: 736000 },
+            { id: 215, name: 'Kính hộp 22.38mm Solar control', structure: '5mmCL trắng+9CK+8.38mm CL Solar control', price: 750000 },
+            { id: 216, name: 'Kính hộp 25.38mm Solar control', structure: '5mmCL trắng+12CK+8.38mm CL Solar control', price: 773000 },
+            { id: 217, name: 'Kính hộp 28.38mm Solar control', structure: '5mmCL trắng+15CK+8.38mm CL Solar control', price: 824000 },
+            { id: 218, name: 'Kính hộp 18mm Solar control', structure: '6mmCL trắng+6CK+6mm CL Solar control', price: 700000 },
+            { id: 219, name: 'Kính hộp 21mm Solar control', structure: '6mmCL trắng+9CK+6mm CL Solar control', price: 714000 },
+            { id: 220, name: 'Kính hộp 24mm Solar control', structure: '6mmCL trắng+12CK+6mm CL Solar control', price: 737000 },
+            { id: 221, name: 'Kính hộp 27mm Solar control', structure: '6mmCL trắng+15CK+6mm CL Solar control', price: 789000 },
+            { id: 222, name: 'Kính hộp 20.38mm Solar control', structure: '6mmCL trắng+6CK+8.38mm CL Solar control', price: 817000 },
+            { id: 223, name: 'Kính hộp 23.38mm Solar control', structure: '6mmCL trắng+9CK+8.38mm CL Solar control', price: 832000 },
+            { id: 224, name: 'Kính hộp 26.38mm Solar control', structure: '6mmCL trắng+12CK+8.38mm CL Solar control', price: 855000 },
+            { id: 225, name: 'Kính hộp 29.38mm Solar control', structure: '6mmCL trắng+15CK+8.38mm CL Solar control', price: 906000 },
+            // Kính hộp cản nhiệt N01/N04
+            { id: 226, name: 'Kính hộp 23.38mm cản nhiệt N01/N04', structure: '6mmCL trắng+9CK+8.38mm cản nhiệt N01/N04', price: 938000 },
+            { id: 227, name: 'Kính hộp 19mm cản nhiệt N01/N04', structure: '5mmCL trắng+9CK+5mm CL cản nhiệt N01/N04', price: 719000 },
+            // Kính đặc biệt
+            { id: 228, name: 'Kính hộp rèm 5CL + 19 + 5CL', structure: '', price: 2800000 },
+            { id: 229, name: 'Pano nhôm', structure: '', price: 650000 },
+            { id: 230, name: 'Kính hộp nan đồng 5CL+9+5CL', structure: '5mm CL trắng + 9CK + 5mm nan đồng', price: 790000 },
+            { id: 231, name: 'Chớp nhôm', structure: '', price: 650000 },
+        ];
+
+        // Vật tư
+        let materials = [
+            { id: 1, name: 'Chia đố vách VRA', price: 180000 },
+            { id: 2, name: 'Chia đố vách VRE', price: 230000 },
+            { id: 3, name: 'Gia công uốn vòm VRA', price: 550000 },
+            { id: 4, name: 'Bông hoa', price: 130000 },
+            { id: 5, name: 'Hình thoi (Quả trám)', price: 100000 },
+            { id: 6, name: 'Cây góc vuông', price: 250000 },
+            { id: 7, name: 'Cây tăng cứng', price: 250000 },
+            { id: 8, name: 'Gia công uốn vòm VRE', price: 650000 },
+        ];
+
+        let currentModal = null;
+        let editingId = null;
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+            document.getElementById(`tab-${tab}`).classList.add('active');
+        }
+
+        function updateCounts() {
+            document.getElementById('countProducts').textContent = products.length;
+            document.getElementById('countGroups').textContent = groups.length;
+            document.getElementById('countGlass').textContent = glasses.length;
+            document.getElementById('countMaterials').textContent = materials.length;
+        }
+
+        // GROUPS
+        function filterGroups() {
+            const search = document.getElementById('searchGroups').value.toLowerCase();
+            const codeFilter = document.getElementById('filterGroupCode').value;
+            let filtered = groups.filter(g => {
+                const matchSearch = g.code.toLowerCase().includes(search) || g.name.toLowerCase().includes(search);
+                const matchCode = !codeFilter || g.code === codeFilter;
+                return matchSearch && matchCode;
+            });
+            renderGroups(filtered);
+        }
+
+        function renderGroups(data) {
+            document.getElementById('groupsTable').innerHTML = data.map((g, i) => `
+        <tr style="background:${i % 2 === 0 ? '#faf5ff' : '#ffffff'}">
+            <td style="text-align:center;font-weight:600;color:#6b7280">${i + 1}</td>
+            <td style="text-align:center">
+                <span style="background:linear-gradient(135deg,#a78bfa,#8b5cf6);color:white;padding:6px 14px;border-radius:8px;font-weight:700;font-size:13px;box-shadow:0 2px 4px rgba(139,92,246,0.3)">${g.code}</span>
+            </td>
+            <td style="padding-left:16px">
+                <span style="background:linear-gradient(135deg,#fef08a,#fde047);color:#713f12;padding:6px 14px;border-radius:8px;font-size:13px;font-weight:500">${g.name}</span>
+            </td>
+            <td style="text-align:center">
+                <button onclick="editItem('group', ${g.id})" style="background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;padding:6px 16px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;margin-right:8px;box-shadow:0 2px 4px rgba(59,130,246,0.3)">Sửa</button>
+                <button onclick="deleteItem('group', ${g.id})" style="background:linear-gradient(135deg,#ef4444,#dc2626);color:white;border:none;padding:6px 16px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;box-shadow:0 2px 4px rgba(239,68,68,0.3)">Xóa</button>
+            </td>
+        </tr>
+    `).join('');
+        }
+
+        // PRODUCTS
+        function filterProducts() {
+            const search = document.getElementById('searchProducts').value.toLowerCase();
+            const sort = document.getElementById('sortProducts').value;
+
+            let filtered = products.filter(p => p.code.toLowerCase().includes(search) || p.name.toLowerCase().includes(search));
+
+            filtered.sort((a, b) => {
+                if (sort === 'code') return a.code.localeCompare(b.code);
+                if (sort === 'name') return a.name.localeCompare(b.name);
+                if (sort === 'price') return (a.prices['0-0.25'] || 0) - (b.prices['0-0.25'] || 0);
+                return 0;
+            });
+
+            renderProducts(filtered);
+        }
+
+        function renderProducts(data) {
+            const grid = document.getElementById('productsGrid');
+            if (!data.length) {
+                grid.innerHTML = '<div class="empty-state"><p>Không có sản phẩm nào</p></div>';
+                return;
+            }
+            grid.innerHTML = data.map(p => `
+        <div class="product-card">
+            <div class="header">
+                <span class="code">${p.code}</span>
+                <div style="display:flex;gap:4px">
+                    <span style="background:#c4b5fd;color:#5b21b6;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600">${p.groupCode || ''}</span>
+                    <span style="background:#fef08a;color:#854d0e;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600">${p.groupName || ''}</span>
+                </div>
+            </div>
+            <div class="name" style="white-space:pre-line;font-size:12px;line-height:1.5">${p.name}</div>
+            ${p.accessory ? `
+            <div style="display:flex;align-items:center;gap:8px;margin:8px 0;padding:8px 12px;background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-radius:8px;border-left:3px solid #059669">
+                <span style="color:#065f46;font-weight:600;font-size:12px">Phụ kiện:</span>
+                <span style="background:#059669;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">${p.accessory}</span>
+                <span style="color:#065f46;font-size:12px">-</span>
+                <span style="color:#047857;font-weight:700;font-size:13px">${p.accessoryPrice ? formatMoney(p.accessoryPrice) : '—'}</span>
+            </div>
+            ` : ''}
+            <div class="price-grid">
+                ${SIZE_COLUMNS.map(size => `
+                    <div class="price-item ${!p.prices[size] ? 'empty' : ''}">
+                        <div class="size">${size}m²</div>
+                        <div class="price">${p.prices[size] ? formatMoney(p.prices[size]) : '—'}</div>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="actions">
+                <button class="btn-edit" onclick="editItem('product', ${p.id})">Sửa</button>
+                <button class="btn-delete" onclick="deleteItem('product', ${p.id})">Xóa</button>
+            </div>
+        </div>
+    `).join('');
+        }
+
+        // GLASS
+        function filterGlass() {
+            const search = document.getElementById('searchGlass').value.toLowerCase();
+            const sort = document.getElementById('sortGlass').value;
+            let filtered = glasses.filter(g => g.name.toLowerCase().includes(search));
+            filtered.sort((a, b) => {
+                if (sort === 'id') return a.id - b.id;
+                if (sort === 'price') return a.price - b.price;
+                return a.name.localeCompare(b.name);
+            });
+            renderGlass(filtered);
+        }
+
+        function renderGlass(data) {
+            document.getElementById('glassTable').innerHTML = data.map((g, i) => `
+        <tr style="background:${i % 2 === 0 ? '#f0f9ff' : '#ffffff'}">
+            <td style="text-align:center;font-weight:600;color:#6b7280">${g.id}</td>
+            <td style="padding:10px 12px;font-size:13px;color:#1e3a5f">${g.name}</td>
+            <td style="padding:10px 12px;font-size:12px;color:#64748b">
+                <span style="background:linear-gradient(135deg,#e0f2fe,#bae6fd);color:#0369a1;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:500">${g.structure || '—'}</span>
+            </td>
+            <td style="text-align:right;padding-right:16px">
+                <span style="background:linear-gradient(135deg,#dcfce7,#bbf7d0);color:#166534;padding:5px 12px;border-radius:6px;font-weight:600;font-size:12px">${formatMoney(g.price)}</span>
+            </td>
+            <td style="text-align:center">
+                <button onclick="editItem('glass', ${g.id})" style="background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;padding:5px 14px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;margin-right:6px">Sửa</button>
+                <button onclick="deleteItem('glass', ${g.id})" style="background:linear-gradient(135deg,#ef4444,#dc2626);color:white;border:none;padding:5px 14px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer">Xóa</button>
+            </td>
+        </tr>
+    `).join('');
+        }
+
+        // MATERIALS
+        function filterMaterials() {
+            const search = document.getElementById('searchMaterials').value.toLowerCase();
+            const sort = document.getElementById('sortMaterials').value;
+            let filtered = materials.filter(m => m.name.toLowerCase().includes(search));
+            filtered.sort((a, b) => sort === 'price' ? a.price - b.price : a.name.localeCompare(b.name));
+            renderMaterials(filtered);
+        }
+
+        function renderMaterials(data) {
+            document.getElementById('materialsTable').innerHTML = data.map((m, i) => `
+        <tr style="background:${i % 2 === 0 ? '#faf5ff' : '#ffffff'}">
+            <td style="text-align:center;font-weight:600;color:#6b7280">${i + 1}</td>
+            <td style="padding:12px 16px;font-size:14px;color:#1e3a5f">${m.name}</td>
+            <td style="text-align:right;padding-right:16px">
+                <span style="background:linear-gradient(135deg,#dcfce7,#bbf7d0);color:#166534;padding:5px 12px;border-radius:6px;font-weight:600;font-size:12px">${formatMoney(m.price)}</span>
+            </td>
+            <td style="text-align:center">
+                <button onclick="editItem('material', ${m.id})" style="background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;padding:6px 16px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;margin-right:8px">Sửa</button>
+                <button onclick="deleteItem('material', ${m.id})" style="background:linear-gradient(135deg,#ef4444,#dc2626);color:white;border:none;padding:6px 16px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">Xóa</button>
+            </td>
+        </tr>
+    `).join('');
+        }
+
+        // MODAL - ĐÃ XÓA Phụ kiện và Loại cửa
+        function openModal(type, id = null) {
+            currentModal = type;
+            editingId = id;
+            document.getElementById('modalTitle').textContent = id ? 'Chỉnh sửa' : 'Thêm mới';
+
+            let html = '';
+            if (type === 'product') {
+                const item = id ? products.find(p => p.id === id) : { prices: {} };
+                const groupOptions = groups.map(g =>
+                    `<option value="${g.id}" ${item.groupCode === g.code && item.groupName === g.name ? 'selected' : ''}>${g.code} - ${g.name}</option>`
+                ).join('');
+                html = `
+            <div style="display:grid;grid-template-columns:1fr 2fr;gap:12px">
+                <div class="form-group"><label>Mã sản phẩm</label><input type="text" id="formCode" value="${item.code || ''}"></div>
+                <div class="form-group">
+                    <label style="color:#5b21b6">Chọn nhóm sản phẩm</label>
+                    <select id="formGroupId" style="padding:10px 14px;border:2px solid #c4b5fd;border-radius:8px;font-size:14px;background:#faf5ff">
+                        <option value="">-- Chọn nhóm --</option>
+                        ${groupOptions}
+                    </select>
+                </div>
+            </div>
+            <div class="form-group"><label>Tên sản phẩm</label><textarea id="formName" rows="4" placeholder="Chi tiết sản phẩm với specs...">${item.name || ''}</textarea></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+                <div class="form-group">
+                    <label style="color:#059669">Phụ kiện</label>
+                    <select id="formAccessory" style="padding:10px 14px;border:2px solid #a7f3d0;border-radius:8px;font-size:14px;background:#ecfdf5">
+                        <option value="">-- Chọn phụ kiện --</option>
+                        <option value="Hopo" ${item.accessory === 'Hopo' ? 'selected' : ''}>Hopo</option>
+                        <option value="Viralwindow" ${item.accessory === 'Viralwindow' ? 'selected' : ''}>Viralwindow</option>
+                        <option value="Cmech" ${item.accessory === 'Cmech' ? 'selected' : ''}>Cmech</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label style="color:#059669">Giá phụ kiện (VND)</label>
+                    <input type="number" id="formAccessoryPrice" value="${item.accessoryPrice || ''}" placeholder="Nhập giá phụ kiện..." style="padding:10px 14px;border:2px solid #a7f3d0;border-radius:8px">
+                </div>
+            </div>
+            <p class="text-sm font-semibold mb-2 mt-4">Giá theo kích thước (VND) - ${SIZE_COLUMNS.length} mức</p>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-height:300px;overflow-y:auto;padding:8px;background:#f8fafc;border-radius:8px">
+                ${SIZE_COLUMNS.map((size, i) => `
+                    <div class="form-group" style="margin-bottom:4px"><label style="font-size:11px;color:#64748b">${size}m²</label><input type="number" id="price${i}" value="${item.prices?.[size] || ''}" style="padding:6px 8px;font-size:12px"></div>
+                `).join('')}
+            </div>
+                `;
+            } else if (type === 'group') {
+                const item = id ? groups.find(g => g.id === id) : {};
+                html = `
+                    < div class="form-group" ><label style="color:#5b21b6">Mã nhóm</label><input type="text" id="formGroupCode" value="${item.code || ''}" placeholder="VRA, VRE..."></div>
+            <div class="form-group"><label style="color:#854d0e">Tên nhóm</label><input type="text" id="formGroupName" value="${item.name || ''}" placeholder="Vách kính cố định, Cửa sổ mở quay 65..."></div>
+                `;
+            } else if (type === 'glass') {
+                const item = id ? glasses.find(g => g.id === id) : {};
+                html = `
+                    < div class="form-group" ><label>Tên kính</label><input type="text" id="formName" value="${item.name || ''}"></div>
+            <div class="form-group"><label>Cấu tạo</label><input type="text" id="formStructure" value="${item.structure || ''}"></div>
+            <div class="form-group"><label>Giá (VND)</label><input type="number" id="formPrice" value="${item.price || ''}"></div>
+                `;
+            } else if (type === 'material') {
+                const item = id ? materials.find(m => m.id === id) : {};
+                html = `
+                    < div class="form-group" ><label>Tên vật tư</label><input type="text" id="formName" value="${item.name || ''}"></div>
+            <div class="form-group"><label>Giá (VND)</label><input type="number" id="formPrice" value="${item.price || ''}"></div>
+                `;
+            }
+
+            document.getElementById('modalBody').innerHTML = html;
+            document.getElementById('modalOverlay').classList.add('show');
+        }
+
+        function closeModal(e) {
+            if (e && e.target !== e.currentTarget) return;
+            document.getElementById('modalOverlay').classList.remove('show');
+            currentModal = null;
+            editingId = null;
+        }
+
+        function saveItem() {
+            if (currentModal === 'product') {
+                const prices = {};
+                SIZE_COLUMNS.forEach((size, i) => {
+                    const val = +document.getElementById(`price${i}`).value;
+                    if (val) prices[size] = val;
+                });
+                // Lấy group từ dropdown
+                const groupId = +document.getElementById('formGroupId').value;
+                const selectedGroup = groups.find(g => g.id === groupId) || {};
+                const item = {
+                    id: editingId || Date.now(),
+                    code: document.getElementById('formCode').value,
+                    groupCode: selectedGroup.code || '',
+                    groupName: selectedGroup.name || '',
+                    name: document.getElementById('formName').value,
+                    prices: prices
+                };
+                if (editingId) products = products.map(p => p.id === editingId ? item : p);
+                else products.push(item);
+                filterProducts();
+            } else if (currentModal === 'group') {
+                const item = {
+                    id: editingId || Date.now(),
+                    code: document.getElementById('formGroupCode').value,
+                    name: document.getElementById('formGroupName').value
+                };
+                if (editingId) groups = groups.map(g => g.id === editingId ? item : g);
+                else groups.push(item);
+                filterGroups();
+            } else if (currentModal === 'glass') {
+                const item = {
+                    id: editingId || Date.now(),
+                    name: document.getElementById('formName').value,
+                    structure: document.getElementById('formStructure').value,
+                    price: +document.getElementById('formPrice').value || 0
+                };
+                if (editingId) glasses = glasses.map(g => g.id === editingId ? item : g);
+                else glasses.push(item);
+                filterGlass();
+            } else if (currentModal === 'material') {
+                const item = { id: editingId || Date.now(), name: document.getElementById('formName').value, price: +document.getElementById('formPrice').value || 0 };
+                if (editingId) materials = materials.map(m => m.id === editingId ? item : m);
+                else materials.push(item);
+                filterMaterials();
+            }
+            updateCounts();
+            closeModal();
+        }
+
+        function editItem(type, id) { openModal(type, id); }
+
+        function deleteItem(type, id) {
+            if (!confirm('Bạn có chắc muốn xóa?')) return;
+            if (type === 'product') { products = products.filter(p => p.id !== id); filterProducts(); }
+            else if (type === 'group') { groups = groups.filter(g => g.id !== id); filterGroups(); }
+            else if (type === 'glass') { glasses = glasses.filter(g => g.id !== id); filterGlass(); }
+            else if (type === 'material') { materials = materials.filter(m => m.id !== id); filterMaterials(); }
+            updateCounts();
+        }
+
+        function formatMoney(v) { return v ? new Intl.NumberFormat('vi-VN').format(v) + 'đ' : '0đ'; }
+
+        const API_BASE = window.API_BASE || 'http://localhost:3001/api';
+
+        // Load company logo and name
+        async function loadCompanyLogo() {
+            try {
+                const response = await fetch(`${API_BASE}/company-settings`);
+                const result = await response.json();
+                if (result.success && result.data) {
+                    if (result.data.logo_path) {
+                        const container = document.getElementById('companyLogoContainer');
+                        if (container) {
+                            container.innerHTML = `<img src="${result.data.logo_path}" alt="Logo" class="w-full h-full object-contain">`;
+                        }
+                    }
+                    const companyNameEl = document.getElementById('companyName');
+                    if (companyNameEl && result.data.company_name) {
+                        companyNameEl.textContent = result.data.company_name;
+                    }
+                }
+            } catch (error) {
+                console.error('Lỗi load logo:', error);
+            }
+        }
+
+        // Load sidebar user info
+        async function loadSidebarUserInfo() {
+            try {
+                const token = sessionStorage.getItem('token');
+                if (!token) return;
+
+                const response = await fetch(`${API_BASE}/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const result = await response.json();
+                if (result.success) {
+                    const user = result.data;
+                    const userNameEl = document.getElementById('sidebarUserName');
+                    if (userNameEl) userNameEl.textContent = user.full_name || 'User';
+
+                    const avatarContainer = document.getElementById('sidebarUserAvatar');
+                    if (avatarContainer) {
+                        if (user.avatar_url) {
+                            avatarContainer.innerHTML = `<img src="${user.avatar_url}" alt="Avatar" class="w-full h-full object-cover rounded-full">`;
+                        } else {
+                            const initial = (user.full_name || 'U').charAt(0).toUpperCase();
+                            avatarContainer.textContent = initial;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Lỗi load user info:', error);
+            }
+        }
+
+        function init() {
+            updateCounts();
+            filterProducts();
+            filterGroups();
+            filterGlass();
+            filterMaterials();
+            // Load sidebar info
+            loadCompanyLogo();
+            loadSidebarUserInfo();
+        }
+        init();
+    </script>
+    <script src="js/sidebar-enterprise.js"></script>
+</body>
+
+</html>

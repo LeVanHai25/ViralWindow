@@ -1,0 +1,17 @@
+node_modules/
+backend/uploads/
+.env
+*.log
+.DS_Store
+Thumbs.db
+temp_code.txt
+*.xlsx
+*.xls
+*.csv
+
+# Gemini Antigravity
+.gemini/
+
+# SQL dump files (too large for git)
+viral_window_db*.sql
+tidb_fix_fk.sql

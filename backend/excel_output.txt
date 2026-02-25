@@ -1,0 +1,177 @@
+﻿Starting to read file: D:\ViralWindow_Phan_Mem_Nhom_Kinh\T├ái liß╗çu\CT-Mr Mß║¡u Y├¬n Ngh─⌐a.xlsx
+SUCCESS: File loaded
+Sheets: [
+  'foxz',
+  'L├éY NH├öM YANGLY ',
+  'V├é╠úT T╞» PHU╠ú ',
+  'NH├öM ',
+  'KI╠üNH ',
+  'PHI├è╠âU XU├éT KHO '
+]
+
+[SHEET]: foxz
+Rows count: 0
+
+[SHEET]: L├éY NH├öM YANGLY 
+Rows count: 44
+R1:   PHIß║╛U Y├èU Cß║ªU Vß║¼T T╞» NH├öM  |  |  |  |  |  |  |  |  |  | 
+R2:  |  Ng├áy ..01..th├íng ..12.. n─âm 2025 |  |  |  |  |  |  |  |  | 
+R3: C├┤ng tr├¼nh :  Mr Mß║¡u - Y├¬n Ngh─⌐a  |  |  |  |  |  |  |  |  |  | 
+R4: M├ú ─É╞ín H├áng : |  |  |  |  |  |  |  |  |  | 
+R5: Chß╗ºng loß║íi phß╗Ñ kiß╗çn :  Viralwindow |  |  |  |  |  |  |  |  |  | 
+R6: M├áu sß║»c : X├ím Sß║ºn Metalic  |  |  |  |  |  |  |  |  |  | 
+R7: ─Éß╗ïa chß╗ë giao h├áng :  S├┤╠ü 36 ─É╞░╞í╠Çng  |  |  |  |  |  |  |  |  |  | 
+R9: TT | T├¬n vß║¡t t╞░ | Ma╠â v├ó╠út t╞░  | Ty╠ë tro╠úng  | ─É╞ín vß╗ï | Sß╗æ l╞░ß╗úng | Khß╗æi l╞░ß╗úng  | Ghi ch├║ |  |  | 
+R10: 1 | Khung bao v├ích , cß╗¡a 65 | Y6501 | 1.477 | c├óy | 10 | 88.62 |  |  |  | 
+R11: 2 | C├ính cß╗¡a ─æi mß╗ƒ ngo├ái 65 | Y6503 | 1.813 | c├óy | 6 | 65.268 |  |  |  | 
+R12: 3 | Nß╗æi khung 65 | Y6511 | 0.415 | c├óy | 10 | 24.9 |  |  |  | 
+R13: 4 | ├öp m├│c 94 | VRE94-04 | 0.443 | c├óy | 10 | 26.580000000000002 |  |  |  | 
+R14: 5 | Dß║½n h╞░ß╗¢ng tr├¬n 94 | LIN-DT21 | 0.22 | c├óy | 20 | 26.4 |  |  |  | 
+R15: 6 | D├│n c├ính b├¬n  | LIN-H17 | 0.2 | c├óy | 20 | 24 |  |  |  | 
+R16: 7 | Khung bao v├ích  | C3209 | 0.805 | c├óy | 20 | 96.60000000000001 |  |  |  | 
+R17: 8 | Nß║╣p k├¡nh ─æ╞ín v├ích | C3295 | 0.272 | c├óy | 20 | 32.64 |  |  |  | 
+R18: 9 | Khung bao cß╗¡a sß╗ò  | C3318 | 0.848 | c├óy | 10 | 50.879999999999995 |  |  |  | 
+R19: 10 | Lß║¡t khung  | C3208 | 0.76 | c├óy | 10 | 45.6 |  |  |  | 
+R20: 11 | C├ính cß╗¡a sß╗ò mß╗ƒ quay mß╗¢i VRA  | VRA55-01 | 1.126 | c├óy | 16 | 108.09599999999999 |  |  |  | 
+R21: 12 | Nß║╣p k├¡nh ─æ╞ín c├ính  | SH6002 | 0.31 | c├óy | 20 | 37.2 |  |  |  | 
+R22: 13 | Khung bao l├╣a 94 | VRE94-01 | 1.425 | c├óy | 6 | 51.300000000000004 |  |  |  | 
+R23: 14 | C├ính cß╗¡a ─æi l├╣a 94 | VRE94-02 | 1.235 | c├óy | 8 | 59.28 |  |  |  | 
+R24:  |  |  |  |  |  | 626.7840000000001 |  |  |  | 
+R26:  |  |           H├á Nß╗Öi, Ng├áy 01 th├íng 12  |  |  |  |  |  |  |  | 
+R28:  Ng╞░ß╗¥i lß║¡p            Kiß╗âm tra      |  |  |  |  |  |  |  |  |  | 
+R29:   (K├╜, hß╗ì t├¬n)             (K├╜, hß╗ì  |  |  |  |  |  |  |  |  |  | 
+
+[SHEET]: V├é╠úT T╞» PHU╠ú 
+Rows count: 37
+R1:   PHIß║╛U Y├èU Cß║ªU Vß║¼T T╞»- PHß╗ñ KIß╗åN |  |  |  |  |  |  | 
+R2:  |  Ng├áy ..25..th├íng ..10.. n─âm 2025 |  |  |  |  |  | 
+R3: C├┤ng tr├¼nh : Mr Mß║¡u - Mß╗╣ ─É├¼nh  |  |  |  |  |  |  | 
+R4: M├ú ─É╞ín H├áng :  |  |  |  |  |  |  | 
+R5: Chß╗ºng loß║íi phß╗Ñ kiß╗çn :   |  |  |  |  |  |  | 
+R6: M├áu sß║»c : Ba╠úc   |  |  |  |  |  |  | 
+R7: ─Éß╗ïa chß╗ë giao h├áng :  Tß║íi x╞░ß╗ƒng sß║ún  |  |  |  |  |  |  | 
+R9: TT | M├ú VT | T├¬n vß║¡t t╞░ | ─É╞ín vß╗ï | Sß╗æ l╞░ß╗úng | Xuß║Ñt x╞░ß╗ƒng |  | 
+R10: 1 | KE 14*52 | Ke v─⌐nh cß╗¡u khung v├ích  | c├íi  | 20 |  |  | 
+R11: 2 | KE 14*42 | Ke tomahok khung bao sß╗ò  | c├íi  | 40 |  |  | 
+R12: 3 | KE 25*43 | Ke tomahok c├ính cß╗¡a sß╗ò  | c├íi  | 60 |  |  | 
+R13: 4 | KE TC 11 | Ke t─âng cß╗⌐ng xingfa 11 | c├íi  | 352 |  |  | 
+R14: 5 | KE 31*42 | Ke tomahok khung bao cß╗¡a ─æi   | c├íi  | 16 |  |  | 
+R15: 6 | KE 36*42 | Ke tomahok c├ính cß╗¡a ─æi  | c├íi  | 32 |  |  | 
+R16: 7 | GEDPM 2TP 55 | Gioanwg EDPM 2TP khung c├ính 55 | cuß╗Ön | 1 | ( lß║Ñy th├¬m 1 cuß╗Ön )  |  | 
+R17: 8 | BD─É 55 | Bß╗ït ─æß╗æ ─æß╗Öng xingfa 55  | cß║╖p  | 4 |  |  | 
+R18: 9 | KE 31*60 | Ke tomahok khung bao 65 | c├íi  | 30 |  |  | 
+R19: 10 | KE 36*60 | Ke tomahok c├ính cß╗¡a ─æi 65  | c├íi  | 30 |  |  | 
+R20: 11 | KE TC 22 | Ke t─âng cß╗⌐ng khung 65  | c├íi  | 30 |  |  | 
+R21: 12 | KE TC 16 | Ke t─âng cß╗⌐ng c├ính 65 | c├íi  | 32 |  |  | 
+R22: 13 | BD─É 65 | Bß╗ït ─æß╗æ ─æß╗Öng 65  | cß║╖p  | 2 | Vina |  | 
+R23: 14 | GTG65 | Gioang trung gian 65 | m | 30 | ( lß║Ñy th├¬m 1 cuß╗Ön )  |  | 
+R24: 15 | GKC 65 | Gioanwg khung c├ính 65 | m | 40 |  |  | 
+R25: 16 | KE VC 14*42 | Ke v─⌐nh cß╗¡u khung bao cß╗¡a l├╣a 94 | c├íi  | 32 |  |  | 
+R26: 17 | KE VC 14*30 | Ke v─⌐nh cß╗¡u c├ính cß╗¡a l├╣a 94 | c├íi  | 32 |  |  | 
+R27: 18 | GL7*5 | Gioanwg l├┤ng cß╗¡a l├╣a 7*5  | cuß╗Ön | 1 | Lß║Ñy th├¬m 1 cuß╗Ön  |  | 
+R28: 19 | BOM | Gioanwg bß╗ït ß╗æp m├│c cß╗¡a l├╣a 94 | m | 18 | c├│ sß║╡n  |  | 
+R29: 20 | BH─ÉK | Bß╗ït h├¿m ─æ├│n kh├│a 94 | c├óy | 10 | Lß║Ñy vina |  | 
+R30: 21 | RINOX | Ray inox cß╗¡a l├╣a  | c├óy | 5 | Lß║Ñy vina |  | 
+R31: 22 | KPU  | Keo PU ├⌐p g├│c  | lß╗ì | 2 | v |  | 
+R32:  | Tß╗öNG |  |  |  |  |  | 
+R34:  |  |           H├á Nß╗Öi, Ng├áy  01 th├íng 12 |  |  |  |  | 
+R36:         Ng╞░ß╗¥i lß║¡p            Kiß╗âm t |  |  |  |  |  |  | 
+R37:        (K├╜, hß╗ì t├¬n)             (K├╜ |  |  |  |  |  |  | 
+
+[SHEET]: NH├öM 
+Rows count: 57
+R1:   PHIß║╛U Y├èU Cß║ªU Vß║¼T T╞»- PHß╗ñ KIß╗åN |  |  |  |  |  |  |  |  |  | 
+R2:  |  Ng├áy ..27..th├íng ..11.. n─âm 2025 |  |  |  |  |  |  |  |  | 
+R3: C├┤ng tr├¼nh :  Mr Mß║¡u - Y├¬n Ngh─⌐a  |  |  |  |  |  |  |  |  |  | 
+R4: M├ú ─É╞ín H├áng : VR57 |  |  |  |  |  |  |  |  |  | 
+R5: Chß╗ºng loß║íi phß╗Ñ kiß╗çn :  Viralwindow |  |  |  |  |  |  |  |  |  | 
+R6: M├áu sß║»c : X├ím Sß║ºn Metalic  |  |  |  |  |  |  |  |  |  | 
+R7: ─Éß╗ïa chß╗ë giao h├áng :  S├┤╠ü 36 ─É╞░╞í╠Çng  |  |  |  |  |  |  |  |  |  | 
+R9: TT | T├¬n vß║¡t t╞░ | Ma╠â v├ó╠út t╞░  | Ty╠ë tro╠úng  | ─É╞ín vß╗ï | Sß╗æ l╞░ß╗úng | Khß╗æi l╞░ß╗úng  | Xu├ó╠üt x╞░╞í╠ëng  |  |  | 
+R10: 1 | Khung bao v├ích , cß╗¡a 65 | Y6501 | 1.477 | c├óy | 9 | 79.75800000000001 | 10 |  |  | 
+R11: 2 | C├ính cß╗¡a ─æi mß╗ƒ ngo├ái 65 | Y6503 | 1.813 | c├óy | 5 | 54.39 | 6 |  |  | 
+R12: 3 | ─Éß╗æ ─æß╗Öng d├╣ng chung 65 | Y6507 | 1.09 | c├óy | 1 | 6.540000000000001 |  |  |  | 
+R13: 4 | ─Éß╗æ T chia v├ích 65 | Y6506 | 1.269 | c├óy | 1 | 7.613999999999999 |  |  |  | 
+R14: 5 | Nß╗æi khung 65 | Y6511 | 0.415 | c├óy | 3 | 7.47 |  |  |  | 
+R15: 6 | Che ch├ón 65 | ALUK-6517 | 0.21 | c├óy | 1 | 1.26 |  |  |  | 
+R16: 7 | Ng╞░ß╗íng nh├┤m 65 | ALUK-6518 | 0.948 | c├óy | 1 | 5.688 |  |  |  | 
+R17: 8 | Nß║╣p k├¡nh hß╗Öp 65 | Y6513 | 0.278 | c├óy | 12 | 20.016000000000002 |  |  |  | 
+R18: 9 | Khung bao l├╣a 94 | VRE94-01 | 1.425 | c├óy | 5 | 42.75 |  |  |  | 
+R19: 10 | C├ính cß╗¡a ─æi l├╣a 94 | VRE94-02 | 1.235 | c├óy | 8 | 59.28 |  |  |  | 
+R20: 11 | Ray d╞░ß╗¢i 94 | VRE94-03 | 1.142 | c├óy | 1 | 6.851999999999999 |  |  |  | 
+R21: 12 | ├öp m├│c 94 | VRE94-04 | 0.443 | c├óy | 3 | 7.974 |  |  |  | 
+R22: 13 | ├öp khung bao 94 | VRE94-06 | 0.293 | c├óy | 3 | 5.274 |  |  |  | 
+R23: 14 | Dß║½n h╞░ß╗¢ng tr├¬n 94 | LIN-DT21 | 0.22 | c├óy | 6 | 7.92 |  |  |  | 
+R24: 15 | D├│n c├ính b├¬n  | LIN-H17 | 0.2 | c├óy | 3 | 3.6 |  |  |  | 
+R25: 16 | Khung bao v├ích  | C3209 | 0.805 | c├óy | 8 | 38.64 |  |  |  | 
+R26: 17 | Nß║╣p k├¡nh ─æ╞ín v├ích | C3295 | 0.272 | c├óy | 12 | 19.584000000000003 |  |  |  | 
+R27: 18 | Khung bao cß╗¡a sß╗ò  | C3318 | 0.848 | c├óy | 9 | 45.792 |  |  |  | 
+R28: 19 | Lß║¡t khung  | C3208 | 0.76 | c├óy | 2 | 9.120000000000001 |  |  |  | 
+R29: 20 | C├ính cß╗¡a sß╗ò mß╗ƒ quay mß╗¢i VRA  | VRA55-01 | 1.126 | c├óy | 10 | 67.55999999999999 |  |  |  | 
+R30: 21 | Khung bao cß╗¡a ─æi  | C3328 | 1.125 | c├óy | 5 | 33.75 |  |  |  | 
+R31: 22 | C├ính cß╗¡a ─æi mß╗ƒ ngo├ái mß╗¢i VRA  | VRA55-03 | 1.505 | c├óy | 10 | 90.3 |  |  |  | 
+R32: 23 | ─Éß╗æ ─æß╗Öng d├╣ng chung  | C3323 | 0.849 | c├óy | 2 | 10.187999999999999 |  |  |  | 
+R33: 24 | ─Éß╗æ T chia khung cß╗¡a sß╗ò  | C3313 | 0.966 | c├óy | 1 | 5.795999999999999 |  |  |  | 
+R34: 25 | ─Éß╗æ T chia v├ích  | C3203 | 0.898 | c├óy | 2 | 10.776 |  |  |  | 
+R35: 26 | Ng╞░ß╗íng nh├┤m  | C3319 | 1.01 | c├óy | 2 | 12.120000000000001 |  |  |  | 
+R36: 27 | Nß║╣p k├¡nh ─æ╞ín c├ính  | SH6002 | 0.31 | c├óy | 20 | 37.2 |  |  |  | 
+R37:  |  |  |  |  |  | 697.2119999999999 |  |  |  | 
+R39:  |  |           H├á Nß╗Öi, Ng├áy 25 th├íng 04  |  |  |  |  |  |  |  | 
+R41:  Ng╞░ß╗¥i lß║¡p            Kiß╗âm tra      |  |  |  |  |  |  |  |  |  | 
+R42:   (K├╜, hß╗ì t├¬n)             (K├╜, hß╗ì  |  |  |  |  |  |  |  |  |  | 
+
+[SHEET]: KI╠üNH 
+Rows count: 38
+R1:   PHIß║╛U Y├èU C├é╠ÇU V├é╠úT T╞» KI╠üNH  |  |  |  |  |  |  |  |  | 
+R2:  |  Ng├áy ..27..th├íng ..11.. n─âm 2025 |  |  |  |  |  |  |  | 
+R3: C├┤ng tr├¼nh : Mr Mß║¡u - H├á ─É├┤ng H├á Nß╗Ö |  |  |  |  |  |  |  |  | 
+R4: M├ú ─É╞ín H├áng : VR57 |  |  |  |  |  |  |  |  | 
+R5: Chß╗ºng loß║íi phß╗Ñ kiß╗çn :  |  |  |  |  |  |  |  |  | 
+R6: M├áu sß║»c :  |  |  |  |  |  |  |  |  | 
+R7: ─Éß╗ïa chß╗ë giao h├áng :  36 ─É╞░ß╗¥ng Miß╗ün  |  |  |  |  |  |  |  |  | 
+R9: TT | M├ú Ki╠ünh  | Loa╠úi ki╠ünh  | Chi├¬╠Çu r├┤╠úng  | Chi├¬╠Çu cao | ─ÉVT | S├┤╠ü t├ó╠üm  | Di├¬╠ún ti╠üch  |  | 
+R10: 1 | S2T2 | 8.38 mm Flim Grey  | 466 | 582 | tß║Ñm  | 2 | 0.542424 |  | 
+R11: 2 | VK2T2 | 8.38 mm Flim Grey  | 636 | 1101 | tß║Ñm  | 2 | 1.400472 |  | 
+R12: 3 | VK1T2 | 8.38 mm Flim Grey  | 286 | 466 | tß║Ñm  | 2 | 0.266552 |  | 
+R13: 4 | VK1T2 | 8.38 mm Flim Grey  | 449 | 781 | tß║Ñm  | 2 | 0.701338 |  | 
+R14: 5 | D5T2 | 8.38 mm Flim Grey  | 666 | 2232 | tß║Ñm  | 2 | 2.9730240000000006 |  | 
+R15: 6 | D5.1T3 | 8.38 mm Flim Grey  | 595 | 2218 | tß║Ñm  | 2 | 2.63942 |  | 
+R16: 7 | VK2T3 | 8.38 mm Flim Grey  | 1510 | 378 | tß║Ñm  | 1 | 0.57078 |  | 
+R17: 8 | VK2T3 | 8.38 mm Flim Grey  | 629 | 1216 | tß║Ñm  | 2 | 1.529728 |  | 
+R18: 9 | VK2T3 | 8.38 mm Flim Grey  | 750 | 928 | tß║Ñm  | 2 | 1.3920000000000001 |  | 
+R19: 10 | D5.2T3 | 8.38 mm Flim Grey  | 595 | 2230 | tß║Ñm  | 2 | 2.6536999999999997 |  | 
+R20: 11 | D5T3 | 8.38 mm Flim Grey  | 666 | 2224 | tß║Ñm  | 2 | 2.9623680000000006 |  | 
+R21: 12 | D5.1T4 | 8.38 mm Flim Grey  | 594 | 2208 | tß║Ñm  | 2 | 2.623104 |  | 
+R22: 13 | VK3T4 | 8.38 mm Flim Grey  | 1518 | 928 | tß║Ñm  | 1 | 1.4087040000000002 |  | 
+R23: 14 | D5.2T4 | 8.38 mm Flim Grey  | 594 | 2218 | tß║Ñm  | 2 | 2.6349839999999998 |  | 
+R24: 15 | D5T4 | 8.38 mm Flim Grey  | 664 | 2236 | tß║Ñm  | 2 | 2.9694080000000005 |  | 
+R25: 16 | SM1 | 8.38 mm Flim Grey  | 478 | 864 | tß║Ñm  | 1 | 0.41299199999999997 |  | 
+R26: 17 | SM2 | 8.38 mm Flim Grey  | 477 | 846 | tß║Ñm  | 3 | 1.210626 |  | 
+R27: 18 | S3T | 8.38 mm Flim Grey  | 721 | 1178 | tß║Ñm  | 1 | 0.8493379999999999 |  | 
+R28:  | Tß╗öNG |  |  |  |  | 2 | 29.740962000000003 |  | 
+R30:  |  |           H├á Nß╗Öi, Ng├áy 27 th├íng 11  |  |  |  |  |  |  | 
+R32:   Ng╞░ß╗¥i lß║¡p            Kiß╗âm tra     |  |  |  |  |  |  |  |  | 
+R33:  (K├╜, hß╗ì t├¬n)             (K├╜, hß╗ì t |  |  |  |  |  |  |  |  | 
+
+[SHEET]: PHI├è╠âU XU├éT KHO 
+Rows count: 23
+R1: C├öNG TY Cß╗ö PHß║ªN VIRALWINDOW |  |  |  |  |  |  |  |  |  | 
+R2: Nh├á m├íy: KM 03, ─É╞░ß╗¥ng Cienco5, K─ÉT  |  |  |  |  |  |  |  |  |  | 
+R3: Hotline: 1800 282839 |  |  |  |  |  |  |  |  |  | 
+R4: Email:  viralwindow.vn@gmail.com |  |  |  |  |  |  |  |  |  | 
+R5: Website: viralwindow.vn |  |  |  |  |  |  |  |  |  | 
+R6: PHIß║╛U XUß║ñT KHO |  |  |  |  |  |  |  |  |  | 
+R7: Sß╗æ: 01-VRT12 |  |  |  |  |  |  |  |  |  | 
+R8:  | Kh├ích h├áng  :  |  |  | ─Éß║íi l├╜:   |  |  |  |  |  | 
+R9:  | K├╜ hiß╗çu         :  |  |  |  |  |  |  |  |  | 
+R10:  | ─Éß╗ïa chß╗ë          :  |  |  |  |  |  |  |  |  | 
+R11:  | Sß╗æ ─æiß╗çn thoß║íi:  |  |  |  |  |  |  |  |  | 
+R12:  | L├╜ do xuß║Ñt   :  |  |  |  |  |  |  |  |  | 
+R13:  | Xuß║Ñt tß║íi kho: C├┤ng ty cß╗ò phß║ºn Viral |  |  |  |  |  |  |  |  | 
+R14:  | Thß╗¥i ─æiß╗âm vß║¡n chuyß╗ân :  |  |  |  |  |  |  |  |  | 
+R15: STT | M├ú hiß╗çu | Nß╗Öi dung | K├¡ch th╞░ß╗¢c |  | ─ÉVT | Tß╗òng sß╗æ l╞░ß╗úng | Diß╗çn T├¡ch | Ghi ch├║ |  | 
+R16:  |  |  | Rß╗Öng (mm) | Cao (mm) |  |  |  |  |  | 
+R18:  |  Cß╗ÿNG |  |  |  |  |  |  |  |  | 
+R19:  |  |  |                                     |  |  |  |  |  |  | 
+R20:         Vß║¡n chuyß╗ân           Ng╞░ß╗¥i  |  |  |  |  |  |  |  |  |  | 
+R23:   |  |  |  |  |  |  |  |  |  | 
