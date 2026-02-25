@@ -8,7 +8,7 @@
 (function () {
     'use strict';
 
-    const API_BASE = 'http://localhost:3001/api';
+    const API_BASE = window.API_BASE || 'http://localhost:3001/api';
 
     // Mapping giữa page và permissions cần thiết
     // LƯU Ý: Permission codes phải KHỚP CHÍNH XÁC với database (bảng permissions)

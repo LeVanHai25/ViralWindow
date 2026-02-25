@@ -28,7 +28,8 @@ const PermissionCheck = {
         }
 
         try {
-            const response = await fetch('http://localhost:3001/api/permissions/my', {
+            const API_BASE = window.API_BASE || 'http://localhost:3001/api';
+            const response = await fetch(`${API_BASE}/permissions/my`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
