@@ -956,8 +956,8 @@
             if (!projectSelect) return;
 
             try {
-                const API_BASE = window.API_BASE_URL || window.API_BASE || 'http://localhost:3001';
-                const response = await fetch(`${API_BASE}/api/projects`);
+                const SERVER_URL = window.SERVER_BASE || 'http://localhost:3001';
+                const response = await fetch(`${SERVER_URL}/api/projects`);
                 const result = await response.json();
 
                 if (result.success && result.data) {
@@ -1338,7 +1338,7 @@
         // =============================================
         // AUTOCOMPLETE - TÌM KIẾM NHANH TỪ KHO
         // =============================================
-        const API_BASE = window.API_BASE_URL || window.API_BASE || 'http://localhost:3001';
+        const API_BASE = window.API_BASE || 'http://localhost:3001/api';
         let autocompleteCache = {};
         let autocompleteTimeout = null;
 
@@ -1360,7 +1360,7 @@
             }
 
             try {
-                const response = await fetch(`${API_BASE}/api/materials/search?type=${type}&q=${encodeURIComponent(query)}&limit=15`);
+                const response = await fetch(`${API_BASE}/materials/search?type=${type}&q=${encodeURIComponent(query)}&limit=15`);
                 const result = await response.json();
                 if (result.success && result.data) {
                     autocompleteCache[cacheKey] = result.data;

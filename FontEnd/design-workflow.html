@@ -627,8 +627,8 @@
         // =====================================================
         // STATE & CONFIG
         // =====================================================
-        const API_BASE = 'http://127.0.0.1:3001/api/design';
-        const API_PROJECTS = 'http://127.0.0.1:3001/api/projects';
+        const API_BASE = (window.API_BASE || 'http://127.0.0.1:3001/api') + '/design';
+        const API_PROJECTS = (window.API_BASE || 'http://127.0.0.1:3001/api') + '/projects';
 
 
         const STATUS_CONFIG = {

@@ -469,7 +469,7 @@
                     <span>Báo giá</span>
                 </a>
 
-                 <a href="pending-quotations.html" class="submenu-item">
+                <a href="pending-quotations.html" class="submenu-item">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                         class="w-5 h-5">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -1803,7 +1803,7 @@
                         </button>
                         <button type="submit"
                             class="flex-1 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-lg font-bold hover:from-blue-700 hover:to-cyan-600 shadow-lg">
-                             Lưu cập nhật
+                            Lưu cập nhật
                         </button>
                     </div>
                 </form>
@@ -2641,7 +2641,7 @@
                 // Fetch cancelled projects count from separate API
                 const token = localStorage.getItem('token') || sessionStorage.getItem('token');
                 if (cancelledEl && token) {
-                    fetch('http://127.0.0.1:3000/api/projects/cancelled', {
+                    fetch(`${API_BASE}/projects/cancelled`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     })
                         .then(res => res.json())
@@ -7598,7 +7598,7 @@
                 // Fetch cancelled projects count from separate API
                 const token = localStorage.getItem('token') || sessionStorage.getItem('token');
                 if (cancelledEl && token) {
-                    fetch('http://127.0.0.1:3000/api/projects/cancelled', {
+                    fetch(`${API_BASE}/projects/cancelled`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     })
                         .then(res => res.json())
