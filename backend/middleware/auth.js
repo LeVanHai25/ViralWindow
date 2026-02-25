@@ -17,34 +17,33 @@ exports.authenticateToken = async (req, res, next) => {
     try {
         const user = jwt.verify(token, JWT_SECRET);
 
-        // Check if session is still active in database
+        // Check if session is still active in database (non-blocking)
         try {
             const [sessions] = await db.query(
                 "SELECT id FROM user_sessions WHERE session_token = ? AND is_active = TRUE LIMIT 1",
                 [token]
             );
 
-            // If session was terminated, reject the request
+            // If session was terminated, check if it was explicitly revoked
             if (sessions.length === 0) {
-                // Check if table exists and has any sessions for this user
-                const [userSessions] = await db.query(
-                    "SELECT id FROM user_sessions WHERE user_id = ? LIMIT 1",
-                    [user.id]
+                const [revokedSessions] = await db.query(
+                    "SELECT id FROM user_sessions WHERE session_token = ? AND is_active = FALSE LIMIT 1",
+                    [token]
                 );
 
-                // Only enforce session check if user has session records
-                // This allows backwards compatibility for users who logged in before sessions were implemented
-                if (userSessions.length > 0) {
+                // Only reject if this specific token was explicitly revoked
+                if (revokedSessions.length > 0) {
                     return res.status(401).json({
                         success: false,
                         message: "Phiên đăng nhập đã hết hạn hoặc đã bị đăng xuất",
                         code: "SESSION_EXPIRED"
                     });
                 }
+                // If token not found in sessions table at all, allow through
+                // (login controller may not create session records)
             }
         } catch (sessionError) {
             // If user_sessions table doesn't exist or query fails, skip session check
-            // This provides backwards compatibility
             console.error("Session check error (non-critical):", sessionError.message);
         }
 
