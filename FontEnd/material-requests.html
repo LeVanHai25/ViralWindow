@@ -1467,7 +1467,8 @@
                     showToast(`Đã tạo phiếu chi nháp thành công! Tổng: ${totalAmount.toLocaleString('vi-VN')} đ`, 'success');
                     closeModal();
                     // Ask to redirect to payment page
-                    if (confirm('Phiếu chi đã được tạo. Bạn có muốn mở trang phiếu chi để xem không?')) {
+                    const goToPayment = await VWModal.confirm('Thành công', `Đã tạo phiếu chi nháp! Tổng: ${totalAmount.toLocaleString('vi-VN')} đ. Bạn có muốn mở trang phiếu chi để xem không?`);
+                    if (goToPayment) {
                         window.location.href = 'finance-payments.html';
                     }
                 } else {
