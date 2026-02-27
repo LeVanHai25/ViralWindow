@@ -59,27 +59,18 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .feature-item {
-            transition: all 0.3s ease;
-        }
-
-        .feature-item:hover {
-            transform: translateX(5px);
-        }
-
-        .right-panel {
-            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
-        }
-
         .login-form-container {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
             border-radius: 20px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         .input-field {
             transition: all 0.3s ease;
             border: 2px solid #e5e7eb;
+            background: white;
         }
 
         .input-field:focus {
@@ -105,12 +96,13 @@
     <script src="js/config.js"></script>
 </head>
 
-<body class="flex min-h-screen">
-    <!-- Left Panel - Branding -->
-    <div class="left-panel hidden lg:flex lg:w-3/5 flex-col justify-center items-center p-12 text-white relative">
-        <div class="z-10 text-center max-w-xl">
+<body class="min-h-screen">
+    <!-- Full Screen Panel -->
+    <div
+        class="left-panel flex w-full min-h-screen flex-col justify-center items-center p-6 lg:p-12 text-white relative">
+        <div class="z-10 text-center w-full max-w-md">
             <!-- Logo Icon / Dynamic Company Logo -->
-            <div class="icon-container w-24 h-24 rounded-2xl flex items-center justify-center mx-auto mb-8"
+            <div class="icon-container w-24 h-24 rounded-2xl flex items-center justify-center mx-auto mb-6"
                 id="logoContainer">
                 <!-- Company Logo (hidden by default, shown when loaded) -->
                 <img id="companyLogoLeft" src="" alt="Logo" class="w-20 h-20 object-contain hidden rounded-xl">
@@ -122,138 +114,102 @@
                 </svg>
             </div>
 
-            <h1 class="text-5xl font-bold mb-4" id="companyNameLeft">VIRALWINDOW</h1>
-            <p class="text-xl opacity-90 mb-12">Hệ thống quản lý doanh nghiệp cửa nhôm kính<br>thông minh, hiện đại và
+            <h1 class="text-4xl lg:text-5xl font-bold mb-2" id="companyNameLeft">VIRALWINDOW</h1>
+            <p class="text-lg opacity-90 mb-8">Hệ thống quản lý doanh nghiệp cửa nhôm kính<br>thông minh, hiện đại và
                 chuyên nghiệp</p>
 
-            <!-- Features -->
-            <div class="space-y-4">
-                <div class="feature-item glass-card rounded-xl p-4 flex items-center gap-4">
-                    <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                            class="w-6 h-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                        </svg>
-                    </div>
-                    <span class="text-lg font-medium">Quản lý dự án toàn diện</span>
+            <!-- Login Form (replaces features) -->
+            <div class="login-form-container w-full p-8 text-left">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-1">Chào mừng trở lại!</h2>
+                    <p class="text-gray-500 text-sm">Đăng nhập để tiếp tục quản lý công việc</p>
                 </div>
 
-                <div class="feature-item glass-card rounded-xl p-4 flex items-center gap-4">
-                    <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                            class="w-6 h-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                        </svg>
+                <!-- Error/Success Messages -->
+                <div id="alertMessage" class="hidden mb-4 p-4 rounded-lg"></div>
+
+                <!-- Login Form -->
+                <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-5">
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                            Email
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" class="w-5 h-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                            </span>
+                            <input type="email" id="email" name="email" required placeholder="Nhập email của bạn"
+                                class="input-field w-full pl-12 pr-4 py-3 rounded-xl focus:outline-none">
+                        </div>
+                        <p id="emailError" class="text-red-500 text-sm mt-1 hidden"></p>
                     </div>
-                    <span class="text-lg font-medium">Báo giá & Thiết kế thông minh</span>
-                </div>
 
-                <div class="feature-item glass-card rounded-xl p-4 flex items-center gap-4">
-                    <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                            class="w-6 h-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                        </svg>
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                            Mật khẩu
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" class="w-5 h-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                            </span>
+                            <input type="password" id="password" name="password" required placeholder="Nhập mật khẩu"
+                                class="input-field w-full pl-12 pr-12 py-3 rounded-xl focus:outline-none">
+                            <button type="button" onclick="togglePasswordVisibility()"
+                                class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor" class="w-5 h-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                            </button>
+                        </div>
+                        <p id="passwordError" class="text-red-500 text-sm mt-1 hidden"></p>
                     </div>
-                    <span class="text-lg font-medium">Quản lý Kho & Sản xuất</span>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Right Panel - Login Form -->
-    <div class="right-panel w-full lg:w-2/5 flex items-center justify-center p-6 lg:p-12">
-        <div class="login-form-container w-full max-w-md p-8">
-            <div class="text-center mb-8">
-                <h2 class="text-3xl font-bold text-gray-800 mb-2">Chào mừng trở lại!</h2>
-                <p class="text-gray-500">Đăng nhập để tiếp tục quản lý công việc</p>
-            </div>
+                    <div class="flex items-center justify-between">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" id="rememberMe"
+                                class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                            <span class="ml-2 text-sm text-gray-600">Ghi nhớ đăng nhập</span>
+                        </label>
+                        <a href="forgot-password.html"
+                            class="text-sm text-blue-600 hover:text-blue-800 font-medium">Quên
+                            mật khẩu?</a>
+                    </div>
 
-            <!-- Error/Success Messages -->
-            <div id="alertMessage" class="hidden mb-4 p-4 rounded-lg"></div>
-
-            <!-- Login Form -->
-            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-5">
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
-                        Email
-                    </label>
-                    <div class="relative">
-                        <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor" class="w-5 h-5">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    <button type="submit" id="loginButton"
+                        class="btn-primary w-full text-white py-3.5 rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        <span id="loginButtonText">Đăng nhập</span>
+                        <span id="loginButtonLoader" class="hidden">
+                            <svg class="animate-spin h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4">
+                                </circle>
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
                             </svg>
                         </span>
-                        <input type="email" id="email" name="email" required placeholder="Nhập email của bạn"
-                            class="input-field w-full pl-12 pr-4 py-3 rounded-xl focus:outline-none">
-                    </div>
-                    <p id="emailError" class="text-red-500 text-sm mt-1 hidden"></p>
+                    </button>
+                </form>
+
+                <div class="mt-6 text-center">
+                    <p class="text-gray-600">
+                        Chưa có tài khoản?
+                        <a href="register.html" class="text-blue-600 font-semibold hover:text-blue-800">Đăng ký ngay</a>
+                    </p>
                 </div>
-
-                <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
-                        Mật khẩu
-                    </label>
-                    <div class="relative">
-                        <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor" class="w-5 h-5">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                            </svg>
-                        </span>
-                        <input type="password" id="password" name="password" required placeholder="Nhập mật khẩu"
-                            class="input-field w-full pl-12 pr-12 py-3 rounded-xl focus:outline-none">
-                        <button type="button" onclick="togglePasswordVisibility()"
-                            class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                            <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor" class="w-5 h-5">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
-                        </button>
-                    </div>
-                    <p id="passwordError" class="text-red-500 text-sm mt-1 hidden"></p>
-                </div>
-
-                <div class="flex items-center justify-between">
-                    <label class="flex items-center cursor-pointer">
-                        <input type="checkbox" id="rememberMe"
-                            class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                        <span class="ml-2 text-sm text-gray-600">Ghi nhớ đăng nhập</span>
-                    </label>
-                    <a href="forgot-password.html" class="text-sm text-blue-600 hover:text-blue-800 font-medium">Quên
-                        mật khẩu?</a>
-                </div>
-
-                <button type="submit" id="loginButton"
-                    class="btn-primary w-full text-white py-3.5 rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                    <span id="loginButtonText">Đăng nhập</span>
-                    <span id="loginButtonLoader" class="hidden">
-                        <svg class="animate-spin h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
-                            viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-                            </circle>
-                            <path class="opacity-75" fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                            </path>
-                        </svg>
-                    </span>
-                </button>
-            </form>
-
-            <div class="mt-8 text-center">
-                <p class="text-gray-600">
-                    Chưa có tài khoản?
-                    <a href="register.html" class="text-blue-600 font-semibold hover:text-blue-800">Đăng ký ngay</a>
-                </p>
             </div>
         </div>
     </div>

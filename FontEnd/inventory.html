@@ -8517,7 +8517,7 @@
 
             // Handle logout (shared function)
             async function handleLogout() {
-                const confirmed = await VWModal.confirm('ÄÄƒng xuáº¥t', 'Bạn có chắc muốn đăng xuất?');
+                const confirmed = await VWModal.confirm('Đăng xuất', 'Bạn có chắc muốn đăng xuất?');
                 if (confirmed) {
                     sessionStorage.removeItem('token');
                     sessionStorage.removeItem('user');
