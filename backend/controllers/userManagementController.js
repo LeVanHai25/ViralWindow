@@ -429,9 +429,9 @@ exports.deleteUser = async (req, res) => {
             });
         }
 
-        // Soft delete - đánh dấu inactive
+        // Hard delete - xóa hoàn toàn khỏi database
         await db.query(
-            "UPDATE users SET is_active = 0 WHERE id = ?",
+            "DELETE FROM users WHERE id = ?",
             [id]
         );
 
