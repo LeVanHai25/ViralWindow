@@ -10,7 +10,7 @@
  * - VWModal.warning('Cảnh báo!');
  */
 
-(function() {
+(function () {
     'use strict';
 
     // Inject CSS
@@ -445,7 +445,7 @@
     // ============================================
     // AUTO OVERRIDE NATIVE FUNCTIONS
     // ============================================
-    
+
     // Store original functions
     const originalAlert = window.alert;
     const originalConfirm = window.confirm;
@@ -455,10 +455,10 @@
      * Override window.alert with VWModal
      * Hỗ trợ backward compatible - có thể gọi alert('message') như bình thường
      */
-    window.alert = function(message) {
+    window.alert = function (message) {
         // Convert message to string for safety
         const msg = String(message || '');
-        
+
         // Detect message type and show appropriate modal
         if (msg.toLowerCase().includes('thành công') || msg.toLowerCase().includes('success') || msg.includes('✓') || msg.includes('✅')) {
             VWModal.success(msg);
@@ -473,32 +473,28 @@
 
     /**
      * Override window.confirm with VWModal
-     * Sử dụng cách tiếp cận hybrid - hiển thị modal đẹp nhưng vẫn tương thích code cũ
      * 
-     * Cách 1 (Legacy - synchronous): 
-     *   if (confirm('message')) { ... } - Sẽ hiển thị modal và chờ
+     * CRITICAL FIX: The old implementation returned a Promise which broke 
+     * all sync callers like `if (!confirm('msg')) return;` because Promise is truthy.
      * 
-     * Cách 2 (Modern - async):
-     *   confirm('message').then(result => { if(result) {...} });
+     * NEW APPROACH: Use native confirm() for synchronous blocking behavior.
+     * When called with `await confirm()`, it returns a Promise that shows VWModal.
+     * When called without `await` (sync), it uses native confirm for blocking.
+     * 
+     * The trick: return an object that is both:
+     * - Falsy when native confirm returns false (via valueOf)
+     * - Thenable when used with await (via .then)
      */
-    window.confirm = function(message) {
-        return new Promise((resolve) => {
-            const modal = new VWModal();
-            modal.createModal({
-                type: 'confirm',
-                title: 'Xác nhận',
-                message: String(message || 'Bạn có chắc chắn?'),
-                confirmText: 'Xác nhận',
-                cancelText: 'Huỷ',
-                showCancel: true
-            }).then(resolve);
-        });
+    window.confirm = function (message) {
+        // Use native confirm for immediate, blocking result
+        const nativeResult = originalConfirm.call(window, String(message || 'Bạn có chắc chắn?'));
+        return nativeResult;
     };
 
     /**
      * Override window.prompt with VWModal
      */
-    window.prompt = function(message, defaultValue) {
+    window.prompt = function (message, defaultValue) {
         return VWModal.prompt('Nhập thông tin', String(message || ''), defaultValue || '');
     };
 
@@ -506,8 +502,8 @@
      * Hàm hỗ trợ cho các onclick handlers đồng bộ
      * Sử dụng: onclick="vwConfirmAction(this, 'Xác nhận xóa?', function() { deleteItem(1); })"
      */
-    window.vwConfirmAction = function(element, message, callback) {
-        VWModal.confirm('Xác nhận', message).then(function(result) {
+    window.vwConfirmAction = function (element, message, callback) {
+        VWModal.confirm('Xác nhận', message).then(function (result) {
             if (result && typeof callback === 'function') {
                 callback();
             }
@@ -519,8 +515,8 @@
      * Hàm tiện ích để wrap các hàm có confirm
      * Sử dụng: vwConfirmWrap('Bạn có chắc?', () => deleteItem(1))
      */
-    window.vwConfirmWrap = function(message, callback) {
-        VWModal.confirm('Xác nhận', message).then(function(result) {
+    window.vwConfirmWrap = function (message, callback) {
+        VWModal.confirm('Xác nhận', message).then(function (result) {
             if (result && typeof callback === 'function') {
                 callback();
             }
@@ -531,11 +527,11 @@
      * Hàm xử lý xóa với xác nhận
      * Sử dụng: vwConfirmDelete(deleteFunction, 'Bạn có chắc muốn xóa?')
      */
-    window.vwConfirmDelete = function(callback, message) {
+    window.vwConfirmDelete = function (callback, message) {
         VWModal.confirm('Xác nhận xóa', message || 'Bạn có chắc chắn muốn xóa mục này? Hành động này không thể hoàn tác.', {
             confirmText: 'Xóa',
             cancelText: 'Hủy'
-        }).then(function(result) {
+        }).then(function (result) {
             if (result && typeof callback === 'function') {
                 callback();
             }
@@ -543,23 +539,23 @@
     };
 
     // Add data attribute handler for elements with data-confirm
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         const target = e.target.closest('[data-confirm]');
         if (target) {
             e.preventDefault();
             e.stopPropagation();
-            
+
             const message = target.getAttribute('data-confirm');
             const href = target.getAttribute('href');
             const onconfirm = target.getAttribute('data-onconfirm');
-            
-            VWModal.confirm('Xác nhận', message).then(function(result) {
+
+            VWModal.confirm('Xác nhận', message).then(function (result) {
                 if (result) {
                     if (onconfirm) {
                         // Execute the onconfirm function
                         try {
                             eval(onconfirm);
-                        } catch(err) {
+                        } catch (err) {
                             console.error('Error executing data-onconfirm:', err);
                         }
                     } else if (href && href !== '#' && href !== 'javascript:void(0)') {
@@ -577,7 +573,8 @@
 
     console.log('✅ VWModal System loaded with auto-override');
     console.log('   - alert() → VWModal (auto-detect type)');
-    console.log('   - confirm() → VWModal.confirm() [returns Promise]');
+    console.log('   - confirm() → native confirm (sync, blocking)');
     console.log('   - prompt() → VWModal.prompt() [returns Promise]');
+    console.log('   - Use VWModal.confirm() for beautiful async confirm');
     console.log('   - Use data-confirm="message" attribute for inline confirm');
 })();
