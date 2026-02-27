@@ -82,7 +82,13 @@ async function autoIdQuery(sql, params) {
                             'VALUES (?, '
                         );
 
-                        return originalQuery(newSql2, newParams);
+                        const queryResult = await originalQuery(newSql2, newParams);
+                        // CRITICAL: Patch insertId because MySQL returns 0 
+                        // when id is explicitly specified (not AUTO_INCREMENT)
+                        if (queryResult && queryResult[0]) {
+                            queryResult[0].insertId = nextId;
+                        }
+                        return queryResult;
                     } catch (e) {
                         // If auto-id fails, fall through to original query
                         // (table might not have 'id' column at all)
