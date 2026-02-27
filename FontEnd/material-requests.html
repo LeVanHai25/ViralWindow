@@ -1244,8 +1244,17 @@
                 const request = currentViewingRequest;
                 const token = sessionStorage.getItem('token');
 
-                // Map expense type from category
+                // Map expense type from category - MUST match ENUM values in database!
+                // ENUM: 'supplier_payment','construction_cost','transport_cost','labor_cost','material_cost','other','material','purchase'
                 const expenseTypeMap = {
+                    'nhom': 'material',
+                    'kinh': 'material',
+                    'phukien': 'material',
+                    'vattu': 'material_cost'
+                };
+
+                // Vietnamese category names for the category field (text, not ENUM)
+                const categoryDescMap = {
                     'nhom': 'Mua nhôm',
                     'kinh': 'Mua kính',
                     'phukien': 'Mua phụ kiện',
@@ -1254,7 +1263,6 @@
 
                 showToast('Đang tra cứu đơn giá từ kho...', 'info');
 
-                // ✅ FIX: Pre-fetch all material price data ONCE for efficiency
                 let aluminumData = [];
                 let accessoriesData = [];
                 let inventoryData = [];
@@ -1428,7 +1436,8 @@
                 const paymentData = {
                     transaction_date: today, // Required field
                     transaction_type: 'expense',
-                    expense_type: expenseTypeMap[request.category] || 'Chi phí khác',
+                    category: categoryDescMap[request.category] || 'Chi phí vật tư',
+                    expense_type: expenseTypeMap[request.category] || 'material',
                     project_id: request.project_id || null,
                     supplier: request.supplier || '',
                     amount: totalAmount,
