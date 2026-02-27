@@ -55,10 +55,14 @@ exports.register = async (req, res) => {
         const defaultRoleId = userType === 'admin' ? 1 : 8;
 
         // Create user with default role
+        // Generate next ID (TiDB doesn't support AUTO_INCREMENT)
+        const [maxIdResult] = await db.query("SELECT COALESCE(MAX(id), 0) + 1 AS nextId FROM users");
+        const nextId = maxIdResult[0].nextId;
+
         const [result] = await db.query(
-            `INSERT INTO users (full_name, phone, email, address, password, user_type, role_id, is_active) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, 1)`,
-            [full_name, phone, email, address || null, hashedPassword, userType, defaultRoleId]
+            `INSERT INTO users (id, full_name, phone, email, address, password, user_type, role_id, is_active) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)`,
+            [nextId, full_name, phone, email, address || null, hashedPassword, userType, defaultRoleId]
         );
 
         // Fetch role name for response

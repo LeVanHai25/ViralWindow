@@ -168,11 +168,15 @@ exports.createUser = async (req, res) => {
         // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        // Generate next ID (TiDB doesn't support AUTO_INCREMENT)
+        const [maxIdResult] = await db.query("SELECT COALESCE(MAX(id), 0) + 1 AS nextId FROM users");
+        const nextId = maxIdResult[0].nextId;
+
         // Create user
         const [result] = await db.query(`
-            INSERT INTO users (full_name, email, phone, password, role_id, address, user_type, is_active) 
-            VALUES (?, ?, ?, ?, ?, ?, 'user', 1)
-        `, [full_name, email, phone || null, hashedPassword, role_id || null, address || null]);
+            INSERT INTO users (id, full_name, email, phone, password, role_id, address, user_type, is_active) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, 'user', 1)
+        `, [nextId, full_name, email, phone || null, hashedPassword, role_id || null, address || null]);
 
         res.status(201).json({
             success: true,
