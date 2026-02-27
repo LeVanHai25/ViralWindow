@@ -740,6 +740,8 @@
         async function saveUser() {
             const name = document.getElementById('userFullName').value.trim(), email = document.getElementById('userEmail').value.trim(), phone = document.getElementById('userPhone').value.trim(), password = document.getElementById('userPassword').value, roleId = document.getElementById('userRole').value;
             if (!name || !email) { alert('Nhập họ tên và email'); return; }
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) { alert('Email không đúng định dạng. Ví dụ: user@gmail.com'); return; }
             if (!currentUserId && password.length < 6) { alert('Mật khẩu tối thiểu 6 ký tự'); return; }
             const body = { full_name: name, email, phone: phone || null, role_id: roleId || null };
             if (!currentUserId) body.password = password;

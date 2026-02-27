@@ -137,6 +137,15 @@ exports.createUser = async (req, res) => {
             });
         }
 
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({
+                success: false,
+                message: "Email không đúng định dạng"
+            });
+        }
+
         // Check email exists
         const [emailExists] = await db.query(
             "SELECT id FROM users WHERE email = ?",
