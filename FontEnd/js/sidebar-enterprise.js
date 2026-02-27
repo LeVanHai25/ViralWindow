@@ -12,15 +12,90 @@ class EnterpriseSidebar {
     }
 
     init() {
+        this.setupMobileMenu();
         this.setupActiveStates();
         this.setupSPANavigation();
         this.setupPrefetching();
         // this.setupRippleEffects();
         this.setupAccordionMenus();
         this.setupSkeletonLoading();
-        this.loadUserRoleDisplay(); // Thêm: Hiển thị đúng chức vụ
-        this.loadCompanyLogo(); // Thêm: Load logo công ty
+        this.loadUserRoleDisplay();
+        this.loadCompanyLogo();
     }
+
+    /**
+     * Mobile Hamburger Menu - Auto inject and manage
+     * Creates hamburger button + overlay, handles open/close
+     */
+    setupMobileMenu() {
+        // Create hamburger button
+        const hamburger = document.createElement('button');
+        hamburger.className = 'mobile-hamburger';
+        hamburger.id = 'mobileHamburger';
+        hamburger.setAttribute('aria-label', 'Menu');
+        hamburger.innerHTML = `
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        `;
+        document.body.appendChild(hamburger);
+
+        // Create overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'sidebar-overlay';
+        overlay.id = 'sidebarOverlay';
+        document.body.appendChild(overlay);
+
+        const sidebar = document.querySelector('.sidebar');
+        if (!sidebar) return;
+
+        // Toggle sidebar
+        const toggleSidebar = (open) => {
+            if (open) {
+                sidebar.classList.add('mobile-open');
+                overlay.classList.add('show');
+                hamburger.innerHTML = `
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                `;
+            } else {
+                sidebar.classList.remove('mobile-open');
+                overlay.classList.remove('show');
+                hamburger.innerHTML = `
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                `;
+            }
+        };
+
+        // Hamburger click
+        hamburger.addEventListener('click', () => {
+            const isOpen = sidebar.classList.contains('mobile-open');
+            toggleSidebar(!isOpen);
+        });
+
+        // Overlay click → close
+        overlay.addEventListener('click', () => toggleSidebar(false));
+
+        // Close when clicking a nav link (on mobile)
+        sidebar.addEventListener('click', (e) => {
+            const link = e.target.closest('a.nav-item, a.submenu-item');
+            if (link && link.getAttribute('href') && window.innerWidth <= 768) {
+                setTimeout(() => toggleSidebar(false), 150);
+            }
+        });
+
+        // Handle resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                sidebar.classList.remove('mobile-open');
+                overlay.classList.remove('show');
+            }
+        });
+    }
+
 
     /**
      * Get API base URL - dynamically detect from current environment
