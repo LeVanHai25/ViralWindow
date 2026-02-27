@@ -753,15 +753,15 @@
             if (d.success) { closeUserModal(); loadUsers(); alert(currentUserId ? 'Cập nhật thành công!' : 'Tạo thành công!'); } else { alert('Lỗi: ' + d.message); }
         }
         async function toggleUserStatus(id) {
-            if (!confirm('Thay đổi trạng thái?')) return;
+            if (!await confirm('Thay đổi trạng thái?')) return;
             const r = await fetchWithAuth(`${API_BASE}/user-management/${id}/toggle-status`, { method: 'PATCH' });
             if (!r) return;
             const d = await r.json();
             if (d.success) loadUsers(); else alert('Lỗi: ' + d.message);
         }
         async function deleteUser(id, name) {
-            if (!confirm(`⚠️ Bạn có chắc muốn XÓA tài khoản "${name}"?\n\nHành động này không thể hoàn tác!`)) return;
-            if (!confirm(`Xác nhận lần 2: Xóa vĩnh viễn tài khoản "${name}"?`)) return;
+            if (!await confirm(`⚠️ Bạn có chắc muốn XÓA tài khoản "${name}"?\n\nHành động này không thể hoàn tác!`)) return;
+            if (!await confirm(`Xác nhận lần 2: Xóa vĩnh viễn tài khoản "${name}"?`)) return;
             const r = await fetchWithAuth(`${API_BASE}/user-management/${id}`, { method: 'DELETE' });
             if (!r) return;
             const d = await r.json();
