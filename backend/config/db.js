@@ -45,16 +45,24 @@ pool.getConnection()
  * TiDB Auto-ID Wrapper
  * TiDB Cloud tables don't have AUTO_INCREMENT.
  * This wrapper intercepts INSERT queries and auto-generates 'id' if missing.
+ * 
+ * CRITICAL: Must wrap BOTH pool.query() AND connection.query() (from getConnection)
+ * because 25+ controllers use transactions via getConnection().
  */
-const originalQuery = pool.query.bind(pool);
-const originalExecute = pool.execute ? pool.execute.bind(pool) : null;
+const originalPoolQuery = pool.query.bind(pool);
 
-async function autoIdQuery(sql, params) {
+/**
+ * Core auto-ID logic - works with any query function
+ * @param {Function} queryFn - The original query function to call
+ * @param {string} sql - SQL string
+ * @param {Array} params - Query parameters
+ */
+async function autoIdQuery(queryFn, sql, params) {
     if (typeof sql === 'string') {
         const upperSql = sql.trim().toUpperCase();
         // Only intercept INSERT INTO ... (...) VALUES (...)
         if (upperSql.startsWith('INSERT INTO')) {
-            const match = sql.match(/INSERT\s+INTO\s+`?(\w+)`?\s*\(([^)]+)\)/i);
+            const match = sql.match(/INSERT\s+INTO\s+`?(\w+)`?\s*\(([^)]+)\)/is);
             if (match) {
                 const tableName = match[1];
                 const columns = match[2].split(',').map(c => c.trim().replace(/`/g, ''));
@@ -62,15 +70,15 @@ async function autoIdQuery(sql, params) {
                 // If 'id' is not in the columns list, add it
                 if (!columns.includes('id')) {
                     try {
-                        // Generate next ID
-                        const [maxResult] = await originalQuery(
+                        // Generate next ID (always use pool query for MAX lookup)
+                        const [maxResult] = await originalPoolQuery(
                             `SELECT COALESCE(MAX(id), 0) + 1 AS nextId FROM \`${tableName}\``
                         );
                         const nextId = maxResult[0].nextId;
 
                         // Add 'id' to columns and nextId to values
                         const newSql = sql.replace(
-                            /INSERT\s+INTO\s+(`?\w+`?)\s*\(([^)]+)\)/i,
+                            /INSERT\s+INTO\s+(`?\w+`?)\s*\(([^)]+)\)/is,
                             `INSERT INTO $1 (id, $2)`
                         );
                         // Add nextId as first parameter
@@ -82,7 +90,7 @@ async function autoIdQuery(sql, params) {
                             'VALUES (?, '
                         );
 
-                        const queryResult = await originalQuery(newSql2, newParams);
+                        const queryResult = await queryFn(newSql2, newParams);
                         // CRITICAL: Patch insertId because MySQL returns 0 
                         // when id is explicitly specified (not AUTO_INCREMENT)
                         if (queryResult && queryResult[0]) {
@@ -97,16 +105,48 @@ async function autoIdQuery(sql, params) {
             }
         }
     }
-    return originalQuery(sql, params);
+    return queryFn(sql, params);
 }
 
-// Create wrapper
+/**
+ * Wrap a connection object so its query/execute also go through autoIdQuery
+ */
+function wrapConnection(connection) {
+    const origConnQuery = connection.query.bind(connection);
+    const origConnExecute = connection.execute ? connection.execute.bind(connection) : null;
+
+    return new Proxy(connection, {
+        get(target, prop) {
+            if (prop === 'query') {
+                return (sql, params) => autoIdQuery(origConnQuery, sql, params);
+            }
+            if (prop === 'execute' && origConnExecute) {
+                return (sql, params) => autoIdQuery(origConnExecute, sql, params);
+            }
+            return target[prop];
+        }
+    });
+}
+
+// Create pool wrapper
 const wrappedPool = new Proxy(pool, {
     get(target, prop) {
-        if (prop === 'query') return autoIdQuery;
-        if (prop === 'execute') return autoIdQuery;
+        if (prop === 'query') {
+            return (sql, params) => autoIdQuery(originalPoolQuery, sql, params);
+        }
+        if (prop === 'execute') {
+            return (sql, params) => autoIdQuery(originalPoolQuery, sql, params);
+        }
+        if (prop === 'getConnection') {
+            // Wrap getConnection to return wrapped connections
+            return async () => {
+                const connection = await target.getConnection();
+                return wrapConnection(connection);
+            };
+        }
         return target[prop];
     }
 });
 
 module.exports = wrappedPool;
+
