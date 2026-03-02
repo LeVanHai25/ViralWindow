@@ -844,7 +844,7 @@
         async function deleteAgency(id, name) {
             const confirmed = await VWModal.confirm(
                 'Xóa chi nhánh',
-                `Bạn có chắc chắn muốn xóa chi nhánh <strong>${name}</strong>?<br><br><span class="text-sm text-gray-500">Chi nhánh sẽ được chuyển sang trạng thái "Tạm dừng" và có thể khôi phục lại sau.</span>`
+                `Bạn có chắc chắn muốn <strong>xóa vĩnh viễn</strong> chi nhánh <strong>${name}</strong>?<br><br><span class="text-sm text-red-500">⚠️ Hành động này không thể hoàn tác! Dữ liệu chi nhánh sẽ bị xóa khỏi hệ thống.</span>`
             );
             if (!confirmed) return;
 

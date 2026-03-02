@@ -104,12 +104,15 @@ const updateAgency = async (req, res) => {
     }
 };
 
-// Xóa (soft delete - chuyển sang inactive)
+// Xóa hẳn đại lý khỏi database (hard delete)
 const deleteAgency = async (req, res) => {
     try {
         const { id } = req.params;
-        await pool.query(`UPDATE agencies SET status = 'inactive' WHERE id = ?`, [id]);
-        res.json({ success: true, message: 'Đã ngừng hoạt động đại lý' });
+        // Gỡ liên kết khách hàng trước khi xóa
+        await pool.query(`UPDATE customers SET agency_id = NULL WHERE agency_id = ?`, [id]);
+        // Xóa hẳn khỏi database
+        await pool.query(`DELETE FROM agencies WHERE id = ?`, [id]);
+        res.json({ success: true, message: 'Đã xóa đại lý thành công' });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
