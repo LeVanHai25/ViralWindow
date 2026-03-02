@@ -6844,27 +6844,33 @@
                 if (!agencyName) return;
 
                 // Map agency prefix to province
+                // Map agency prefix to province (cập nhật sau sáp nhập 2025)
                 const provinceMap = {
                     'CN Ninh Bình': 'Ninh Bình',
                     'CN Bắc Ninh': 'Bắc Ninh',
                     'CN Hà Nội': 'Hà Nội',
                     'KD Hà Nội': 'Hà Nội',
-                    'CN Hà Nam': 'Hà Nam',
-                    'CN Hải Dương': 'Hải Dương',
+                    'CN Hà Nam': 'Ninh Bình',         // Hà Nam sáp nhập vào Ninh Bình
+                    'CN Hải Dương': 'Hải Phòng',      // Hải Dương sáp nhập vào Hải Phòng
                     'CN Hải Phòng': 'Hải Phòng',
                     'CN Quảng Ninh': 'Quảng Ninh',
-                    'CN Thái Bình': 'Thái Bình',
+                    'CN Thái Bình': 'Hưng Yên',       // Thái Bình sáp nhập vào Hưng Yên
                     'CN Thái Nguyên': 'Thái Nguyên',
-                    'CN Vĩnh Phúc': 'Vĩnh Phúc',
+                    'CN Vĩnh Phúc': 'Phú Thọ',        // Vĩnh Phúc sáp nhập vào Phú Thọ
                     'CN Phú Thọ': 'Phú Thọ',
                     'CN Lạng Sơn': 'Lạng Sơn',
-                    'CN Nam Định': 'Nam Định',
+                    'CN Nam Định': 'Ninh Bình',        // Nam Định → tạm gán Ninh Bình
                     'CN Thanh Hóa': 'Thanh Hóa',
                     'CN Nghệ An': 'Nghệ An',
                     'CN Sơn La': 'Sơn La',
                     'CN Lào Cai': 'Lào Cai',
                     'CN Tuyên Quang': 'Tuyên Quang',
-                    'CN Quý Hợp': 'Nghệ An' // Quý Hợp is a district in Nghệ An
+                    'CN Quý Hợp': 'Nghệ An',          // Quý Hợp thuộc Nghệ An
+                    'CN Bắc Giang': 'Bắc Ninh',       // Bắc Giang sáp nhập vào Bắc Ninh
+                    'CN Hòa Bình': 'Phú Thọ',         // Hòa Bình sáp nhập vào Phú Thọ
+                    'CN Yên Bái': 'Lào Cai',          // Yên Bái sáp nhập vào Lào Cai
+                    'CN Hà Giang': 'Tuyên Quang',     // Hà Giang sáp nhập vào Tuyên Quang
+                    'CN Bắc Kạn': 'Thái Nguyên'       // Bắc Kạn sáp nhập vào Thái Nguyên
                 };
 
                 // Try exact match first
@@ -6897,18 +6903,44 @@
                 }
             }
 
-            // Load provinces (Vietnam) 
+            // Load provinces (Vietnam - Cập nhật sau sáp nhập 12/6/2025)
+            // 63 tỉnh/thành → 34 tỉnh/thành (28 tỉnh + 6 TP trực thuộc TW)
             const vietnamProvinces = [
-                'An Giang', 'Bà Rịa - Vũng Tàu', 'Bạc Liêu', 'Bắc Giang', 'Bắc Kạn', 'Bắc Ninh',
-                'Bến Tre', 'Bình Dương', 'Bình Định', 'Bình Phước', 'Bình Thuận', 'Cà Mau',
-                'Cao Bằng', 'Cần Thơ', 'Đà Nẵng', 'Đắk Lắk', 'Đắk Nông', 'Điện Biên', 'Đồng Nai',
-                'Đồng Tháp', 'Gia Lai', 'Hà Giang', 'Hà Nam', 'Hà Nội', 'Hà Tĩnh', 'Hải Dương',
-                'Hải Phòng', 'Hậu Giang', 'Hòa Bình', 'Hưng Yên', 'Khánh Hòa', 'Kiên Giang',
-                'Kon Tum', 'Lai Châu', 'Lạng Sơn', 'Lào Cai', 'Lâm Đồng', 'Long An', 'Nam Định',
-                'Nghệ An', 'Ninh Bình', 'Ninh Thuận', 'Phú Thọ', 'Phú Yên', 'Quảng Bình',
-                'Quảng Nam', 'Quảng Ngãi', 'Quảng Ninh', 'Quảng Trị', 'Sóc Trăng', 'Sơn La',
-                'Tây Ninh', 'Thái Bình', 'Thái Nguyên', 'Thanh Hóa', 'Thừa Thiên Huế', 'Tiền Giang',
-                'TP. Hồ Chí Minh', 'Trà Vinh', 'Tuyên Quang', 'Vĩnh Long', 'Vĩnh Phúc', 'Yên Bái'
+                // 6 Thành phố trực thuộc TW
+                'Hà Nội', 'TP. Hồ Chí Minh', 'Hải Phòng', 'Đà Nẵng', 'Cần Thơ', 'TP. Huế',
+                // 28 Tỉnh (A-Z)
+                'An Giang',          // An Giang + Kiên Giang
+                'Bà Rịa - Vũng Tàu',
+                'Bắc Ninh',          // Bắc Giang + Bắc Ninh  
+                'Bình Thuận',
+                'Cà Mau',            // Bạc Liêu + Cà Mau
+                'Cao Bằng',
+                'Đắk Lắk',
+                'Điện Biên',
+                'Đồng Nai',          // Bình Phước + Đồng Nai
+                'Đồng Tháp',         // Tiền Giang + Đồng Tháp
+                'Gia Lai',           // Kon Tum + Gia Lai
+                'Hậu Giang',         // Hậu Giang + Sóc Trăng
+                'Hưng Yên',          // Hưng Yên + Thái Bình
+                'Khánh Hòa',         // Ninh Thuận + Khánh Hòa
+                'Lai Châu',
+                'Lạng Sơn',
+                'Lào Cai',           // Yên Bái + Lào Cai
+                'Lâm Đồng',          // Đắk Nông + Lâm Đồng
+                'Nghệ An',
+                'Ninh Bình',         // Hà Nam + Ninh Bình
+                'Phú Thọ',           // Vĩnh Phúc + Hòa Bình + Phú Thọ
+                'Quảng Ngãi',        // Bình Định + Quảng Ngãi
+                'Quảng Ninh',
+                'Quảng Trị',         // Quảng Bình + Quảng Trị
+                'Sơn La',
+                'Tây Ninh',
+                'Thái Nguyên',       // Bắc Kạn + Thái Nguyên
+                'Thanh Hóa',
+                'Trà Vinh',          // Trà Vinh + Vĩnh Long + Bến Tre
+                'Tuyên Quang',       // Hà Giang + Tuyên Quang
+                'Hà Tĩnh',
+                'Phú Yên'            // Phú Yên + Nam Định (giữ lại)
             ];
 
             async function loadProvinces() {
@@ -6921,20 +6953,33 @@
                 });
             }
 
-            // Load districts based on province (mở rộng thêm nhiều tỉnh)
+            // Load districts based on province (cập nhật sau sáp nhập 2025)
             const districtsByProvince = {
                 'Hà Nội': ['Ba Đình', 'Hoàn Kiếm', 'Đống Đa', 'Hai Bà Trưng', 'Thanh Xuân', 'Cầu Giấy', 'Long Biên', 'Hoàng Mai', 'Tây Hồ', 'Nam Từ Liêm', 'Bắc Từ Liêm', 'Hà Đông', 'Sơn Tây', 'Hoài Đức', 'Đan Phượng', 'Thạch Thất', 'Quốc Oai', 'Chương Mỹ', 'Thanh Oai', 'Thường Tín', 'Phú Xuyên', 'Ứng Hòa', 'Mỹ Đức', 'Ba Vì', 'Phúc Thọ', 'Đông Anh', 'Mê Linh', 'Sóc Sơn', 'Gia Lâm', 'Thanh Trì'],
-                'TP. Hồ Chí Minh': ['Quận 1', 'Quận 3', 'Quận 4', 'Quận 5', 'Quận 6', 'Quận 7', 'Quận 8', 'Quận 10', 'Quận 11', 'Quận 12', 'Bình Thạnh', 'Gò Vấp', 'Phú Nhuận', 'Tân Bình', 'Tân Phú', 'TP Thủ Đức', 'Bình Tân', 'Củ Chi', 'Hóc Môn', 'Bình Chánh', 'Nhà Bè', 'Cần Giờ'],
-                'Đà Nẵng': ['Hải Châu', 'Thanh Khê', 'Sơn Trà', 'Ngũ Hành Sơn', 'Liên Chiểu', 'Cẩm Lệ', 'Hòa Vang', 'Hoàng Sa'],
-                'Bắc Ninh': ['TP Bắc Ninh', 'Từ Sơn', 'Yên Phong', 'Quế Võ', 'Tiên Du', 'Thuận Thành', 'Gia Bình', 'Lương Tài'],
-                'Hải Phòng': ['Hồng Bàng', 'Ngô Quyền', 'Lê Chân', 'Hải An', 'Kiến An', 'Đồ Sơn', 'Dương Kinh', 'Thủy Nguyên', 'An Dương', 'An Lão', 'Kiến Thụy', 'Tiên Lãng', 'Vĩnh Bảo', 'Cát Hải', 'Bạch Long Vĩ'],
-                'Ninh Bình': ['TP Ninh Bình', 'Tam Điệp', 'Nho Quan', 'Gia Viễn', 'Hoa Lư', 'Yên Khánh', 'Kim Sơn', 'Yên Mô'],
-                'Hà Nam': ['TP Phủ Lý', 'Duy Tiên', 'Kim Bảng', 'Thanh Liêm', 'Bình Lục', 'Lý Nhân'],
-                'Nam Định': ['TP Nam Định', 'Mỹ Lộc', 'Vụ Bản', 'Ý Yên', 'Nghĩa Hưng', 'Nam Trực', 'Trực Ninh', 'Xuân Trường', 'Giao Thủy', 'Hải Hậu'],
-                'Thái Bình': ['TP Thái Bình', 'Quỳnh Phụ', 'Hưng Hà', 'Đông Hưng', 'Thái Thụy', 'Tiền Hải', 'Kiến Xương', 'Vũ Thư'],
-                'Nghệ An': ['TP Vinh', 'Thị xã Cửa Lò', 'Thị xã Thái Hòa', 'Thị xã Hoàng Mai', 'Quế Phong', 'Quỳ Châu', 'Kỳ Sơn', 'Tương Dương', 'Nghĩa Đàn', 'Quỳ Hợp', 'Quỳnh Lưu', 'Con Cuông', 'Tân Kỳ', 'Anh Sơn', 'Diễn Châu', 'Yên Thành', 'Đô Lương', 'Thanh Chương', 'Nghi Lộc', 'Nam Đàn', 'Hưng Nguyên'],
+                'TP. Hồ Chí Minh': ['Quận 1', 'Quận 3', 'Quận 4', 'Quận 5', 'Quận 6', 'Quận 7', 'Quận 8', 'Quận 10', 'Quận 11', 'Quận 12', 'Bình Thạnh', 'Gò Vấp', 'Phú Nhuận', 'Tân Bình', 'Tân Phú', 'TP Thủ Đức', 'Bình Tân', 'Củ Chi', 'Hóc Môn', 'Bình Chánh', 'Nhà Bè', 'Cần Giờ', 'Bình Dương (cũ)', 'Long An (cũ)'],
+                'Hải Phòng': ['Hồng Bàng', 'Ngô Quyền', 'Lê Chân', 'Hải An', 'Kiến An', 'Đồ Sơn', 'Dương Kinh', 'Thủy Nguyên', 'An Dương', 'An Lão', 'Kiến Thụy', 'Tiên Lãng', 'Vĩnh Bảo', 'Cát Hải', 'Bạch Long Vĩ', 'TP Hải Dương', 'Nam Sách', 'Thanh Hà', 'Kim Thành', 'Kinh Môn', 'Chí Linh', 'Ninh Giang', 'Tứ Kỳ', 'Gia Lộc', 'Thanh Miện', 'Cẩm Giàng', 'Bình Giang'],
+                'Đà Nẵng': ['Hải Châu', 'Thanh Khê', 'Sơn Trà', 'Ngũ Hành Sơn', 'Liên Chiểu', 'Cẩm Lệ', 'Hòa Vang', 'Hoàng Sa', 'TP Tam Kỳ', 'TP Hội An', 'Điện Bàn', 'Đại Lộc', 'Duy Xuyên', 'Quế Sơn', 'Thăng Bình', 'Núi Thành', 'Tiên Phước', 'Hiệp Đức', 'Phước Sơn', 'Nam Giang', 'Đông Giang', 'Tây Giang', 'Bắc Trà My', 'Nam Trà My', 'Nông Sơn', 'Phú Ninh'],
+                'Cần Thơ': ['Ninh Kiều', 'Bình Thủy', 'Cái Răng', 'Ô Môn', 'Thốt Nốt', 'Phong Điền', 'Cờ Đỏ', 'Thới Lai', 'Vĩnh Thạnh', 'TP Vĩnh Long (cũ)', 'Long Hồ', 'Mang Thít', 'Tam Bình', 'Trà Ôn', 'Vũng Liêm', 'Bình Tân (VL)'],
+                'TP. Huế': ['TP Huế', 'Phong Điền', 'Quảng Điền', 'Phú Vang', 'Hương Thủy', 'Hương Trà', 'A Lưới', 'Nam Đông', 'Phú Lộc'],
+                'Ninh Bình': ['TP Ninh Bình', 'Tam Điệp', 'Nho Quan', 'Gia Viễn', 'Hoa Lư', 'Yên Khánh', 'Kim Sơn', 'Yên Mô', 'TP Phủ Lý', 'Duy Tiên', 'Kim Bảng', 'Thanh Liêm', 'Bình Lục', 'Lý Nhân'],
+                'Bắc Ninh': ['TP Bắc Ninh', 'Từ Sơn', 'Yên Phong', 'Quế Võ', 'Tiên Du', 'Thuận Thành', 'Gia Bình', 'Lương Tài', 'TP Bắc Giang', 'Lạng Giang', 'Lục Nam', 'Lục Ngạn', 'Sơn Động', 'Yên Thế', 'Hiệp Hòa', 'Tân Yên', 'Việt Yên', 'Yên Dũng'],
+                'Hưng Yên': ['TP Hưng Yên', 'Mỹ Hào', 'Văn Lâm', 'Văn Giang', 'Yên Mỹ', 'Khoái Châu', 'Ân Thi', 'Kim Động', 'Tiên Lữ', 'Phù Cừ', 'TP Thái Bình', 'Quỳnh Phụ', 'Hưng Hà', 'Đông Hưng', 'Thái Thụy', 'Tiền Hải', 'Kiến Xương', 'Vũ Thư'],
+                'Thái Nguyên': ['TP Thái Nguyên', 'TP Sông Công', 'Phổ Yên', 'Đại Từ', 'Định Hóa', 'Đồng Hỷ', 'Phú Bình', 'Phú Lương', 'Võ Nhai', 'TP Bắc Kạn', 'Ba Bể', 'Bạch Thông', 'Chợ Đồn', 'Chợ Mới', 'Na Rì', 'Ngân Sơn', 'Pác Nặm'],
+                'Tuyên Quang': ['TP Tuyên Quang', 'Chiêm Hóa', 'Hàm Yên', 'Lâm Bình', 'Na Hang', 'Sơn Dương', 'Yên Sơn', 'TP Hà Giang', 'Đồng Văn', 'Mèo Vạc', 'Yên Minh', 'Quản Bạ', 'Bắc Mê', 'Hoàng Su Phì', 'Vị Xuyên', 'Xín Mần', 'Bắc Quang', 'Quang Bình'],
+                'Lào Cai': ['TP Lào Cai', 'Bảo Yên', 'Bát Xát', 'Bắc Hà', 'Mường Khương', 'Sa Pa', 'Si Ma Cai', 'Văn Bàn', 'TP Yên Bái', 'Lục Yên', 'Mù Cang Chải', 'Trấn Yên', 'Trạm Tấu', 'Văn Chấn', 'Văn Yên', 'Yên Bình'],
+                'Phú Thọ': ['TP Việt Trì', 'Phù Ninh', 'Đoan Hùng', 'Hạ Hòa', 'Thanh Ba', 'Thanh Sơn', 'Thanh Thủy', 'Tân Sơn', 'Lâm Thao', 'Tam Nông', 'Yên Lập', 'Cẩm Khê', 'TP Hòa Bình', 'Cao Phong', 'Đà Bắc', 'Kim Bôi', 'Lạc Sơn', 'Lạc Thủy', 'Lương Sơn', 'Mai Châu', 'Tân Lạc', 'Yên Thủy', 'TP Vĩnh Yên', 'Phúc Yên', 'Bình Xuyên', 'Lập Thạch', 'Sông Lô', 'Tam Đảo', 'Tam Dương', 'Vĩnh Tường', 'Yên Lạc'],
+                'Nghệ An': ['TP Vinh', 'TX Cửa Lò', 'TX Thái Hòa', 'TX Hoàng Mai', 'Quế Phong', 'Quỳ Châu', 'Kỳ Sơn', 'Tương Dương', 'Nghĩa Đàn', 'Quỳ Hợp', 'Quỳnh Lưu', 'Con Cuông', 'Tân Kỳ', 'Anh Sơn', 'Diễn Châu', 'Yên Thành', 'Đô Lương', 'Thanh Chương', 'Nghi Lộc', 'Nam Đàn', 'Hưng Nguyên'],
                 'Thanh Hóa': ['TP Thanh Hóa', 'Bỉm Sơn', 'Sầm Sơn', 'Ngọc Lặc', 'Mường Lát', 'Quan Hóa', 'Quan Sơn', 'Bá Thước', 'Lang Chánh', 'Như Xuân', 'Như Thanh', 'Thường Xuân', 'Triệu Sơn', 'Thọ Xuân', 'Nông Cống', 'Đông Sơn', 'Quảng Xương', 'Hoằng Hóa', 'Hậu Lộc', 'Nga Sơn', 'Hà Trung', 'Vĩnh Lộc', 'Thiệu Hóa', 'Yên Định', 'Cẩm Thủy', 'Tĩnh Gia'],
-                'Quảng Ninh': ['TP Hạ Long', 'TP Móng Cái', 'TP Cẩm Phả', 'TP Uông Bí', 'Bình Liêu', 'Tiên Yên', 'Đầm Hà', 'Hải Hà', 'Ba Chẽ', 'Vân Đồn', 'Hoành Bồ', 'Đông Triều', 'Quảng Yên', 'Cô Tô']
+                'Quảng Ninh': ['TP Hạ Long', 'TP Móng Cái', 'TP Cẩm Phả', 'TP Uông Bí', 'Bình Liêu', 'Tiên Yên', 'Đầm Hà', 'Hải Hà', 'Ba Chẽ', 'Vân Đồn', 'Hoành Bồ', 'Đông Triều', 'Quảng Yên', 'Cô Tô'],
+                'Gia Lai': ['TP Pleiku', 'TX An Khê', 'TX Ayun Pa', 'Chư Păh', 'Chư Prông', 'Chư Sê', 'Đắk Đoa', 'Đắk Pơ', 'Đức Cơ', 'Ia Grai', 'Ia Pa', 'KBang', 'Krông Pa', 'KRông Chro', 'Mang Yang', 'Phú Thiện', 'TP Kon Tum', 'Đắk Glei', 'Đắk Hà', 'Đắk Tô', 'Kon Plông', 'Kon Rẫy', 'Ngọc Hồi', 'Sa Thầy', 'Tu Mơ Rông', 'Ia H\'Drai'],
+                'Khánh Hòa': ['TP Nha Trang', 'TP Cam Ranh', 'TX Ninh Hòa', 'Cam Lâm', 'Diên Khánh', 'Khánh Sơn', 'Khánh Vĩnh', 'Vạn Ninh', 'Trường Sa', 'TP Phan Rang-Tháp Chàm', 'Bác Ái', 'Ninh Hải', 'Ninh Phước', 'Ninh Sơn', 'Thuận Bắc', 'Thuận Nam'],
+                'Quảng Trị': ['TP Đông Hà', 'TX Quảng Trị', 'Cam Lộ', 'Đắk Rông', 'Gio Linh', 'Hải Lăng', 'Hướng Hóa', 'Triệu Phong', 'Vĩnh Linh', 'TP Đồng Hới', 'Bố Trạch', 'Lệ Thủy', 'Minh Hóa', 'Quảng Ninh (QB)', 'Quảng Trạch', 'Tuyên Hóa', 'Ba Đồn'],
+                'Lâm Đồng': ['TP Đà Lạt', 'TP Bảo Lộc', 'Bảo Lâm', 'Cát Tiên', 'Di Linh', 'Đạ Huoai', 'Đạ Tẻh', 'Đam Rông', 'Đơn Dương', 'Đức Trọng', 'Lạc Dương', 'Lâm Hà', 'TP Gia Nghĩa', 'Cư Jút', 'Đắk Glong', 'Đắk Mil', 'Đắk R Lấp', 'Đắk Song', 'Krông Nô', 'Tuy Đức'],
+                'An Giang': ['TP Long Xuyên', 'TP Châu Đốc', 'TX Tân Châu', 'An Phú', 'Châu Phú', 'Châu Thành', 'Chợ Mới', 'Phú Tân', 'Thoại Sơn', 'Tịnh Biên', 'Tri Tôn', 'TP Rạch Giá', 'TP Hà Tiên', 'An Biên', 'An Minh', 'Châu Thành (KG)', 'Giang Thành', 'Giồng Riềng', 'Gò Quao', 'Hòn Đất', 'Kiên Hải', 'Kiên Lương', 'Phú Quốc', 'Tân Hiệp', 'U Minh Thượng', 'Vĩnh Thuận'],
+                'Đồng Nai': ['TP Biên Hòa', 'Long Khánh', 'Cẩm Mỹ', 'Định Quán', 'Long Thành', 'Nhơn Trạch', 'Tân Phú', 'Thống Nhất', 'Trảng Bom', 'Vĩnh Cửu', 'Xuân Lộc', 'TX Bình Long', 'TX Phước Long', 'TX Đồng Xoài', 'Bù Đăng', 'Bù Đốp', 'Bù Gia Mập', 'Chơn Thành', 'Đồng Phú', 'Hớn Quản', 'Lộc Ninh', 'Phú Riềng'],
+                'Cà Mau': ['TP Cà Mau', 'Cái Nước', 'Đầm Dơi', 'Năm Căn', 'Ngọc Hiển', 'Phú Tân', 'Thới Bình', 'Trần Văn Thời', 'U Minh', 'TP Bạc Liêu', 'Đông Hải', 'Giá Rai', 'Hòa Bình', 'Hồng Dân', 'Phước Long', 'Vĩnh Lợi'],
+                'Đồng Tháp': ['TP Cao Lãnh', 'TP Sa Đéc', 'TX Hồng Ngự', 'Cao Lãnh', 'Châu Thành', 'Hồng Ngự', 'Lai Vung', 'Lấp Vò', 'Tam Nông', 'Tân Hồng', 'Thanh Bình', 'Tháp Mười', 'TP Mỹ Tho', 'TX Cai Lậy', 'TX Gò Công', 'Cai Lậy', 'Cái Bè', 'Châu Thành (TG)', 'Chợ Gạo', 'Gò Công Đông', 'Gò Công Tây', 'Tân Phú Đông', 'Tân Phước'],
+                'Quảng Ngãi': ['TP Quảng Ngãi', 'Ba Tơ', 'Bình Sơn', 'Đức Phổ', 'Minh Long', 'Mộ Đức', 'Nghĩa Hành', 'Sơn Hà', 'Sơn Tây (QNg)', 'Sơn Tịnh', 'Tây Trà', 'Trà Bồng', 'Tư Nghĩa', 'Lý Sơn', 'TP Quy Nhơn', 'TX An Nhơn', 'TX Hoài Nhơn', 'An Lão (BĐ)', 'Hoài Ân', 'Phù Cát', 'Phù Mỹ', 'Tây Sơn', 'Tuy Phước', 'Vân Canh', 'Vĩnh Thạnh (BĐ)']
             };
 
             function loadDistricts(province) {
