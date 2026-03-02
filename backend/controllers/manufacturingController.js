@@ -115,7 +115,8 @@ exports.getManufacturingProjects = async (req, res) => {
                 p.construction_province,
                 c.full_name AS customer_name,
                 c.phone AS customer_phone,
-                c.address AS customer_address
+                c.address AS customer_address,
+                p.created_at
             FROM projects p
             LEFT JOIN customers c ON p.customer_id = c.id
             WHERE p.status NOT IN ('cancelled', 'closed')
