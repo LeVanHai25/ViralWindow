@@ -195,7 +195,7 @@
                 <span>THEO DÕI DỰ ÁN</span>
             </a>
 
-            
+
 
             <!-- KINH DOANH -->
             <div class="nav-item has-submenu">
@@ -237,7 +237,7 @@
                     </svg>
                     <span>Quy trình dự án</span>
                 </a>
-                
+
                 <a href="product-catalog-v2.html" class="submenu-item">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                         class="w-5 h-5">
@@ -830,9 +830,42 @@
                         <button onclick="viewCustomers(${a.id})" class="flex-1 py-2 text-sm font-medium text-green-600 hover:bg-green-50 rounded-lg transition">
                             <i class="fas fa-users mr-1"></i> KH
                         </button>
+                        <button onclick="deleteAgency(${a.id}, '${a.name.replace(/'/g, "\\'")}')"
+                            class="py-2 px-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition"
+                            title="Xóa chi nhánh">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
                     </div>
                 </div>
             `).join('');
+        }
+
+        // Delete agency (soft delete → inactive)
+        async function deleteAgency(id, name) {
+            const confirmed = await VWModal.confirm(
+                'Xóa chi nhánh',
+                `Bạn có chắc chắn muốn xóa chi nhánh <strong>${name}</strong>?<br><br><span class="text-sm text-gray-500">Chi nhánh sẽ được chuyển sang trạng thái "Tạm dừng" và có thể khôi phục lại sau.</span>`
+            );
+            if (!confirmed) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/agencies/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${sessionStorage.getItem('token') || ''}`
+                    }
+                });
+                const result = await response.json();
+                if (result.success) {
+                    await VWModal.alert('Thành công', 'Đã xóa chi nhánh thành công!');
+                    loadAgencies();
+                } else {
+                    await VWModal.alert('Lỗi', result.message || 'Không thể xóa chi nhánh');
+                }
+            } catch (error) {
+                console.error('Error deleting agency:', error);
+                await VWModal.alert('Lỗi', 'Lỗi kết nối server');
+            }
         }
 
         // Search & Filter
