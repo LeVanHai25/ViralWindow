@@ -88,6 +88,9 @@ exports.getManufacturingProjects = async (req, res) => {
         try {
             await db.query(`ALTER TABLE projects ADD COLUMN production_notes TEXT NULL`);
         } catch (e) { /* Column already exists */ }
+        try {
+            await db.query(`ALTER TABLE projects ADD COLUMN production_photos JSON NULL`);
+        } catch (e) { /* Column already exists */ }
 
         // Get projects that have reached production stage
         // ✅ Thêm production_step, production_started_at, production_progress, production_notes
@@ -155,22 +158,42 @@ exports.getManufacturingProjects = async (req, res) => {
                                 : baseCode;
 
                             // Get or create manufacturing record
-                            const [mfgRecords] = await db.query(`
-                                SELECT * FROM product_manufacturing
-                                WHERE project_id = ? AND product_id = ?
-                            `, [project.id, productId]);
-
                             let mfgData;
-                            if (mfgRecords.length === 0) {
-                                // Create new record
-                                const [result] = await db.query(`
-                                    INSERT INTO product_manufacturing 
-                                    (project_id, product_id, status, materials_required_count)
-                                    VALUES (?, ?, 'not_assigned', 0)
+                            try {
+                                const [mfgRecords] = await db.query(`
+                                    SELECT * FROM product_manufacturing
+                                    WHERE project_id = ? AND product_id = ?
                                 `, [project.id, productId]);
 
+                                if (mfgRecords.length === 0) {
+                                    // Create new record
+                                    try {
+                                        await db.query(`
+                                            INSERT INTO product_manufacturing 
+                                            (project_id, product_id, status, materials_required_count)
+                                            VALUES (?, ?, 'not_assigned', 0)
+                                        `, [project.id, productId]);
+                                    } catch (insertErr) {
+                                        // Ignore duplicate key errors
+                                        if (!insertErr.message.includes('Duplicate')) {
+                                            console.warn('Insert mfg record warning:', insertErr.message);
+                                        }
+                                    }
+
+                                    mfgData = {
+                                        status: 'not_assigned',
+                                        materials_required_count: 0,
+                                        materials_exported_count: 0,
+                                        materials_percent: 0,
+                                        started_at: null,
+                                        completed_at: null
+                                    };
+                                } else {
+                                    mfgData = mfgRecords[0];
+                                }
+                            } catch (mfgErr) {
+                                console.warn('MFG record error for product', productId, ':', mfgErr.message);
                                 mfgData = {
-                                    id: result.insertId,
                                     status: 'not_assigned',
                                     materials_required_count: 0,
                                     materials_exported_count: 0,
@@ -178,8 +201,6 @@ exports.getManufacturingProjects = async (req, res) => {
                                     started_at: null,
                                     completed_at: null
                                 };
-                            } else {
-                                mfgData = mfgRecords[0];
                             }
 
                             // Calculate current status
