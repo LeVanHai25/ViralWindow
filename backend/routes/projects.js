@@ -30,6 +30,7 @@ router.get("/:projectId/items/:itemId/bom-detail", projectCtrl.getProjectItemBOM
 router.get("/:id/operation-status", projectCtrl.getOperationStatus);
 router.get("/:id/material-status", projectCtrl.getMaterialStatus);
 router.get("/:id/activity-logs", projectCtrl.getActivityLogs);
+router.get("/:id/export-report", projectCtrl.exportReport);
 
 // PATCH routes with specific paths
 router.patch("/:id/cancel", projectCtrl.cancelProject);

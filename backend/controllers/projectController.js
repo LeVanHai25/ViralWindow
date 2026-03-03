@@ -3950,4 +3950,189 @@ exports.getCancelledProjects = async (req, res) => {
             message: "Lỗi server"
         });
     }
-};
+
+    // EXPORT REPORT - Xuất báo cáo dự án dạng HTML
+    exports.exportReport = async (req, res) => {
+        try {
+            const { id } = req.params;
+
+            // 1. Lấy thông tin dự án
+            const [projects] = await db.query(
+                `SELECT p.*, 
+                c.full_name AS customer_name, c.phone AS customer_phone,
+                a.name AS agency_name
+             FROM projects p
+             LEFT JOIN customers c ON p.customer_id = c.id
+             LEFT JOIN agencies a ON c.agency_id = a.id
+             WHERE p.id = ?`,
+                [id]
+            );
+            if (!projects.length) {
+                return res.status(404).json({ success: false, message: 'Không tìm thấy dự án' });
+            }
+            const project = projects[0];
+
+            // 2. Lấy báo giá mới nhất
+            const [quotations] = await db.query(
+                `SELECT q.*, 
+                COALESCE(q.total_amount, q.grand_total, 0) AS total_amount
+             FROM quotations q 
+             WHERE q.project_id = ? 
+             ORDER BY q.created_at DESC LIMIT 1`,
+                [id]
+            );
+            const quotation = quotations[0] || null;
+
+            // 3. Lấy danh sách sản phẩm từ quotation items
+            let items = [];
+            if (quotation) {
+                const [qItems] = await db.query(
+                    `SELECT qi.* FROM quotation_items qi WHERE qi.quotation_id = ? ORDER BY qi.id`,
+                    [quotation.id]
+                );
+                items = qItems;
+            }
+
+            // 4. Lấy vật tư
+            const [materials] = await db.query(
+                `SELECT * FROM project_materials WHERE project_id = ? ORDER BY material_type, material_name`,
+                [id]
+            );
+
+            // 5. Tổng tài chính
+            const totalValue = parseFloat(project.total_value) || (quotation ? parseFloat(quotation.total_amount) || 0 : 0);
+            const [payments] = await db.query(
+                `SELECT COALESCE(SUM(amount),0) as paid 
+             FROM financial_transactions 
+             WHERE project_id = ? AND transaction_type = 'income' AND status = 'posted'`,
+                [id]
+            );
+            const paid = parseFloat(payments[0]?.paid) || 0;
+            const remaining = totalValue - paid;
+
+            // 6. Format helpers
+            const fmtDate = (d) => d ? new Date(d).toLocaleDateString('vi-VN') : '—';
+            const fmtMoney = (n) => new Intl.NumberFormat('vi-VN').format(Math.round(n || 0)) + ' đ';
+            const statusMap = {
+                new: 'Mới', in_progress: 'Đang thực hiện', completed: 'Hoàn thành',
+                cancelled: 'Đã hủy', closed: 'Đã đóng'
+            };
+
+            // 7. Build HTML
+            const itemsRows = items.map((item, i) => `
+            <tr>
+                <td>${i + 1}</td>
+                <td>${item.code || item.item_code || '—'}</td>
+                <td>${item.item_name || item.name || '—'}</td>
+                <td style="text-align:center">${item.width || 0} x ${item.height || 0}</td>
+                <td style="text-align:center">${item.quantity || 1}</td>
+                <td style="text-align:right">${fmtMoney(item.unit_price)}</td>
+                <td style="text-align:right"><b>${fmtMoney(item.total_price || (item.unit_price * item.quantity))}</b></td>
+            </tr>`).join('');
+
+            const matRows = materials.map((m, i) => `
+            <tr>
+                <td>${i + 1}</td>
+                <td>${m.material_type || '—'}</td>
+                <td>${m.material_name || m.item_name || '—'}</td>
+                <td style="text-align:center">${m.quantity || m.quantity_used || 0} ${m.unit || m.item_unit || ''}</td>
+                <td style="text-align:right">${fmtMoney(m.unit_price)}</td>
+                <td style="text-align:right">${fmtMoney(m.total_cost)}</td>
+            </tr>`).join('');
+
+            const html = `<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Báo cáo dự án - ${project.project_code}</title>
+<style>
+  body { font-family: Arial, sans-serif; font-size: 13px; color: #222; margin: 20px; }
+  h1 { font-size: 18px; text-align: center; margin-bottom: 4px; }
+  h2 { font-size: 14px; margin: 18px 0 6px; border-bottom: 2px solid #333; padding-bottom: 3px; }
+  .meta { text-align: center; font-size: 12px; color: #666; margin-bottom: 16px; }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 20px; margin-bottom: 12px; }
+  .info-grid div { padding: 3px 0; }
+  .label { font-weight: bold; color: #555; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+  th { background: #333; color: #fff; padding: 6px 8px; text-align: left; font-size: 12px; }
+  td { padding: 5px 8px; border-bottom: 1px solid #ddd; font-size: 12px; }
+  tr:nth-child(even) td { background: #f9f9f9; }
+  .summary { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin: 12px 0; }
+  .summary-card { border: 1px solid #ddd; border-radius: 6px; padding: 10px; text-align: center; }
+  .summary-card .value { font-size: 16px; font-weight: bold; margin-top: 4px; }
+  .green { color: #16a34a; } .red { color: #dc2626; } .blue { color: #2563eb; }
+  .footer { margin-top: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .sign-box { text-align: center; border-top: 1px solid #999; padding-top: 60px; font-size: 12px; }
+  @media print { button { display: none; } }
+</style>
+</head>
+<body>
+<div style="text-align:right; margin-bottom:8px">
+  <button onclick="window.print()" style="padding:6px 16px;background:#2563eb;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:13px">🖨️ In / Lưu PDF</button>
+</div>
+
+<h1>BÁO CÁO DỰ ÁN</h1>
+<p class="meta">Ngày xuất: ${fmtDate(new Date())} | Mã dự án: <b>${project.project_code}</b></p>
+
+<h2>1. THÔNG TIN DỰ ÁN</h2>
+<div class="info-grid">
+  <div><span class="label">Mã dự án:</span> ${project.project_code}</div>
+  <div><span class="label">Trạng thái:</span> ${statusMap[project.status] || project.status}</div>
+  <div><span class="label">Tên dự án:</span> ${project.project_name}</div>
+  <div><span class="label">Tiến độ:</span> ${project.progress_percent || 0}%</div>
+  <div><span class="label">Khách hàng:</span> ${project.customer_name}</div>
+  <div><span class="label">Điện thoại:</span> ${project.customer_phone || '—'}</div>
+  <div><span class="label">Chi nhánh:</span> ${project.agency_name || '—'}</div>
+  <div><span class="label">Địa chỉ:</span> ${project.construction_address || '—'}</div>
+  <div><span class="label">Ngày bắt đầu:</span> ${fmtDate(project.start_date || project.created_at)}</div>
+  <div><span class="label">Hạn hoàn thành:</span> ${fmtDate(project.deadline || project.end_date)}</div>
+</div>
+
+<h2>2. DANH SÁCH SẢN PHẨM${quotation ? ' (Báo giá ' + quotation.quotation_code + ')' : ''}</h2>
+${items.length > 0 ? `
+<table>
+  <thead><tr><th>#</th><th>Mã SP</th><th>Tên sản phẩm</th><th style="text-align:center">K.thước (R×C mm)</th><th style="text-align:center">SL</th><th style="text-align:right">Đơn giá</th><th style="text-align:right">Thành tiền</th></tr></thead>
+  <tbody>${itemsRows}</tbody>
+</table>` : '<p style="color:#888;font-style:italic">Chưa có sản phẩm</p>'}
+
+<h2>3. VẬT TƯ DỰ ÁN</h2>
+${materials.length > 0 ? `
+<table>
+  <thead><tr><th>#</th><th>Loại</th><th>Tên vật tư</th><th style="text-align:center">Số lượng</th><th style="text-align:right">Đơn giá</th><th style="text-align:right">Thành tiền</th></tr></thead>
+  <tbody>${matRows}</tbody>
+</table>` : '<p style="color:#888;font-style:italic">Chưa có vật tư</p>'}
+
+<h2>4. TỔNG KẾT TÀI CHÍNH</h2>
+<div class="summary">
+  <div class="summary-card">
+    <div style="color:#555">Giá trị hợp đồng</div>
+    <div class="value blue">${fmtMoney(totalValue)}</div>
+  </div>
+  <div class="summary-card">
+    <div style="color:#555">Đã thanh toán</div>
+    <div class="value green">${fmtMoney(paid)}</div>
+  </div>
+  <div class="summary-card">
+    <div style="color:#555">Còn lại</div>
+    <div class="value ${remaining > 0 ? 'red' : 'green'}">${fmtMoney(remaining)}</div>
+  </div>
+</div>
+
+${project.notes ? `<h2>5. GHI CHÚ</h2><p>${project.notes}</p>` : ''}
+
+<div class="footer">
+  <div class="sign-box">Khách hàng<br><small>(Ký, ghi rõ họ tên)</small></div>
+  <div class="sign-box">Đại diện ViralWindow<br><small>(Ký, ghi rõ họ tên)</small></div>
+</div>
+</body>
+</html>`;
+
+            res.setHeader('Content-Type', 'text/html; charset=utf-8');
+            res.send(html);
+
+        } catch (err) {
+            console.error('Error exporting report:', err);
+            res.status(500).json({ success: false, message: 'Lỗi server khi xuất báo cáo' });
+        }
+    };
+
