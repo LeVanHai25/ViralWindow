@@ -3952,11 +3952,13 @@ exports.getCancelledProjects = async (req, res) => {
     }
 };
 
-// EXPORT REPORT
+// EXPORT REPORT - Xuất báo cáo dự án ra file Excel (.xlsx)
 exports.exportReport = async (req, res) => {
     try {
         const { id } = req.params;
+        const ExcelJS = require('exceljs');
 
+        // 1. Thông tin dự án
         const [projects] = await db.query(
             'SELECT p.*, c.full_name AS customer_name, c.phone AS customer_phone, a.name AS agency_name FROM projects p LEFT JOIN customers c ON p.customer_id = c.id LEFT JOIN agencies a ON c.agency_id = a.id WHERE p.id = ?',
             [id]
@@ -3964,23 +3966,27 @@ exports.exportReport = async (req, res) => {
         if (!projects.length) return res.status(404).json({ success: false, message: 'Khong tim thay du an' });
         const project = projects[0];
 
+        // 2. Báo giá mới nhất
         const [quotations] = await db.query(
             'SELECT * FROM quotations WHERE project_id = ? ORDER BY created_at DESC LIMIT 1',
             [id]
         );
         const quotation = quotations[0] || null;
 
+        // 3. Sản phẩm
         let items = [];
         if (quotation) {
             const [qItems] = await db.query('SELECT * FROM quotation_items WHERE quotation_id = ? ORDER BY id', [quotation.id]);
             items = qItems;
         }
 
+        // 4. Vật tư
         const [materials] = await db.query(
             'SELECT * FROM project_materials WHERE project_id = ? ORDER BY material_type, material_name',
             [id]
         );
 
+        // 5. Tài chính
         const totalValue = parseFloat(project.total_value) || (quotation ? parseFloat(quotation.total_amount) || 0 : 0);
         const [payments] = await db.query(
             "SELECT COALESCE(SUM(amount),0) as paid FROM financial_transactions WHERE project_id = ? AND transaction_type = 'income' AND status = 'posted'",
@@ -3989,55 +3995,241 @@ exports.exportReport = async (req, res) => {
         const paid = parseFloat(payments[0] && payments[0].paid) || 0;
         const remaining = totalValue - paid;
 
+        // Helpers
         const fmtDate = (d) => d ? new Date(d).toLocaleDateString('vi-VN') : '-';
-        const fmtMoney = (n) => new Intl.NumberFormat('vi-VN').format(Math.round(n || 0)) + ' d';
         const statusMap = { new: 'Moi', in_progress: 'Dang thuc hien', completed: 'Hoan thanh', cancelled: 'Da huy', closed: 'Da dong' };
 
-        let itemsHtml = '<p style="color:#888">Chua co san pham</p>';
-        if (items.length > 0) {
-            const rows = items.map((item, i) => '<tr><td>' + (i + 1) + '</td><td>' + (item.code || item.item_code || '-') + '</td><td>' + (item.item_name || item.name || '-') + '</td><td>' + (item.width || 0) + 'x' + (item.height || 0) + '</td><td>' + (item.quantity || 1) + '</td><td>' + fmtMoney(item.unit_price) + '</td><td>' + fmtMoney(item.total_price || (item.unit_price * item.quantity)) + '</td></tr>').join('');
-            itemsHtml = '<table><thead><tr><th>#</th><th>Ma</th><th>Ten SP</th><th>Kich thuoc</th><th>SL</th><th>Don gia</th><th>Thanh tien</th></tr></thead><tbody>' + rows + '</tbody></table>';
+        // ===== TẠO WORKBOOK =====
+        const wb = new ExcelJS.Workbook();
+        wb.creator = 'ViralWindow';
+        wb.created = new Date();
+
+        // Style chung
+        const headerFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E3A5F' } };
+        const headerFont = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+        const sectionFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE8F0FE' } };
+        const sectionFont = { bold: true, color: { argb: 'FF1E3A5F' }, size: 12 };
+        const thinBorder = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+        const numFmt = '#,##0';
+
+        // ===== SHEET 1: THÔNG TIN DỰ ÁN =====
+        const ws1 = wb.addWorksheet('Thong tin du an', { properties: { tabColor: { argb: 'FF1E3A5F' } } });
+        ws1.columns = [
+            { width: 25 },
+            { width: 35 },
+            { width: 25 },
+            { width: 35 }
+        ];
+
+        // Tiêu đề
+        ws1.mergeCells('A1:D1');
+        const titleCell = ws1.getCell('A1');
+        titleCell.value = 'BAO CAO DU AN - ' + (project.project_code || '');
+        titleCell.font = { bold: true, size: 16, color: { argb: 'FFFFFFFF' } };
+        titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E3A5F' } };
+        titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+        ws1.getRow(1).height = 36;
+
+        ws1.mergeCells('A2:D2');
+        const subTitle = ws1.getCell('A2');
+        subTitle.value = 'Ngay xuat: ' + fmtDate(new Date()) + '  |  He thong quan ly ViralWindow';
+        subTitle.font = { italic: true, size: 10, color: { argb: 'FF666666' } };
+        subTitle.alignment = { horizontal: 'center' };
+        ws1.getRow(2).height = 20;
+
+        ws1.addRow([]);
+
+        // Section header
+        ws1.mergeCells('A4:D4');
+        const infoHeader = ws1.getCell('A4');
+        infoHeader.value = '1. THONG TIN DU AN';
+        infoHeader.font = sectionFont;
+        infoHeader.fill = sectionFill;
+        infoHeader.alignment = { horizontal: 'left', indent: 1 };
+        ws1.getRow(4).height = 22;
+
+        const infoRows = [
+            ['Ma du an', project.project_code || '-', 'Trang thai', statusMap[project.status] || project.status || '-'],
+            ['Ten du an', project.project_name || '-', 'Tien do', (project.progress_percent || 0) + '%'],
+            ['Khach hang', project.customer_name || '-', 'Dien thoai', project.customer_phone || '-'],
+            ['Chi nhanh', project.agency_name || '-', 'Dia chi thi cong', project.construction_address || '-'],
+            ['Ngay bat dau', fmtDate(project.start_date || project.created_at), 'Han hoan thanh', fmtDate(project.deadline || project.end_date)],
+        ];
+
+        infoRows.forEach((row, i) => {
+            const r = ws1.addRow(row);
+            r.getCell(1).font = { bold: true, color: { argb: 'FF555555' } };
+            r.getCell(3).font = { bold: true, color: { argb: 'FF555555' } };
+            r.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: i % 2 === 0 ? 'FFFFFFFF' : 'FFF9FAFB' } };
+            r.getCell(4).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: i % 2 === 0 ? 'FFFFFFFF' : 'FFF9FAFB' } };
+            [1, 2, 3, 4].forEach(c => r.getCell(c).border = thinBorder);
+            r.getCell(1).alignment = { indent: 1 };
+            r.getCell(2).alignment = { indent: 1 };
+            r.getCell(3).alignment = { indent: 1 };
+            r.getCell(4).alignment = { indent: 1 };
+        });
+
+        if (project.notes) {
+            ws1.addRow([]);
+            const noteRow = ws1.addRow(['Ghi chu', project.notes, '', '']);
+            ws1.mergeCells('B' + noteRow.number + ':D' + noteRow.number);
+            noteRow.getCell(1).font = { bold: true, color: { argb: 'FF555555' } };
+            noteRow.getCell(1).alignment = { indent: 1 };
         }
 
-        let matHtml = '<p style="color:#888">Chua co vat tu</p>';
-        if (materials.length > 0) {
-            const rows = materials.map((m, i) => '<tr><td>' + (i + 1) + '</td><td>' + (m.material_type || '-') + '</td><td>' + (m.material_name || m.item_name || '-') + '</td><td>' + (m.quantity || m.quantity_used || 0) + ' ' + (m.unit || m.item_unit || '') + '</td><td>' + fmtMoney(m.unit_price) + '</td><td>' + fmtMoney(m.total_cost) + '</td></tr>').join('');
-            matHtml = '<table><thead><tr><th>#</th><th>Loai</th><th>Ten vat tu</th><th>So luong</th><th>Don gia</th><th>Thanh tien</th></tr></thead><tbody>' + rows + '</tbody></table>';
-        }
+        ws1.addRow([]);
 
-        const css = 'body{font-family:Arial,sans-serif;font-size:13px;color:#222;margin:20px}h1{font-size:18px;text-align:center}h2{font-size:14px;margin:16px 0 6px;border-bottom:2px solid #333;padding-bottom:3px}.meta{text-align:center;font-size:12px;color:#666;margin-bottom:12px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 20px;margin-bottom:12px}.grid div{padding:2px 0}.label{font-weight:bold;color:#555}table{width:100%;border-collapse:collapse;margin-bottom:12px}th{background:#333;color:#fff;padding:5px 8px;text-align:left;font-size:12px}td{padding:4px 8px;border-bottom:1px solid #ddd;font-size:12px}tr:nth-child(even) td{background:#f9f9f9}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:12px 0}.card{border:1px solid #ddd;border-radius:6px;padding:10px;text-align:center}.val{font-size:16px;font-weight:bold;margin-top:4px}.footer{margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:20px}.sign{text-align:center;border-top:1px solid #999;padding-top:50px;font-size:12px}@media print{button{display:none}}';
+        // Section tài chính
+        ws1.mergeCells('A' + (ws1.rowCount + 1) + ':D' + (ws1.rowCount + 1));
+        const finHeader = ws1.getCell('A' + ws1.rowCount);
+        finHeader.value = '2. TONG KET TAI CHINH';
+        finHeader.font = sectionFont;
+        finHeader.fill = sectionFill;
+        finHeader.alignment = { horizontal: 'left', indent: 1 };
+        ws1.getRow(ws1.rowCount).height = 22;
 
-        const html = '<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><title>Bao cao du an - ' + project.project_code + '</title><style>' + css + '</style></head><body>' +
-            '<div style="text-align:right;margin-bottom:8px"><button onclick="window.print()" style="padding:6px 16px;background:#2563eb;color:#fff;border:none;border-radius:4px;cursor:pointer">In / Luu PDF</button></div>' +
-            '<h1>BAO CAO DU AN</h1>' +
-            '<p class="meta">Ngay xuat: ' + fmtDate(new Date()) + ' | Ma du an: <b>' + project.project_code + '</b></p>' +
-            '<h2>1. THONG TIN DU AN</h2><div class="grid">' +
-            '<div><span class="label">Ma du an:</span> ' + project.project_code + '</div>' +
-            '<div><span class="label">Trang thai:</span> ' + (statusMap[project.status] || project.status || '') + '</div>' +
-            '<div><span class="label">Ten du an:</span> ' + (project.project_name || '') + '</div>' +
-            '<div><span class="label">Tien do:</span> ' + (project.progress_percent || 0) + '%</div>' +
-            '<div><span class="label">Khach hang:</span> ' + (project.customer_name || '') + '</div>' +
-            '<div><span class="label">Dien thoai:</span> ' + (project.customer_phone || '-') + '</div>' +
-            '<div><span class="label">Chi nhanh:</span> ' + (project.agency_name || '-') + '</div>' +
-            '<div><span class="label">Dia chi:</span> ' + (project.construction_address || '-') + '</div>' +
-            '<div><span class="label">Ngay bat dau:</span> ' + fmtDate(project.start_date || project.created_at) + '</div>' +
-            '<div><span class="label">Han hoan thanh:</span> ' + fmtDate(project.deadline || project.end_date) + '</div>' +
-            '</div>' +
-            '<h2>2. DANH SACH SAN PHAM' + (quotation ? ' (' + quotation.quotation_code + ')' : '') + '</h2>' + itemsHtml +
-            '<h2>3. VAT TU DU AN</h2>' + matHtml +
-            '<h2>4. TONG KET TAI CHINH</h2><div class="summary">' +
-            '<div class="card"><div style="color:#555">Gia tri hop dong</div><div class="val" style="color:#2563eb">' + fmtMoney(totalValue) + '</div></div>' +
-            '<div class="card"><div style="color:#555">Da thanh toan</div><div class="val" style="color:#16a34a">' + fmtMoney(paid) + '</div></div>' +
-            '<div class="card"><div style="color:#555">Con lai</div><div class="val" style="color:' + (remaining > 0 ? '#dc2626' : '#16a34a') + '">' + fmtMoney(remaining) + '</div></div>' +
-            '</div>' + (project.notes ? '<h2>5. GHI CHU</h2><p>' + project.notes + '</p>' : '') +
-            '<div class="footer"><div class="sign">Khach hang<br><small>(Ky, ghi ro ho ten)</small></div><div class="sign">Dai dien ViralWindow<br><small>(Ky, ghi ro ho ten)</small></div></div>' +
-            '</body></html>';
+        const finData = [
+            ['Gia tri hop dong', totalValue, 'Da thanh toan', paid],
+            ['Con phai thu', remaining, '', '']
+        ];
+        finData.forEach((row, i) => {
+            const r = ws1.addRow(row);
+            r.getCell(1).font = { bold: true, color: { argb: 'FF555555' } };
+            r.getCell(3).font = { bold: true, color: { argb: 'FF555555' } };
+            r.getCell(2).numFmt = numFmt;
+            r.getCell(4).numFmt = numFmt;
+            r.getCell(2).font = { bold: true, color: { argb: i === 0 ? 'FF2563EB' : (remaining > 0 ? 'FFDC2626' : 'FF16A34A') } };
+            r.getCell(4).font = { bold: true, color: { argb: 'FF16A34A' } };
+            [1, 2, 3, 4].forEach(c => { r.getCell(c).border = thinBorder; r.getCell(c).alignment = { indent: 1 }; });
+        });
 
-        res.setHeader('Content-Type', 'text/html; charset=utf-8');
-        res.send(html);
+        // ===== SHEET 2: SẢN PHẨM =====
+        const ws2 = wb.addWorksheet('Danh sach san pham', { properties: { tabColor: { argb: 'FF0EA5E9' } } });
+        ws2.columns = [
+            { header: '#', key: 'stt', width: 6 },
+            { header: 'Ma SP', key: 'code', width: 15 },
+            { header: 'Ten san pham', key: 'name', width: 35 },
+            { header: 'Rong (mm)', key: 'width', width: 12 },
+            { header: 'Cao (mm)', key: 'height', width: 12 },
+            { header: 'So luong', key: 'qty', width: 10 },
+            { header: 'Don gia (d)', key: 'price', width: 18 },
+            { header: 'Thanh tien (d)', key: 'total', width: 20 }
+        ];
+
+        ws2.mergeCells('A1:H1');
+        const ws2Title = ws2.getCell('A1');
+        ws2Title.value = 'DANH SACH SAN PHAM' + (quotation ? ' - Bao gia: ' + quotation.quotation_code : '');
+        ws2Title.font = { bold: true, size: 14, color: { argb: 'FFFFFFFF' } };
+        ws2Title.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0EA5E9' } };
+        ws2Title.alignment = { horizontal: 'center', vertical: 'middle' };
+        ws2.getRow(1).height = 30;
+
+        const ws2HeaderRow = ws2.getRow(2);
+        ws2HeaderRow.values = ['#', 'Ma SP', 'Ten san pham', 'Rong (mm)', 'Cao (mm)', 'So luong', 'Don gia (d)', 'Thanh tien (d)'];
+        ws2HeaderRow.eachCell(cell => {
+            cell.fill = headerFill;
+            cell.font = headerFont;
+            cell.border = thinBorder;
+            cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+        });
+        ws2.getRow(2).height = 24;
+
+        let itemTotal = 0;
+        items.forEach((item, i) => {
+            const total = parseFloat(item.total_price) || (parseFloat(item.unit_price || 0) * parseFloat(item.quantity || 1));
+            itemTotal += total;
+            const r = ws2.addRow([
+                i + 1,
+                item.code || item.item_code || '-',
+                item.item_name || item.name || '-',
+                item.width || 0,
+                item.height || 0,
+                item.quantity || 1,
+                parseFloat(item.unit_price) || 0,
+                total
+            ]);
+            r.getCell(6).numFmt = '#,##0';
+            r.getCell(7).numFmt = numFmt;
+            r.getCell(8).numFmt = numFmt;
+            r.eachCell(cell => {
+                cell.border = thinBorder;
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: i % 2 === 0 ? 'FFFFFFFF' : 'FFF0F9FF' } };
+            });
+            r.getCell(1).alignment = { horizontal: 'center' };
+            r.getCell(6).alignment = { horizontal: 'center' };
+        });
+
+        // Tổng
+        const totalRow2 = ws2.addRow(['', '', 'TONG CONG', '', '', '', '', itemTotal]);
+        totalRow2.getCell(3).font = { bold: true };
+        totalRow2.getCell(8).font = { bold: true, color: { argb: 'FF2563EB' } };
+        totalRow2.getCell(8).numFmt = numFmt;
+        totalRow2.getCell(8).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDBEAFE' } };
+        [1, 2, 3, 4, 5, 6, 7, 8].forEach(c => totalRow2.getCell(c).border = thinBorder);
+
+        // ===== SHEET 3: VẬT TƯ =====
+        const ws3 = wb.addWorksheet('Vat tu du an', { properties: { tabColor: { argb: 'FF10B981' } } });
+        ws3.mergeCells('A1:F1');
+        const ws3Title = ws3.getCell('A1');
+        ws3Title.value = 'VAT TU DU AN - ' + (project.project_code || '');
+        ws3Title.font = { bold: true, size: 14, color: { argb: 'FFFFFFFF' } };
+        ws3Title.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF10B981' } };
+        ws3Title.alignment = { horizontal: 'center', vertical: 'middle' };
+        ws3.getRow(1).height = 30;
+        ws3.columns = [
+            { width: 6 }, { width: 18 }, { width: 35 }, { width: 16 }, { width: 18 }, { width: 18 }
+        ];
+
+        const ws3HeaderRow = ws3.getRow(2);
+        ws3HeaderRow.values = ['#', 'Loai vat tu', 'Ten vat tu', 'So luong', 'Don gia (d)', 'Thanh tien (d)'];
+        ws3HeaderRow.eachCell(cell => {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF065F46' } };
+            cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+            cell.border = thinBorder;
+            cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        });
+        ws3.getRow(2).height = 24;
+
+        let matTotal = 0;
+        materials.forEach((m, i) => {
+            const qty = parseFloat(m.quantity || m.quantity_used || 0);
+            const unitPrice = parseFloat(m.unit_price || 0);
+            const total = parseFloat(m.total_cost || (qty * unitPrice)) || 0;
+            matTotal += total;
+            const r = ws3.addRow([
+                i + 1,
+                m.material_type || '-',
+                m.material_name || m.item_name || '-',
+                qty + ' ' + (m.unit || m.item_unit || ''),
+                unitPrice,
+                total
+            ]);
+            r.getCell(5).numFmt = numFmt;
+            r.getCell(6).numFmt = numFmt;
+            r.eachCell(cell => {
+                cell.border = thinBorder;
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: i % 2 === 0 ? 'FFFFFFFF' : 'FFF0FDF4' } };
+            });
+            r.getCell(1).alignment = { horizontal: 'center' };
+        });
+
+        const totalRow3 = ws3.addRow(['', '', 'TONG CONG', '', '', matTotal]);
+        totalRow3.getCell(3).font = { bold: true };
+        totalRow3.getCell(6).font = { bold: true, color: { argb: 'FF10B981' } };
+        totalRow3.getCell(6).numFmt = numFmt;
+        totalRow3.getCell(6).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD1FAE5' } };
+        [1, 2, 3, 4, 5, 6].forEach(c => totalRow3.getCell(c).border = thinBorder);
+
+        // ===== GỬI FILE =====
+        const filename = 'BaoCao_' + (project.project_code || 'DuAn') + '_' + new Date().toISOString().slice(0, 10) + '.xlsx';
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename="' + filename + '"');
+        res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
+        await wb.xlsx.write(res);
+        res.end();
 
     } catch (err) {
         console.error('exportReport error:', err);
-        res.status(500).json({ success: false, message: 'Loi server khi xuat bao cao' });
+        res.status(500).json({ success: false, message: 'Loi server khi xuat bao cao: ' + err.message });
     }
 };
