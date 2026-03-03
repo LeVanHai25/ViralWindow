@@ -170,31 +170,36 @@ exports.getDetail = async (req, res) => {
             }));
         }
 
-        // If no products from quotation, try door_designs
+        // If no products from quotation, try project_door_items
         if (products.length === 0) {
-            const [doors] = await db.query(
-                `SELECT 
-                    dd.id,
-                    dd.design_code as code,
-                    COALESCE(dt.name, dd.design_code) as name,
-                    dd.width_mm as width,
-                    dd.height_mm as height,
-                    dd.number_of_panels as quantity
-                FROM door_designs dd
-                LEFT JOIN door_templates dt ON dd.door_template_id = dt.id
-                WHERE dd.project_id = ?
-                ORDER BY dd.id`,
-                [id]
-            );
-            products = doors.map(door => ({
-                code: door.code || `C-${door.id}`,
-                name: door.name || 'Cửa',
-                width: door.width || 0,
-                height: door.height || 0,
-                quantity: door.quantity || 1,
-                unit_price: 0,
-                total_price: 0
-            }));
+            try {
+                const [doors] = await db.query(
+                    `SELECT 
+                        pdi.id,
+                        COALESCE(dt.code, CONCAT('C-', pdi.id)) as code,
+                        COALESCE(dt.name, 'Cửa') as name,
+                        pdi.width_mm as width,
+                        pdi.height_mm as height,
+                        pdi.quantity
+                    FROM project_door_items pdi
+                    LEFT JOIN door_templates dt ON pdi.door_template_id = dt.id
+                    WHERE pdi.project_id = ?
+                    ORDER BY pdi.id`,
+                    [id]
+                );
+                products = doors.map(door => ({
+                    code: door.code || `C-${door.id}`,
+                    name: door.name || 'Cửa',
+                    width: door.width || 0,
+                    height: door.height || 0,
+                    quantity: door.quantity || 1,
+                    unit_price: 0,
+                    total_price: 0
+                }));
+            } catch (doorErr) {
+                console.warn('[getDetail] Could not fetch door items:', doorErr.message);
+                products = [];
+            }
         }
 
         // 4. Get materials (from project_materials)
