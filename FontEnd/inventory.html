@@ -6360,9 +6360,20 @@
                 }
             }
 
-            // Export history to Excel (CSV format)
+            // Export history to real Excel XLSX
             async function exportHistoryExcel() {
                 try {
+                    // Load SheetJS nếu chưa có
+                    if (typeof XLSX === 'undefined') {
+                        await new Promise((resolve, reject) => {
+                            const s = document.createElement('script');
+                            s.src = 'https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js';
+                            s.onload = resolve;
+                            s.onerror = () => reject(new Error('Không thể tải thư viện XLSX'));
+                            document.head.appendChild(s);
+                        });
+                    }
+
                     // Get current filter values
                     const docType = document.getElementById('historyTypeFilter')?.value || '';
                     const itemType = document.getElementById('historyItemTypeFilter')?.value || '';
@@ -6388,42 +6399,62 @@
 
                     const data = result.data;
 
-                    // Create CSV content
-                    const headers = ['Ngày', 'Loại', 'Mã phiếu', 'Mã vật tư', 'Tên vật tư', 'Loại vật tư', 'Nhập', 'Xuất', 'Tồn sau', 'Người thực hiện'];
-                    const rows = data.map(log => [
-                        log.transaction_at ? new Date(log.transaction_at).toLocaleString('vi-VN') : '',
-                        getDocTypeText(log.doc_type),
-                        log.doc_no || '',
-                        log.item_code || '',
-                        log.item_name || '',
-                        getItemTypeLabel(log.item_type),
-                        log.qty_in > 0 ? log.qty_in : '',
-                        log.qty_out > 0 ? log.qty_out : '',
-                        log.balance_after || 0,
-                        log.user_name || ''
-                    ]);
+                    // Chuẩn bị dữ liệu cho worksheet
+                    const wsData = [
+                        ['LỊCH SỬ GIAO DỊCH KHO'],
+                        [`Ngày xuất: ${new Date().toLocaleDateString('vi-VN')} | Tổng: ${data.length} bản ghi`],
+                        [],
+                        ['STT', 'Ngày', 'Loại', 'Mã phiếu', 'Số dòng', 'Nhập', 'Xuất', 'Người thực hiện']
+                    ];
 
-                    // Convert to CSV
-                    const csvContent = [headers, ...rows]
-                        .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-                        .join('\n');
+                    data.forEach((log, i) => {
+                        wsData.push([
+                            i + 1,
+                            log.transaction_at ? new Date(log.transaction_at).toLocaleString('vi-VN') : '',
+                            getDocTypeText(log.doc_type),
+                            log.doc_no || '',
+                            log.total_lines || '',
+                            log.qty_in > 0 ? '+' + log.qty_in : '',
+                            log.qty_out > 0 ? '-' + log.qty_out : '',
+                            log.user_name || ''
+                        ]);
+                    });
 
-                    // Add BOM for UTF-8 compatibility with Excel
-                    const BOM = '\uFEFF';
-                    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+                    // Tạo workbook
+                    const wb = XLSX.utils.book_new();
+                    const ws = XLSX.utils.aoa_to_sheet(wsData);
 
-                    // Download file
-                    const link = document.createElement('a');
-                    const fileName = `lich_su_kho_${new Date().toISOString().slice(0, 10)}.csv`;
-                    link.href = URL.createObjectURL(blob);
-                    link.download = fileName;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
+                    // Merge tiêu đề
+                    ws['!merges'] = [
+                        { s: { r: 0, c: 0 }, e: { r: 0, c: 7 } },
+                        { s: { r: 1, c: 0 }, e: { r: 1, c: 7 } }
+                    ];
 
-                    alert(`✅ Đã xuất ${data.length} dòng ra file ${fileName}`);
+                    // Độ rộng cột
+                    ws['!cols'] = [
+                        { wch: 5 },   // STT
+                        { wch: 20 },  // Ngày
+                        { wch: 12 },  // Loại
+                        { wch: 22 },  // Mã phiếu
+                        { wch: 10 },  // Số dòng
+                        { wch: 10 },  // Nhập
+                        { wch: 10 },  // Xuất
+                        { wch: 18 },  // Người thực hiện
+                    ];
+
+                    XLSX.utils.book_append_sheet(wb, ws, 'Lich su kho');
+
+                    // Xuất file
+                    const fileName = `LichSuKho_${new Date().toISOString().slice(0, 10)}.xlsx`;
+                    XLSX.writeFile(wb, fileName);
+
+                    if (typeof showSuccessNotification === 'function') {
+                        showSuccessNotification(`Đã xuất ${data.length} dòng ra file ${fileName}`);
+                    } else {
+                        alert(`✅ Đã xuất ${data.length} dòng ra file ${fileName}`);
+                    }
                 } catch (error) {
-                    alert(' Lỗi: ' + error.message);
+                    alert('❌ Lỗi: ' + error.message);
                 }
             }
 
