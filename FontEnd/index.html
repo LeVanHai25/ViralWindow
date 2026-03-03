@@ -1009,7 +1009,41 @@
                         <div class="text-2xl font-bold text-gray-800 font-mono tracking-wider" id="liveClock">00:00:00
                         </div>
                         <div class="text-xs text-gray-500" id="liveDate">T2, 9/2/2026</div>
+                    
+                <!-- ===== WEATHER WIDGET ===== -->
+                <div id="weatherWidget"
+                    class="live-clock-widget flex items-center gap-3 bg-white/95 backdrop-blur-md rounded-2xl px-5 py-4 shadow-xl border border-gray-100 cursor-pointer relative weather-widget-outer"
+                    onclick="toggleCitySelector()" title="Nhấn để chọn khu vực thời tiết">
+                    <!-- Icon Thời tiết -->
+                    <div id="weatherIconWrap" class="flex-shrink-0 text-3xl leading-none" style="min-width:42px;text-align:center">&#9729;&#65039;</div>
+                    <!-- Thông tin -->
+                    <div class="flex flex-col min-w-0">
+                        <div class="flex items-baseline gap-1.5 flex-wrap">
+                            <span id="weatherTemp" class="text-2xl font-bold text-gray-800 font-mono">--°C</span>
+                            <span id="weatherDesc" class="text-xs text-gray-500 leading-tight" style="max-width:75px">Đang tải...</span>
+                        </div>
+                        <div class="flex items-center gap-2 mt-0.5">
+                            <span id="weatherCity" class="text-xs font-semibold text-blue-600 flex items-center gap-0.5">
+                                <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                Hà Nội
+                            </span>
+                            <span class="text-gray-200 text-xs">|</span>
+                            <span id="weatherHumidity" class="text-xs text-gray-400">&#128167; --%</span>
+                        </div>
                     </div>
+                    <!-- Dropdown chọn thành phố -->
+                    <div id="citySelectorDropdown"
+                        class="hidden absolute right-0 z-50 bg-white rounded-xl shadow-2xl border border-gray-100 p-3"
+                        style="top:calc(100% + 8px);min-width:230px;backdrop-filter:blur(12px)"
+                        onclick="event.stopPropagation()">
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 px-1">&#128205; Chọn khu vực</p>
+                        <div class="grid grid-cols-2 gap-1.5" id="cityGrid"></div>
+                        <div class="mt-2 pt-2 border-t border-gray-100 text-center text-xs text-gray-300">
+                            &#128337; Cập nhật mỗi 10 phút
+                        </div>
+                    </div>
+                </div>
+</div>
                 </div>
             </div>
         </div>
@@ -1965,6 +1999,139 @@
     <script src="js/sidebar-enterprise.js"></script>
     <script src="js/notification-system.js"></script>
     <script src="js/notification-header.js"></script>
+
+    <!-- ===== WEATHER WIDGET STYLES & SCRIPT ===== -->
+    <style>
+    .weather-widget-outer { transition: box-shadow 0.2s, transform 0.2s; }
+    .weather-widget-outer:hover { box-shadow: 0 8px 32px rgba(99,102,241,0.18); transform: translateY(-1px); }
+    .city-btn {
+        padding: 5px 8px; border-radius: 8px; font-size: 11px; font-weight: 600;
+        text-align:center; cursor:pointer; transition: all 0.15s;
+        border: 1px solid #e5e7eb; color: #374151; background:#f9fafb;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .city-btn:hover { background:#eff6ff; border-color:#3b82f6; color:#2563eb; }
+    .city-btn.active { background:#2563eb; border-color:#2563eb; color:#fff; }
+    .weather-loading #weatherIconWrap { animation: weatherPulse 1.5s ease-in-out infinite; }
+    @keyframes weatherPulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+    </style>
+    <script>
+    // ============================================================
+    // WEATHER WIDGET  —  OpenWeatherMap Free API (1,000 calls/day)
+    // ============================================================
+    (function() {
+        const API_KEY = '4d8fb5b93d4af21d66a2948a49bb28ba';
+        const CITIES = [
+            { name: 'Hà Nội',         q: 'Hanoi,VN' },
+            { name: 'TP.HCM',         q: 'Ho Chi Minh City,VN' },
+            { name: 'Đà Nẵng',        q: 'Da Nang,VN' },
+            { name: 'Hải Phòng',      q: 'Hai Phong,VN' },
+            { name: 'Cần Thơ',        q: 'Can Tho,VN' },
+            { name: 'Nha Trang',      q: 'Nha Trang,VN' },
+            { name: 'Huế',            q: 'Hue,VN' },
+            { name: 'Vũng Tàu',       q: 'Vung Tau,VN' },
+        ];
+        const ICONS = {
+            '01d':'☀️','01n':'🌙','02d':'⛅','02n':'⛅','03d':'☁️','03n':'☁️',
+            '04d':'☁️','04n':'☁️','09d':'🌧️','09n':'🌧️','10d':'🌦️','10n':'🌧️',
+            '11d':'⛈️','11n':'⛈️','13d':'❄️','13n':'❄️','50d':'🌫️','50n':'🌫️'
+        };
+
+        let city = null;
+        try { city = JSON.parse(localStorage.getItem('vw_weather_city')); } catch(e){}
+        if (!city) city = CITIES[0];
+
+        let refreshTimer = null;
+
+        function renderCityGrid() {
+            const grid = document.getElementById('cityGrid');
+            if (!grid) return;
+            grid.innerHTML = CITIES.map(c =>
+                '<button class="city-btn ' + (c.q === city.q ? 'active' : '') + '"' +
+                ' onclick="window.__weatherSelectCity(' + JSON.stringify(c).replace(/"/g,"'") + ')">' +
+                c.name + '</button>'
+            ).join('');
+        }
+
+        window.__weatherSelectCity = function(c) {
+            city = c;
+            try { localStorage.setItem('vw_weather_city', JSON.stringify(c)); } catch(e){}
+            renderCityGrid();
+            doFetch();
+            setTimeout(function(){
+                var dd = document.getElementById('citySelectorDropdown');
+                if (dd) dd.classList.add('hidden');
+            }, 350);
+        };
+
+        window.toggleCitySelector = function() {
+            var dd = document.getElementById('citySelectorDropdown');
+            if (!dd) return;
+            if (dd.classList.contains('hidden')) {
+                renderCityGrid();
+                dd.classList.remove('hidden');
+            } else {
+                dd.classList.add('hidden');
+            }
+        };
+
+        document.addEventListener('click', function(e) {
+            var w = document.getElementById('weatherWidget');
+            var dd = document.getElementById('citySelectorDropdown');
+            if (w && dd && !w.contains(e.target)) dd.classList.add('hidden');
+        });
+
+        async function doFetch() {
+            var widget = document.getElementById('weatherWidget');
+            if (widget) widget.classList.add('weather-loading');
+            try {
+                var url = 'https://api.openweathermap.org/data/2.5/weather?q=' +
+                    encodeURIComponent(city.q) + '&appid=' + API_KEY + '&units=metric&lang=vi';
+                var res = await fetch(url);
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                var d = await res.json();
+
+                var temp = Math.round(d.main.temp);
+                var humidity = d.main.humidity;
+                var descRaw = d.weather[0].description;
+                var desc = descRaw.charAt(0).toUpperCase() + descRaw.slice(1);
+                var icon = d.weather[0].icon;
+                var emoji = ICONS[icon] || '🌡️';
+
+                var el = function(id){ return document.getElementById(id); };
+                el('weatherTemp').textContent = temp + '°C';
+                el('weatherDesc').textContent = desc;
+                el('weatherIconWrap').textContent = emoji;
+                el('weatherHumidity').textContent = '💧 ' + humidity + '%';
+                el('weatherCity').innerHTML =
+                    '<svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+                    '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>' +
+                    '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>' +
+                    city.name;
+            } catch(err) {
+                var el2 = document.getElementById('weatherDesc');
+                if (el2) el2.textContent = 'Lỗi kết nối';
+                var iw = document.getElementById('weatherIconWrap');
+                if (iw) iw.textContent = '🌐';
+                console.warn('[Weather] Error:', err.message);
+            }
+            if (widget) widget.classList.remove('weather-loading');
+        }
+
+        function init() {
+            doFetch();
+            clearInterval(refreshTimer);
+            refreshTimer = setInterval(doFetch, 10 * 60 * 1000); // every 10 min
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+    </script>
+
 </body>
 
 </html>
