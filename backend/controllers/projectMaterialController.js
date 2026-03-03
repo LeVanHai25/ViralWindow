@@ -1,13 +1,13 @@
-const db = require("../config/db");
+﻿const db = require("../config/db");
 
 /**
- * Controller quản lý vật tư xuất cho dự án
+ * Controller quáº£n lÃ½ váº­t tÆ° xuáº¥t cho dá»± Ã¡n
  */
 
-// Auto-migrate: Tạo bảng project_materials nếu chưa tồn tại
+// Auto-migrate: Táº¡o báº£ng project_materials náº¿u chÆ°a tá»“n táº¡i
 (async () => {
     try {
-        // Tạo bảng với ENUM bao gồm 'phukien'
+        // Táº¡o báº£ng vá»›i ENUM bao gá»“m 'phukien'
         await db.query(`
             CREATE TABLE IF NOT EXISTS project_materials (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -26,45 +26,45 @@ const db = require("../config/db");
                 INDEX idx_material_type (material_type)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         `);
-        console.log('✅ Bảng project_materials đã sẵn sàng');
+        console.log('âœ… Báº£ng project_materials Ä‘Ã£ sáºµn sÃ ng');
 
-        // Migration: Cập nhật ENUM để bao gồm 'phukien' (cho database đã tồn tại)
+        // Migration: Cáº­p nháº­t ENUM Ä‘á»ƒ bao gá»“m 'phukien' (cho database Ä‘Ã£ tá»“n táº¡i)
         try {
             await db.query(`
                 ALTER TABLE project_materials 
                 MODIFY COLUMN material_type ENUM('accessory', 'aluminum', 'glass', 'other', 'phukien') NULL
             `);
-            console.log('✅ Đã cập nhật ENUM material_type để bao gồm phukien');
+            console.log('âœ… ÄÃ£ cáº­p nháº­t ENUM material_type Ä‘á»ƒ bao gá»“m phukien');
         } catch (alterErr) {
             // Ignore error if ENUM already has the value
             if (!alterErr.message.includes('Duplicate')) {
-                console.log('ℹ️ ENUM material_type:', alterErr.message);
+                console.log('â„¹ï¸ ENUM material_type:', alterErr.message);
             }
         }
     } catch (err) {
-        console.error('❌ Lỗi tạo bảng project_materials:', err.message);
+        console.error('âŒ Lá»—i táº¡o báº£ng project_materials:', err.message);
     }
 })();
 
-// GET /api/project-materials/:projectId - Lấy danh sách vật tư của dự án
+// GET /api/project-materials/:projectId - Láº¥y danh sÃ¡ch váº­t tÆ° cá»§a dá»± Ã¡n
 exports.getByProject = async (req, res) => {
     try {
         const { projectId } = req.params;
 
-        // BƯỚC 1: Lấy thông tin dự án
+        // BÆ¯á»šC 1: Láº¥y thÃ´ng tin dá»± Ã¡n
         const [projectRows] = await db.query(
             `SELECT id, project_code, project_name FROM projects WHERE id = ?`,
             [projectId]
         );
         const project = projectRows[0] || {};
 
-        // BƯỚC 2: Lấy tất cả vật tư đã xuất (từ project_materials) - ĐÂY LÀ "VẬT TƯ ĐÃ XUẤT"
+        // BÆ¯á»šC 2: Láº¥y táº¥t cáº£ váº­t tÆ° Ä‘Ã£ xuáº¥t (tá»« project_materials) - ÄÃ‚Y LÃ€ "Váº¬T TÆ¯ ÄÃƒ XUáº¤T"
         const [exportedRows] = await db.query(
             `SELECT 
                 pm.id,
                 pm.project_id,
                 pm.material_code,
-                -- Xử lý cả dữ liệu cũ và mới: ưu tiên cột mới, nếu null thì dùng cột cũ
+                -- Xá»­ lÃ½ cáº£ dá»¯ liá»‡u cÅ© vÃ  má»›i: Æ°u tiÃªn cá»™t má»›i, náº¿u null thÃ¬ dÃ¹ng cá»™t cÅ©
                 COALESCE(pm.material_name, pm.item_name) as material_name,
                 COALESCE(pm.quantity, pm.quantity_used) as quantity,
                 COALESCE(pm.unit, pm.item_unit) as unit,
@@ -73,7 +73,7 @@ exports.getByProject = async (req, res) => {
                 pm.notes,
                 pm.created_at,
                 pm.updated_at,
-                -- Nếu không có material_type, thử suy luận từ inventory_id/accessory_id
+                -- Náº¿u khÃ´ng cÃ³ material_type, thá»­ suy luáº­n tá»« inventory_id/accessory_id
                 COALESCE(pm.material_type, 
                     CASE 
                         WHEN pm.accessory_id IS NOT NULL THEN 'accessory'
@@ -85,9 +85,9 @@ exports.getByProject = async (req, res) => {
                         ELSE 'other'
                     END
                 ) as material_type,
-                -- Material_id: ưu tiên material_id mới, nếu không có thì dùng inventory_id hoặc accessory_id
+                -- Material_id: Æ°u tiÃªn material_id má»›i, náº¿u khÃ´ng cÃ³ thÃ¬ dÃ¹ng inventory_id hoáº·c accessory_id
                 COALESCE(pm.material_id, pm.inventory_id, pm.accessory_id) as material_id,
-                -- Cột đánh dấu đã trừ kho hay chưa
+                -- Cá»™t Ä‘Ã¡nh dáº¥u Ä‘Ã£ trá»« kho hay chÆ°a
                 COALESCE(pm.stock_deducted, 0) as stock_deducted
              FROM project_materials pm
              WHERE pm.project_id = ?
@@ -95,11 +95,11 @@ exports.getByProject = async (req, res) => {
             [projectId]
         );
 
-        // BƯỚC 3: Lấy số lượng cần từ BOM (bom_items) - ĐÂY LÀ DANH SÁCH VẬT TƯ CẦN
-        // bom_items không có project_id, cần join qua door_designs hoặc project_items
+        // BÆ¯á»šC 3: Láº¥y sá»‘ lÆ°á»£ng cáº§n tá»« BOM (bom_items) - ÄÃ‚Y LÃ€ DANH SÃCH Váº¬T TÆ¯ Cáº¦N
+        // bom_items khÃ´ng cÃ³ project_id, cáº§n join qua door_designs hoáº·c project_items
         let bomRequiredMaterials = [];
         try {
-            // Thử lấy từ bom_items qua door_designs
+            // Thá»­ láº¥y tá»« bom_items qua door_designs
             const [bomRows] = await db.query(
                 `SELECT 
                     bi.item_type,
@@ -123,14 +123,14 @@ exports.getByProject = async (req, res) => {
                     material_name: bom.item_name || '',
                     item_code: bom.item_code || '',
                     total_required: parseFloat(bom.total_required) || 0,
-                    unit: bom.unit || 'cái'
+                    unit: bom.unit || 'cÃ¡i'
                 };
             });
         } catch (bomErr) {
             console.warn('Could not get BOM requirements:', bomErr.message);
         }
 
-        // BƯỚC 4: Tính tổng số lượng đã xuất cho mỗi vật tư (gom nhóm theo material_id + material_type + material_name)
+        // BÆ¯á»šC 4: TÃ­nh tá»•ng sá»‘ lÆ°á»£ng Ä‘Ã£ xuáº¥t cho má»—i váº­t tÆ° (gom nhÃ³m theo material_id + material_type + material_name)
         const exportedByMaterial = {};
         exportedRows.forEach(item => {
             const key = `${item.material_type}_${item.material_id || 'unknown'}_${item.material_name || ''}`;
@@ -146,20 +146,20 @@ exports.getByProject = async (req, res) => {
             exportedByMaterial[key].total_exported += parseFloat(item.quantity) || 0;
         });
 
-        // BƯỚC 5: Xử lý "VẬT TƯ ĐÃ XUẤT" - Lấy giá và tồn kho từ kho cho mỗi vật tư đã xuất
+        // BÆ¯á»šC 5: Xá»­ lÃ½ "Váº¬T TÆ¯ ÄÃƒ XUáº¤T" - Láº¥y giÃ¡ vÃ  tá»“n kho tá»« kho cho má»—i váº­t tÆ° Ä‘Ã£ xuáº¥t
         const exportedMaterials = await Promise.all(exportedRows.map(async (item) => {
             const materialType = item.material_type;
             let materialId = item.material_id;
-            const materialCode = (item.material_code || '').trim(); // Mã vật tư để sync với kho
-            const materialName = (item.material_name || '').trim(); // Loại bỏ khoảng trắng thừa
-            const exportedQty = parseFloat(item.quantity) || 0; // Số lượng đã xuất (cho record này)
+            const materialCode = (item.material_code || '').trim(); // MÃ£ váº­t tÆ° Ä‘á»ƒ sync vá»›i kho
+            const materialName = (item.material_name || '').trim(); // Loáº¡i bá» khoáº£ng tráº¯ng thá»«a
+            const exportedQty = parseFloat(item.quantity) || 0; // Sá»‘ lÆ°á»£ng Ä‘Ã£ xuáº¥t (cho record nÃ y)
 
-            // Tính tổng số lượng đã xuất cho vật tư này (có thể có nhiều record)
+            // TÃ­nh tá»•ng sá»‘ lÆ°á»£ng Ä‘Ã£ xuáº¥t cho váº­t tÆ° nÃ y (cÃ³ thá»ƒ cÃ³ nhiá»u record)
             const exportedKey = `${materialType}_${materialId || 'unknown'}_${materialName}`;
             const totalExportedQty = exportedByMaterial[exportedKey]?.total_exported || exportedQty;
 
-            // Tìm số lượng cần từ BOM (nếu có) - tìm theo tên
-            let totalRequiredQty = exportedQty; // Mặc định = số đã xuất
+            // TÃ¬m sá»‘ lÆ°á»£ng cáº§n tá»« BOM (náº¿u cÃ³) - tÃ¬m theo tÃªn
+            let totalRequiredQty = exportedQty; // Máº·c Ä‘á»‹nh = sá»‘ Ä‘Ã£ xuáº¥t
             const bomMatch = bomRequiredMaterials.find(bom =>
                 bom.material_name === materialName && bom.material_type === materialType
             );
@@ -168,24 +168,24 @@ exports.getByProject = async (req, res) => {
             }
 
             let availableStock = 0;
-            let stockPrice = 0; // Luôn bắt đầu từ 0, sẽ lấy từ kho (không dùng giá đã lưu)
+            let stockPrice = 0; // LuÃ´n báº¯t Ä‘áº§u tá»« 0, sáº½ láº¥y tá»« kho (khÃ´ng dÃ¹ng giÃ¡ Ä‘Ã£ lÆ°u)
             let stockStatus = 'unknown'; // 'sufficient', 'partial', 'shortage', 'not_found'
             let stockNote = '';
-            let foundInInventory = false; // Flag để đánh dấu đã tìm thấy trong kho
+            let foundInInventory = false; // Flag Ä‘á»ƒ Ä‘Ã¡nh dáº¥u Ä‘Ã£ tÃ¬m tháº¥y trong kho
 
-            // Tính toán số lượng còn cần và shortage (sẽ được tính sau khi có totalRequiredQty và totalExportedQty)
+            // TÃ­nh toÃ¡n sá»‘ lÆ°á»£ng cÃ²n cáº§n vÃ  shortage (sáº½ Ä‘Æ°á»£c tÃ­nh sau khi cÃ³ totalRequiredQty vÃ  totalExportedQty)
             let stillNeeded = 0;
-            let remainingStock = 0; // Sẽ được cập nhật trong try block
-            let shortage = 0; // Sẽ được tính sau khi có remainingStock
+            let remainingStock = 0; // Sáº½ Ä‘Æ°á»£c cáº­p nháº­t trong try block
+            let shortage = 0; // Sáº½ Ä‘Æ°á»£c tÃ­nh sau khi cÃ³ remainingStock
 
             try {
-                // Nếu material_id = 0 hoặc null (từ BOM data), tìm theo tên/mã
+                // Náº¿u material_id = 0 hoáº·c null (tá»« BOM data), tÃ¬m theo tÃªn/mÃ£
                 if (!materialId || materialId === 0) {
-                    // Thử tìm theo tên trong kho
+                    // Thá»­ tÃ¬m theo tÃªn trong kho
                     let foundInStock = false;
 
                     if (materialType === 'accessory') {
-                        // Tìm trong accessories - ƯU TIÊN TÌM THEO CODE, nếu không có thì tìm theo tên
+                        // TÃ¬m trong accessories - Æ¯U TIÃŠN TÃŒM THEO CODE, náº¿u khÃ´ng cÃ³ thÃ¬ tÃ¬m theo tÃªn
                         const searchTerm = materialCode || materialName;
                         const [accRows] = await db.query(
                             `SELECT id, stock_quantity, COALESCE(sale_price, purchase_price, 0) as price 
@@ -196,14 +196,14 @@ exports.getByProject = async (req, res) => {
                             [searchTerm, searchTerm, `%${searchTerm}%`, `%${searchTerm}%`, searchTerm]
                         );
                         if (accRows.length > 0) {
-                            materialId = accRows[0].id; // Cập nhật material_id để dùng sau này
+                            materialId = accRows[0].id; // Cáº­p nháº­t material_id Ä‘á»ƒ dÃ¹ng sau nÃ y
                             availableStock = parseFloat(accRows[0].stock_quantity) || 0;
                             stockPrice = parseFloat(accRows[0].price) || 0;
                             foundInStock = true;
                             foundInInventory = true;
                         }
                     } else if (materialType === 'aluminum') {
-                        // Tìm trong aluminum_systems - ƯU TIÊN TÌM THEO CODE
+                        // TÃ¬m trong aluminum_systems - Æ¯U TIÃŠN TÃŒM THEO CODE
                         const searchTerm = materialCode || materialName;
                         const [alumRows] = await db.query(
                             `SELECT id, CASE WHEN quantity IS NOT NULL AND quantity > 0 THEN quantity ELSE COALESCE(quantity_m, 0) END as stock, unit_price as price 
@@ -214,19 +214,19 @@ exports.getByProject = async (req, res) => {
                             [searchTerm, searchTerm, `%${searchTerm}%`, `%${searchTerm}%`, searchTerm]
                         );
                         if (alumRows.length > 0) {
-                            materialId = alumRows[0].id; // Cập nhật material_id để dùng sau này
+                            materialId = alumRows[0].id; // Cáº­p nháº­t material_id Ä‘á»ƒ dÃ¹ng sau nÃ y
                             availableStock = parseFloat(alumRows[0].stock) || 0;
                             stockPrice = parseFloat(alumRows[0].price) || 0;
                             foundInStock = true;
                             foundInInventory = true;
                         }
                     } else if (materialType === 'glass') {
-                        // ✅ FIX: Glass từ bảng glass_items (đồng bộ với inventory.html và design-new.html)
-                        // Tìm theo code hoặc K-{id} format hoặc tên
+                        // âœ… FIX: Glass tá»« báº£ng glass_items (Ä‘á»“ng bá»™ vá»›i inventory.html vÃ  design-new.html)
+                        // TÃ¬m theo code hoáº·c K-{id} format hoáº·c tÃªn
                         const searchTerm = materialCode || materialName;
                         let glassRows = [];
 
-                        // 1. Thử tìm chính xác theo code trước
+                        // 1. Thá»­ tÃ¬m chÃ­nh xÃ¡c theo code trÆ°á»›c
                         if (materialCode) {
                             [glassRows] = await db.query(
                                 `SELECT id, COALESCE(quantity, 0) as stock, COALESCE(price, 0) as price 
@@ -236,7 +236,7 @@ exports.getByProject = async (req, res) => {
                                 [materialCode, materialCode]
                             );
                         }
-                        // 2. Nếu không tìm thấy theo code, thử tìm theo tên
+                        // 2. Náº¿u khÃ´ng tÃ¬m tháº¥y theo code, thá»­ tÃ¬m theo tÃªn
                         if (glassRows.length === 0 && materialName) {
                             [glassRows] = await db.query(
                                 `SELECT id, COALESCE(quantity, 0) as stock, COALESCE(price, 0) as price 
@@ -252,12 +252,12 @@ exports.getByProject = async (req, res) => {
                             stockPrice = parseFloat(glassRows[0].price) || 0;
                             foundInStock = true;
                             foundInInventory = true;
-                            console.log(`✅ Tìm thấy glass trong glass_items: code=${materialCode}, name=${materialName}, id=${materialId}, stock=${availableStock}`);
+                            console.log(`âœ… TÃ¬m tháº¥y glass trong glass_items: code=${materialCode}, name=${materialName}, id=${materialId}, stock=${availableStock}`);
                         } else {
-                            console.log(`❌ Không tìm thấy glass trong glass_items: code=${materialCode}, name=${materialName}`);
+                            console.log(`âŒ KhÃ´ng tÃ¬m tháº¥y glass trong glass_items: code=${materialCode}, name=${materialName}`);
                         }
                     } else if (materialType === 'other') {
-                        // Other từ bảng inventory
+                        // Other tá»« báº£ng inventory
                         let invRows = [];
                         if (materialCode) {
                             [invRows] = await db.query(
@@ -287,18 +287,18 @@ exports.getByProject = async (req, res) => {
                             stockPrice = parseFloat(invRows[0].price) || 0;
                             foundInStock = true;
                             foundInInventory = true;
-                            console.log(`✅ Tìm thấy other trong inventory: code=${materialCode}, name=${materialName}, id=${materialId}, stock=${availableStock}`);
+                            console.log(`âœ… TÃ¬m tháº¥y other trong inventory: code=${materialCode}, name=${materialName}, id=${materialId}, stock=${availableStock}`);
                         } else {
-                            console.log(`❌ Không tìm thấy other trong inventory: code=${materialCode}, name=${materialName}`);
+                            console.log(`âŒ KhÃ´ng tÃ¬m tháº¥y other trong inventory: code=${materialCode}, name=${materialName}`);
                         }
                     }
 
                     if (!foundInStock) {
                         stockStatus = 'not_found';
-                        stockNote = 'Vui lòng nhập vật tư này';
+                        stockNote = 'Vui lÃ²ng nháº­p váº­t tÆ° nÃ y';
                     }
                 } else {
-                    // Lấy tồn kho và giá từ bảng tương ứng bằng ID
+                    // Láº¥y tá»“n kho vÃ  giÃ¡ tá»« báº£ng tÆ°Æ¡ng á»©ng báº±ng ID
                     if (materialType === 'accessory') {
                         const [accRows] = await db.query(
                             `SELECT stock_quantity, COALESCE(sale_price, purchase_price, 0) as price 
@@ -311,7 +311,7 @@ exports.getByProject = async (req, res) => {
                             foundInInventory = true;
                         } else {
                             stockStatus = 'not_found';
-                            stockNote = 'Vui lòng nhập vật tư này';
+                            stockNote = 'Vui lÃ²ng nháº­p váº­t tÆ° nÃ y';
                         }
                     } else if (materialType === 'aluminum') {
                         const [alumRows] = await db.query(
@@ -325,10 +325,10 @@ exports.getByProject = async (req, res) => {
                             foundInInventory = true;
                         } else {
                             stockStatus = 'not_found';
-                            stockNote = 'Vui lòng nhập vật tư này';
+                            stockNote = 'Vui lÃ²ng nháº­p váº­t tÆ° nÃ y';
                         }
                     } else if (materialType === 'glass') {
-                        // ✅ FIX: Glass từ bảng glass_items (đồng bộ với inventory.html và design-new.html)
+                        // âœ… FIX: Glass tá»« báº£ng glass_items (Ä‘á»“ng bá»™ vá»›i inventory.html vÃ  design-new.html)
                         const [glassRows] = await db.query(
                             `SELECT COALESCE(quantity, 0) as stock, COALESCE(price, 0) as price 
                              FROM glass_items WHERE id = ?`,
@@ -340,10 +340,10 @@ exports.getByProject = async (req, res) => {
                             foundInInventory = true;
                         } else {
                             stockStatus = 'not_found';
-                            stockNote = 'Vui lòng nhập vật tư này';
+                            stockNote = 'Vui lÃ²ng nháº­p váº­t tÆ° nÃ y';
                         }
                     } else if (materialType === 'other') {
-                        // Other từ bảng inventory
+                        // Other tá»« báº£ng inventory
                         const [invRows] = await db.query(
                             `SELECT CAST(quantity AS DECIMAL(10,2)) as stock, unit_price as price 
                              FROM inventory WHERE id = ?`,
@@ -359,61 +359,61 @@ exports.getByProject = async (req, res) => {
                             foundInInventory = true;
                         } else {
                             stockStatus = 'not_found';
-                            stockNote = 'Vui lòng nhập vật tư này';
+                            stockNote = 'Vui lÃ²ng nháº­p váº­t tÆ° nÃ y';
                         }
                     }
                 }
 
-                // Tính toán số lượng còn cần và shortage sau khi đã có totalRequiredQty và totalExportedQty
-                stillNeeded = Math.max(0, totalRequiredQty - totalExportedQty); // Số lượng còn cần = (tổng cần) - (đã xuất)
-                remainingStock = availableStock; // Tồn kho hiện tại (đã trừ khi xuất)
-                shortage = Math.max(0, stillNeeded - remainingStock); // Số lượng thiếu = (còn cần) - (tồn kho)
+                // TÃ­nh toÃ¡n sá»‘ lÆ°á»£ng cÃ²n cáº§n vÃ  shortage sau khi Ä‘Ã£ cÃ³ totalRequiredQty vÃ  totalExportedQty
+                stillNeeded = Math.max(0, totalRequiredQty - totalExportedQty); // Sá»‘ lÆ°á»£ng cÃ²n cáº§n = (tá»•ng cáº§n) - (Ä‘Ã£ xuáº¥t)
+                remainingStock = availableStock; // Tá»“n kho hiá»‡n táº¡i (Ä‘Ã£ trá»« khi xuáº¥t)
+                shortage = Math.max(0, stillNeeded - remainingStock); // Sá»‘ lÆ°á»£ng thiáº¿u = (cÃ²n cáº§n) - (tá»“n kho)
 
-                // Xác định trạng thái tồn kho dựa trên số lượng CẦN và số lượng ĐÃ XUẤT
+                // XÃ¡c Ä‘á»‹nh tráº¡ng thÃ¡i tá»“n kho dá»±a trÃªn sá»‘ lÆ°á»£ng Cáº¦N vÃ  sá»‘ lÆ°á»£ng ÄÃƒ XUáº¤T
                 if (stockStatus === 'unknown') {
                     if (foundInInventory) {
-                        // Đã tìm thấy vật tư trong kho
-                        // So sánh: (tồn kho hiện tại) với (số lượng còn cần)
-                        // QUAN TRỌNG: Nếu kho = 0, LUÔN là "shortage" bất kể đã xuất bao nhiêu
+                        // ÄÃ£ tÃ¬m tháº¥y váº­t tÆ° trong kho
+                        // So sÃ¡nh: (tá»“n kho hiá»‡n táº¡i) vá»›i (sá»‘ lÆ°á»£ng cÃ²n cáº§n)
+                        // QUAN TRá»ŒNG: Náº¿u kho = 0, LUÃ”N lÃ  "shortage" báº¥t ká»ƒ Ä‘Ã£ xuáº¥t bao nhiÃªu
                         if (remainingStock === 0) {
-                            // Hết kho - LUÔN đánh dấu là shortage
+                            // Háº¿t kho - LUÃ”N Ä‘Ã¡nh dáº¥u lÃ  shortage
                             stockStatus = 'shortage';
-                            stockNote = 'Kho đã hết hãy cung cấp';
+                            stockNote = 'Kho Ä‘Ã£ háº¿t hÃ£y cung cáº¥p';
                         } else if (stillNeeded === 0 && remainingStock > 0) {
-                            // Đã xuất đủ số lượng cần VÀ kho vẫn còn
+                            // ÄÃ£ xuáº¥t Ä‘á»§ sá»‘ lÆ°á»£ng cáº§n VÃ€ kho váº«n cÃ²n
                             stockStatus = 'sufficient';
-                            stockNote = 'Vật tư còn đủ dùng';
+                            stockNote = 'Váº­t tÆ° cÃ²n Ä‘á»§ dÃ¹ng';
                         } else if (remainingStock >= stillNeeded && remainingStock > 0) {
-                            // Tồn kho đủ cho số lượng còn cần VÀ kho vẫn còn
+                            // Tá»“n kho Ä‘á»§ cho sá»‘ lÆ°á»£ng cÃ²n cáº§n VÃ€ kho váº«n cÃ²n
                             stockStatus = 'sufficient';
-                            stockNote = 'Vật tư còn đủ dùng';
+                            stockNote = 'Váº­t tÆ° cÃ²n Ä‘á»§ dÃ¹ng';
                         } else if (remainingStock > 0) {
-                            // Tồn kho có nhưng không đủ
+                            // Tá»“n kho cÃ³ nhÆ°ng khÃ´ng Ä‘á»§
                             stockStatus = 'partial';
-                            stockNote = `Thiếu ${shortage.toFixed(2)} ${item.unit || ''} - Cần bổ sung`;
+                            stockNote = `Thiáº¿u ${shortage.toFixed(2)} ${item.unit || ''} - Cáº§n bá»• sung`;
                         } else {
-                            // Case an toàn - không nên đến đây
+                            // Case an toÃ n - khÃ´ng nÃªn Ä‘áº¿n Ä‘Ã¢y
                             stockStatus = 'shortage';
-                            stockNote = 'Kho đã hết hãy cung cấp';
+                            stockNote = 'Kho Ä‘Ã£ háº¿t hÃ£y cung cáº¥p';
                         }
                     } else {
-                        // Không tìm thấy vật tư trong kho
+                        // KhÃ´ng tÃ¬m tháº¥y váº­t tÆ° trong kho
                         stockStatus = 'not_found';
-                        stockNote = 'Vui lòng nhập vật tư này';
+                        stockNote = 'Vui lÃ²ng nháº­p váº­t tÆ° nÃ y';
                     }
                 }
-                // Nếu stockStatus đã là 'not_found', giữ nguyên (đã được set ở trên)
+                // Náº¿u stockStatus Ä‘Ã£ lÃ  'not_found', giá»¯ nguyÃªn (Ä‘Ã£ Ä‘Æ°á»£c set á»Ÿ trÃªn)
 
-                // LUÔN cập nhật giá từ kho (lấy giá mới nhất) cho TẤT CẢ record
-                // Đảm bảo cùng một vật tư luôn có cùng một giá từ kho
-                // Nếu stockPrice = 0, thử lấy lại từ kho (có thể do query lỗi hoặc giá thật sự = 0)
+                // LUÃ”N cáº­p nháº­t giÃ¡ tá»« kho (láº¥y giÃ¡ má»›i nháº¥t) cho Táº¤T Cáº¢ record
+                // Äáº£m báº£o cÃ¹ng má»™t váº­t tÆ° luÃ´n cÃ³ cÃ¹ng má»™t giÃ¡ tá»« kho
+                // Náº¿u stockPrice = 0, thá»­ láº¥y láº¡i tá»« kho (cÃ³ thá»ƒ do query lá»—i hoáº·c giÃ¡ tháº­t sá»± = 0)
                 if (stockPrice <= 0) {
-                    // Thử lấy lại giá từ kho một lần nữa để chắc chắn
+                    // Thá»­ láº¥y láº¡i giÃ¡ tá»« kho má»™t láº§n ná»¯a Ä‘á»ƒ cháº¯c cháº¯n
                     let retryPrice = 0;
                     try {
                         if (materialType === 'accessory') {
                             if (materialId) {
-                                // Thử theo ID trước
+                                // Thá»­ theo ID trÆ°á»›c
                                 const [retryRows] = await db.query(
                                     'SELECT COALESCE(sale_price, purchase_price, 0) as price FROM accessories WHERE id = ?',
                                     [materialId]
@@ -422,7 +422,7 @@ exports.getByProject = async (req, res) => {
                                     retryPrice = parseFloat(retryRows[0].price) || 0;
                                 }
                             }
-                            // Nếu vẫn không có giá, thử tìm theo tên
+                            // Náº¿u váº«n khÃ´ng cÃ³ giÃ¡, thá»­ tÃ¬m theo tÃªn
                             if (retryPrice <= 0 && materialName) {
                                 const [retryRows] = await db.query(
                                     'SELECT COALESCE(sale_price, purchase_price, 0) as price FROM accessories WHERE (name LIKE ? OR code LIKE ?) AND (sale_price > 0 OR purchase_price > 0) LIMIT 1',
@@ -434,7 +434,7 @@ exports.getByProject = async (req, res) => {
                             }
                         } else if (materialType === 'aluminum') {
                             if (materialId) {
-                                // Thử theo ID trước
+                                // Thá»­ theo ID trÆ°á»›c
                                 const [retryRows] = await db.query(
                                     'SELECT unit_price as price FROM aluminum_systems WHERE id = ? AND unit_price > 0',
                                     [materialId]
@@ -443,7 +443,7 @@ exports.getByProject = async (req, res) => {
                                     retryPrice = parseFloat(retryRows[0].price) || 0;
                                 }
                             }
-                            // Nếu vẫn không có giá, thử tìm theo tên
+                            // Náº¿u váº«n khÃ´ng cÃ³ giÃ¡, thá»­ tÃ¬m theo tÃªn
                             if (retryPrice <= 0 && materialName) {
                                 const [retryRows] = await db.query(
                                     'SELECT unit_price as price FROM aluminum_systems WHERE (name LIKE ? OR code LIKE ?) AND unit_price > 0 LIMIT 1',
@@ -455,7 +455,7 @@ exports.getByProject = async (req, res) => {
                             }
                         } else if (materialType === 'glass' || materialType === 'other') {
                             if (materialId) {
-                                // Thử theo ID trước
+                                // Thá»­ theo ID trÆ°á»›c
                                 const [retryRows] = await db.query(
                                     'SELECT unit_price as price FROM inventory WHERE id = ? AND unit_price > 0',
                                     [materialId]
@@ -464,7 +464,7 @@ exports.getByProject = async (req, res) => {
                                     retryPrice = parseFloat(retryRows[0].price) || 0;
                                 }
                             }
-                            // Nếu vẫn không có giá, thử tìm theo tên
+                            // Náº¿u váº«n khÃ´ng cÃ³ giÃ¡, thá»­ tÃ¬m theo tÃªn
                             if (retryPrice <= 0 && materialName) {
                                 const [retryRows] = await db.query(
                                     'SELECT unit_price as price FROM inventory WHERE (item_name LIKE ? OR item_code LIKE ?) AND unit_price > 0 LIMIT 1',
@@ -479,21 +479,21 @@ exports.getByProject = async (req, res) => {
                         console.warn(`Retry price fetch failed for ${materialId || materialName}:`, retryErr);
                     }
 
-                    // Cập nhật stockPrice nếu tìm thấy giá
+                    // Cáº­p nháº­t stockPrice náº¿u tÃ¬m tháº¥y giÃ¡
                     if (retryPrice > 0) {
                         stockPrice = retryPrice;
                     }
                 }
 
-                // FALLBACK UNIVERSAL: Nếu vẫn không có giá, tìm trong TẤT CẢ các bảng theo tên
-                // Điều này xử lý trường hợp material_type bị sai (ví dụ: lưu là 'other' nhưng thực tế là nhôm)
+                // FALLBACK UNIVERSAL: Náº¿u váº«n khÃ´ng cÃ³ giÃ¡, tÃ¬m trong Táº¤T Cáº¢ cÃ¡c báº£ng theo tÃªn
+                // Äiá»u nÃ y xá»­ lÃ½ trÆ°á»ng há»£p material_type bá»‹ sai (vÃ­ dá»¥: lÆ°u lÃ  'other' nhÆ°ng thá»±c táº¿ lÃ  nhÃ´m)
                 if (stockPrice <= 0 && materialName) {
-                    console.log(`🔍 [UNIVERSAL FALLBACK] Searching all tables for: "${materialName}"`);
+                    console.log(`ðŸ” [UNIVERSAL FALLBACK] Searching all tables for: "${materialName}"`);
                     let fallbackPrice = 0;
                     let fallbackSource = '';
 
                     try {
-                        // 1. Thử tìm trong accessories
+                        // 1. Thá»­ tÃ¬m trong accessories
                         if (fallbackPrice <= 0) {
                             const [accRows] = await db.query(
                                 `SELECT COALESCE(sale_price, purchase_price, 0) as price, name 
@@ -505,11 +505,11 @@ exports.getByProject = async (req, res) => {
                             if (accRows.length > 0 && parseFloat(accRows[0].price) > 0) {
                                 fallbackPrice = parseFloat(accRows[0].price);
                                 fallbackSource = 'accessories';
-                                console.log(`   ✅ Found in accessories: ${fallbackPrice} (${accRows[0].name})`);
+                                console.log(`   âœ… Found in accessories: ${fallbackPrice} (${accRows[0].name})`);
                             }
                         }
 
-                        // 2. Thử tìm trong aluminum_systems
+                        // 2. Thá»­ tÃ¬m trong aluminum_systems
                         if (fallbackPrice <= 0) {
                             const [alumRows] = await db.query(
                                 `SELECT unit_price as price, name 
@@ -521,11 +521,11 @@ exports.getByProject = async (req, res) => {
                             if (alumRows.length > 0 && parseFloat(alumRows[0].price) > 0) {
                                 fallbackPrice = parseFloat(alumRows[0].price);
                                 fallbackSource = 'aluminum_systems';
-                                console.log(`   ✅ Found in aluminum_systems: ${fallbackPrice} (${alumRows[0].name})`);
+                                console.log(`   âœ… Found in aluminum_systems: ${fallbackPrice} (${alumRows[0].name})`);
                             }
                         }
 
-                        // 3. Thử tìm trong inventory
+                        // 3. Thá»­ tÃ¬m trong inventory
                         if (fallbackPrice <= 0) {
                             const [invRows] = await db.query(
                                 `SELECT unit_price as price, item_name 
@@ -537,48 +537,48 @@ exports.getByProject = async (req, res) => {
                             if (invRows.length > 0 && parseFloat(invRows[0].price) > 0) {
                                 fallbackPrice = parseFloat(invRows[0].price);
                                 fallbackSource = 'inventory';
-                                console.log(`   ✅ Found in inventory: ${fallbackPrice} (${invRows[0].item_name})`);
+                                console.log(`   âœ… Found in inventory: ${fallbackPrice} (${invRows[0].item_name})`);
                             }
                         }
 
                         if (fallbackPrice > 0) {
                             stockPrice = fallbackPrice;
-                            console.log(`   📦 Using fallback price from ${fallbackSource}: ${stockPrice}`);
+                            console.log(`   ðŸ“¦ Using fallback price from ${fallbackSource}: ${stockPrice}`);
                         } else {
-                            console.log(`   ❌ No price found in any table for: "${materialName}"`);
+                            console.log(`   âŒ No price found in any table for: "${materialName}"`);
                         }
                     } catch (fallbackErr) {
-                        console.warn(`   ⚠️ Fallback search failed for "${materialName}":`, fallbackErr.message);
+                        console.warn(`   âš ï¸ Fallback search failed for "${materialName}":`, fallbackErr.message);
                     }
                 }
 
-                // Áp dụng giá cuối cùng
+                // Ãp dá»¥ng giÃ¡ cuá»‘i cÃ¹ng
                 if (stockPrice > 0) {
-                    // Có giá trong kho → luôn dùng giá từ kho (nhất quán)
+                    // CÃ³ giÃ¡ trong kho â†’ luÃ´n dÃ¹ng giÃ¡ tá»« kho (nháº¥t quÃ¡n)
                     item.unit_price = stockPrice;
-                    item.total_cost = exportedQty * stockPrice; // Tính theo số lượng đã xuất (cho record này)
+                    item.total_cost = exportedQty * stockPrice; // TÃ­nh theo sá»‘ lÆ°á»£ng Ä‘Ã£ xuáº¥t (cho record nÃ y)
                 } else if (item.unit_price > 0) {
-                    // Không có giá trong kho nhưng có giá đã lưu → giữ nguyên giá đã lưu
+                    // KhÃ´ng cÃ³ giÃ¡ trong kho nhÆ°ng cÃ³ giÃ¡ Ä‘Ã£ lÆ°u â†’ giá»¯ nguyÃªn giÃ¡ Ä‘Ã£ lÆ°u
                     item.total_cost = exportedQty * item.unit_price;
                 } else {
-                    // Không có giá cả trong kho và đã lưu → để 0
+                    // KhÃ´ng cÃ³ giÃ¡ cáº£ trong kho vÃ  Ä‘Ã£ lÆ°u â†’ Ä‘á»ƒ 0
                     item.unit_price = 0;
                     item.total_cost = 0;
                 }
             } catch (err) {
                 console.error(`Error getting stock for material ${materialId || materialName}:`, err);
                 stockStatus = 'error';
-                stockNote = 'Lỗi kiểm tra kho';
-                // Đảm bảo remainingStock và shortage được tính ngay cả khi có lỗi
+                stockNote = 'Lá»—i kiá»ƒm tra kho';
+                // Äáº£m báº£o remainingStock vÃ  shortage Ä‘Æ°á»£c tÃ­nh ngay cáº£ khi cÃ³ lá»—i
                 stillNeeded = Math.max(0, totalRequiredQty - totalExportedQty);
                 remainingStock = availableStock || 0;
                 shortage = Math.max(0, stillNeeded - remainingStock);
 
-                // QUAN TRỌNG: Dù có lỗi, vẫn thử tìm giá từ kho theo tên
+                // QUAN TRá»ŒNG: DÃ¹ cÃ³ lá»—i, váº«n thá»­ tÃ¬m giÃ¡ tá»« kho theo tÃªn
                 if (stockPrice <= 0 && materialName) {
-                    console.log(`🔧 [ERROR FALLBACK] Trying to find price despite error for: "${materialName}"`);
+                    console.log(`ðŸ”§ [ERROR FALLBACK] Trying to find price despite error for: "${materialName}"`);
                     try {
-                        // Tìm trong accessories
+                        // TÃ¬m trong accessories
                         const [accRows] = await db.query(
                             `SELECT COALESCE(sale_price, purchase_price, 0) as price FROM accessories 
                              WHERE (name LIKE ? OR code LIKE ?) AND (sale_price > 0 OR purchase_price > 0) LIMIT 1`,
@@ -588,11 +588,11 @@ exports.getByProject = async (req, res) => {
                             stockPrice = parseFloat(accRows[0].price);
                             item.unit_price = stockPrice;
                             item.total_cost = exportedQty * stockPrice;
-                            console.log(`   ✅ Found price in accessories: ${stockPrice}`);
+                            console.log(`   âœ… Found price in accessories: ${stockPrice}`);
                         }
 
                         if (stockPrice <= 0) {
-                            // Tìm trong aluminum_systems
+                            // TÃ¬m trong aluminum_systems
                             const [alumRows] = await db.query(
                                 `SELECT unit_price as price FROM aluminum_systems 
                                  WHERE (name LIKE ? OR code LIKE ?) AND unit_price > 0 LIMIT 1`,
@@ -602,12 +602,12 @@ exports.getByProject = async (req, res) => {
                                 stockPrice = parseFloat(alumRows[0].price);
                                 item.unit_price = stockPrice;
                                 item.total_cost = exportedQty * stockPrice;
-                                console.log(`   ✅ Found price in aluminum_systems: ${stockPrice}`);
+                                console.log(`   âœ… Found price in aluminum_systems: ${stockPrice}`);
                             }
                         }
 
                         if (stockPrice <= 0) {
-                            // Tìm trong inventory
+                            // TÃ¬m trong inventory
                             const [invRows] = await db.query(
                                 `SELECT unit_price as price FROM inventory 
                                  WHERE (item_name LIKE ? OR item_code LIKE ?) AND unit_price > 0 LIMIT 1`,
@@ -617,51 +617,51 @@ exports.getByProject = async (req, res) => {
                                 stockPrice = parseFloat(invRows[0].price);
                                 item.unit_price = stockPrice;
                                 item.total_cost = exportedQty * stockPrice;
-                                console.log(`   ✅ Found price in inventory: ${stockPrice}`);
+                                console.log(`   âœ… Found price in inventory: ${stockPrice}`);
                             }
                         }
                     } catch (fallbackErr) {
-                        console.error(`   ❌ Error fallback also failed:`, fallbackErr.message);
+                        console.error(`   âŒ Error fallback also failed:`, fallbackErr.message);
                     }
                 }
             }
 
-            // Xác định xem vật tư này đã xuất đủ chưa
-            // CHỈ coi là "đã xuất đủ" khi stockStatus là 'sufficient' (kho đủ)
-            // Các trạng thái khác (partial, shortage, not_found, error) đều là "chưa đủ"
+            // XÃ¡c Ä‘á»‹nh xem váº­t tÆ° nÃ y Ä‘Ã£ xuáº¥t Ä‘á»§ chÆ°a
+            // CHá»ˆ coi lÃ  "Ä‘Ã£ xuáº¥t Ä‘á»§" khi stockStatus lÃ  'sufficient' (kho Ä‘á»§)
+            // CÃ¡c tráº¡ng thÃ¡i khÃ¡c (partial, shortage, not_found, error) Ä‘á»u lÃ  "chÆ°a Ä‘á»§"
             const isFullyExported = stockStatus === 'sufficient';
 
             return {
                 ...item,
                 project_code: project.project_code,
                 project_name: project.project_name,
-                material_code: materialCode, // Mã vật tư để sync với kho
-                quantity: exportedQty, // Số lượng đã xuất (cho record này)
-                total_required: totalRequiredQty, // Tổng số lượng cần (từ BOM)
-                total_exported: totalExportedQty, // Tổng số lượng đã xuất (tất cả record)
-                still_needed: Math.max(0, totalRequiredQty - totalExportedQty), // Số lượng còn cần
-                available_stock: remainingStock, // Tồn kho hiện tại
-                stock_status: stockStatus, // Giữ nguyên stockStatus đã tính toán
-                stock_note: stockNote, // Giữ nguyên stockNote đã tính toán  
-                shortage: shortage, // Số lượng thiếu
-                is_fully_exported: isFullyExported // Flag để phân loại
+                material_code: materialCode, // MÃ£ váº­t tÆ° Ä‘á»ƒ sync vá»›i kho
+                quantity: exportedQty, // Sá»‘ lÆ°á»£ng Ä‘Ã£ xuáº¥t (cho record nÃ y)
+                total_required: totalRequiredQty, // Tá»•ng sá»‘ lÆ°á»£ng cáº§n (tá»« BOM)
+                total_exported: totalExportedQty, // Tá»•ng sá»‘ lÆ°á»£ng Ä‘Ã£ xuáº¥t (táº¥t cáº£ record)
+                still_needed: Math.max(0, totalRequiredQty - totalExportedQty), // Sá»‘ lÆ°á»£ng cÃ²n cáº§n
+                available_stock: remainingStock, // Tá»“n kho hiá»‡n táº¡i
+                stock_status: stockStatus, // Giá»¯ nguyÃªn stockStatus Ä‘Ã£ tÃ­nh toÃ¡n
+                stock_note: stockNote, // Giá»¯ nguyÃªn stockNote Ä‘Ã£ tÃ­nh toÃ¡n  
+                shortage: shortage, // Sá»‘ lÆ°á»£ng thiáº¿u
+                is_fully_exported: isFullyExported // Flag Ä‘á»ƒ phÃ¢n loáº¡i
             };
         }));
 
-        // Phân loại: "Vật tư đã xuất" = đã xuất đủ, "Vật tư chưa đủ" = chưa xuất hoặc chưa đủ
+        // PhÃ¢n loáº¡i: "Váº­t tÆ° Ä‘Ã£ xuáº¥t" = Ä‘Ã£ xuáº¥t Ä‘á»§, "Váº­t tÆ° chÆ°a Ä‘á»§" = chÆ°a xuáº¥t hoáº·c chÆ°a Ä‘á»§
         const fullyExportedMaterials = exportedMaterials.filter(m => m.is_fully_exported);
         const partiallyExportedMaterials = exportedMaterials.filter(m => !m.is_fully_exported);
 
-        // BƯỚC 6: Xử lý "VẬT TƯ CHƯA ĐỦ" - Từ BOM nhưng chưa xuất hoặc chưa đủ
-        // Bao gồm cả vật tư đã xuất nhưng chưa đủ (từ partiallyExportedMaterials)
+        // BÆ¯á»šC 6: Xá»­ lÃ½ "Váº¬T TÆ¯ CHÆ¯A Äá»¦" - Tá»« BOM nhÆ°ng chÆ°a xuáº¥t hoáº·c chÆ°a Ä‘á»§
+        // Bao gá»“m cáº£ váº­t tÆ° Ä‘Ã£ xuáº¥t nhÆ°ng chÆ°a Ä‘á»§ (tá»« partiallyExportedMaterials)
         const insufficientMaterialsFromBOM = await Promise.all(bomRequiredMaterials.map(async (bom) => {
             const materialType = bom.material_type;
             const materialName = bom.material_name;
             const totalRequiredQty = bom.total_required;
-            const materialCode = bom.item_code || ''; // Mã vật tư từ BOM
+            const materialCode = bom.item_code || ''; // MÃ£ váº­t tÆ° tá»« BOM
             const unit = bom.unit;
 
-            // Kiểm tra xem vật tư này đã được xuất chưa (tìm theo tên)
+            // Kiá»ƒm tra xem váº­t tÆ° nÃ y Ä‘Ã£ Ä‘Æ°á»£c xuáº¥t chÆ°a (tÃ¬m theo tÃªn)
             let totalExportedQty = 0;
             for (const key in exportedByMaterial) {
                 const exported = exportedByMaterial[key];
@@ -673,17 +673,17 @@ exports.getByProject = async (req, res) => {
 
             const stillNeeded = Math.max(0, totalRequiredQty - totalExportedQty);
 
-            // Nếu đã xuất đủ, không hiển thị ở "Vật tư chưa đủ"
+            // Náº¿u Ä‘Ã£ xuáº¥t Ä‘á»§, khÃ´ng hiá»ƒn thá»‹ á»Ÿ "Váº­t tÆ° chÆ°a Ä‘á»§"
             if (stillNeeded <= 0) {
                 return null;
             }
 
-            // Tìm material_id từ kho (nếu có)
+            // TÃ¬m material_id tá»« kho (náº¿u cÃ³)
             let materialId = null;
             let availableStock = 0;
             let stockPrice = 0;
             let stockStatus = 'not_found';
-            let stockNote = 'Không có trong kho - Cần bổ sung';
+            let stockNote = 'KhÃ´ng cÃ³ trong kho - Cáº§n bá»• sung';
             let foundInInventory = false;
 
             try {
@@ -716,10 +716,10 @@ exports.getByProject = async (req, res) => {
                         foundInInventory = true;
                     }
                 } else if (materialType === 'glass' || materialType === 'other') {
-                    // ƯU TIÊN TÌM THEO MÃ VT (item_code) TRƯỚC
+                    // Æ¯U TIÃŠN TÃŒM THEO MÃƒ VT (item_code) TRÆ¯á»šC
                     let invRows = [];
                     const searchCode = bom.item_code || materialCode;
-                    // 1. Thử tìm chính xác theo item_code trước
+                    // 1. Thá»­ tÃ¬m chÃ­nh xÃ¡c theo item_code trÆ°á»›c
                     if (searchCode) {
                         [invRows] = await db.query(
                             `SELECT id, CAST(quantity AS DECIMAL(10,2)) as stock, unit_price as price 
@@ -729,7 +729,7 @@ exports.getByProject = async (req, res) => {
                             [searchCode]
                         );
                     }
-                    // 2. Nếu không tìm thấy theo code, thử tìm theo tên (exact match)
+                    // 2. Náº¿u khÃ´ng tÃ¬m tháº¥y theo code, thá»­ tÃ¬m theo tÃªn (exact match)
                     if (invRows.length === 0 && materialName) {
                         [invRows] = await db.query(
                             `SELECT id, CAST(quantity AS DECIMAL(10,2)) as stock, unit_price as price 
@@ -748,46 +748,46 @@ exports.getByProject = async (req, res) => {
                         availableStock = parseFloat(stockValue) || 0;
                         stockPrice = parseFloat(invRows[0].price) || 0;
                         foundInInventory = true;
-                        console.log(`✅ BOM: Tìm thấy glass/other trong kho: code=${searchCode}, name=${materialName}, stock=${availableStock}`);
+                        console.log(`âœ… BOM: TÃ¬m tháº¥y glass/other trong kho: code=${searchCode}, name=${materialName}, stock=${availableStock}`);
                     } else {
-                        console.log(`❌ BOM: Không tìm thấy glass/other trong kho: code=${searchCode}, name=${materialName}`);
+                        console.log(`âŒ BOM: KhÃ´ng tÃ¬m tháº¥y glass/other trong kho: code=${searchCode}, name=${materialName}`);
                     }
                 }
 
-                // Xác định trạng thái
+                // XÃ¡c Ä‘á»‹nh tráº¡ng thÃ¡i
                 if (foundInInventory) {
                     const shortage = Math.max(0, stillNeeded - availableStock);
-                    // QUAN TRỌNG: Nếu kho = 0, LUÔN là "shortage"
+                    // QUAN TRá»ŒNG: Náº¿u kho = 0, LUÃ”N lÃ  "shortage"
                     if (availableStock === 0) {
                         stockStatus = 'shortage';
-                        stockNote = 'Kho đã hết hãy cung cấp';
+                        stockNote = 'Kho Ä‘Ã£ háº¿t hÃ£y cung cáº¥p';
                     } else if (availableStock >= stillNeeded && availableStock > 0) {
                         stockStatus = 'sufficient';
-                        stockNote = 'Vật tư còn đủ dùng';
+                        stockNote = 'Váº­t tÆ° cÃ²n Ä‘á»§ dÃ¹ng';
                     } else if (availableStock > 0) {
                         stockStatus = 'partial';
-                        stockNote = `Thiếu ${shortage.toFixed(2)} ${unit} - Cần bổ sung`;
+                        stockNote = `Thiáº¿u ${shortage.toFixed(2)} ${unit} - Cáº§n bá»• sung`;
                     } else {
                         stockStatus = 'shortage';
-                        stockNote = 'Kho đã hết hãy cung cấp';
+                        stockNote = 'Kho Ä‘Ã£ háº¿t hÃ£y cung cáº¥p';
                     }
                 }
             } catch (err) {
                 console.error(`Error getting stock for insufficient material ${materialName}:`, err);
                 stockStatus = 'error';
-                stockNote = 'Lỗi kiểm tra kho';
+                stockNote = 'Lá»—i kiá»ƒm tra kho';
             }
 
             return {
-                id: null, // Chưa có trong project_materials
+                id: null, // ChÆ°a cÃ³ trong project_materials
                 project_id: projectId,
                 project_code: project.project_code,
                 project_name: project.project_name,
-                material_code: materialCode, // Mã vật tư từ BOM
+                material_code: materialCode, // MÃ£ váº­t tÆ° tá»« BOM
                 material_name: materialName,
                 material_type: materialType,
                 material_id: materialId,
-                quantity: 0, // Chưa xuất
+                quantity: 0, // ChÆ°a xuáº¥t
                 unit: unit,
                 total_required: totalRequiredQty,
                 total_exported: totalExportedQty,
@@ -804,21 +804,21 @@ exports.getByProject = async (req, res) => {
             };
         }));
 
-        // Lọc bỏ các vật tư null (đã xuất đủ)
+        // Lá»c bá» cÃ¡c váº­t tÆ° null (Ä‘Ã£ xuáº¥t Ä‘á»§)
         const filteredInsufficientFromBOM = insufficientMaterialsFromBOM.filter(m => m !== null);
 
-        // Kết hợp: "Vật tư chưa đủ" = vật tư từ BOM chưa xuất/chưa đủ + vật tư đã xuất nhưng chưa đủ
-        // Chuyển đổi partiallyExportedMaterials sang format của insufficient
+        // Káº¿t há»£p: "Váº­t tÆ° chÆ°a Ä‘á»§" = váº­t tÆ° tá»« BOM chÆ°a xuáº¥t/chÆ°a Ä‘á»§ + váº­t tÆ° Ä‘Ã£ xuáº¥t nhÆ°ng chÆ°a Ä‘á»§
+        // Chuyá»ƒn Ä‘á»•i partiallyExportedMaterials sang format cá»§a insufficient
         const insufficientFromPartiallyExported = partiallyExportedMaterials.map(item => ({
-            id: item.id, // Có ID vì đã có trong project_materials
+            id: item.id, // CÃ³ ID vÃ¬ Ä‘Ã£ cÃ³ trong project_materials
             project_id: item.project_id,
             project_code: item.project_code,
             project_name: item.project_name,
-            material_code: item.material_code, // Mã vật tư
+            material_code: item.material_code, // MÃ£ váº­t tÆ°
             material_name: item.material_name,
             material_type: item.material_type,
             material_id: item.material_id,
-            quantity: item.quantity, // Số lượng đã xuất
+            quantity: item.quantity, // Sá»‘ lÆ°á»£ng Ä‘Ã£ xuáº¥t
             unit: item.unit,
             total_required: item.total_required,
             total_exported: item.total_exported,
@@ -834,14 +834,14 @@ exports.getByProject = async (req, res) => {
             updated_at: item.updated_at
         }));
 
-        // Gộp lại: vật tư từ BOM chưa xuất/chưa đủ + vật tư đã xuất nhưng chưa đủ
+        // Gá»™p láº¡i: váº­t tÆ° tá»« BOM chÆ°a xuáº¥t/chÆ°a Ä‘á»§ + váº­t tÆ° Ä‘Ã£ xuáº¥t nhÆ°ng chÆ°a Ä‘á»§
         const allInsufficientMaterials = [...filteredInsufficientFromBOM, ...insufficientFromPartiallyExported];
 
-        // Tính tổng chi phí cho TẤT CẢ vật tư đã xuất (không chỉ fully exported)
+        // TÃ­nh tá»•ng chi phÃ­ cho Táº¤T Cáº¢ váº­t tÆ° Ä‘Ã£ xuáº¥t (khÃ´ng chá»‰ fully exported)
         const totalCost = exportedMaterials.reduce((sum, item) => sum + parseFloat(item.total_cost || 0), 0);
 
-        // CẬP NHẬT GIÁ VÀO DATABASE để đồng bộ với API danh sách
-        // Chỉ cập nhật nếu có sự thay đổi về giá
+        // Cáº¬P NHáº¬T GIÃ VÃ€O DATABASE Ä‘á»ƒ Ä‘á»“ng bá»™ vá»›i API danh sÃ¡ch
+        // Chá»‰ cáº­p nháº­t náº¿u cÃ³ sá»± thay Ä‘á»•i vá» giÃ¡
         try {
             for (const mat of exportedMaterials) {
                 if (mat.id && (mat.unit_price > 0 || mat.total_cost > 0)) {
@@ -853,34 +853,34 @@ exports.getByProject = async (req, res) => {
                     );
                 }
             }
-            console.log(`💾 Đã cập nhật giá cho ${exportedMaterials.length} vật tư vào database`);
+            console.log(`ðŸ’¾ ÄÃ£ cáº­p nháº­t giÃ¡ cho ${exportedMaterials.length} váº­t tÆ° vÃ o database`);
         } catch (updateErr) {
-            console.error('⚠️ Lỗi khi cập nhật giá vào database:', updateErr.message);
-            // Không throw error, vẫn tiếp tục trả về response
+            console.error('âš ï¸ Lá»—i khi cáº­p nháº­t giÃ¡ vÃ o database:', updateErr.message);
+            // KhÃ´ng throw error, váº«n tiáº¿p tá»¥c tráº£ vá» response
         }
 
-        // Debug log để kiểm tra
-        console.log(`📊 Project ${projectId} materials summary:`);
+        // Debug log Ä‘á»ƒ kiá»ƒm tra
+        console.log(`ðŸ“Š Project ${projectId} materials summary:`);
         console.log(`   Fully exported materials: ${fullyExportedMaterials.length}`);
         console.log(`   Partially exported materials: ${partiallyExportedMaterials.length}`);
         console.log(`   Insufficient materials (from BOM): ${filteredInsufficientFromBOM.length}`);
         console.log(`   Total insufficient materials: ${allInsufficientMaterials.length}`);
         console.log(`   Total cost (all exported): ${totalCost}`);
 
-        // Đảm bảo exported và insufficient luôn là arrays
+        // Äáº£m báº£o exported vÃ  insufficient luÃ´n lÃ  arrays
         const response = {
             success: true,
             data: [...fullyExportedMaterials, ...allInsufficientMaterials] || [],
-            exported: fullyExportedMaterials || [], // Chỉ vật tư đã xuất ĐỦ
-            insufficient: allInsufficientMaterials || [], // Vật tư chưa xuất hoặc chưa đủ
+            exported: fullyExportedMaterials || [], // Chá»‰ váº­t tÆ° Ä‘Ã£ xuáº¥t Äá»¦
+            insufficient: allInsufficientMaterials || [], // Váº­t tÆ° chÆ°a xuáº¥t hoáº·c chÆ°a Ä‘á»§
             total_cost: totalCost || 0,
             count: (fullyExportedMaterials.length + allInsufficientMaterials.length) || 0,
             exported_count: fullyExportedMaterials.length || 0,
             insufficient_count: allInsufficientMaterials.length || 0
         };
 
-        // Debug log chi tiết
-        console.log(`📊 Project ${projectId} - Final Response:`);
+        // Debug log chi tiáº¿t
+        console.log(`ðŸ“Š Project ${projectId} - Final Response:`);
         console.log(`   Total: ${response.count}`);
         console.log(`   Exported: ${response.exported_count} (array length: ${response.exported.length})`);
         console.log(`   Insufficient: ${response.insufficient_count} (array length: ${response.insufficient.length})`);
@@ -896,16 +896,16 @@ exports.getByProject = async (req, res) => {
         console.error('Error getting project materials:', err);
         res.status(500).json({
             success: false,
-            message: "Lỗi khi lấy danh sách vật tư dự án"
+            message: "Lá»—i khi láº¥y danh sÃ¡ch váº­t tÆ° dá»± Ã¡n"
         });
     }
 };
 
-// GET /api/project-materials/projects/bom-extraction - Lấy danh sách dự án ở giai đoạn Bóc tách - Sản xuất
+// GET /api/project-materials/projects/bom-extraction - Láº¥y danh sÃ¡ch dá»± Ã¡n á»Ÿ giai Ä‘oáº¡n BÃ³c tÃ¡ch - Sáº£n xuáº¥t
 exports.getProjectsForExport = async (req, res) => {
     try {
-        // Chỉ lấy dự án ở giai đoạn Bóc tách (40-60%) và Sản xuất (60-80%)
-        // Các giai đoạn: Báo giá (0-20%), Thiết kế (20-40%), Bóc tách (40-60%), Sản xuất (60-80%), Lắp đặt (80-90%), Bàn giao (90-100%)
+        // Chá»‰ láº¥y dá»± Ã¡n á»Ÿ giai Ä‘oáº¡n BÃ³c tÃ¡ch (40-60%) vÃ  Sáº£n xuáº¥t (60-80%)
+        // CÃ¡c giai Ä‘oáº¡n: BÃ¡o giÃ¡ (0-20%), Thiáº¿t káº¿ (20-40%), BÃ³c tÃ¡ch (40-60%), Sáº£n xuáº¥t (60-80%), Láº¯p Ä‘áº·t (80-90%), BÃ n giao (90-100%)
         const [rows] = await db.query(
             `SELECT p.id, p.project_code, p.project_name, p.status, p.progress_percent,
                     c.full_name as customer_name,
@@ -927,12 +927,12 @@ exports.getProjectsForExport = async (req, res) => {
         console.error('Error getting projects for export:', err);
         res.status(500).json({
             success: false,
-            message: "Lỗi khi lấy danh sách dự án"
+            message: "Lá»—i khi láº¥y danh sÃ¡ch dá»± Ã¡n"
         });
     }
 };
 
-// POST /api/project-materials - Thêm vật tư vào dự án (trừ tồn kho)
+// POST /api/project-materials - ThÃªm váº­t tÆ° vÃ o dá»± Ã¡n (trá»« tá»“n kho)
 exports.create = async (req, res) => {
     const connection = await db.getConnection();
     await connection.beginTransaction();
@@ -943,14 +943,14 @@ exports.create = async (req, res) => {
         if (!project_id) {
             return res.status(400).json({
                 success: false,
-                message: "Vui lòng chọn dự án"
+                message: "Vui lÃ²ng chá»n dá»± Ã¡n"
             });
         }
 
         if (!materials || !Array.isArray(materials) || materials.length === 0) {
             return res.status(400).json({
                 success: false,
-                message: "Vui lòng chọn ít nhất 1 vật tư"
+                message: "Vui lÃ²ng chá»n Ã­t nháº¥t 1 váº­t tÆ°"
             });
         }
 
@@ -960,8 +960,8 @@ exports.create = async (req, res) => {
         for (const mat of materials) {
             let { material_type, material_id, material_code, material_name, quantity, unit, unit_price, notes } = mat;
 
-            // DEBUG: Log tất cả dữ liệu nhận được từ frontend
-            console.log(`📥 [RECEIVED MATERIAL]`, {
+            // DEBUG: Log táº¥t cáº£ dá»¯ liá»‡u nháº­n Ä‘Æ°á»£c tá»« frontend
+            console.log(`ðŸ“¥ [RECEIVED MATERIAL]`, {
                 material_type,
                 material_id,
                 material_name,
@@ -972,15 +972,15 @@ exports.create = async (req, res) => {
             });
 
             if (!material_id || !quantity || quantity <= 0) {
-                console.log(`⚠️ [SKIP MATERIAL] Missing required fields:`, { material_type, material_id, quantity });
+                console.log(`âš ï¸ [SKIP MATERIAL] Missing required fields:`, { material_type, material_id, quantity });
                 continue;
             }
 
-            // TỰ ĐỘNG PHÁT HIỆN material_type nếu không có hoặc không đúng
-            // Kiểm tra xem ID có tồn tại trong bảng nào
+            // Tá»° Äá»˜NG PHÃT HIá»†N material_type náº¿u khÃ´ng cÃ³ hoáº·c khÃ´ng Ä‘Ãºng
+            // Kiá»ƒm tra xem ID cÃ³ tá»“n táº¡i trong báº£ng nÃ o
             if (!material_type) {
                 try {
-                    // Kiểm tra trong inventory (glass/other)
+                    // Kiá»ƒm tra trong inventory (glass/other)
                     const [invCheck] = await connection.query(
                         `SELECT item_type FROM inventory WHERE id = ? LIMIT 1`,
                         [material_id]
@@ -993,7 +993,7 @@ exports.create = async (req, res) => {
                             material_type = 'other';
                         }
                     } else {
-                        // Kiểm tra trong accessories
+                        // Kiá»ƒm tra trong accessories
                         const [accCheck] = await connection.query(
                             `SELECT id FROM accessories WHERE id = ? LIMIT 1`,
                             [material_id]
@@ -1001,7 +1001,7 @@ exports.create = async (req, res) => {
                         if (accCheck.length > 0) {
                             material_type = 'accessory';
                         } else {
-                            // Kiểm tra trong aluminum_systems
+                            // Kiá»ƒm tra trong aluminum_systems
                             const [alumCheck] = await connection.query(
                                 `SELECT id FROM aluminum_systems WHERE id = ? LIMIT 1`,
                                 [material_id]
@@ -1013,16 +1013,16 @@ exports.create = async (req, res) => {
                     }
 
                     if (material_type) {
-                        console.log(`✅ [AUTO-DETECTED TYPE] ID ${material_id} -> ${material_type}`);
+                        console.log(`âœ… [AUTO-DETECTED TYPE] ID ${material_id} -> ${material_type}`);
                     }
                 } catch (detectErr) {
                     console.warn(`Could not auto-detect material type:`, detectErr);
                 }
             } else {
-                // Kiểm tra xem material_type có đúng không
+                // Kiá»ƒm tra xem material_type cÃ³ Ä‘Ãºng khÃ´ng
                 try {
                     let actualType = null;
-                    // Kiểm tra trong inventory (glass/other)
+                    // Kiá»ƒm tra trong inventory (glass/other)
                     const [invCheck] = await connection.query(
                         `SELECT item_type FROM inventory WHERE id = ? LIMIT 1`,
                         [material_id]
@@ -1035,7 +1035,7 @@ exports.create = async (req, res) => {
                             actualType = 'other';
                         }
                     } else {
-                        // Kiểm tra trong accessories
+                        // Kiá»ƒm tra trong accessories
                         const [accCheck] = await connection.query(
                             `SELECT id FROM accessories WHERE id = ? LIMIT 1`,
                             [material_id]
@@ -1043,7 +1043,7 @@ exports.create = async (req, res) => {
                         if (accCheck.length > 0) {
                             actualType = 'accessory';
                         } else {
-                            // Kiểm tra trong aluminum_systems
+                            // Kiá»ƒm tra trong aluminum_systems
                             const [alumCheck] = await connection.query(
                                 `SELECT id FROM aluminum_systems WHERE id = ? LIMIT 1`,
                                 [material_id]
@@ -1055,7 +1055,7 @@ exports.create = async (req, res) => {
                     }
 
                     if (actualType && actualType !== material_type) {
-                        console.log(`⚠️ [TYPE MISMATCH] Frontend sent: ${material_type}, Actual: ${actualType}. Using actual type.`);
+                        console.log(`âš ï¸ [TYPE MISMATCH] Frontend sent: ${material_type}, Actual: ${actualType}. Using actual type.`);
                         material_type = actualType;
                     }
                 } catch (detectErr) {
@@ -1064,22 +1064,22 @@ exports.create = async (req, res) => {
             }
 
             if (!material_type) {
-                console.log(`❌ [SKIP MATERIAL] Cannot determine material type for ID: ${material_id}`);
+                console.log(`âŒ [SKIP MATERIAL] Cannot determine material type for ID: ${material_id}`);
                 continue;
             }
 
             const requestedQty = parseFloat(quantity) || 0;
 
-            // DEBUG: Log thông tin vật tư được xử lý
-            console.log(`📦 [PROCESSING MATERIAL] Type: ${material_type}, ID: ${material_id}, Name: ${material_name}, Qty: ${requestedQty}, Unit: ${unit}`);
+            // DEBUG: Log thÃ´ng tin váº­t tÆ° Ä‘Æ°á»£c xá»­ lÃ½
+            console.log(`ðŸ“¦ [PROCESSING MATERIAL] Type: ${material_type}, ID: ${material_id}, Name: ${material_name}, Qty: ${requestedQty}, Unit: ${unit}`);
 
-            // KIỂM TRA TỒN KHO TRƯỚC KHI THÊM
+            // KIá»‚M TRA Tá»’N KHO TRÆ¯á»šC KHI THÃŠM
             let availableStock = 0;
             let stockTable = '';
             let stockColumn = '';
 
             try {
-                // Lấy tồn kho từ bảng tương ứng
+                // Láº¥y tá»“n kho tá»« báº£ng tÆ°Æ¡ng á»©ng
                 if (material_type === 'accessory') {
                     stockTable = 'accessories';
                     stockColumn = 'stock_quantity';
@@ -1093,7 +1093,7 @@ exports.create = async (req, res) => {
                         insufficientMaterials.push({
                             name: material_name,
                             reason: 'not_found',
-                            message: 'Không có trong kho'
+                            message: 'KhÃ´ng cÃ³ trong kho'
                         });
                         continue;
                     }
@@ -1110,14 +1110,14 @@ exports.create = async (req, res) => {
                         insufficientMaterials.push({
                             name: material_name,
                             reason: 'not_found',
-                            message: 'Không có trong kho'
+                            message: 'KhÃ´ng cÃ³ trong kho'
                         });
                         continue;
                     }
                 } else if (material_type === 'glass' || material_type === 'other') {
                     stockTable = 'inventory';
                     stockColumn = 'quantity';
-                    // Sử dụng CAST để đảm bảo quantity là số, không phải string
+                    // Sá»­ dá»¥ng CAST Ä‘á»ƒ Ä‘áº£m báº£o quantity lÃ  sá»‘, khÃ´ng pháº£i string
                     const [invRows] = await connection.query(
                         `SELECT CAST(${stockColumn} AS DECIMAL(10,2)) as stock_value, 
                                 ${stockColumn} as raw_quantity,
@@ -1126,22 +1126,22 @@ exports.create = async (req, res) => {
                         [material_id]
                     );
                     if (invRows.length > 0) {
-                        // Ưu tiên dùng stock_value (đã CAST), nếu không có thì parse từ raw_quantity
+                        // Æ¯u tiÃªn dÃ¹ng stock_value (Ä‘Ã£ CAST), náº¿u khÃ´ng cÃ³ thÃ¬ parse tá»« raw_quantity
                         let rawStock = invRows[0].stock_value !== null && invRows[0].stock_value !== undefined
                             ? invRows[0].stock_value
                             : invRows[0].raw_quantity;
 
-                        // Xử lý trường hợp rawStock là string có chứa "m²" hoặc đơn vị khác
+                        // Xá»­ lÃ½ trÆ°á»ng há»£p rawStock lÃ  string cÃ³ chá»©a "mÂ²" hoáº·c Ä‘Æ¡n vá»‹ khÃ¡c
                         if (typeof rawStock === 'string') {
-                            // Loại bỏ tất cả ký tự không phải số, dấu chấm, dấu phẩy
+                            // Loáº¡i bá» táº¥t cáº£ kÃ½ tá»± khÃ´ng pháº£i sá»‘, dáº¥u cháº¥m, dáº¥u pháº©y
                             rawStock = rawStock.replace(/[^\d.,]/g, '').replace(',', '.');
                         }
 
                         availableStock = parseFloat(rawStock) || 0;
 
-                        // DEBUG: Log thông tin tồn kho kính CHI TIẾT
+                        // DEBUG: Log thÃ´ng tin tá»“n kho kÃ­nh CHI TIáº¾T
                         if (material_type === 'glass') {
-                            console.log(`🔍 [GLASS STOCK CHECK] Material: ${material_name}, ID: ${material_id}`);
+                            console.log(`ðŸ” [GLASS STOCK CHECK] Material: ${material_name}, ID: ${material_id}`);
                             console.log(`   - Raw Stock Value (from DB): ${invRows[0].raw_quantity} (type: ${typeof invRows[0].raw_quantity})`);
                             console.log(`   - CAST Stock Value: ${invRows[0].stock_value} (type: ${typeof invRows[0].stock_value})`);
                             console.log(`   - Processed Raw Stock: ${rawStock}`);
@@ -1154,36 +1154,36 @@ exports.create = async (req, res) => {
                             console.log(`   - Comparison: ${requestedQty} <= ${availableStock} = ${requestedQty <= availableStock}`);
                         }
                     } else {
-                        console.log(`❌ [GLASS NOT FOUND] Material ID ${material_id} not found in inventory table`);
+                        console.log(`âŒ [GLASS NOT FOUND] Material ID ${material_id} not found in inventory table`);
                         insufficientMaterials.push({
                             name: material_name,
                             reason: 'not_found',
-                            message: 'Không có trong kho'
+                            message: 'KhÃ´ng cÃ³ trong kho'
                         });
                         continue;
                     }
                 }
 
-                // GHI CHÚ: KHÔNG KIỂM TRA TỒN KHO Ở ĐÂY
-                // Vật tư sẽ được thêm vào project_materials dù kho = 0 hoặc thiếu
-                // Việc trừ kho sẽ được thực hiện khi confirmExport
+                // GHI CHÃš: KHÃ”NG KIá»‚M TRA Tá»’N KHO á»ž ÄÃ‚Y
+                // Váº­t tÆ° sáº½ Ä‘Æ°á»£c thÃªm vÃ o project_materials dÃ¹ kho = 0 hoáº·c thiáº¿u
+                // Viá»‡c trá»« kho sáº½ Ä‘Æ°á»£c thá»±c hiá»‡n khi confirmExport
 
-                // Debug log tồn kho (chỉ info, không chặn)
+                // Debug log tá»“n kho (chá»‰ info, khÃ´ng cháº·n)
                 if (availableStock === 0 || availableStock < 0) {
-                    console.log(`⚠️ [INFO] ${material_name}: Kho = 0, sẽ cần nhập kho trước khi xuất`);
+                    console.log(`âš ï¸ [INFO] ${material_name}: Kho = 0, sáº½ cáº§n nháº­p kho trÆ°á»›c khi xuáº¥t`);
                 } else if (requestedQty > availableStock) {
-                    console.log(`⚠️ [INFO] ${material_name}: Yêu cầu ${requestedQty}, kho có ${availableStock} - thiếu ${requestedQty - availableStock}`);
+                    console.log(`âš ï¸ [INFO] ${material_name}: YÃªu cáº§u ${requestedQty}, kho cÃ³ ${availableStock} - thiáº¿u ${requestedQty - availableStock}`);
                 }
 
-                // DEBUG: Log khi kiểm tra thành công
+                // DEBUG: Log khi kiá»ƒm tra thÃ nh cÃ´ng
                 if (material_type === 'glass') {
-                    console.log(`✅ [GLASS] ${material_name}: Đang thêm ${requestedQty}, kho hiện có ${availableStock}`);
+                    console.log(`âœ… [GLASS] ${material_name}: Äang thÃªm ${requestedQty}, kho hiá»‡n cÃ³ ${availableStock}`);
                 }
 
-                // Lấy giá từ kho nếu giá = 0 hoặc không có
+                // Láº¥y giÃ¡ tá»« kho náº¿u giÃ¡ = 0 hoáº·c khÃ´ng cÃ³
                 let finalUnitPrice = parseFloat(unit_price) || 0;
                 if (finalUnitPrice === 0) {
-                    // Lấy giá từ kho theo loại vật tư
+                    // Láº¥y giÃ¡ tá»« kho theo loáº¡i váº­t tÆ°
                     if (material_type === 'accessory') {
                         const [accRows] = await connection.query(
                             'SELECT COALESCE(sale_price, purchase_price, 0) as price FROM accessories WHERE id = ?',
@@ -1211,43 +1211,43 @@ exports.create = async (req, res) => {
                     }
                 }
 
-                // THÊM VẬT TƯ VÀO PROJECT_MATERIALS (không trừ kho)
+                // THÃŠM Váº¬T TÆ¯ VÃ€O PROJECT_MATERIALS (khÃ´ng trá»« kho)
                 const totalCost = requestedQty * finalUnitPrice;
 
                 const [result] = await connection.query(
                     `INSERT INTO project_materials 
                  (project_id, material_type, material_id, material_code, material_name, quantity, unit, unit_price, total_cost, notes, stock_deducted)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`,
-                    [project_id, material_type, material_id, material_code || null, material_name, requestedQty, unit || 'cái', finalUnitPrice, totalCost, notes || null]
+                    [project_id, material_type, material_id, material_code || null, material_name, requestedQty, unit || 'cÃ¡i', finalUnitPrice, totalCost, notes || null]
                 );
 
                 insertedIds.push(result.insertId);
 
-                // GHI CHÚ: KHÔNG TRỪ KHO Ở ĐÂY - sẽ trừ khi confirmExport
+                // GHI CHÃš: KHÃ”NG TRá»ª KHO á»ž ÄÃ‚Y - sáº½ trá»« khi confirmExport
                 // await updateInventoryStock(connection, material_type, material_id, -requestedQty);
             } catch (err) {
                 console.error(`Error adding material ${material_id}:`, err);
-                // Không thêm vào insufficientMaterials để tránh rollback
-                // Chỉ log lỗi và tiếp tục với vật tư tiếp theo
+                // KhÃ´ng thÃªm vÃ o insufficientMaterials Ä‘á»ƒ trÃ¡nh rollback
+                // Chá»‰ log lá»—i vÃ  tiáº¿p tá»¥c vá»›i váº­t tÆ° tiáº¿p theo
                 continue;
             }
         }
 
-        // GHI CHÚ: Logic rollback khi có vật tư thiếu kho đã bị xóa
-        // Vì bây giờ cho phép thêm TẤT CẢ vật tư, kho sẽ được trừ khi confirmExport
+        // GHI CHÃš: Logic rollback khi cÃ³ váº­t tÆ° thiáº¿u kho Ä‘Ã£ bá»‹ xÃ³a
+        // VÃ¬ bÃ¢y giá» cho phÃ©p thÃªm Táº¤T Cáº¢ váº­t tÆ°, kho sáº½ Ä‘Æ°á»£c trá»« khi confirmExport
 
-        // 3. Cập nhật material_cost trong projects
+        // 3. Cáº­p nháº­t material_cost trong projects
         await updateProjectMaterialCost(connection, project_id);
 
-        // Lưu ý: Không tự động chuyển trạng thái ở đây
-        // Chỉ chuyển trạng thái khi người dùng nhấn nút "Xác nhận xuất"
+        // LÆ°u Ã½: KhÃ´ng tá»± Ä‘á»™ng chuyá»ƒn tráº¡ng thÃ¡i á»Ÿ Ä‘Ã¢y
+        // Chá»‰ chuyá»ƒn tráº¡ng thÃ¡i khi ngÆ°á»i dÃ¹ng nháº¥n nÃºt "XÃ¡c nháº­n xuáº¥t"
 
         await connection.commit();
         connection.release();
 
         res.status(201).json({
             success: true,
-            message: `Đã thêm ${insertedIds.length} vật tư vào dự án. Vui lòng nhấn "Xác nhận xuất" để chuyển dự án sang giai đoạn Sản xuất.`,
+            message: `ÄÃ£ thÃªm ${insertedIds.length} váº­t tÆ° vÃ o dá»± Ã¡n. Vui lÃ²ng nháº¥n "XÃ¡c nháº­n xuáº¥t" Ä‘á»ƒ chuyá»ƒn dá»± Ã¡n sang giai Ä‘oáº¡n Sáº£n xuáº¥t.`,
             data: { inserted_ids: insertedIds }
         });
     } catch (err) {
@@ -1256,12 +1256,12 @@ exports.create = async (req, res) => {
         console.error('Error adding project materials:', err);
         res.status(500).json({
             success: false,
-            message: "Lỗi khi thêm vật tư: " + err.message
+            message: "Lá»—i khi thÃªm váº­t tÆ°: " + err.message
         });
     }
 };
 
-// PUT /api/project-materials/:id - Sửa số lượng vật tư (điều chỉnh tồn kho)
+// PUT /api/project-materials/:id - Sá»­a sá»‘ lÆ°á»£ng váº­t tÆ° (Ä‘iá»u chá»‰nh tá»“n kho)
 exports.update = async (req, res) => {
     const connection = await db.getConnection();
     await connection.beginTransaction();
@@ -1270,7 +1270,7 @@ exports.update = async (req, res) => {
         const { id } = req.params;
         const { quantity, notes } = req.body;
 
-        // Lấy thông tin hiện tại
+        // Láº¥y thÃ´ng tin hiá»‡n táº¡i
         const [currentRows] = await connection.query(
             `SELECT * FROM project_materials WHERE id = ?`,
             [id]
@@ -1280,7 +1280,7 @@ exports.update = async (req, res) => {
             connection.release();
             return res.status(404).json({
                 success: false,
-                message: "Không tìm thấy vật tư"
+                message: "KhÃ´ng tÃ¬m tháº¥y váº­t tÆ°"
             });
         }
 
@@ -1291,7 +1291,7 @@ exports.update = async (req, res) => {
 
         const totalCost = newQuantity * (parseFloat(current.unit_price) || 0);
 
-        // 1. Cập nhật project_materials
+        // 1. Cáº­p nháº­t project_materials
         await connection.query(
             `UPDATE project_materials 
              SET quantity = ?, total_cost = ?, notes = ?, updated_at = NOW()
@@ -1299,13 +1299,13 @@ exports.update = async (req, res) => {
             [newQuantity, totalCost, notes !== undefined ? notes : current.notes, id]
         );
 
-        // 2. KHÔNG ĐIỀU CHỈNH TỒN KHO KHI SỬA REQUEST (KiotViet rule)
-        // Tồn kho chỉ thay đổi khi Phiếu xuất được Posted
+        // 2. KHÃ”NG ÄIá»€U CHá»ˆNH Tá»’N KHO KHI Sá»¬A REQUEST (KiotViet rule)
+        // Tá»“n kho chá»‰ thay Ä‘á»•i khi Phiáº¿u xuáº¥t Ä‘Æ°á»£c Posted
         // if (quantityDiff !== 0) {
         //     await updateInventoryStock(connection, current.material_type, current.material_id, -quantityDiff);
         // }
 
-        // 3. Cập nhật material_cost trong projects
+        // 3. Cáº­p nháº­t material_cost trong projects
         await updateProjectMaterialCost(connection, current.project_id);
 
         await connection.commit();
@@ -1313,7 +1313,7 @@ exports.update = async (req, res) => {
 
         res.json({
             success: true,
-            message: "Cập nhật vật tư thành công"
+            message: "Cáº­p nháº­t váº­t tÆ° thÃ nh cÃ´ng"
         });
     } catch (err) {
         await connection.rollback();
@@ -1321,12 +1321,12 @@ exports.update = async (req, res) => {
         console.error('Error updating project material:', err);
         res.status(500).json({
             success: false,
-            message: "Lỗi khi cập nhật vật tư"
+            message: "Lá»—i khi cáº­p nháº­t váº­t tÆ°"
         });
     }
 };
 
-// DELETE /api/project-materials/:id - Xóa vật tư (hoàn lại tồn kho)
+// DELETE /api/project-materials/:id - XÃ³a váº­t tÆ° (hoÃ n láº¡i tá»“n kho)
 exports.delete = async (req, res) => {
     const connection = await db.getConnection();
     await connection.beginTransaction();
@@ -1334,7 +1334,7 @@ exports.delete = async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Lấy thông tin vật tư
+        // Láº¥y thÃ´ng tin váº­t tÆ°
         const [rows] = await connection.query(
             `SELECT * FROM project_materials WHERE id = ?`,
             [id]
@@ -1344,24 +1344,24 @@ exports.delete = async (req, res) => {
             connection.release();
             return res.status(404).json({
                 success: false,
-                message: "Không tìm thấy vật tư"
+                message: "KhÃ´ng tÃ¬m tháº¥y váº­t tÆ°"
             });
         }
 
         const material = rows[0];
 
-        // 1. KHÔNG HOÀN TỒN KHO KHI HỦY REQUEST (KiotViet rule)
-        // Request chưa xuất thật (stock_deducted = 0) thì không có gì để hoàn
-        // Nếu đã xuất (stock_deducted = 1) thì phải tạo Phiếu trả kho, không xóa trực tiếp
+        // 1. KHÃ”NG HOÃ€N Tá»’N KHO KHI Há»¦Y REQUEST (KiotViet rule)
+        // Request chÆ°a xuáº¥t tháº­t (stock_deducted = 0) thÃ¬ khÃ´ng cÃ³ gÃ¬ Ä‘á»ƒ hoÃ n
+        // Náº¿u Ä‘Ã£ xuáº¥t (stock_deducted = 1) thÃ¬ pháº£i táº¡o Phiáº¿u tráº£ kho, khÃ´ng xÃ³a trá»±c tiáº¿p
         // await updateInventoryStock(connection, material.material_type, material.material_id, material.quantity);
 
-        // 2. Xóa khỏi project_materials
+        // 2. XÃ³a khá»i project_materials
         await connection.query(
             `DELETE FROM project_materials WHERE id = ?`,
             [id]
         );
 
-        // 3. Cập nhật material_cost trong projects
+        // 3. Cáº­p nháº­t material_cost trong projects
         await updateProjectMaterialCost(connection, material.project_id);
 
         await connection.commit();
@@ -1369,7 +1369,7 @@ exports.delete = async (req, res) => {
 
         res.json({
             success: true,
-            message: "Đã hủy yêu cầu xuất vật tư"
+            message: "ÄÃ£ há»§y yÃªu cáº§u xuáº¥t váº­t tÆ°"
         });
     } catch (err) {
         await connection.rollback();
@@ -1377,12 +1377,12 @@ exports.delete = async (req, res) => {
         console.error('Error deleting project material:', err);
         res.status(500).json({
             success: false,
-            message: "Lỗi khi xóa vật tư"
+            message: "Lá»—i khi xÃ³a váº­t tÆ°"
         });
     }
 };
 
-// POST /api/project-materials/confirm-export/:projectId - Xác nhận xuất vật tư và chuyển trạng thái dự án
+// POST /api/project-materials/confirm-export/:projectId - XÃ¡c nháº­n xuáº¥t váº­t tÆ° vÃ  chuyá»ƒn tráº¡ng thÃ¡i dá»± Ã¡n
 exports.confirmExport = async (req, res) => {
     const connection = await db.getConnection();
     await connection.beginTransaction();
@@ -1390,18 +1390,18 @@ exports.confirmExport = async (req, res) => {
     try {
         const { projectId } = req.params;
 
-        // Kiểm tra xem dự án có vật tư được xuất chưa
+        // Kiá»ƒm tra xem dá»± Ã¡n cÃ³ váº­t tÆ° Ä‘Æ°á»£c xuáº¥t chÆ°a
         const hasMaterials = await hasExportedMaterials(connection, projectId);
         if (!hasMaterials) {
             await connection.rollback();
             connection.release();
             return res.status(400).json({
                 success: false,
-                message: "Chưa có vật tư nào được xuất. Vui lòng thêm vật tư trước khi xác nhận xuất."
+                message: "ChÆ°a cÃ³ váº­t tÆ° nÃ o Ä‘Æ°á»£c xuáº¥t. Vui lÃ²ng thÃªm váº­t tÆ° trÆ°á»›c khi xÃ¡c nháº­n xuáº¥t."
             });
         }
 
-        // Lấy thông tin dự án
+        // Láº¥y thÃ´ng tin dá»± Ã¡n
         const [projectRows] = await connection.query(
             `SELECT id, progress_percent, status FROM projects WHERE id = ?`,
             [projectId]
@@ -1412,25 +1412,25 @@ exports.confirmExport = async (req, res) => {
             connection.release();
             return res.status(404).json({
                 success: false,
-                message: "Không tìm thấy dự án"
+                message: "KhÃ´ng tÃ¬m tháº¥y dá»± Ã¡n"
             });
         }
 
         const project = projectRows[0];
         const currentProgress = parseFloat(project.progress_percent) || 0;
 
-        // Nếu dự án đã hoàn thành, không cho phép xuất thêm
+        // Náº¿u dá»± Ã¡n Ä‘Ã£ hoÃ n thÃ nh, khÃ´ng cho phÃ©p xuáº¥t thÃªm
         if (currentProgress >= 100 || project.status === 'completed') {
             await connection.rollback();
             connection.release();
             return res.status(400).json({
                 success: false,
-                message: "Dự án đã hoàn thành. Không thể xuất vật tư thêm."
+                message: "Dá»± Ã¡n Ä‘Ã£ hoÃ n thÃ nh. KhÃ´ng thá»ƒ xuáº¥t váº­t tÆ° thÃªm."
             });
         }
 
-        // ========== LUÔN TRỪ KHO TRƯỚC - dù dự án ở giai đoạn nào ==========
-        // Lấy tất cả vật tư đã xuất nhưng chưa trừ kho
+        // ========== LUÃ”N TRá»ª KHO TRÆ¯á»šC - dÃ¹ dá»± Ã¡n á»Ÿ giai Ä‘oáº¡n nÃ o ==========
+        // Láº¥y táº¥t cáº£ váº­t tÆ° Ä‘Ã£ xuáº¥t nhÆ°ng chÆ°a trá»« kho
         const [materialsToDeduct] = await connection.query(
             `SELECT id, material_type, material_id, material_name, quantity, material_code
              FROM project_materials 
@@ -1438,11 +1438,11 @@ exports.confirmExport = async (req, res) => {
             [projectId]
         );
 
-        console.log(`📦 Found ${materialsToDeduct.length} materials to deduct stock for project ${projectId}`);
+        console.log(`ðŸ“¦ Found ${materialsToDeduct.length} materials to deduct stock for project ${projectId}`);
 
-        // Trừ kho cho từng vật tư - CHỈ TRỪ NẾU CÓ ĐỦ KHO
-        const exportedMaterials = []; // Vật tư đã xuất thành công
-        const insufficientMaterials = []; // Vật tư không đủ kho
+        // Trá»« kho cho tá»«ng váº­t tÆ° - CHá»ˆ TRá»ª Náº¾U CÃ“ Äá»¦ KHO
+        const exportedMaterials = []; // Váº­t tÆ° Ä‘Ã£ xuáº¥t thÃ nh cÃ´ng
+        const insufficientMaterials = []; // Váº­t tÆ° khÃ´ng Ä‘á»§ kho
 
         for (const mat of materialsToDeduct) {
             const { id, material_type, material_id, material_name, quantity, material_code } = mat;
@@ -1450,17 +1450,17 @@ exports.confirmExport = async (req, res) => {
 
             if (qty <= 0) continue;
 
-            console.log(`🔍 Checking stock for: ${material_name} (type: ${material_type}, qty: ${qty})`);
+            console.log(`ðŸ” Checking stock for: ${material_name} (type: ${material_type}, qty: ${qty})`);
 
             try {
-                // BƯỚC 1: KIỂM TRA TỒN KHO TRƯỚC KHI TRỪ
+                // BÆ¯á»šC 1: KIá»‚M TRA Tá»’N KHO TRÆ¯á»šC KHI TRá»ª
                 let availableStock = 0;
                 let stockTable = '';
                 let stockColumn = '';
                 let foundMaterialId = null;
 
                 if (material_type === 'accessory') {
-                    // Tìm trong accessories
+                    // TÃ¬m trong accessories
                     let accRows = [];
                     if (material_id && material_id !== 0) {
                         [accRows] = await connection.query(
@@ -1484,7 +1484,7 @@ exports.confirmExport = async (req, res) => {
                         stockColumn = 'stock_quantity';
                     }
                 } else if (material_type === 'aluminum') {
-                    // Tìm trong aluminum_systems
+                    // TÃ¬m trong aluminum_systems
                     let alumRows = [];
                     if (material_id && material_id !== 0) {
                         [alumRows] = await connection.query(
@@ -1508,7 +1508,7 @@ exports.confirmExport = async (req, res) => {
                         stockColumn = 'quantity';
                     }
                 } else if (material_type === 'glass' || material_type === 'other') {
-                    // Tìm trong inventory
+                    // TÃ¬m trong inventory
                     let invRows = [];
                     if (material_id && material_id !== 0) {
                         [invRows] = await connection.query(
@@ -1533,37 +1533,37 @@ exports.confirmExport = async (req, res) => {
                     }
                 }
 
-                // BƯỚC 2: KIỂM TRA NẾU ĐỦ KHO
+                // BÆ¯á»šC 2: KIá»‚M TRA Náº¾U Äá»¦ KHO
                 if (!foundMaterialId) {
-                    // Không tìm thấy vật tư trong kho
-                    console.warn(`⚠️ Không tìm thấy trong kho: ${material_name}`);
+                    // KhÃ´ng tÃ¬m tháº¥y váº­t tÆ° trong kho
+                    console.warn(`âš ï¸ KhÃ´ng tÃ¬m tháº¥y trong kho: ${material_name}`);
                     insufficientMaterials.push({
                         name: material_name,
                         required: qty,
                         available: 0,
                         reason: 'not_found',
-                        message: 'Không có trong kho'
+                        message: 'KhÃ´ng cÃ³ trong kho'
                     });
                     continue;
                 }
 
                 if (availableStock < qty) {
-                    // Không đủ kho - KHÔNG TRỪ, giữ lại để xuất sau
-                    console.warn(`⚠️ Không đủ kho: ${material_name} (cần: ${qty}, có: ${availableStock})`);
+                    // KhÃ´ng Ä‘á»§ kho - KHÃ”NG TRá»ª, giá»¯ láº¡i Ä‘á»ƒ xuáº¥t sau
+                    console.warn(`âš ï¸ KhÃ´ng Ä‘á»§ kho: ${material_name} (cáº§n: ${qty}, cÃ³: ${availableStock})`);
                     insufficientMaterials.push({
                         name: material_name,
                         required: qty,
                         available: availableStock,
                         shortage: qty - availableStock,
                         reason: 'insufficient',
-                        message: `Cần ${qty}, kho chỉ có ${availableStock}`
+                        message: `Cáº§n ${qty}, kho chá»‰ cÃ³ ${availableStock}`
                     });
-                    // KHÔNG đánh dấu stock_deducted = 1, để lần sau xuất được
+                    // KHÃ”NG Ä‘Ã¡nh dáº¥u stock_deducted = 1, Ä‘á»ƒ láº§n sau xuáº¥t Ä‘Æ°á»£c
                     continue;
                 }
 
-                // BƯỚC 3: ĐỦ KHO - TIẾN HÀNH TRỪ
-                console.log(`✅ Đủ kho: ${material_name} (cần: ${qty}, có: ${availableStock}) → Đang trừ...`);
+                // BÆ¯á»šC 3: Äá»¦ KHO - TIáº¾N HÃ€NH TRá»ª
+                console.log(`âœ… Äá»§ kho: ${material_name} (cáº§n: ${qty}, cÃ³: ${availableStock}) â†’ Äang trá»«...`);
 
                 const [updateResult] = await connection.query(
                     `UPDATE ${stockTable} SET ${stockColumn} = ${stockColumn} - ? WHERE id = ?`,
@@ -1571,12 +1571,12 @@ exports.confirmExport = async (req, res) => {
                 );
 
                 if (updateResult.affectedRows > 0) {
-                    // Trừ thành công - đánh dấu stock_deducted = 1
+                    // Trá»« thÃ nh cÃ´ng - Ä‘Ã¡nh dáº¥u stock_deducted = 1
                     await connection.query(
                         `UPDATE project_materials SET stock_deducted = 1 WHERE id = ?`,
                         [id]
                     );
-                    console.log(`✅ Đã trừ ${qty} từ ${material_name} (ID: ${foundMaterialId})`);
+                    console.log(`âœ… ÄÃ£ trá»« ${qty} tá»« ${material_name} (ID: ${foundMaterialId})`);
                     exportedMaterials.push({
                         name: material_name,
                         quantity: qty,
@@ -1584,30 +1584,30 @@ exports.confirmExport = async (req, res) => {
                         stockAfter: availableStock - qty
                     });
                 } else {
-                    console.error(`❌ Không thể trừ kho cho ${material_name}`);
+                    console.error(`âŒ KhÃ´ng thá»ƒ trá»« kho cho ${material_name}`);
                 }
             } catch (deductError) {
-                console.error(`❌ Error deducting stock for ${material_name}:`, deductError);
+                console.error(`âŒ Error deducting stock for ${material_name}:`, deductError);
             }
         }
-        // ========== KẾT THÚC LOGIC TRỪ KHO ==========
+        // ========== Káº¾T THÃšC LOGIC TRá»ª KHO ==========
 
-        // Tạo thông báo chi tiết
+        // Táº¡o thÃ´ng bÃ¡o chi tiáº¿t
         let message = '';
         if (exportedMaterials.length > 0) {
-            message += `✅ Đã xuất thành công ${exportedMaterials.length} vật tư.\n`;
+            message += `âœ… ÄÃ£ xuáº¥t thÃ nh cÃ´ng ${exportedMaterials.length} váº­t tÆ°.\n`;
         }
         if (insufficientMaterials.length > 0) {
-            message += `⚠️ Có ${insufficientMaterials.length} vật tư chưa đủ kho (chờ nhập kho rồi xuất sau).\n`;
+            message += `âš ï¸ CÃ³ ${insufficientMaterials.length} váº­t tÆ° chÆ°a Ä‘á»§ kho (chá» nháº­p kho rá»“i xuáº¥t sau).\n`;
         }
 
-        // Nếu dự án đã ở giai đoạn Sản xuất trở đi (>= 60%), chỉ trừ kho, không chuyển status
+        // Náº¿u dá»± Ã¡n Ä‘Ã£ á»Ÿ giai Ä‘oáº¡n Sáº£n xuáº¥t trá»Ÿ Ä‘i (>= 60%), chá»‰ trá»« kho, khÃ´ng chuyá»ƒn status
         if (currentProgress >= 60) {
             await connection.commit();
             connection.release();
             return res.json({
                 success: true,
-                message: message || `Dự án đang ở giai đoạn Sản xuất (${currentProgress}%).`,
+                message: message || `Dá»± Ã¡n Ä‘ang á»Ÿ giai Ä‘oáº¡n Sáº£n xuáº¥t (${currentProgress}%).`,
                 exported: exportedMaterials,
                 insufficient: insufficientMaterials,
                 summary: {
@@ -1618,7 +1618,7 @@ exports.confirmExport = async (req, res) => {
             });
         }
 
-        // Chuyển dự án sang giai đoạn Sản xuất (60%) - CHỈ KHI CÓ ÍT NHẤT 1 VẬT TƯ ĐÃ XUẤT
+        // Chuyá»ƒn dá»± Ã¡n sang giai Ä‘oáº¡n Sáº£n xuáº¥t (60%) - CHá»ˆ KHI CÃ“ ÃT NHáº¤T 1 Váº¬T TÆ¯ ÄÃƒ XUáº¤T
         if (exportedMaterials.length > 0) {
             const newProgress = 60;
 
@@ -1630,7 +1630,7 @@ exports.confirmExport = async (req, res) => {
                 [newProgress, projectId]
             );
 
-            message += `📦 Dự án đã chuyển sang giai đoạn Sản xuất (${newProgress}%).`;
+            message += `ðŸ“¦ Dá»± Ã¡n Ä‘Ã£ chuyá»ƒn sang giai Ä‘oáº¡n Sáº£n xuáº¥t (${newProgress}%).`;
         }
 
         await connection.commit();
@@ -1638,7 +1638,7 @@ exports.confirmExport = async (req, res) => {
 
         res.json({
             success: true,
-            message: message || 'Không có vật tư nào được xuất.',
+            message: message || 'KhÃ´ng cÃ³ váº­t tÆ° nÃ o Ä‘Æ°á»£c xuáº¥t.',
             exported: exportedMaterials,
             insufficient: insufficientMaterials,
             summary: {
@@ -1654,18 +1654,18 @@ exports.confirmExport = async (req, res) => {
         console.error('Error confirming export:', err);
         res.status(500).json({
             success: false,
-            message: "Lỗi khi xác nhận xuất vật tư: " + err.message
+            message: "Lá»—i khi xÃ¡c nháº­n xuáº¥t váº­t tÆ°: " + err.message
         });
     }
 };
 
-// GET /api/project-materials/check-export-requirement/:projectId - Kiểm tra điều kiện xuất vật tư
+// GET /api/project-materials/check-export-requirement/:projectId - Kiá»ƒm tra Ä‘iá»u kiá»‡n xuáº¥t váº­t tÆ°
 exports.checkExportRequirement = async (req, res) => {
-    console.log('🔍 checkExportRequirement được gọi với projectId:', req.params.projectId);
+    console.log('ðŸ” checkExportRequirement Ä‘Æ°á»£c gá»i vá»›i projectId:', req.params.projectId);
     try {
         const { projectId } = req.params;
 
-        // Lấy thông tin dự án
+        // Láº¥y thÃ´ng tin dá»± Ã¡n
         const [projectRows] = await db.query(
             `SELECT id, progress_percent, status FROM projects WHERE id = ?`,
             [projectId]
@@ -1674,14 +1674,14 @@ exports.checkExportRequirement = async (req, res) => {
         if (projectRows.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: "Không tìm thấy dự án"
+                message: "KhÃ´ng tÃ¬m tháº¥y dá»± Ã¡n"
             });
         }
 
         const project = projectRows[0];
         const currentProgress = parseFloat(project.progress_percent) || 0;
 
-        // Kiểm tra xem đã có vật tư được xuất chưa
+        // Kiá»ƒm tra xem Ä‘Ã£ cÃ³ váº­t tÆ° Ä‘Æ°á»£c xuáº¥t chÆ°a
         const [materialRows] = await db.query(
             `SELECT COUNT(*) as count FROM project_materials WHERE project_id = ?`,
             [projectId]
@@ -1689,10 +1689,10 @@ exports.checkExportRequirement = async (req, res) => {
 
         const hasExportedMaterials = parseInt(materialRows[0]?.count || 0) > 0;
 
-        // Dự án có thể xuất vật tư nếu chưa hoàn thành (< 100%)
+        // Dá»± Ã¡n cÃ³ thá»ƒ xuáº¥t váº­t tÆ° náº¿u chÆ°a hoÃ n thÃ nh (< 100%)
         const canExport = currentProgress < 100 && project.status !== 'completed';
 
-        // Cần xuất vật tư để chuyển sang sản xuất nếu progress < 60%
+        // Cáº§n xuáº¥t váº­t tÆ° Ä‘á»ƒ chuyá»ƒn sang sáº£n xuáº¥t náº¿u progress < 60%
         const needsMaterialExport = currentProgress < 60;
 
         res.json({
@@ -1706,9 +1706,9 @@ exports.checkExportRequirement = async (req, res) => {
                 can_export: canExport,
                 can_move_to_production: hasExportedMaterials && canExport,
                 message: !canExport
-                    ? "Dự án đã hoàn thành, không thể xuất vật tư thêm."
+                    ? "Dá»± Ã¡n Ä‘Ã£ hoÃ n thÃ nh, khÃ´ng thá»ƒ xuáº¥t váº­t tÆ° thÃªm."
                     : (!hasExportedMaterials
-                        ? "Chưa có vật tư nào được xuất. Vui lòng thêm vật tư trước khi xác nhận."
+                        ? "ChÆ°a cÃ³ váº­t tÆ° nÃ o Ä‘Æ°á»£c xuáº¥t. Vui lÃ²ng thÃªm váº­t tÆ° trÆ°á»›c khi xÃ¡c nháº­n."
                         : null)
             }
         });
@@ -1716,12 +1716,12 @@ exports.checkExportRequirement = async (req, res) => {
         console.error('Error checking export requirement:', err);
         res.status(500).json({
             success: false,
-            message: "Lỗi khi kiểm tra điều kiện xuất vật tư"
+            message: "Lá»—i khi kiá»ƒm tra Ä‘iá»u kiá»‡n xuáº¥t váº­t tÆ°"
         });
     }
 };
 
-// GET /api/project-materials/inventory/:type - Lấy vật tư kho theo loại
+// GET /api/project-materials/inventory/:type - Láº¥y váº­t tÆ° kho theo loáº¡i
 exports.getInventoryByType = async (req, res) => {
     try {
         const { type } = req.params;
@@ -1729,24 +1729,24 @@ exports.getInventoryByType = async (req, res) => {
 
         switch (type) {
             case 'accessory':
-                // Phụ kiện: Chỉ lấy các category thuộc nhóm Phụ kiện
+                // Phá»¥ kiá»‡n: Chá»‰ láº¥y cÃ¡c category thuá»™c nhÃ³m Phá»¥ kiá»‡n
                 query = `SELECT id, code, name, category, unit, 
                          COALESCE(sale_price, purchase_price, 0) as price, 
                          stock_quantity as stock, min_stock_level
                          FROM accessories 
                          WHERE is_active = 1 
-                         AND category IN ('Khóa', 'Bản lề', 'Tay nắm', 'Phụ kiện lùa', 'Phụ kiện khác')
+                         AND category IN ('KhÃ³a', 'Báº£n lá»', 'Tay náº¯m', 'Phá»¥ kiá»‡n lÃ¹a', 'Phá»¥ kiá»‡n khÃ¡c')
                          ORDER BY category, name`;
                 break;
             case 'aluminum':
-                // ✅ FIX: Use CASE WHEN to match frontend logic (quantity || quantity_m)
+                // âœ… FIX: Use CASE WHEN to match frontend logic (quantity || quantity_m)
                 // Frontend uses: system.quantity || system.quantity_m
                 // This means: if quantity > 0, use quantity; else use quantity_m
                 query = `SELECT id, 
                          COALESCE(code, name) as code, 
                          name, 
                          aluminum_system, 
-                         'cây' as unit, 
+                         'cÃ¢y' as unit, 
                          unit_price as price, 
                          CASE 
                              WHEN quantity IS NOT NULL AND quantity > 0 THEN quantity
@@ -1761,13 +1761,13 @@ exports.getInventoryByType = async (req, res) => {
                          ORDER BY aluminum_system, name`;
                 break;
             case 'glass':
-                // ✅ FIX: Kính được lưu trong bảng glass_items, KHÔNG PHẢI inventory
-                // Đồng bộ với inventory.html loadGlassItems() - line 10481
+                // âœ… FIX: KÃ­nh Ä‘Æ°á»£c lÆ°u trong báº£ng glass_items, KHÃ”NG PHáº¢I inventory
+                // Äá»“ng bá»™ vá»›i inventory.html loadGlassItems() - line 10481
                 query = `SELECT id, 
                          COALESCE(code, CONCAT('K-', id)) as code, 
                          name, 
                          'glass' as type, 
-                         'tấm' as unit, 
+                         'táº¥m' as unit, 
                          COALESCE(price, 0) as price, 
                          COALESCE(quantity, 0) as stock,
                          structure,
@@ -1778,30 +1778,30 @@ exports.getInventoryByType = async (req, res) => {
                 break;
             case 'other':
             case 'consumable':
-                // Vật tư phụ: Lấy các category thuộc nhóm Vật tư phụ từ bảng accessories
+                // Váº­t tÆ° phá»¥: Láº¥y cÃ¡c category thuá»™c nhÃ³m Váº­t tÆ° phá»¥ tá»« báº£ng accessories
                 query = `SELECT id, code, name, category, unit, 
                          COALESCE(sale_price, purchase_price, 0) as price, 
                          stock_quantity as stock, min_stock_level
                          FROM accessories 
                          WHERE is_active = 1 
-                         AND category IN ('Ke', 'Gioăng', 'Nhựa ốp', 'Keo', 'Khác')
+                         AND category IN ('Ke', 'GioÄƒng', 'Nhá»±a á»‘p', 'Keo', 'KhÃ¡c')
                          ORDER BY category, name`;
                 break;
             default:
                 return res.status(400).json({
                     success: false,
-                    message: "Loại vật tư không hợp lệ"
+                    message: "Loáº¡i váº­t tÆ° khÃ´ng há»£p lá»‡"
                 });
         }
 
-        console.log(`📦 Getting inventory for type: ${type}`);
-        console.log(`📝 Query: ${query.substring(0, 100)}...`);
+        console.log(`ðŸ“¦ Getting inventory for type: ${type}`);
+        console.log(`ðŸ“ Query: ${query.substring(0, 100)}...`);
 
         const [rows] = await db.query(query);
 
-        console.log(`✅ Found ${rows.length} items for type: ${type}`);
+        console.log(`âœ… Found ${rows.length} items for type: ${type}`);
         if (rows.length > 0) {
-            console.log(`📋 Sample item:`, {
+            console.log(`ðŸ“‹ Sample item:`, {
                 id: rows[0].id,
                 code: rows[0].code,
                 name: rows[0].name?.substring(0, 30),
@@ -1816,8 +1816,8 @@ exports.getInventoryByType = async (req, res) => {
             count: rows.length
         });
     } catch (err) {
-        console.error('❌ Error getting inventory by type:', err);
-        console.error('❌ Error details:', {
+        console.error('âŒ Error getting inventory by type:', err);
+        console.error('âŒ Error details:', {
             type: req.params.type,
             message: err.message,
             sqlMessage: err.sqlMessage,
@@ -1825,16 +1825,16 @@ exports.getInventoryByType = async (req, res) => {
         });
         res.status(500).json({
             success: false,
-            message: "Lỗi khi lấy danh sách vật tư kho: " + (err.message || 'Lỗi không xác định')
+            message: "Lá»—i khi láº¥y danh sÃ¡ch váº­t tÆ° kho: " + (err.message || 'Lá»—i khÃ´ng xÃ¡c Ä‘á»‹nh')
         });
     }
 };
 
-// GET /api/project-materials/exported - Lấy danh sách vật tư đã xuất (dự án đã chuyển sang sản xuất)
-// ✅ FIXED: Now uses same calculation logic as detail view (BOM data + inventory prices)
+// GET /api/project-materials/exported - Láº¥y danh sÃ¡ch váº­t tÆ° Ä‘Ã£ xuáº¥t (dá»± Ã¡n Ä‘Ã£ chuyá»ƒn sang sáº£n xuáº¥t)
+// âœ… FIXED: Now uses same calculation logic as detail view (BOM data + inventory prices)
 exports.getExportedMaterials = async (req, res) => {
     try {
-        // Lấy các dự án đã xuất vật tư (status = 'in_production' hoặc progress >= 60%)
+        // Láº¥y cÃ¡c dá»± Ã¡n Ä‘Ã£ xuáº¥t váº­t tÆ° (status = 'in_production' hoáº·c progress >= 60%)
         const [projectRows] = await db.query(
             `SELECT 
                 p.id,
@@ -1849,7 +1849,7 @@ exports.getExportedMaterials = async (req, res) => {
              ORDER BY p.updated_at DESC, p.created_at DESC`
         );
 
-        // ✅ Build price maps from ALL inventory tables (same as detail view)
+        // âœ… Build price maps from ALL inventory tables (same as detail view)
         // IMPORTANT: Use only VERIFIED column names that exist in each table
         const priceMap = {};
         const stockMap = {};
@@ -1863,7 +1863,7 @@ exports.getExportedMaterials = async (req, res) => {
                 if (acc.code) { priceMap[acc.code.toLowerCase()] = price; priceMap[acc.code.toUpperCase()] = price; stockMap[acc.code.toLowerCase()] = stock; }
                 if (acc.name) { priceMap[acc.name.toLowerCase()] = price; stockMap[acc.name.toLowerCase()] = stock; }
             });
-            console.log(`📊 Loaded ${accessories.length} accessories`);
+            console.log(`ðŸ“Š Loaded ${accessories.length} accessories`);
         } catch (e) { console.error('Error loading accessories prices:', e.message); }
 
         // Aluminum prices & stock - has unit_price column
@@ -1875,7 +1875,7 @@ exports.getExportedMaterials = async (req, res) => {
                 if (alu.code) { priceMap[alu.code.toLowerCase()] = price; priceMap[alu.code.toUpperCase()] = price; stockMap[alu.code.toLowerCase()] = stock; }
                 if (alu.name) { priceMap[alu.name.toLowerCase()] = price; stockMap[alu.name.toLowerCase()] = stock; }
             });
-            console.log(`📊 Loaded ${aluminum.length} aluminum, sample prices:`, aluminum.slice(0, 3).map(a => ({ code: a.code, price: a.unit_price })));
+            console.log(`ðŸ“Š Loaded ${aluminum.length} aluminum, sample prices:`, aluminum.slice(0, 3).map(a => ({ code: a.code, price: a.unit_price })));
         } catch (e) { console.error('Error loading aluminum prices:', e.message); }
 
         // Glass prices & stock - use price column (NOT unit_price)
@@ -1887,7 +1887,7 @@ exports.getExportedMaterials = async (req, res) => {
                 if (g.code) { priceMap[g.code.toLowerCase()] = price; priceMap[g.code.toUpperCase()] = price; stockMap[g.code.toLowerCase()] = stock; }
                 if (g.name) { priceMap[g.name.toLowerCase()] = price; stockMap[g.name.toLowerCase()] = stock; }
             });
-            console.log(`📊 Loaded ${glass.length} glass items, sample prices:`, glass.slice(0, 3).map(g => ({ code: g.code, price: g.price })));
+            console.log(`ðŸ“Š Loaded ${glass.length} glass items, sample prices:`, glass.slice(0, 3).map(g => ({ code: g.code, price: g.price })));
         } catch (e) { console.error('Error loading glass prices:', e.message); }
 
         // General inventory prices & stock - has unit_price column
@@ -1899,22 +1899,22 @@ exports.getExportedMaterials = async (req, res) => {
                 if (i.item_code) { priceMap[i.item_code.toLowerCase()] = price; priceMap[i.item_code.toUpperCase()] = price; stockMap[i.item_code.toLowerCase()] = stock; }
                 if (i.item_name) { priceMap[i.item_name.toLowerCase()] = price; stockMap[i.item_name.toLowerCase()] = stock; }
             });
-            console.log(`📊 Loaded ${inv.length} inventory items`);
+            console.log(`ðŸ“Š Loaded ${inv.length} inventory items`);
         } catch (e) { console.error('Error loading inventory prices:', e.message); }
 
-        console.log(`📊 Total priceMap entries: ${Object.keys(priceMap).length}`);
+        console.log(`ðŸ“Š Total priceMap entries: ${Object.keys(priceMap).length}`);
         // Debug: Check if specific BOM codes exist in priceMap
         ['al5506', 'AL5506', 'ke-cl12006', 'KE-CL12006', 'cm-bl4d-b', 'CM-BL4D-B'].forEach(key => {
             console.log(`   priceMap['${key}'] = ${priceMap[key] || 'NOT FOUND'}`);
         });
 
 
-        // ✅ For each project, get BOM data using SAME query as getBOMData
+        // âœ… For each project, get BOM data using SAME query as getBOMData
         const projectSummaries = {};
         for (const project of projectRows) {
             const projectId = project.id;
 
-            // ✅ Use exact same query as getBOMData (line 2228-2232)
+            // âœ… Use exact same query as getBOMData (line 2228-2232)
             const [bomRows] = await db.query(
                 `SELECT * FROM project_materials 
                  WHERE project_id = ? 
@@ -1956,7 +1956,7 @@ exports.getExportedMaterials = async (req, res) => {
             materials_count: projectSummaries[p.id]?.materials_count || 0
         }));
 
-        console.log('📊 getExportedMaterials (FIXED) - Projects with costs:', projectsWithCost.map(p => ({
+        console.log('ðŸ“Š getExportedMaterials (FIXED) - Projects with costs:', projectsWithCost.map(p => ({
             id: p.id,
             code: p.project_code,
             total_cost: p.total_cost,
@@ -1978,13 +1978,13 @@ exports.getExportedMaterials = async (req, res) => {
         console.error('Error getting exported materials:', err);
         res.status(500).json({
             success: false,
-            message: "Lỗi khi lấy danh sách vật tư đã xuất: " + err.message
+            message: "Lá»—i khi láº¥y danh sÃ¡ch váº­t tÆ° Ä‘Ã£ xuáº¥t: " + err.message
         });
     }
 };
 
 /**
- * Helper: Cập nhật tồn kho
+ * Helper: Cáº­p nháº­t tá»“n kho
  */
 async function updateInventoryStock(connection, materialType, materialId, quantityChange) {
     let tableName = '';
@@ -1997,12 +1997,12 @@ async function updateInventoryStock(connection, materialType, materialId, quanti
             break;
         case 'aluminum':
             tableName = 'aluminum_systems';
-            stockColumn = 'quantity_m'; // aluminum_systems dùng quantity_m
+            stockColumn = 'quantity_m'; // aluminum_systems dÃ¹ng quantity_m
             break;
         case 'glass':
         case 'other':
             tableName = 'inventory';
-            stockColumn = 'quantity'; // bảng inventory dùng quantity
+            stockColumn = 'quantity'; // báº£ng inventory dÃ¹ng quantity
             break;
         default:
             console.warn(`Unknown material type: ${materialType}`);
@@ -2020,7 +2020,7 @@ async function updateInventoryStock(connection, materialType, materialId, quanti
 }
 
 /**
- * Helper: Cập nhật tổng chi phí vật tư trong bảng projects
+ * Helper: Cáº­p nháº­t tá»•ng chi phÃ­ váº­t tÆ° trong báº£ng projects
  */
 async function updateProjectMaterialCost(connection, projectId) {
     const [result] = await connection.query(
@@ -2039,7 +2039,7 @@ async function updateProjectMaterialCost(connection, projectId) {
 }
 
 /**
- * Helper: Kiểm tra xem dự án đã có vật tư được xuất chưa
+ * Helper: Kiá»ƒm tra xem dá»± Ã¡n Ä‘Ã£ cÃ³ váº­t tÆ° Ä‘Æ°á»£c xuáº¥t chÆ°a
  */
 async function hasExportedMaterials(connection, projectId) {
     try {
@@ -2055,12 +2055,12 @@ async function hasExportedMaterials(connection, projectId) {
 }
 
 /**
- * Helper: Tự động chuyển trạng thái dự án từ Bóc tách sang Sản xuất khi xuất vật tư
- * Điều kiện: Dự án đang ở giai đoạn Bóc tách (40-60%) sẽ chuyển sang Sản xuất (60-80%)
+ * Helper: Tá»± Ä‘á»™ng chuyá»ƒn tráº¡ng thÃ¡i dá»± Ã¡n tá»« BÃ³c tÃ¡ch sang Sáº£n xuáº¥t khi xuáº¥t váº­t tÆ°
+ * Äiá»u kiá»‡n: Dá»± Ã¡n Ä‘ang á»Ÿ giai Ä‘oáº¡n BÃ³c tÃ¡ch (40-60%) sáº½ chuyá»ƒn sang Sáº£n xuáº¥t (60-80%)
  */
 async function updateProjectStatusForMaterialExport(connection, projectId) {
     try {
-        // Lấy thông tin dự án hiện tại
+        // Láº¥y thÃ´ng tin dá»± Ã¡n hiá»‡n táº¡i
         const [projectRows] = await connection.query(
             `SELECT id, progress_percent, status FROM projects WHERE id = ?`,
             [projectId]
@@ -2074,10 +2074,10 @@ async function updateProjectStatusForMaterialExport(connection, projectId) {
         const project = projectRows[0];
         const currentProgress = parseFloat(project.progress_percent) || 0;
 
-        // Kiểm tra xem dự án có đang ở giai đoạn Bóc tách (40-60%) không
-        // Nếu có, chuyển sang Sản xuất (60-80%)
+        // Kiá»ƒm tra xem dá»± Ã¡n cÃ³ Ä‘ang á»Ÿ giai Ä‘oáº¡n BÃ³c tÃ¡ch (40-60%) khÃ´ng
+        // Náº¿u cÃ³, chuyá»ƒn sang Sáº£n xuáº¥t (60-80%)
         if (currentProgress >= 40 && currentProgress < 60) {
-            const newProgress = 60; // Chuyển sang giai đoạn Sản xuất (60-80%)
+            const newProgress = 60; // Chuyá»ƒn sang giai Ä‘oáº¡n Sáº£n xuáº¥t (60-80%)
 
             await connection.query(
                 `UPDATE projects 
@@ -2093,15 +2093,15 @@ async function updateProjectStatusForMaterialExport(connection, projectId) {
                 [newProgress, projectId]
             );
 
-            console.log(`✅ Project ${projectId} chuyển từ Bóc tách (${currentProgress}%) sang Sản xuất (${newProgress}%) sau khi xuất vật tư`);
+            console.log(`âœ… Project ${projectId} chuyá»ƒn tá»« BÃ³c tÃ¡ch (${currentProgress}%) sang Sáº£n xuáº¥t (${newProgress}%) sau khi xuáº¥t váº­t tÆ°`);
         }
     } catch (err) {
         console.error(`Error updating project status for material export:`, err);
-        // Không throw error để không làm gián đoạn quá trình thêm vật tư
+        // KhÃ´ng throw error Ä‘á»ƒ khÃ´ng lÃ m giÃ¡n Ä‘oáº¡n quÃ¡ trÃ¬nh thÃªm váº­t tÆ°
     }
 }
 
-// Aliases cho tương thích với routes cũ trong projects.js
+// Aliases cho tÆ°Æ¡ng thÃ­ch vá»›i routes cÅ© trong projects.js
 exports.getProjectMaterials = async (req, res) => {
     req.params.projectId = req.params.id;
     return exports.getByProject(req, res);
@@ -2113,12 +2113,12 @@ exports.deleteProjectMaterial = async (req, res) => {
 };
 
 // ============================================
-// LƯU/LOAD DỮ LIỆU BÓC TÁCH (Nhôm, Kính, Vật tư Phụ)
+// LÆ¯U/LOAD Dá»® LIá»†U BÃ“C TÃCH (NhÃ´m, KÃ­nh, Váº­t tÆ° Phá»¥)
 // ============================================
 
 /**
  * POST /api/project-materials/:projectId/bom-data
- * Lưu dữ liệu Bóc tách (nhôm, kính, vật tư phụ) vào database
+ * LÆ°u dá»¯ liá»‡u BÃ³c tÃ¡ch (nhÃ´m, kÃ­nh, váº­t tÆ° phá»¥) vÃ o database
  */
 exports.saveBOMData = async (req, res) => {
     const connection = await db.getConnection();
@@ -2127,20 +2127,20 @@ exports.saveBOMData = async (req, res) => {
         const { projectId } = req.params;
         const { nhom, kinh, vattu, phukien } = req.body;
 
-        console.log('📦 saveBOMData called for project:', projectId);
-        console.log('📦 Received data counts:', {
+        console.log('ðŸ“¦ saveBOMData called for project:', projectId);
+        console.log('ðŸ“¦ Received data counts:', {
             nhom: nhom?.length || 0,
             kinh: kinh?.length || 0,
             vattu: vattu?.length || 0,
             phukien: phukien?.length || 0
         });
         if (phukien && phukien.length > 0) {
-            console.log('📦 Phukien items:', JSON.stringify(phukien, null, 2));
+            console.log('ðŸ“¦ Phukien items:', JSON.stringify(phukien, null, 2));
         }
 
         await connection.beginTransaction();
 
-        // Xóa dữ liệu cũ của project này (nếu có) - bao gồm cả phukien
+        // XÃ³a dá»¯ liá»‡u cÅ© cá»§a project nÃ y (náº¿u cÃ³) - bao gá»“m cáº£ phukien
         await connection.query(
             `DELETE FROM project_materials 
              WHERE project_id = ? 
@@ -2148,7 +2148,7 @@ exports.saveBOMData = async (req, res) => {
             [projectId]
         );
 
-        // Lưu dữ liệu Nhôm
+        // LÆ°u dá»¯ liá»‡u NhÃ´m
         if (nhom && Array.isArray(nhom) && nhom.length > 0) {
             for (const item of nhom) {
                 await connection.query(
@@ -2160,7 +2160,7 @@ exports.saveBOMData = async (req, res) => {
                         item.code || item.item_code || null,
                         item.name || item.item_name || '',
                         item.quantity || 0,
-                        item.unit || 'cây',
+                        item.unit || 'cÃ¢y',
                         JSON.stringify({
                             code: item.code || item.item_code,
                             density: item.density,
@@ -2173,7 +2173,7 @@ exports.saveBOMData = async (req, res) => {
             }
         }
 
-        // Lưu dữ liệu Kính
+        // LÆ°u dá»¯ liá»‡u KÃ­nh
         if (kinh && Array.isArray(kinh) && kinh.length > 0) {
             for (const item of kinh) {
                 await connection.query(
@@ -2182,12 +2182,12 @@ exports.saveBOMData = async (req, res) => {
                     VALUES (?, 'glass', 0, ?, ?, ?, ?, ?)`,
                     [
                         projectId,
-                        // ✅ FIX: Thêm item_code vào fallback để lấy đúng mã kính từ BOM (VD: K22, K-902)
+                        // âœ… FIX: ThÃªm item_code vÃ o fallback Ä‘á»ƒ láº¥y Ä‘Ãºng mÃ£ kÃ­nh tá»« BOM (VD: K22, K-902)
                         item.code || item.item_code || item.glass_code || null,
-                        // ✅ FIX: Thêm item_name vào fallback để lấy đúng tên kính
+                        // âœ… FIX: ThÃªm item_name vÃ o fallback Ä‘á»ƒ láº¥y Ä‘Ãºng tÃªn kÃ­nh
                         item.name || item.item_name || item.type || item.glass_type || '',
                         item.quantity || 1,
-                        item.unit || 'tấm',
+                        item.unit || 'táº¥m',
                         JSON.stringify({
                             code: item.code || item.item_code || item.glass_code,
                             width_mm: item.width_mm || item.width,
@@ -2201,7 +2201,7 @@ exports.saveBOMData = async (req, res) => {
         }
 
 
-        // Lưu dữ liệu Vật tư Phụ
+        // LÆ°u dá»¯ liá»‡u Váº­t tÆ° Phá»¥
         if (vattu && Array.isArray(vattu) && vattu.length > 0) {
             for (const item of vattu) {
                 await connection.query(
@@ -2213,7 +2213,7 @@ exports.saveBOMData = async (req, res) => {
                         item.code || item.item_code || null,
                         item.name || item.item_name || '',
                         item.quantity || 0,
-                        item.unit || 'cái',
+                        item.unit || 'cÃ¡i',
                         JSON.stringify({
                             code: item.code || item.item_code,
                             category: item.category || item.type || '',
@@ -2224,11 +2224,11 @@ exports.saveBOMData = async (req, res) => {
             }
         }
 
-        // ✅ Lưu dữ liệu Phụ kiện (riêng biệt với Vật tư phụ)
+        // âœ… LÆ°u dá»¯ liá»‡u Phá»¥ kiá»‡n (riÃªng biá»‡t vá»›i Váº­t tÆ° phá»¥)
         if (phukien && Array.isArray(phukien) && phukien.length > 0) {
-            console.log('📦 Inserting', phukien.length, 'phukien items...');
+            console.log('ðŸ“¦ Inserting', phukien.length, 'phukien items...');
             for (const item of phukien) {
-                console.log('📦 Inserting phukien:', item.name, 'with material_type=phukien');
+                console.log('ðŸ“¦ Inserting phukien:', item.name, 'with material_type=phukien');
                 const [insertResult] = await connection.query(
                     `INSERT INTO project_materials 
                     (project_id, material_type, material_id, material_code, material_name, quantity, unit, notes)
@@ -2238,7 +2238,7 @@ exports.saveBOMData = async (req, res) => {
                         item.code || item.item_code || null,
                         item.name || item.item_name || '',
                         item.quantity || 0,
-                        item.unit || 'cái',
+                        item.unit || 'cÃ¡i',
                         JSON.stringify({
                             code: item.code || item.item_code,
                             category: item.category || '',
@@ -2246,7 +2246,7 @@ exports.saveBOMData = async (req, res) => {
                         })
                     ]
                 );
-                console.log('📦 Insert result:', insertResult.insertId, 'affectedRows:', insertResult.affectedRows);
+                console.log('ðŸ“¦ Insert result:', insertResult.insertId, 'affectedRows:', insertResult.affectedRows);
             }
         }
 
@@ -2255,7 +2255,7 @@ exports.saveBOMData = async (req, res) => {
 
         res.json({
             success: true,
-            message: 'Đã lưu dữ liệu Bóc tách thành công',
+            message: 'ÄÃ£ lÆ°u dá»¯ liá»‡u BÃ³c tÃ¡ch thÃ nh cÃ´ng',
             data: {
                 nhom_count: nhom?.length || 0,
                 kinh_count: kinh?.length || 0,
@@ -2270,20 +2270,20 @@ exports.saveBOMData = async (req, res) => {
         console.error('Error saving BOM data:', err);
         res.status(500).json({
             success: false,
-            message: 'Lỗi khi lưu dữ liệu Bóc tách: ' + err.message
+            message: 'Lá»—i khi lÆ°u dá»¯ liá»‡u BÃ³c tÃ¡ch: ' + err.message
         });
     }
 };
 
 /**
  * GET /api/project-materials/:projectId/bom-data
- * Load dữ liệu Bóc tách đã lưu
+ * Load dá»¯ liá»‡u BÃ³c tÃ¡ch Ä‘Ã£ lÆ°u (tá»« project_materials hoáº·c fallback tá»« bom_items)
  */
 exports.getBOMData = async (req, res) => {
     try {
         const { projectId } = req.params;
 
-        // ✅ Bao gồm cả 'phukien' trong query
+        // âœ… Bao gá»“m cáº£ 'phukien' trong query
         const [rows] = await db.query(
             `SELECT * FROM project_materials 
              WHERE project_id = ? 
@@ -2292,104 +2292,98 @@ exports.getBOMData = async (req, res) => {
             [projectId]
         );
 
-        console.log('📥 getBOMData for project:', projectId);
-        console.log('📥 Query returned rows:', rows.length);
-        if (rows.length > 0) {
-            console.log('📥 Material types found:', [...new Set(rows.map(r => r.material_type))]);
-            const phukienRows = rows.filter(r => r.material_type === 'phukien');
-            console.log('📥 Phukien rows found:', phukienRows.length);
-            if (phukienRows.length > 0) {
-                console.log('📥 Sample phukien row:', phukienRows[0]);
-            }
-        }
+        console.log('ðŸ“¥ getBOMData for project:', projectId);
+        console.log('ðŸ“¥ project_materials rows:', rows.length);
 
-        // Phân loại dữ liệu - bao gồm phukien
+        // PhÃ¢n loáº¡i dá»¯ liá»‡u - bao gá»“m phukien
         const nhom = [];
         const kinh = [];
         const vattu = [];
         const phukien = [];
 
-        rows.forEach(row => {
-            let extraData = {};
-            try {
-                if (row.notes) {
-                    extraData = JSON.parse(row.notes);
+        if (rows.length > 0) {
+            // âœ… DÃ¹ng project_materials (Ä‘Ã£ lÆ°u tá»« trang thiáº¿t káº¿)
+            rows.forEach(row => {
+                let extraData = {};
+                try {
+                    if (row.notes) extraData = JSON.parse(row.notes);
+                } catch (e) { }
+
+                const baseItem = {
+                    id: row.id,
+                    name: row.material_name,
+                    quantity: parseFloat(row.quantity),
+                    unit: row.unit,
+                    ...extraData
+                };
+
+                if (row.material_type === 'aluminum') {
+                    nhom.push({ ...baseItem, item_name: row.material_name, item_code: extraData.code, density: extraData.density, length_m: extraData.length_m, weight_kg: extraData.weight_kg, notes: extraData.user_notes || '' });
+                } else if (row.material_type === 'glass') {
+                    kinh.push({ ...baseItem, glass_type: row.material_name, type: row.material_name, glass_code: extraData.code, code: extraData.code, width_mm: extraData.width_mm, width: extraData.width_mm, height_mm: extraData.height_mm, height: extraData.height_mm, area_m2: extraData.area_m2, position: extraData.position, location: extraData.position });
+                } else if (row.material_type === 'accessory') {
+                    vattu.push({ ...baseItem, item_name: row.material_name, item_code: extraData.code, category: extraData.category || '', notes: extraData.user_notes || '' });
+                } else if (row.material_type === 'phukien') {
+                    phukien.push({ ...baseItem, item_name: row.material_name, item_code: extraData.code, code: extraData.code, category: extraData.category || '', notes: extraData.user_notes || '' });
                 }
-            } catch (e) {
-                // Ignore JSON parse errors
-            }
+            });
 
-            const baseItem = {
-                id: row.id,
-                name: row.material_name,
-                quantity: parseFloat(row.quantity),
-                unit: row.unit,
-                ...extraData
-            };
+        } else {
+            // âœ… FALLBACK: Náº¿u project_materials trá»‘ng, Ä‘á»c tá»« bom_items qua door_designs
+            console.log('ðŸ“¥ project_materials trá»‘ng â†’ fallback sang bom_items');
+            try {
+                const [bomRows] = await db.query(
+                    `SELECT 
+                        bi.item_type,
+                        bi.item_code,
+                        bi.item_name,
+                        bi.profile_code,
+                        bi.unit,
+                        SUM(bi.quantity) as quantity,
+                        SUM(bi.length_mm) as total_length_mm
+                     FROM bom_items bi
+                     INNER JOIN door_designs dd ON dd.id = bi.design_id
+                     WHERE dd.project_id = ?
+                     GROUP BY bi.item_type, bi.item_code, bi.item_name, bi.profile_code, bi.unit
+                     ORDER BY bi.item_type, bi.item_name`,
+                    [projectId]
+                );
+                console.log('ðŸ“¥ bom_items fallback rows:', bomRows.length);
 
-            if (row.material_type === 'aluminum') {
-                nhom.push({
-                    ...baseItem,
-                    item_name: row.material_name,
-                    item_code: extraData.code,
-                    density: extraData.density,
-                    length_m: extraData.length_m,
-                    weight_kg: extraData.weight_kg,
-                    notes: extraData.user_notes || ''
+                bomRows.forEach(row => {
+                    const qty = parseFloat(row.quantity) || 0;
+                    const code = row.profile_code || row.item_code || '';
+                    const name = row.item_name || row.profile_code || '';
+                    const unit = row.unit || 'cÃ¡i';
+                    const type = (row.item_type || '').toLowerCase();
+
+                    if (type === 'frame' || type === 'mullion' || type === 'sash' || type === 'bead' || type === 'profile' || type === 'aluminum') {
+                        nhom.push({ id: null, name: name, item_name: name, item_code: code, code: code, quantity: qty, unit: unit || 'cÃ¢y', notes: '' });
+                    } else if (type === 'glass') {
+                        kinh.push({ id: null, name: name, item_name: name, glass_type: name, type: name, code: code, glass_code: code, item_code: code, quantity: qty, unit: unit || 'táº¥m' });
+                    } else if (type === 'accessory' || type === 'hardware' || type === 'gasket' || type === 'glue') {
+                        phukien.push({ id: null, name: name, item_name: name, item_code: code, code: code, category: type, quantity: qty, unit: unit });
+                    } else {
+                        vattu.push({ id: null, name: name, item_name: name, item_code: code, category: type, quantity: qty, unit: unit });
+                    }
                 });
-            } else if (row.material_type === 'glass') {
-                kinh.push({
-                    ...baseItem,
-                    glass_type: row.material_name,
-                    type: row.material_name,
-                    glass_code: extraData.code,
-                    code: extraData.code,
-                    width_mm: extraData.width_mm,
-                    width: extraData.width_mm,
-                    height_mm: extraData.height_mm,
-                    height: extraData.height_mm,
-                    area_m2: extraData.area_m2,
-                    position: extraData.position,
-                    location: extraData.position
-                });
-            } else if (row.material_type === 'accessory') {
-                // Vật tư phụ
-                vattu.push({
-                    ...baseItem,
-                    item_name: row.material_name,
-                    item_code: extraData.code,
-                    category: extraData.category || '',
-                    notes: extraData.user_notes || ''
-                });
-            } else if (row.material_type === 'phukien') {
-                // ✅ Phụ kiện (riêng biệt)
-                phukien.push({
-                    ...baseItem,
-                    item_name: row.material_name,
-                    item_code: extraData.code,
-                    code: extraData.code,
-                    category: extraData.category || '',
-                    notes: extraData.user_notes || ''
-                });
+            } catch (bomErr) {
+                console.warn('âš ï¸ bom_items fallback failed:', bomErr.message);
             }
-        });
+        }
+
+        console.log(`ðŸ“¥ Result: nhom=${nhom.length}, kinh=${kinh.length}, vattu=${vattu.length}, phukien=${phukien.length}`);
 
         res.json({
             success: true,
-            data: {
-                nhom,
-                kinh,
-                vattu,
-                phukien
-            }
+            data: { nhom, kinh, vattu, phukien }
         });
 
     } catch (err) {
         console.error('Error getting BOM data:', err);
         res.status(500).json({
             success: false,
-            message: 'Lỗi khi lấy dữ liệu Bóc tách: ' + err.message
+            message: 'Lá»—i khi láº¥y dá»¯ liá»‡u BÃ³c tÃ¡ch: ' + err.message
         });
     }
 };
-
