@@ -1,4 +1,4 @@
-const db = require("../config/db");
+﻿const db = require("../config/db");
 const NotificationService = require("../services/notificationService");
 const NotificationEventService = require("../services/notificationEventService");
 
@@ -33,18 +33,18 @@ exports.getAllProjects = async (req, res) => {
             params.push(customer_id);
         }
 
-        // Lọc các dự án chưa có báo giá (chưa đến giai đoạn báo giá)
+        // Lá»c cÃ¡c dá»± Ã¡n chÆ°a cÃ³ bÃ¡o giÃ¡ (chÆ°a Ä‘áº¿n giai Ä‘oáº¡n bÃ¡o giÃ¡)
         if (without_quotation === 'true') {
             query += ` AND p.id NOT IN (
                 SELECT DISTINCT project_id 
                 FROM quotations 
                 WHERE project_id IS NOT NULL
             )`;
-            // Chỉ lấy các dự án có trạng thái chưa đến giai đoạn báo giá
+            // Chá»‰ láº¥y cÃ¡c dá»± Ã¡n cÃ³ tráº¡ng thÃ¡i chÆ°a Ä‘áº¿n giai Ä‘oáº¡n bÃ¡o giÃ¡
             query += ` AND p.status NOT IN ('waiting_quotation', 'quotation_approved', 'in_production', 'completed', 'cancelled', 'closed')`;
         }
 
-        // Lọc bỏ các dự án đã hủy khỏi danh sách chính (trừ khi có filter status = 'cancelled')
+        // Lá»c bá» cÃ¡c dá»± Ã¡n Ä‘Ã£ há»§y khá»i danh sÃ¡ch chÃ­nh (trá»« khi cÃ³ filter status = 'cancelled')
         if (status !== 'cancelled') {
             query += " AND (p.status IS NULL OR p.status != 'cancelled')";
         }
@@ -85,7 +85,7 @@ exports.getAllProjects = async (req, res) => {
         console.error(err);
         res.status(500).json({
             success: false,
-            message: "Lỗi server"
+            message: "Lá»—i server"
         });
     }
 };
@@ -112,7 +112,7 @@ exports.getDetail = async (req, res) => {
         if (projectRows.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: "Không tìm thấy dự án"
+                message: "KhÃ´ng tÃ¬m tháº¥y dá»± Ã¡n"
             });
         }
 
@@ -155,7 +155,7 @@ exports.getDetail = async (req, res) => {
             );
             products = quotationItems.map(item => ({
                 code: item.code || `SP-${item.id}`,
-                name: item.name || 'Sản phẩm',
+                name: item.name || 'Sáº£n pháº©m',
                 spec: item.spec || '',
                 glass_spec: item.glass || '',
                 aluminum_system_name: item.aluminum_system || '',
@@ -177,7 +177,7 @@ exports.getDetail = async (req, res) => {
                     `SELECT 
                         pdi.id,
                         COALESCE(dt.code, CONCAT('C-', pdi.id)) as code,
-                        COALESCE(dt.name, 'Cửa') as name,
+                        COALESCE(dt.name, 'Cá»­a') as name,
                         pdi.width_mm as width,
                         pdi.height_mm as height,
                         pdi.quantity
@@ -189,7 +189,7 @@ exports.getDetail = async (req, res) => {
                 );
                 products = doors.map(door => ({
                     code: door.code || `C-${door.id}`,
-                    name: door.name || 'Cửa',
+                    name: door.name || 'Cá»­a',
                     width: door.width || 0,
                     height: door.height || 0,
                     quantity: door.quantity || 1,
@@ -218,7 +218,7 @@ exports.getDetail = async (req, res) => {
         );
 
         // 5. Calculate financial info
-        // Sử dụng project.total_value (giá trị đã xác nhận) thay vì quotation.total_amount
+        // Sá»­ dá»¥ng project.total_value (giÃ¡ trá»‹ Ä‘Ã£ xÃ¡c nháº­n) thay vÃ¬ quotation.total_amount
         const quotation_total = parseFloat(project.total_value) || (quotation ? parseFloat(quotation.total_amount) || 0 : 0);
         const materials_total = materials.reduce((sum, m) => sum + (parseFloat(m.total_cost) || 0), 0);
         const net_total = quotation_total - materials_total;
@@ -237,8 +237,8 @@ exports.getDetail = async (req, res) => {
             handover_date: project.handover_date
         };
 
-        // ===== TÌM DESIGN DATE từ nhiều nguồn =====
-        // 1. Từ door_drawings (bản vẽ đã tạo)
+        // ===== TÃŒM DESIGN DATE tá»« nhiá»u nguá»“n =====
+        // 1. Tá»« door_drawings (báº£n váº½ Ä‘Ã£ táº¡o)
         const [designDates1] = await db.query(
             `SELECT MIN(created_at) as design_date
              FROM door_drawings 
@@ -249,7 +249,7 @@ exports.getDetail = async (req, res) => {
             timeline.design_date = designDates1[0].design_date;
         }
 
-        // 2. Nếu chưa có, tìm từ door_designs (khi cửa được tạo)
+        // 2. Náº¿u chÆ°a cÃ³, tÃ¬m tá»« door_designs (khi cá»­a Ä‘Æ°á»£c táº¡o)
         if (!timeline.design_date) {
             const [designDates2] = await db.query(
                 `SELECT MIN(created_at) as design_date
@@ -262,7 +262,7 @@ exports.getDetail = async (req, res) => {
             }
         }
 
-        // 3. Nếu chưa có, tìm từ project_items (khi item được tạo và có status DESIGNING trở lên)
+        // 3. Náº¿u chÆ°a cÃ³, tÃ¬m tá»« project_items (khi item Ä‘Æ°á»£c táº¡o vÃ  cÃ³ status DESIGNING trá»Ÿ lÃªn)
         if (!timeline.design_date) {
             const [designDates3] = await db.query(
                 `SELECT MIN(created_at) as design_date
@@ -275,8 +275,8 @@ exports.getDetail = async (req, res) => {
             }
         }
 
-        // ===== TÌM BOM DATE từ nhiều nguồn =====
-        // 1. Từ bom_items (BOM đã được tạo)
+        // ===== TÃŒM BOM DATE tá»« nhiá»u nguá»“n =====
+        // 1. Tá»« bom_items (BOM Ä‘Ã£ Ä‘Æ°á»£c táº¡o)
         const [bomDates1] = await db.query(
             `SELECT MIN(created_at) as bom_date
              FROM bom_items 
@@ -287,7 +287,7 @@ exports.getDetail = async (req, res) => {
             timeline.bom_date = bomDates1[0].bom_date;
         }
 
-        // 2. Nếu chưa có, tìm từ project_items khi status = 'BOM_EXTRACTED' (updated_at khi chuyển sang BOM_EXTRACTED)
+        // 2. Náº¿u chÆ°a cÃ³, tÃ¬m tá»« project_items khi status = 'BOM_EXTRACTED' (updated_at khi chuyá»ƒn sang BOM_EXTRACTED)
         if (!timeline.bom_date) {
             const [bomDates2] = await db.query(
                 `SELECT MIN(updated_at) as bom_date
@@ -300,7 +300,7 @@ exports.getDetail = async (req, res) => {
             }
         }
 
-        // 3. Nếu chưa có, tìm từ door_bom_lines (BOM từ door_drawings)
+        // 3. Náº¿u chÆ°a cÃ³, tÃ¬m tá»« door_bom_lines (BOM tá»« door_drawings)
         if (!timeline.bom_date) {
             try {
                 const [bomDates3] = await db.query(
@@ -316,12 +316,12 @@ exports.getDetail = async (req, res) => {
                     timeline.bom_date = bomDates3[0].bom_date;
                 }
             } catch (err) {
-                // Bảng door_bom_lines có thể không tồn tại, bỏ qua
+                // Báº£ng door_bom_lines cÃ³ thá»ƒ khÃ´ng tá»“n táº¡i, bá» qua
                 console.log('door_bom_lines table not found, skipping');
             }
         }
 
-        // ===== TÌM PRODUCTION DATE =====
+        // ===== TÃŒM PRODUCTION DATE =====
         const [productionDates] = await db.query(
             `SELECT MIN(created_at) as production_date
              FROM production_orders 
@@ -355,8 +355,8 @@ exports.getDetail = async (req, res) => {
             }
         }
 
-        // ===== FALLBACK: Tìm từ project_items với các status khác nhau =====
-        // Nếu vẫn chưa có design_date, thử tìm từ project_items.created_at (khi item được tạo)
+        // ===== FALLBACK: TÃ¬m tá»« project_items vá»›i cÃ¡c status khÃ¡c nhau =====
+        // Náº¿u váº«n chÆ°a cÃ³ design_date, thá»­ tÃ¬m tá»« project_items.created_at (khi item Ä‘Æ°á»£c táº¡o)
         if (!timeline.design_date) {
             const [fallbackDesign] = await db.query(
                 `SELECT MIN(created_at) as design_date
@@ -369,7 +369,7 @@ exports.getDetail = async (req, res) => {
             }
         }
 
-        // Nếu vẫn chưa có bom_date, thử tìm từ project_items khi có bom_override hoặc calc_cache
+        // Náº¿u váº«n chÆ°a cÃ³ bom_date, thá»­ tÃ¬m tá»« project_items khi cÃ³ bom_override hoáº·c calc_cache
         if (!timeline.bom_date) {
             const [fallbackBom] = await db.query(
                 `SELECT MIN(updated_at) as bom_date
@@ -382,7 +382,7 @@ exports.getDetail = async (req, res) => {
             }
         }
 
-        // Nếu vẫn chưa có production_date, thử tìm từ production_orders với các trạng thái khác
+        // Náº¿u váº«n chÆ°a cÃ³ production_date, thá»­ tÃ¬m tá»« production_orders vá»›i cÃ¡c tráº¡ng thÃ¡i khÃ¡c
         if (!timeline.production_date) {
             const [fallbackProduction] = await db.query(
                 `SELECT MIN(order_date) as production_date
@@ -395,18 +395,18 @@ exports.getDetail = async (req, res) => {
             }
         }
 
-        // ===== FINAL FALLBACKS: Sử dụng cột trong bảng projects =====
-        // Thiết kế: Nếu vẫn chưa có, dùng quotation created_at hoặc project created_at
+        // ===== FINAL FALLBACKS: Sá»­ dá»¥ng cá»™t trong báº£ng projects =====
+        // Thiáº¿t káº¿: Náº¿u váº«n chÆ°a cÃ³, dÃ¹ng quotation created_at hoáº·c project created_at
         if (!timeline.design_date && quotation) {
-            timeline.design_date = quotation.created_at; // Sau khi có báo giá thì bắt đầu thiết kế
+            timeline.design_date = quotation.created_at; // Sau khi cÃ³ bÃ¡o giÃ¡ thÃ¬ báº¯t Ä‘áº§u thiáº¿t káº¿
         }
 
-        // Bóc tách: Nếu vẫn chưa có, dùng production_started_at (vì bóc tách xong mới sản xuất)
+        // BÃ³c tÃ¡ch: Náº¿u váº«n chÆ°a cÃ³, dÃ¹ng production_started_at (vÃ¬ bÃ³c tÃ¡ch xong má»›i sáº£n xuáº¥t)
         if (!timeline.bom_date && project.production_started_at) {
             timeline.bom_date = project.production_started_at;
         }
 
-        // Sản xuất: Nếu vẫn chưa có, dùng production_started_at từ project
+        // Sáº£n xuáº¥t: Náº¿u váº«n chÆ°a cÃ³, dÃ¹ng production_started_at tá»« project
         if (!timeline.production_date && project.production_started_at) {
             timeline.production_date = project.production_started_at;
         }
@@ -453,7 +453,7 @@ exports.getDetail = async (req, res) => {
             auxiliary: []
         };
 
-        // Lấy vật tư đã xuất từ project_materials - ưu tiên quantity, fallback quantity_used
+        // Láº¥y váº­t tÆ° Ä‘Ã£ xuáº¥t tá»« project_materials - Æ°u tiÃªn quantity, fallback quantity_used
         const [exportedRows] = await db.query(
             `SELECT 
                 pm.id,
@@ -475,15 +475,15 @@ exports.getDetail = async (req, res) => {
             const type = (row.material_type || '').toLowerCase();
             let category = 'auxiliary'; // Default
 
-            if (type.includes('aluminum') || type.includes('nhom') || type === 'nhôm') {
+            if (type.includes('aluminum') || type.includes('nhom') || type === 'nhÃ´m') {
                 category = 'aluminum';
-            } else if (type.includes('glass') || type.includes('kinh') || type === 'kính') {
+            } else if (type.includes('glass') || type.includes('kinh') || type === 'kÃ­nh') {
                 category = 'glass';
-            } else if (type === 'phukien' || type === 'phụ kiện' || type.includes('phụ kiện')) {
-                // Phụ kiện cơ khí: Bản lề, Bánh xe, Ke cánh...
+            } else if (type === 'phukien' || type === 'phá»¥ kiá»‡n' || type.includes('phá»¥ kiá»‡n')) {
+                // Phá»¥ kiá»‡n cÆ¡ khÃ­: Báº£n lá», BÃ¡nh xe, Ke cÃ¡nh...
                 category = 'accessory';
-            } else if (type === 'accessory' || type.includes('vattu') || type.includes('auxiliary') || type === 'vật tư phụ') {
-                // Vật tư phụ/tiêu hao: Gioăng, Keo, Silicone...
+            } else if (type === 'accessory' || type.includes('vattu') || type.includes('auxiliary') || type === 'váº­t tÆ° phá»¥') {
+                // Váº­t tÆ° phá»¥/tiÃªu hao: GioÄƒng, Keo, Silicone...
                 category = 'auxiliary';
             }
 
@@ -492,8 +492,8 @@ exports.getDetail = async (req, res) => {
                 id: row.id,
                 code: row.material_code,
                 name: row.material_name,
-                quantity_required: Math.round(qtyExported), // Số nguyên
-                quantity_exported: Math.round(qtyExported), // Số nguyên
+                quantity_required: Math.round(qtyExported), // Sá»‘ nguyÃªn
+                quantity_exported: Math.round(qtyExported), // Sá»‘ nguyÃªn
                 unit: row.unit,
                 unit_price: parseFloat(row.unit_price) || 0,
                 total_cost: parseFloat(row.total_cost) || 0,
@@ -503,7 +503,7 @@ exports.getDetail = async (req, res) => {
         });
 
         // ===== 9. REAL-TIME INVENTORY STATUS =====
-        // Lấy BOM data hoặc materials data để so sánh với tồn kho hiện tại
+        // Láº¥y BOM data hoáº·c materials data Ä‘á»ƒ so sÃ¡nh vá»›i tá»“n kho hiá»‡n táº¡i
         let inventoryStatus = [];
         try {
             // Build inventory lookup maps FIRST
@@ -595,11 +595,11 @@ exports.getDetail = async (req, res) => {
                 const stock_qty = inventoryMap[stockKey] || 0;
                 const required = Math.round(item.required_qty);
 
-                let status = 'sufficient'; // Đủ
+                let status = 'sufficient'; // Äá»§
                 if (stock_qty === 0) {
-                    status = 'out_of_stock'; // Hết hàng
+                    status = 'out_of_stock'; // Háº¿t hÃ ng
                 } else if (stock_qty < required) {
-                    status = 'insufficient'; // Thiếu
+                    status = 'insufficient'; // Thiáº¿u
                 }
 
                 return {
@@ -641,7 +641,7 @@ exports.getDetail = async (req, res) => {
         console.error('Error getting project detail:', err);
         res.status(500).json({
             success: false,
-            message: "Lỗi server"
+            message: "Lá»—i server"
         });
     }
 };
@@ -668,7 +668,7 @@ exports.getById = async (req, res) => {
         if (rows.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: "Không tìm thấy dự án"
+                message: "KhÃ´ng tÃ¬m tháº¥y dá»± Ã¡n"
             });
         }
 
@@ -680,7 +680,7 @@ exports.getById = async (req, res) => {
         console.error(err);
         res.status(500).json({
             success: false,
-            message: "Lỗi server"
+            message: "Lá»—i server"
         });
     }
 };
@@ -697,35 +697,35 @@ exports.create = async (req, res) => {
         if (!project_code || !project_code.trim()) {
             return res.status(400).json({
                 success: false,
-                message: "Mã dự án không được để trống"
+                message: "MÃ£ dá»± Ã¡n khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng"
             });
         }
 
         if (!project_name || !project_name.trim()) {
             return res.status(400).json({
                 success: false,
-                message: "Tên dự án không được để trống"
+                message: "TÃªn dá»± Ã¡n khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng"
             });
         }
 
         if (!customer_id) {
             return res.status(400).json({
                 success: false,
-                message: "Vui lòng chọn khách hàng"
+                message: "Vui lÃ²ng chá»n khÃ¡ch hÃ ng"
             });
         }
 
         if (!start_date) {
             return res.status(400).json({
                 success: false,
-                message: "Ngày bắt đầu không được để trống"
+                message: "NgÃ y báº¯t Ä‘áº§u khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng"
             });
         }
 
         if (!deadline) {
             return res.status(400).json({
                 success: false,
-                message: "Ngày giao dự kiến không được để trống"
+                message: "NgÃ y giao dá»± kiáº¿n khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng"
             });
         }
 
@@ -738,7 +738,7 @@ exports.create = async (req, res) => {
         if (customerRows.length === 0) {
             return res.status(400).json({
                 success: false,
-                message: "Khách hàng không tồn tại"
+                message: "KhÃ¡ch hÃ ng khÃ´ng tá»“n táº¡i"
             });
         }
 
@@ -751,7 +751,7 @@ exports.create = async (req, res) => {
         if (existingRows.length > 0) {
             return res.status(400).json({
                 success: false,
-                message: `Mã dự án "${project_code}" đã tồn tại. Vui lòng chọn mã khác.`
+                message: `MÃ£ dá»± Ã¡n "${project_code}" Ä‘Ã£ tá»“n táº¡i. Vui lÃ²ng chá»n mÃ£ khÃ¡c.`
             });
         }
 
@@ -762,7 +762,7 @@ exports.create = async (req, res) => {
         if (deadlineDate < startDate) {
             return res.status(400).json({
                 success: false,
-                message: "Ngày giao dự kiến phải sau ngày bắt đầu"
+                message: "NgÃ y giao dá»± kiáº¿n pháº£i sau ngÃ y báº¯t Ä‘áº§u"
             });
         }
 
@@ -786,13 +786,13 @@ exports.create = async (req, res) => {
             ]
         );
 
-        // Lấy thông tin khách hàng để thông báo
+        // Láº¥y thÃ´ng tin khÃ¡ch hÃ ng Ä‘á»ƒ thÃ´ng bÃ¡o
         const [customerInfo] = await db.query(
             "SELECT full_name FROM customers WHERE id = ?",
             [customer_id]
         );
 
-        // Tạo thông báo dự án mới (Event-based)
+        // Táº¡o thÃ´ng bÃ¡o dá»± Ã¡n má»›i (Event-based)
         await NotificationEventService.emit('project.created', {
             project_id: result.insertId,
             project_code: project_code.trim(),
@@ -807,7 +807,7 @@ exports.create = async (req, res) => {
 
         res.status(201).json({
             success: true,
-            message: "Thêm dự án thành công",
+            message: "ThÃªm dá»± Ã¡n thÃ nh cÃ´ng",
             data: { id: result.insertId }
         });
     } catch (err) {
@@ -817,20 +817,20 @@ exports.create = async (req, res) => {
         if (err.code === 'ER_DUP_ENTRY') {
             return res.status(400).json({
                 success: false,
-                message: "Mã dự án đã tồn tại. Vui lòng chọn mã khác."
+                message: "MÃ£ dá»± Ã¡n Ä‘Ã£ tá»“n táº¡i. Vui lÃ²ng chá»n mÃ£ khÃ¡c."
             });
         }
 
         if (err.code === 'ER_NO_REFERENCED_ROW_2') {
             return res.status(400).json({
                 success: false,
-                message: "Khách hàng không tồn tại"
+                message: "KhÃ¡ch hÃ ng khÃ´ng tá»“n táº¡i"
             });
         }
 
         res.status(500).json({
             success: false,
-            message: err.message || "Lỗi khi thêm dự án",
+            message: err.message || "Lá»—i khi thÃªm dá»± Ã¡n",
             error: process.env.NODE_ENV === 'development' ? err.message : undefined
         });
     }
@@ -842,7 +842,7 @@ exports.update = async (req, res) => {
         const { id } = req.params;
         const { project_name, customer_id, start_date, deadline, status, progress_percent, total_value, notes } = req.body;
 
-        // Lấy thông tin dự án hiện tại
+        // Láº¥y thÃ´ng tin dá»± Ã¡n hiá»‡n táº¡i
         const [currentRows] = await db.query(
             "SELECT * FROM projects WHERE id = ?",
             [id]
@@ -851,13 +851,13 @@ exports.update = async (req, res) => {
         if (currentRows.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: "Không tìm thấy dự án"
+                message: "KhÃ´ng tÃ¬m tháº¥y dá»± Ã¡n"
             });
         }
 
         const current = currentRows[0];
 
-        // Chỉ cập nhật các trường được cung cấp (partial update)
+        // Chá»‰ cáº­p nháº­t cÃ¡c trÆ°á»ng Ä‘Æ°á»£c cung cáº¥p (partial update)
         const updateFields = [];
         const updateValues = [];
 
@@ -915,7 +915,7 @@ exports.update = async (req, res) => {
         if (updateFields.length === 0) {
             return res.status(400).json({
                 success: false,
-                message: "Không có trường nào để cập nhật"
+                message: "KhÃ´ng cÃ³ trÆ°á»ng nÃ o Ä‘á»ƒ cáº­p nháº­t"
             });
         }
 
@@ -931,11 +931,11 @@ exports.update = async (req, res) => {
         if (result.affectedRows === 0) {
             return res.status(404).json({
                 success: false,
-                message: "Không tìm thấy dự án"
+                message: "KhÃ´ng tÃ¬m tháº¥y dá»± Ã¡n"
             });
         }
 
-        // Lấy lại thông tin dự án đã cập nhật
+        // Láº¥y láº¡i thÃ´ng tin dá»± Ã¡n Ä‘Ã£ cáº­p nháº­t
         const [updatedRows] = await db.query(
             `SELECT 
                 p.*,
@@ -947,7 +947,7 @@ exports.update = async (req, res) => {
             [id]
         );
 
-        // Thông báo nếu trạng thái thay đổi (Event-based)
+        // ThÃ´ng bÃ¡o náº¿u tráº¡ng thÃ¡i thay Ä‘á»•i (Event-based)
         if (status !== undefined && status !== current.status) {
             await NotificationEventService.emit('project.status_changed', {
                 project_id: id,
@@ -961,7 +961,7 @@ exports.update = async (req, res) => {
                 entityId: id
             });
 
-            // Nếu hoàn thành 100%
+            // Náº¿u hoÃ n thÃ nh 100%
             if (status === 'completed' || (progress_percent !== undefined && progress_percent >= 100)) {
                 await NotificationEventService.emit('project.completed', {
                     project_id: id,
@@ -977,14 +977,14 @@ exports.update = async (req, res) => {
 
         res.json({
             success: true,
-            message: "Cập nhật dự án thành công",
+            message: "Cáº­p nháº­t dá»± Ã¡n thÃ nh cÃ´ng",
             data: updatedRows[0] || null
         });
     } catch (err) {
         console.error(err);
         res.status(500).json({
             success: false,
-            message: "Lỗi khi cập nhật dự án",
+            message: "Lá»—i khi cáº­p nháº­t dá»± Ã¡n",
             error: process.env.NODE_ENV === 'development' ? err.message : undefined
         });
     }
@@ -998,7 +998,7 @@ exports.delete = async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Tắt foreign key checks tạm thời để tránh lỗi constraint
+        // Táº¯t foreign key checks táº¡m thá»i Ä‘á»ƒ trÃ¡nh lá»—i constraint
         await connection.query('SET FOREIGN_KEY_CHECKS = 0');
 
         // Check if project exists
@@ -1012,14 +1012,14 @@ exports.delete = async (req, res) => {
             await connection.rollback();
             return res.status(404).json({
                 success: false,
-                message: "Không tìm thấy dự án"
+                message: "KhÃ´ng tÃ¬m tháº¥y dá»± Ã¡n"
             });
         }
 
         const project = projectRows[0];
-        console.log(`🗑️ Cascade deleting project: ${project.project_code} - ${project.project_name}`);
+        console.log(`ðŸ—‘ï¸ Cascade deleting project: ${project.project_code} - ${project.project_name}`);
 
-        // 1. Xóa door_bom_lines và door_bom_summary (BOM cửa)
+        // 1. XÃ³a door_bom_lines vÃ  door_bom_summary (BOM cá»­a)
         try {
             await connection.query(`
                 DELETE FROM door_bom_lines 
@@ -1029,12 +1029,12 @@ exports.delete = async (req, res) => {
                 DELETE FROM door_bom_summary 
                 WHERE door_design_id IN (SELECT id FROM door_designs WHERE project_id = ?)
             `, [id]);
-            console.log('  ✓ Deleted door BOM lines and summary');
+            console.log('  âœ“ Deleted door BOM lines and summary');
         } catch (e) {
             console.log('  - No door_bom_lines/summary table');
         }
 
-        // 2. Xóa door structure items và calculations
+        // 2. XÃ³a door structure items vÃ  calculations
         try {
             await connection.query(`
                 DELETE FROM door_structure_items 
@@ -1048,12 +1048,12 @@ exports.delete = async (req, res) => {
                 DELETE FROM door_glass_calculations 
                 WHERE door_design_id IN (SELECT id FROM door_designs WHERE project_id = ?)
             `, [id]);
-            console.log('  ✓ Deleted door structure and calculations');
+            console.log('  âœ“ Deleted door structure and calculations');
         } catch (e) {
             console.log('  - No door structure/calculations tables');
         }
 
-        // 3. Xóa cutting details và optimizations
+        // 3. XÃ³a cutting details vÃ  optimizations
         try {
             await connection.query(`
                 DELETE FROM cutting_details 
@@ -1067,19 +1067,19 @@ exports.delete = async (req, res) => {
                 DELETE FROM door_cutting_plan 
                 WHERE door_design_id IN (SELECT id FROM door_designs WHERE project_id = ?)
             `, [id]);
-            console.log('  ✓ Deleted cutting details and optimizations');
+            console.log('  âœ“ Deleted cutting details and optimizations');
         } catch (e) {
             console.log('  - No cutting tables');
         }
 
-        // 4. Xóa BOM items của tất cả door_designs trong project
+        // 4. XÃ³a BOM items cá»§a táº¥t cáº£ door_designs trong project
         await connection.query(`
             DELETE FROM bom_items 
             WHERE design_id IN (SELECT id FROM door_designs WHERE project_id = ?)
         `, [id]);
-        console.log('  ✓ Deleted BOM items');
+        console.log('  âœ“ Deleted BOM items');
 
-        // 5. Xóa item_bom_lines và item_bom_versions
+        // 5. XÃ³a item_bom_lines vÃ  item_bom_versions
         try {
             await connection.query(`
                 DELETE FROM item_bom_lines 
@@ -1089,40 +1089,40 @@ exports.delete = async (req, res) => {
                 DELETE FROM item_bom_versions 
                 WHERE project_id = ?
             `, [id]);
-            console.log('  ✓ Deleted item BOM lines and versions');
+            console.log('  âœ“ Deleted item BOM lines and versions');
         } catch (e) {
             console.log('  - No item_bom tables');
         }
 
-        // 6. Xóa door_drawings của tất cả door_designs trong project
+        // 6. XÃ³a door_drawings cá»§a táº¥t cáº£ door_designs trong project
         await connection.query(`
             DELETE FROM door_drawings 
             WHERE door_design_id IN (SELECT id FROM door_designs WHERE project_id = ?)
         `, [id]);
-        console.log('  ✓ Deleted door drawings');
+        console.log('  âœ“ Deleted door drawings');
 
-        // 7. Xóa door_designs
+        // 7. XÃ³a door_designs
         await connection.query(
             "DELETE FROM door_designs WHERE project_id = ?",
             [id]
         );
-        console.log('  ✓ Deleted door designs');
+        console.log('  âœ“ Deleted door designs');
 
-        // 8. Xóa quotation_items của tất cả quotations trong project
+        // 8. XÃ³a quotation_items cá»§a táº¥t cáº£ quotations trong project
         await connection.query(`
             DELETE FROM quotation_items 
             WHERE quotation_id IN (SELECT id FROM quotations WHERE project_id = ?)
         `, [id]);
-        console.log('  ✓ Deleted quotation items');
+        console.log('  âœ“ Deleted quotation items');
 
-        // 9. Xóa quotations
+        // 9. XÃ³a quotations
         await connection.query(
             "DELETE FROM quotations WHERE project_id = ?",
             [id]
         );
-        console.log('  ✓ Deleted quotations');
+        console.log('  âœ“ Deleted quotations');
 
-        // 10. Xóa production_order_bom và production_order_doors
+        // 10. XÃ³a production_order_bom vÃ  production_order_doors
         try {
             await connection.query(`
                 DELETE FROM production_order_bom 
@@ -1132,41 +1132,41 @@ exports.delete = async (req, res) => {
                 DELETE FROM production_order_doors 
                 WHERE production_order_id IN (SELECT id FROM production_orders WHERE project_id = ?)
             `, [id]);
-            console.log('  ✓ Deleted production order BOM and doors');
+            console.log('  âœ“ Deleted production order BOM and doors');
         } catch (e) {
             console.log('  - No production_order_bom/doors tables');
         }
 
-        // 11. Xóa production_order_items của tất cả production_orders trong project
+        // 11. XÃ³a production_order_items cá»§a táº¥t cáº£ production_orders trong project
         try {
             await connection.query(`
                 DELETE FROM production_order_items 
                 WHERE production_order_id IN (SELECT id FROM production_orders WHERE project_id = ?)
             `, [id]);
-            console.log('  ✓ Deleted production order items');
+            console.log('  âœ“ Deleted production order items');
         } catch (e) {
             console.log('  - No production_order_items table or no items');
         }
 
-        // 12. Xóa production_progress
+        // 12. XÃ³a production_progress
         try {
             await connection.query(`
                 DELETE FROM production_progress 
                 WHERE production_order_id IN (SELECT id FROM production_orders WHERE project_id = ?)
             `, [id]);
-            console.log('  ✓ Deleted production progress');
+            console.log('  âœ“ Deleted production progress');
         } catch (e) {
             console.log('  - No production_progress table');
         }
 
-        // 13. Xóa production_orders
+        // 13. XÃ³a production_orders
         await connection.query(
             "DELETE FROM production_orders WHERE project_id = ?",
             [id]
         );
-        console.log('  ✓ Deleted production orders');
+        console.log('  âœ“ Deleted production orders');
 
-        // 14. Xóa project_items (hạng mục dự án)
+        // 14. XÃ³a project_items (háº¡ng má»¥c dá»± Ã¡n)
         try {
             await connection.query(
                 "DELETE FROM project_items WHERE project_id = ?",
@@ -1176,23 +1176,23 @@ exports.delete = async (req, res) => {
                 "DELETE FROM project_items_v2 WHERE project_id = ?",
                 [id]
             );
-            console.log('  ✓ Deleted project items');
+            console.log('  âœ“ Deleted project items');
         } catch (e) {
             console.log('  - No project_items tables');
         }
 
-        // 15. Xóa project_materials (vật tư dự án)
+        // 15. XÃ³a project_materials (váº­t tÆ° dá»± Ã¡n)
         try {
             await connection.query(
                 "DELETE FROM project_materials WHERE project_id = ?",
                 [id]
             );
-            console.log('  ✓ Deleted project materials');
+            console.log('  âœ“ Deleted project materials');
         } catch (e) {
             console.log('  - No project_materials table');
         }
 
-        // 16. Xóa warehouse exports và items
+        // 16. XÃ³a warehouse exports vÃ  items
         try {
             await connection.query(`
                 DELETE FROM warehouse_export_items 
@@ -1202,12 +1202,12 @@ exports.delete = async (req, res) => {
                 "DELETE FROM warehouse_exports WHERE project_id = ?",
                 [id]
             );
-            console.log('  ✓ Deleted warehouse exports');
+            console.log('  âœ“ Deleted warehouse exports');
         } catch (e) {
             console.log('  - No warehouse_exports tables');
         }
 
-        // 17. Xóa project cutting và bóc tách
+        // 17. XÃ³a project cutting vÃ  bÃ³c tÃ¡ch
         try {
             await connection.query(
                 "DELETE FROM project_cutting_details WHERE project_id = ?",
@@ -1217,12 +1217,12 @@ exports.delete = async (req, res) => {
                 "DELETE FROM project_cutting_optimization WHERE project_id = ?",
                 [id]
             );
-            console.log('  ✓ Deleted project cutting details');
+            console.log('  âœ“ Deleted project cutting details');
         } catch (e) {
             console.log('  - No project_cutting tables');
         }
 
-        // 18. Xóa project summaries (aluminum, glass, gaskets, accessories)
+        // 18. XÃ³a project summaries (aluminum, glass, gaskets, accessories)
         try {
             await connection.query(
                 "DELETE FROM project_aluminum_summary WHERE project_id = ?",
@@ -1240,12 +1240,12 @@ exports.delete = async (req, res) => {
                 "DELETE FROM project_accessories_summary WHERE project_id = ?",
                 [id]
             );
-            console.log('  ✓ Deleted project material summaries');
+            console.log('  âœ“ Deleted project material summaries');
         } catch (e) {
             console.log('  - No project summary tables');
         }
 
-        // 19. Xóa project finances và pricing
+        // 19. XÃ³a project finances vÃ  pricing
         try {
             await connection.query(
                 "DELETE FROM project_finances WHERE project_id = ?",
@@ -1255,45 +1255,45 @@ exports.delete = async (req, res) => {
                 "DELETE FROM project_pricing WHERE project_id = ?",
                 [id]
             );
-            console.log('  ✓ Deleted project finances and pricing');
+            console.log('  âœ“ Deleted project finances and pricing');
         } catch (e) {
             console.log('  - No project finances/pricing tables');
         }
 
-        // 20. Xóa debts liên quan đến project
+        // 20. XÃ³a debts liÃªn quan Ä‘áº¿n project
         try {
             await connection.query(
                 "DELETE FROM debts WHERE project_id = ?",
                 [id]
             );
-            console.log('  ✓ Deleted debts');
+            console.log('  âœ“ Deleted debts');
         } catch (e) {
             console.log('  - No debts table or error:', e.message);
         }
 
-        // 21. Xóa commissions liên quan đến project
+        // 21. XÃ³a commissions liÃªn quan Ä‘áº¿n project
         try {
             await connection.query(
                 "DELETE FROM commissions WHERE project_id = ?",
                 [id]
             );
-            console.log('  ✓ Deleted commissions');
+            console.log('  âœ“ Deleted commissions');
         } catch (e) {
             console.log('  - No commissions table or error:', e.message);
         }
 
-        // 22. Xóa financial_transactions
+        // 22. XÃ³a financial_transactions
         try {
             await connection.query(
                 "DELETE FROM financial_transactions WHERE project_id = ?",
                 [id]
             );
-            console.log('  ✓ Deleted financial transactions');
+            console.log('  âœ“ Deleted financial transactions');
         } catch (e) {
             console.log('  - No financial_transactions table');
         }
 
-        // 23. Xóa inventory_out và inventory_transactions liên quan đến project
+        // 23. XÃ³a inventory_out vÃ  inventory_transactions liÃªn quan Ä‘áº¿n project
         try {
             await connection.query(
                 "DELETE FROM inventory_out WHERE project_id = ?",
@@ -1303,45 +1303,45 @@ exports.delete = async (req, res) => {
                 "DELETE FROM inventory_transactions WHERE project_id = ?",
                 [id]
             );
-            console.log('  ✓ Deleted inventory records');
+            console.log('  âœ“ Deleted inventory records');
         } catch (e) {
             console.log('  - No inventory tables or error:', e.message);
         }
 
-        // 24. Xóa project logs
+        // 24. XÃ³a project logs
         try {
             await connection.query(
                 "DELETE FROM project_logs WHERE project_id = ?",
                 [id]
             );
-            console.log('  ✓ Deleted project logs');
+            console.log('  âœ“ Deleted project logs');
         } catch (e) {
             console.log('  - No project_logs table or error:', e.message);
         }
 
-        // 25. Xóa projects_material_summary
+        // 25. XÃ³a projects_material_summary
         try {
             await connection.query(
                 "DELETE FROM projects_material_summary WHERE project_id = ?",
                 [id]
             );
-            console.log('  ✓ Deleted material summary');
+            console.log('  âœ“ Deleted material summary');
         } catch (e) {
             console.log('  - No projects_material_summary table or error:', e.message);
         }
 
-        // 26. Xóa design files
+        // 26. XÃ³a design files
         try {
             await connection.query(
                 "DELETE FROM design_files WHERE project_id = ?",
                 [id]
             );
-            console.log('  ✓ Deleted design files');
+            console.log('  âœ“ Deleted design files');
         } catch (e) {
             console.log('  - No design_files table or error:', e.message);
         }
 
-        // 27. Cuối cùng, xóa project
+        // 27. Cuá»‘i cÃ¹ng, xÃ³a project
         const [result] = await connection.query(
             "DELETE FROM projects WHERE id = ?",
             [id]
@@ -1352,22 +1352,22 @@ exports.delete = async (req, res) => {
             await connection.rollback();
             return res.status(404).json({
                 success: false,
-                message: "Không tìm thấy dự án"
+                message: "KhÃ´ng tÃ¬m tháº¥y dá»± Ã¡n"
             });
         }
 
-        // Bật lại foreign key checks
+        // Báº­t láº¡i foreign key checks
         await connection.query('SET FOREIGN_KEY_CHECKS = 1');
 
         await connection.commit();
-        console.log(`✅ Project ${project.project_code} and all related data deleted successfully`);
+        console.log(`âœ… Project ${project.project_code} and all related data deleted successfully`);
 
         res.json({
             success: true,
-            message: `Đã xóa dự án "${project.project_name}" và tất cả dữ liệu liên quan (báo giá, thiết kế, lệnh sản xuất, v.v.)`
+            message: `ÄÃ£ xÃ³a dá»± Ã¡n "${project.project_name}" vÃ  táº¥t cáº£ dá»¯ liá»‡u liÃªn quan (bÃ¡o giÃ¡, thiáº¿t káº¿, lá»‡nh sáº£n xuáº¥t, v.v.)`
         });
     } catch (err) {
-        // Đảm bảo bật lại foreign key checks trước khi rollback
+        // Äáº£m báº£o báº­t láº¡i foreign key checks trÆ°á»›c khi rollback
         try {
             await connection.query('SET FOREIGN_KEY_CHECKS = 1');
         } catch (e) {
@@ -1377,7 +1377,7 @@ exports.delete = async (req, res) => {
         console.error('Error cascade deleting project:', err);
         res.status(500).json({
             success: false,
-            message: "Lỗi khi xóa dự án: " + err.message,
+            message: "Lá»—i khi xÃ³a dá»± Ã¡n: " + err.message,
             error: process.env.NODE_ENV === 'development' ? err.message : undefined
         });
     } finally {
@@ -1388,7 +1388,7 @@ exports.delete = async (req, res) => {
 // GET statistics
 exports.getStatistics = async (req, res) => {
     try {
-        // Tự động cập nhật progress_percent dựa trên status nếu progress_percent = 0 hoặc NULL
+        // Tá»± Ä‘á»™ng cáº­p nháº­t progress_percent dá»±a trÃªn status náº¿u progress_percent = 0 hoáº·c NULL
         await db.query(`
             UPDATE projects 
             SET progress_percent = CASE
@@ -1417,14 +1417,14 @@ exports.getStatistics = async (req, res) => {
             FROM projects
         `);
 
-        // Get production orders count - bao gồm cả các dự án đã đến giai đoạn sản xuất
+        // Get production orders count - bao gá»“m cáº£ cÃ¡c dá»± Ã¡n Ä‘Ã£ Ä‘áº¿n giai Ä‘oáº¡n sáº£n xuáº¥t
         const [orderRows] = await db.query(`
             SELECT COUNT(*) as total_orders
             FROM production_orders
             WHERE status IS NULL OR status = '' OR status NOT IN ('completed', 'cancelled', 'closed')
         `);
 
-        // Đếm các dự án đã đến giai đoạn sản xuất (có thể chưa có production order)
+        // Äáº¿m cÃ¡c dá»± Ã¡n Ä‘Ã£ Ä‘áº¿n giai Ä‘oáº¡n sáº£n xuáº¥t (cÃ³ thá»ƒ chÆ°a cÃ³ production order)
         const [projectsInProduction] = await db.query(`
             SELECT COUNT(*) as count
             FROM projects
@@ -1455,7 +1455,7 @@ exports.getStatistics = async (req, res) => {
         console.error(err);
         res.status(500).json({
             success: false,
-            message: "Lỗi server"
+            message: "Lá»—i server"
         });
     }
 };
@@ -1488,7 +1488,7 @@ exports.getDoorById = async (req, res) => {
         if (rows.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: `Không tìm thấy cửa với ID ${doorId} trong dự án ${id}`
+                message: `KhÃ´ng tÃ¬m tháº¥y cá»­a vá»›i ID ${doorId} trong dá»± Ã¡n ${id}`
             });
         }
 
@@ -1545,7 +1545,7 @@ exports.getDoorById = async (req, res) => {
         console.error('Error getting door by ID:', err);
         res.status(500).json({
             success: false,
-            message: "Lỗi server",
+            message: "Lá»—i server",
             error: process.env.NODE_ENV === 'development' ? err.message : undefined
         });
     }
@@ -1599,7 +1599,7 @@ exports.getProjectDoors = async (req, res) => {
         console.error(err);
         res.status(500).json({
             success: false,
-            message: "Lỗi server"
+            message: "Lá»—i server"
         });
     }
 };
@@ -1626,19 +1626,19 @@ exports.createDoor = async (req, res) => {
         if (!aluminum_system_id || aluminum_system_id === '' || aluminum_system_id === '0') {
             return res.status(400).json({
                 success: false,
-                message: "Vui lòng chọn hệ nhôm"
+                message: "Vui lÃ²ng chá»n há»‡ nhÃ´m"
             });
         }
         if (!width_mm || width_mm < 300 || width_mm > 5000) {
             return res.status(400).json({
                 success: false,
-                message: "Chiều rộng phải từ 300 đến 5000mm"
+                message: "Chiá»u rá»™ng pháº£i tá»« 300 Ä‘áº¿n 5000mm"
             });
         }
         if (!height_mm || height_mm < 300 || height_mm > 5000) {
             return res.status(400).json({
                 success: false,
-                message: "Chiều cao phải từ 300 đến 5000mm"
+                message: "Chiá»u cao pháº£i tá»« 300 Ä‘áº¿n 5000mm"
             });
         }
 
@@ -1681,16 +1681,16 @@ exports.createDoor = async (req, res) => {
             await db.query(
                 `INSERT INTO project_logs (project_id, action_type, action_description, related_door_id)
                 VALUES (?, 'door_added', ?, ?)`,
-                [id, `Đã thêm cửa ${designCode} vào công trình`, result.insertId]
+                [id, `ÄÃ£ thÃªm cá»­a ${designCode} vÃ o cÃ´ng trÃ¬nh`, result.insertId]
             );
         } catch (logErr) {
             console.error("Error creating log:", logErr);
         }
 
-        // Tự động tính và lưu BOM (nếu có bản vẽ)
+        // Tá»± Ä‘á»™ng tÃ­nh vÃ  lÆ°u BOM (náº¿u cÃ³ báº£n váº½)
         try {
             const bomAutoSave = require("../services/bomAutoSave");
-            // Tìm door_drawing_id nếu có
+            // TÃ¬m door_drawing_id náº¿u cÃ³
             const [drawingRows] = await db.query(
                 "SELECT id FROM door_drawings WHERE door_design_id = ? ORDER BY created_at DESC LIMIT 1",
                 [result.insertId]
@@ -1700,27 +1700,27 @@ exports.createDoor = async (req, res) => {
             }
         } catch (bomErr) {
             console.error("Error auto-calculating BOM:", bomErr);
-            // Không throw để không làm gián đoạn việc tạo cửa
+            // KhÃ´ng throw Ä‘á»ƒ khÃ´ng lÃ m giÃ¡n Ä‘oáº¡n viá»‡c táº¡o cá»­a
         }
 
-        // Cập nhật giá trị công trình và bảng báo giá
+        // Cáº­p nháº­t giÃ¡ trá»‹ cÃ´ng trÃ¬nh vÃ  báº£ng bÃ¡o giÃ¡
         try {
             await updateProjectTotalValue(id);
         } catch (updateErr) {
             console.error("Error updating project total value:", updateErr);
-            // Không throw để không làm gián đoạn việc tạo cửa
+            // KhÃ´ng throw Ä‘á»ƒ khÃ´ng lÃ m giÃ¡n Ä‘oáº¡n viá»‡c táº¡o cá»­a
         }
 
         res.status(201).json({
             success: true,
-            message: "Thêm cửa thành công",
+            message: "ThÃªm cá»­a thÃ nh cÃ´ng",
             data: { id: result.insertId, design_code: designCode }
         });
     } catch (err) {
         console.error(err);
         res.status(500).json({
             success: false,
-            message: "Lỗi khi thêm cửa"
+            message: "Lá»—i khi thÃªm cá»­a"
         });
     }
 };
@@ -1804,14 +1804,14 @@ exports.updateDoor = async (req, res) => {
         if (result.affectedRows === 0) {
             return res.status(404).json({
                 success: false,
-                message: "Không tìm thấy cửa"
+                message: "KhÃ´ng tÃ¬m tháº¥y cá»­a"
             });
         }
 
-        // Tự động tính lại BOM khi cửa được cập nhật
+        // Tá»± Ä‘á»™ng tÃ­nh láº¡i BOM khi cá»­a Ä‘Æ°á»£c cáº­p nháº­t
         try {
             const bomAutoSave = require("../services/bomAutoSave");
-            // Tìm door_drawing_id nếu có
+            // TÃ¬m door_drawing_id náº¿u cÃ³
             const [drawingRows] = await db.query(
                 "SELECT id FROM door_drawings WHERE door_design_id = ? ORDER BY created_at DESC LIMIT 1",
                 [doorId]
@@ -1821,26 +1821,26 @@ exports.updateDoor = async (req, res) => {
             }
         } catch (bomErr) {
             console.error("Error auto-calculating BOM:", bomErr);
-            // Không throw để không làm gián đoạn việc cập nhật cửa
+            // KhÃ´ng throw Ä‘á»ƒ khÃ´ng lÃ m giÃ¡n Ä‘oáº¡n viá»‡c cáº­p nháº­t cá»­a
         }
 
-        // Cập nhật giá trị công trình sau khi cập nhật cửa
+        // Cáº­p nháº­t giÃ¡ trá»‹ cÃ´ng trÃ¬nh sau khi cáº­p nháº­t cá»­a
         try {
             await updateProjectTotalValue(id);
         } catch (updateErr) {
             console.error("Error updating project total value:", updateErr);
-            // Không throw để không làm gián đoạn việc cập nhật cửa
+            // KhÃ´ng throw Ä‘á»ƒ khÃ´ng lÃ m giÃ¡n Ä‘oáº¡n viá»‡c cáº­p nháº­t cá»­a
         }
 
         res.json({
             success: true,
-            message: "Cập nhật cửa thành công"
+            message: "Cáº­p nháº­t cá»­a thÃ nh cÃ´ng"
         });
     } catch (err) {
         console.error(err);
         res.status(500).json({
             success: false,
-            message: "Lỗi khi cập nhật cửa"
+            message: "Lá»—i khi cáº­p nháº­t cá»­a"
         });
     }
 };
@@ -1858,32 +1858,32 @@ exports.deleteDoor = async (req, res) => {
         if (result.affectedRows === 0) {
             return res.status(404).json({
                 success: false,
-                message: "Không tìm thấy cửa"
+                message: "KhÃ´ng tÃ¬m tháº¥y cá»­a"
             });
         }
 
-        // Cập nhật giá trị công trình sau khi xóa cửa
+        // Cáº­p nháº­t giÃ¡ trá»‹ cÃ´ng trÃ¬nh sau khi xÃ³a cá»­a
         try {
             await updateProjectTotalValue(id);
         } catch (updateErr) {
             console.error("Error updating project total value:", updateErr);
-            // Không throw để không làm gián đoạn việc xóa cửa
+            // KhÃ´ng throw Ä‘á»ƒ khÃ´ng lÃ m giÃ¡n Ä‘oáº¡n viá»‡c xÃ³a cá»­a
         }
 
         res.json({
             success: true,
-            message: "Xóa cửa thành công"
+            message: "XÃ³a cá»­a thÃ nh cÃ´ng"
         });
     } catch (err) {
         console.error(err);
         res.status(500).json({
             success: false,
-            message: "Lỗi khi xóa cửa"
+            message: "Lá»—i khi xÃ³a cá»­a"
         });
     }
 };
 
-// GET project logs (legacy - chỉ từ bảng project_logs)
+// GET project logs (legacy - chá»‰ tá»« báº£ng project_logs)
 exports.getProjectLogs = async (req, res) => {
     try {
         const { id } = req.params;
@@ -1917,18 +1917,18 @@ exports.getProjectLogs = async (req, res) => {
         console.error(err);
         res.status(500).json({
             success: false,
-            message: "Lỗi server"
+            message: "Lá»—i server"
         });
     }
 };
 
-// GET project logs full - Thu thập tất cả sự kiện từ các bảng liên quan
+// GET project logs full - Thu tháº­p táº¥t cáº£ sá»± kiá»‡n tá»« cÃ¡c báº£ng liÃªn quan
 exports.getProjectLogsFull = async (req, res) => {
     try {
         const { id } = req.params;
         const allLogs = [];
 
-        // 1. Lấy thông tin dự án (created_at, start_date, deadline, status changes)
+        // 1. Láº¥y thÃ´ng tin dá»± Ã¡n (created_at, start_date, deadline, status changes)
         const [projectRows] = await db.query(
             `SELECT created_at, start_date, deadline, status, updated_at
              FROM projects WHERE id = ?`,
@@ -1940,11 +1940,11 @@ exports.getProjectLogsFull = async (req, res) => {
                 allLogs.push({
                     event_type: 'project_created',
                     timestamp: project.created_at,
-                    description: 'Dự án được tạo',
+                    description: 'Dá»± Ã¡n Ä‘Æ°á»£c táº¡o',
                     details: {
-                        'ID dự án': id,
-                        'Ngày tạo': new Date(project.created_at).toLocaleDateString('vi-VN'),
-                        'Trạng thái ban đầu': project.status || 'N/A'
+                        'ID dá»± Ã¡n': id,
+                        'NgÃ y táº¡o': new Date(project.created_at).toLocaleDateString('vi-VN'),
+                        'Tráº¡ng thÃ¡i ban Ä‘áº§u': project.status || 'N/A'
                     }
                 });
             }
@@ -1956,16 +1956,16 @@ exports.getProjectLogsFull = async (req, res) => {
                 allLogs.push({
                     event_type: 'project_started',
                     timestamp: timestamp,
-                    description: 'Dự án bắt đầu thực hiện',
+                    description: 'Dá»± Ã¡n báº¯t Ä‘áº§u thá»±c hiá»‡n',
                     details: {
-                        'Ngày bắt đầu': new Date(project.start_date).toLocaleDateString('vi-VN'),
-                        'Hạn hoàn thành dự kiến': project.deadline ? new Date(project.deadline).toLocaleDateString('vi-VN') : 'Chưa có'
+                        'NgÃ y báº¯t Ä‘áº§u': new Date(project.start_date).toLocaleDateString('vi-VN'),
+                        'Háº¡n hoÃ n thÃ nh dá»± kiáº¿n': project.deadline ? new Date(project.deadline).toLocaleDateString('vi-VN') : 'ChÆ°a cÃ³'
                     }
                 });
             }
         }
 
-        // 2. Lấy báo giá (quotations)
+        // 2. Láº¥y bÃ¡o giÃ¡ (quotations)
         try {
             const [quotations] = await db.query(
                 `SELECT id, quotation_code, created_at, updated_at, status
@@ -1977,28 +1977,28 @@ exports.getProjectLogsFull = async (req, res) => {
                     allLogs.push({
                         event_type: 'quotation_created',
                         timestamp: q.created_at,
-                        description: `Tạo báo giá ${q.quotation_code || ''}`,
+                        description: `Táº¡o bÃ¡o giÃ¡ ${q.quotation_code || ''}`,
                         details: {
                             quotation_code: q.quotation_code,
                             status: q.status,
-                            'Mã báo giá': q.quotation_code || 'N/A',
-                            'Trạng thái': q.status === 'approved' ? 'Đã duyệt' :
-                                q.status === 'pending' ? 'Chờ duyệt' :
-                                    q.status === 'rejected' ? 'Đã từ chối' :
-                                        q.status === 'expired' ? 'Hết hạn' : q.status
+                            'MÃ£ bÃ¡o giÃ¡': q.quotation_code || 'N/A',
+                            'Tráº¡ng thÃ¡i': q.status === 'approved' ? 'ÄÃ£ duyá»‡t' :
+                                q.status === 'pending' ? 'Chá» duyá»‡t' :
+                                    q.status === 'rejected' ? 'ÄÃ£ tá»« chá»‘i' :
+                                        q.status === 'expired' ? 'Háº¿t háº¡n' : q.status
                         }
                     });
                 }
-                // Nếu status = 'approved', dùng updated_at làm ngày duyệt
+                // Náº¿u status = 'approved', dÃ¹ng updated_at lÃ m ngÃ y duyá»‡t
                 if (q.status === 'approved' && q.updated_at) {
                     allLogs.push({
                         event_type: 'quotation_approved',
                         timestamp: q.updated_at,
-                        description: `Duyệt báo giá ${q.quotation_code || ''}`,
+                        description: `Duyá»‡t bÃ¡o giÃ¡ ${q.quotation_code || ''}`,
                         details: {
                             quotation_code: q.quotation_code,
-                            'Mã báo giá': q.quotation_code || 'N/A',
-                            'Ngày duyệt': new Date(q.updated_at).toLocaleDateString('vi-VN')
+                            'MÃ£ bÃ¡o giÃ¡': q.quotation_code || 'N/A',
+                            'NgÃ y duyá»‡t': new Date(q.updated_at).toLocaleDateString('vi-VN')
                         }
                     });
                 }
@@ -2007,7 +2007,7 @@ exports.getProjectLogsFull = async (req, res) => {
             console.log('Error getting quotations:', e.message);
         }
 
-        // 3. Lấy thiết kế (door_designs, door_drawings)
+        // 3. Láº¥y thiáº¿t káº¿ (door_designs, door_drawings)
         try {
             const [designs] = await db.query(
                 `SELECT id, design_code, created_at, updated_at
@@ -2019,16 +2019,16 @@ exports.getProjectLogsFull = async (req, res) => {
                     allLogs.push({
                         event_type: 'design_created',
                         timestamp: d.created_at,
-                        description: `Tạo thiết kế ${d.design_code || ''}`,
+                        description: `Táº¡o thiáº¿t káº¿ ${d.design_code || ''}`,
                         details: {
-                            'Mã thiết kế': d.design_code || 'N/A',
-                            'Ngày tạo': new Date(d.created_at).toLocaleDateString('vi-VN')
+                            'MÃ£ thiáº¿t káº¿': d.design_code || 'N/A',
+                            'NgÃ y táº¡o': new Date(d.created_at).toLocaleDateString('vi-VN')
                         }
                     });
                 }
             });
 
-            // Lấy bản vẽ (door_drawings)
+            // Láº¥y báº£n váº½ (door_drawings)
             const [drawings] = await db.query(
                 `SELECT id, created_at, door_design_id
                  FROM door_drawings 
@@ -2041,10 +2041,10 @@ exports.getProjectLogsFull = async (req, res) => {
                     allLogs.push({
                         event_type: 'design_completed',
                         timestamp: dr.created_at,
-                        description: 'Hoàn thành bản vẽ thiết kế',
+                        description: 'HoÃ n thÃ nh báº£n váº½ thiáº¿t káº¿',
                         details: {
-                            'ID bản vẽ': dr.id,
-                            'Ngày hoàn thành': new Date(dr.created_at).toLocaleDateString('vi-VN')
+                            'ID báº£n váº½': dr.id,
+                            'NgÃ y hoÃ n thÃ nh': new Date(dr.created_at).toLocaleDateString('vi-VN')
                         }
                     });
                 }
@@ -2053,7 +2053,7 @@ exports.getProjectLogsFull = async (req, res) => {
             console.log('Error getting designs:', e.message);
         }
 
-        // 4. Lấy BOM (bom_items, project_items với status BOM_EXTRACTED)
+        // 4. Láº¥y BOM (bom_items, project_items vá»›i status BOM_EXTRACTED)
         try {
             const [bomItems] = await db.query(
                 `SELECT MIN(created_at) as bom_date
@@ -2065,15 +2065,15 @@ exports.getProjectLogsFull = async (req, res) => {
                 allLogs.push({
                     event_type: 'bom_extracted',
                     timestamp: bomItems[0].bom_date,
-                    description: 'Bóc tách vật tư (BOM)',
+                    description: 'BÃ³c tÃ¡ch váº­t tÆ° (BOM)',
                     details: {
-                        'Ngày bóc tách': new Date(bomItems[0].bom_date).toLocaleDateString('vi-VN'),
-                        'Mô tả': 'Đã tính toán và lập danh sách vật tư cần thiết'
+                        'NgÃ y bÃ³c tÃ¡ch': new Date(bomItems[0].bom_date).toLocaleDateString('vi-VN'),
+                        'MÃ´ táº£': 'ÄÃ£ tÃ­nh toÃ¡n vÃ  láº­p danh sÃ¡ch váº­t tÆ° cáº§n thiáº¿t'
                     }
                 });
             }
 
-            // Từ project_items
+            // Tá»« project_items
             const [projectItems] = await db.query(
                 `SELECT MIN(updated_at) as bom_date
                  FROM project_items 
@@ -2084,15 +2084,15 @@ exports.getProjectLogsFull = async (req, res) => {
                 allLogs.push({
                     event_type: 'bom_extracted',
                     timestamp: projectItems[0].bom_date,
-                    description: 'Bóc tách vật tư từ project items',
+                    description: 'BÃ³c tÃ¡ch váº­t tÆ° tá»« project items',
                     details: {
-                        'Ngày bóc tách': new Date(projectItems[0].bom_date).toLocaleDateString('vi-VN'),
-                        'Mô tả': 'Đã tính toán và lập danh sách vật tư từ project items'
+                        'NgÃ y bÃ³c tÃ¡ch': new Date(projectItems[0].bom_date).toLocaleDateString('vi-VN'),
+                        'MÃ´ táº£': 'ÄÃ£ tÃ­nh toÃ¡n vÃ  láº­p danh sÃ¡ch váº­t tÆ° tá»« project items'
                     }
                 });
             }
 
-            // Từ door_bom_lines (fallback)
+            // Tá»« door_bom_lines (fallback)
             try {
                 const [bomLines] = await db.query(
                     `SELECT MIN(created_at) as bom_date
@@ -2110,10 +2110,10 @@ exports.getProjectLogsFull = async (req, res) => {
                         allLogs.push({
                             event_type: 'bom_extracted',
                             timestamp: bomLines[0].bom_date,
-                            description: 'Bóc tách vật tư (từ bản vẽ)',
+                            description: 'BÃ³c tÃ¡ch váº­t tÆ° (tá»« báº£n váº½)',
                             details: {
-                                'Ngày bóc tách': new Date(bomLines[0].bom_date).toLocaleDateString('vi-VN'),
-                                'Mô tả': 'Đã tính toán vật tư từ bản vẽ kỹ thuật'
+                                'NgÃ y bÃ³c tÃ¡ch': new Date(bomLines[0].bom_date).toLocaleDateString('vi-VN'),
+                                'MÃ´ táº£': 'ÄÃ£ tÃ­nh toÃ¡n váº­t tÆ° tá»« báº£n váº½ ká»¹ thuáº­t'
                             }
                         });
                     }
@@ -2125,7 +2125,7 @@ exports.getProjectLogsFull = async (req, res) => {
             console.log('Error getting BOM:', e.message);
         }
 
-        // 5. Lấy sản xuất (production_orders)
+        // 5. Láº¥y sáº£n xuáº¥t (production_orders)
         try {
             const [orders] = await db.query(
                 `SELECT id, order_code, created_at, order_date, actual_start_date, actual_completion_date, status
@@ -2137,13 +2137,13 @@ exports.getProjectLogsFull = async (req, res) => {
                     allLogs.push({
                         event_type: 'production_ordered',
                         timestamp: order.created_at,
-                        description: `Tạo lệnh sản xuất ${order.order_code || ''}`,
+                        description: `Táº¡o lá»‡nh sáº£n xuáº¥t ${order.order_code || ''}`,
                         details: {
-                            'Mã lệnh sản xuất': order.order_code || 'N/A',
-                            'Trạng thái': order.status === 'completed' ? 'Hoàn thành' :
-                                order.status === 'pending' ? 'Chờ xử lý' :
+                            'MÃ£ lá»‡nh sáº£n xuáº¥t': order.order_code || 'N/A',
+                            'Tráº¡ng thÃ¡i': order.status === 'completed' ? 'HoÃ n thÃ nh' :
+                                order.status === 'pending' ? 'Chá» xá»­ lÃ½' :
                                     order.status || 'N/A',
-                            'Ngày tạo': new Date(order.created_at).toLocaleDateString('vi-VN')
+                            'NgÃ y táº¡o': new Date(order.created_at).toLocaleDateString('vi-VN')
                         }
                     });
                 }
@@ -2155,10 +2155,10 @@ exports.getProjectLogsFull = async (req, res) => {
                     allLogs.push({
                         event_type: 'production_started',
                         timestamp: timestamp,
-                        description: `Bắt đầu sản xuất ${order.order_code || ''}`,
+                        description: `Báº¯t Ä‘áº§u sáº£n xuáº¥t ${order.order_code || ''}`,
                         details: {
-                            'Mã lệnh sản xuất': order.order_code || 'N/A',
-                            'Ngày bắt đầu': new Date(order.actual_start_date).toLocaleDateString('vi-VN')
+                            'MÃ£ lá»‡nh sáº£n xuáº¥t': order.order_code || 'N/A',
+                            'NgÃ y báº¯t Ä‘áº§u': new Date(order.actual_start_date).toLocaleDateString('vi-VN')
                         }
                     });
                 }
@@ -2170,10 +2170,10 @@ exports.getProjectLogsFull = async (req, res) => {
                     allLogs.push({
                         event_type: 'production_completed',
                         timestamp: timestamp,
-                        description: `Hoàn thành sản xuất ${order.order_code || ''}`,
+                        description: `HoÃ n thÃ nh sáº£n xuáº¥t ${order.order_code || ''}`,
                         details: {
-                            'Mã lệnh sản xuất': order.order_code || 'N/A',
-                            'Ngày hoàn thành': new Date(order.actual_completion_date).toLocaleDateString('vi-VN')
+                            'MÃ£ lá»‡nh sáº£n xuáº¥t': order.order_code || 'N/A',
+                            'NgÃ y hoÃ n thÃ nh': new Date(order.actual_completion_date).toLocaleDateString('vi-VN')
                         }
                     });
                 }
@@ -2182,7 +2182,7 @@ exports.getProjectLogsFull = async (req, res) => {
             console.log('Error getting production orders:', e.message);
         }
 
-        // 6. Lấy lắp đặt (installation_progress)
+        // 6. Láº¥y láº¯p Ä‘áº·t (installation_progress)
         try {
             const [installations] = await db.query(
                 `SELECT id, created_at, installation_date, status, installer_name, notes
@@ -2194,19 +2194,19 @@ exports.getProjectLogsFull = async (req, res) => {
                     allLogs.push({
                         event_type: 'installation_started',
                         timestamp: inst.created_at,
-                        description: 'Bắt đầu lắp đặt',
+                        description: 'Báº¯t Ä‘áº§u láº¯p Ä‘áº·t',
                         details: {
-                            'Người lắp đặt': inst.installer_name || 'Chưa xác định',
-                            'Trạng thái': inst.status === 'completed' ? 'Hoàn thành' :
-                                inst.status === 'in_progress' ? 'Đang thực hiện' :
-                                    inst.status === 'pending' ? 'Chờ xử lý' : inst.status || 'N/A'
+                            'NgÆ°á»i láº¯p Ä‘áº·t': inst.installer_name || 'ChÆ°a xÃ¡c Ä‘á»‹nh',
+                            'Tráº¡ng thÃ¡i': inst.status === 'completed' ? 'HoÃ n thÃ nh' :
+                                inst.status === 'in_progress' ? 'Äang thá»±c hiá»‡n' :
+                                    inst.status === 'pending' ? 'Chá» xá»­ lÃ½' : inst.status || 'N/A'
                         },
                         user_name: inst.installer_name,
                         notes: inst.notes
                     });
                 }
                 if (inst.installation_date) {
-                    // Đảm bảo timestamp hợp lệ
+                    // Äáº£m báº£o timestamp há»£p lá»‡
                     let timestamp = inst.installation_date;
                     if (typeof timestamp === 'string' && !timestamp.includes(' ')) {
                         timestamp = timestamp + ' 00:00:00';
@@ -2214,10 +2214,10 @@ exports.getProjectLogsFull = async (req, res) => {
                     allLogs.push({
                         event_type: 'installation_completed',
                         timestamp: timestamp,
-                        description: 'Hoàn thành lắp đặt',
+                        description: 'HoÃ n thÃ nh láº¯p Ä‘áº·t',
                         details: {
-                            'Người lắp đặt': inst.installer_name || 'Chưa xác định',
-                            'Ngày lắp đặt': new Date(inst.installation_date).toLocaleDateString('vi-VN')
+                            'NgÆ°á»i láº¯p Ä‘áº·t': inst.installer_name || 'ChÆ°a xÃ¡c Ä‘á»‹nh',
+                            'NgÃ y láº¯p Ä‘áº·t': new Date(inst.installation_date).toLocaleDateString('vi-VN')
                         },
                         user_name: inst.installer_name,
                         notes: inst.notes
@@ -2228,14 +2228,14 @@ exports.getProjectLogsFull = async (req, res) => {
             console.log('Error getting installations:', e.message);
         }
 
-        // 7. Lấy bàn giao (projects.handover_date)
+        // 7. Láº¥y bÃ n giao (projects.handover_date)
         try {
             const [handoverRows] = await db.query(
                 `SELECT handover_date, handover_notes FROM projects WHERE id = ? AND handover_date IS NOT NULL`,
                 [id]
             );
             if (handoverRows.length > 0 && handoverRows[0].handover_date) {
-                // Đảm bảo timestamp hợp lệ
+                // Äáº£m báº£o timestamp há»£p lá»‡
                 let timestamp = handoverRows[0].handover_date;
                 if (typeof timestamp === 'string' && !timestamp.includes(' ')) {
                     timestamp = timestamp + ' 00:00:00';
@@ -2243,10 +2243,10 @@ exports.getProjectLogsFull = async (req, res) => {
                 allLogs.push({
                     event_type: 'handover',
                     timestamp: timestamp,
-                    description: 'Bàn giao dự án cho khách hàng',
+                    description: 'BÃ n giao dá»± Ã¡n cho khÃ¡ch hÃ ng',
                     details: {
-                        'Ngày bàn giao': new Date(handoverRows[0].handover_date).toLocaleDateString('vi-VN'),
-                        'Ghi chú': handoverRows[0].handover_notes || 'Không có ghi chú'
+                        'NgÃ y bÃ n giao': new Date(handoverRows[0].handover_date).toLocaleDateString('vi-VN'),
+                        'Ghi chÃº': handoverRows[0].handover_notes || 'KhÃ´ng cÃ³ ghi chÃº'
                     },
                     notes: handoverRows[0].handover_notes
                 });
@@ -2255,7 +2255,7 @@ exports.getProjectLogsFull = async (req, res) => {
             console.log('Error getting handover:', e.message);
         }
 
-        // 8. Lấy project_logs (nếu có)
+        // 8. Láº¥y project_logs (náº¿u cÃ³)
         try {
             const [projectLogs] = await db.query(
                 `SELECT pl.*, u.full_name AS created_by_name
@@ -2269,7 +2269,7 @@ exports.getProjectLogsFull = async (req, res) => {
                 allLogs.push({
                     event_type: log.log_type || 'other',
                     timestamp: log.created_at,
-                    description: log.title || log.content || 'Ghi chú',
+                    description: log.title || log.content || 'Ghi chÃº',
                     content: log.content,
                     user_name: log.created_by_name
                 });
@@ -2278,13 +2278,13 @@ exports.getProjectLogsFull = async (req, res) => {
             console.log('Error getting project_logs:', e.message);
         }
 
-        // 9. Kiểm tra trạng thái completed
+        // 9. Kiá»ƒm tra tráº¡ng thÃ¡i completed
         const [projectStatus] = await db.query(
             `SELECT status, updated_at FROM projects WHERE id = ?`,
             [id]
         );
         if (projectStatus.length > 0 && projectStatus[0].status === 'completed') {
-            // Tìm ngày hoàn thành gần nhất từ handover hoặc updated_at
+            // TÃ¬m ngÃ y hoÃ n thÃ nh gáº§n nháº¥t tá»« handover hoáº·c updated_at
             const completedLogs = allLogs.filter(l => l.event_type === 'handover' || l.event_type === 'installation_completed');
             let completionTimestamp = projectStatus[0].updated_at;
 
@@ -2301,32 +2301,32 @@ exports.getProjectLogsFull = async (req, res) => {
                 }
             }
 
-            // Đảm bảo timestamp hợp lệ
+            // Äáº£m báº£o timestamp há»£p lá»‡
             if (completionTimestamp) {
                 allLogs.push({
                     event_type: 'project_completed',
                     timestamp: completionTimestamp,
-                    description: 'Dự án hoàn thành',
+                    description: 'Dá»± Ã¡n hoÃ n thÃ nh',
                     details: {
-                        'Trạng thái': 'Hoàn thành',
-                        'Ngày hoàn thành': new Date(completionTimestamp).toLocaleDateString('vi-VN')
+                        'Tráº¡ng thÃ¡i': 'HoÃ n thÃ nh',
+                        'NgÃ y hoÃ n thÃ nh': new Date(completionTimestamp).toLocaleDateString('vi-VN')
                     }
                 });
             }
         }
 
-        // Sắp xếp theo thời gian (cũ nhất trước) và validate timestamp
+        // Sáº¯p xáº¿p theo thá»i gian (cÅ© nháº¥t trÆ°á»›c) vÃ  validate timestamp
         allLogs.forEach(log => {
-            // Đảm bảo timestamp là string hợp lệ
+            // Äáº£m báº£o timestamp lÃ  string há»£p lá»‡
             if (log.timestamp) {
                 try {
                     const date = new Date(log.timestamp);
                     if (isNaN(date.getTime())) {
-                        // Nếu timestamp không hợp lệ, thử format lại
+                        // Náº¿u timestamp khÃ´ng há»£p lá»‡, thá»­ format láº¡i
                         console.warn('Invalid timestamp:', log.timestamp, 'for event:', log.event_type);
                         log.timestamp = new Date().toISOString(); // Fallback to now
                     } else {
-                        // Format lại timestamp thành ISO string để đảm bảo consistency
+                        // Format láº¡i timestamp thÃ nh ISO string Ä‘á»ƒ Ä‘áº£m báº£o consistency
                         log.timestamp = date.toISOString();
                     }
                 } catch (e) {
@@ -2356,7 +2356,7 @@ exports.getProjectLogsFull = async (req, res) => {
             handover_date: null
         };
 
-        // Lấy thông tin chi tiết cho timeline
+        // Láº¥y thÃ´ng tin chi tiáº¿t cho timeline
         try {
             const [projectInfo] = await db.query(`
                 SELECT p.*, c.full_name as customer_name, c.phone as customer_phone,
@@ -2372,27 +2372,27 @@ exports.getProjectLogsFull = async (req, res) => {
                 timeline.start_date = proj.created_at || proj.start_date;
                 timeline.deadline = proj.deadline;
 
-                // Tìm ngày báo giá
+                // TÃ¬m ngÃ y bÃ¡o giÃ¡
                 const quotationLog = allLogs.find(l => l.event_type === 'quotation_created');
                 timeline.quotation_date = quotationLog ? quotationLog.timestamp : null;
 
-                // Tìm ngày thiết kế (ưu tiên created, fallback completed)
+                // TÃ¬m ngÃ y thiáº¿t káº¿ (Æ°u tiÃªn created, fallback completed)
                 const designLog = allLogs.find(l => l.event_type === 'design_created') || allLogs.find(l => l.event_type === 'design_completed');
                 timeline.design_date = designLog ? designLog.timestamp : null;
 
-                // Tìm ngày bóc tách
+                // TÃ¬m ngÃ y bÃ³c tÃ¡ch
                 const bomLog = allLogs.find(l => l.event_type === 'bom_extracted');
                 timeline.bom_date = bomLog ? bomLog.timestamp : proj.production_started_at;
 
-                // Tìm ngày sản xuất (ưu tiên started, fallback ordered)
+                // TÃ¬m ngÃ y sáº£n xuáº¥t (Æ°u tiÃªn started, fallback ordered)
                 const prodLog = allLogs.find(l => l.event_type === 'production_started') || allLogs.find(l => l.event_type === 'production_ordered');
                 timeline.production_date = prodLog ? prodLog.timestamp : proj.production_started_at;
 
-                // Tìm ngày lắp đặt (ưu tiên started, fallback completed hoặc moved_to_installation)
+                // TÃ¬m ngÃ y láº¯p Ä‘áº·t (Æ°u tiÃªn started, fallback completed hoáº·c moved_to_installation)
                 const installLog = allLogs.find(l => l.event_type === 'installation_started') || allLogs.find(l => l.event_type === 'installation_completed');
                 timeline.installation_date = installLog ? installLog.timestamp : proj.moved_to_installation_at;
 
-                // Tìm ngày bàn giao
+                // TÃ¬m ngÃ y bÃ n giao
                 const handoverLog = allLogs.find(l => l.event_type === 'handover');
                 timeline.handover_date = handoverLog ? handoverLog.timestamp : proj.handover_date;
             }
@@ -2416,7 +2416,7 @@ exports.getProjectLogsFull = async (req, res) => {
             if (projectDetail.length > 0) {
                 const proj = projectDetail[0];
 
-                // Lấy sản phẩm đặc trưng từ quotation_items
+                // Láº¥y sáº£n pháº©m Ä‘áº·c trÆ°ng tá»« quotation_items
                 let featuredProducts = '';
                 try {
                     const [quotationItems] = await db.query(`
@@ -2429,7 +2429,7 @@ exports.getProjectLogsFull = async (req, res) => {
                     featuredProducts = quotationItems.map(item => item.item_name || item.spec).filter(Boolean).join(', ');
                 } catch (e) { }
 
-                // Lấy khối lượng từ order_material_status hoặc tính toán
+                // Láº¥y khá»‘i lÆ°á»£ng tá»« order_material_status hoáº·c tÃ­nh toÃ¡n
                 let weightKg = proj.manual_weight || 0;
                 if (!weightKg) {
                     try {
@@ -2443,8 +2443,8 @@ exports.getProjectLogsFull = async (req, res) => {
                     } catch (e) { }
                 }
 
-                // Lấy tình trạng vật tư
-                let materialStatus = { nhom: 'Chưa có', kinh: 'Chưa có', phukien: 'Chưa có', vattu: 'Chưa có' };
+                // Láº¥y tÃ¬nh tráº¡ng váº­t tÆ°
+                let materialStatus = { nhom: 'ChÆ°a cÃ³', kinh: 'ChÆ°a cÃ³', phukien: 'ChÆ°a cÃ³', vattu: 'ChÆ°a cÃ³' };
                 try {
                     const [matStatus] = await db.query(`
                         SELECT material_group, status
@@ -2454,9 +2454,9 @@ exports.getProjectLogsFull = async (req, res) => {
                     `, [id]);
                     matStatus.forEach(m => {
                         const group = m.material_group?.toLowerCase();
-                        const statusText = m.status === 'exported' ? 'Đã xuất' :
-                            m.status === 'pending' ? 'Chờ xuất' :
-                                m.status === 'partial' ? 'Xuất 1 phần' : 'Chưa có';
+                        const statusText = m.status === 'exported' ? 'ÄÃ£ xuáº¥t' :
+                            m.status === 'pending' ? 'Chá» xuáº¥t' :
+                                m.status === 'partial' ? 'Xuáº¥t 1 pháº§n' : 'ChÆ°a cÃ³';
                         if (group === 'nhom' || group === 'aluminum') materialStatus.nhom = statusText;
                         else if (group === 'kinh' || group === 'glass') materialStatus.kinh = statusText;
                         else if (group === 'phukien' || group === 'accessory') materialStatus.phukien = statusText;
@@ -2494,20 +2494,20 @@ exports.getProjectLogsFull = async (req, res) => {
         console.error('Error getting project logs full:', err);
         res.status(500).json({
             success: false,
-            message: "Lỗi server: " + err.message
+            message: "Lá»—i server: " + err.message
         });
     }
 };
 
 /**
- * Helper function: Cập nhật giá trị công trình (total_value) 
- * Giá trị = Tổng giá trị từ báo giá (quotation)
+ * Helper function: Cáº­p nháº­t giÃ¡ trá»‹ cÃ´ng trÃ¬nh (total_value) 
+ * GiÃ¡ trá»‹ = Tá»•ng giÃ¡ trá»‹ tá»« bÃ¡o giÃ¡ (quotation)
  */
 exports.updateProjectTotalValue = async function (projectId) {
     try {
         let totalValue = 0;
 
-        // Lấy quotation của project (nếu có) - ưu tiên báo giá mới nhất
+        // Láº¥y quotation cá»§a project (náº¿u cÃ³) - Æ°u tiÃªn bÃ¡o giÃ¡ má»›i nháº¥t
         const [quotationRows] = await db.query(
             `SELECT id, total_amount, subtotal
              FROM quotations 
@@ -2517,11 +2517,11 @@ exports.updateProjectTotalValue = async function (projectId) {
             [projectId]
         );
 
-        // Tính tổng giá trị từ quotation_items (bảng giá) nếu có
+        // TÃ­nh tá»•ng giÃ¡ trá»‹ tá»« quotation_items (báº£ng giÃ¡) náº¿u cÃ³
         if (quotationRows.length > 0) {
             const quotation = quotationRows[0];
 
-            // Lấy tổng từ quotation_items
+            // Láº¥y tá»•ng tá»« quotation_items
             const [quotationItems] = await db.query(
                 `SELECT SUM(total_price) as total 
                  FROM quotation_items 
@@ -2530,21 +2530,21 @@ exports.updateProjectTotalValue = async function (projectId) {
             );
 
             if (quotationItems[0] && quotationItems[0].total !== null && quotationItems[0].total > 0) {
-                // Dùng tổng từ quotation_items
+                // DÃ¹ng tá»•ng tá»« quotation_items
                 totalValue = parseFloat(quotationItems[0].total) || 0;
                 console.log(`Project ${projectId} total value from quotation_items: ${totalValue}`);
             } else if (quotation.total_amount && quotation.total_amount > 0) {
-                // Fallback: dùng total_amount
+                // Fallback: dÃ¹ng total_amount
                 totalValue = parseFloat(quotation.total_amount) || 0;
                 console.log(`Project ${projectId} total value from quotation total_amount: ${totalValue}`);
             } else if (quotation.subtotal && quotation.subtotal > 0) {
-                // Fallback: dùng subtotal
+                // Fallback: dÃ¹ng subtotal
                 totalValue = parseFloat(quotation.subtotal) || 0;
                 console.log(`Project ${projectId} total value from quotation subtotal: ${totalValue}`);
             }
         }
 
-        // Cập nhật total_value của project
+        // Cáº­p nháº­t total_value cá»§a project
         await db.query(
             `UPDATE projects 
              SET total_value = ? 
@@ -2562,25 +2562,25 @@ exports.updateProjectTotalValue = async function (projectId) {
 }
 
 /**
- * Tự động import door_designs từ báo giá của dự án
+ * Tá»± Ä‘á»™ng import door_designs tá»« bÃ¡o giÃ¡ cá»§a dá»± Ã¡n
  * POST /api/projects/:id/auto-import-from-quotation
- * Khi chọn dự án, nếu chưa có door_designs, tự động tạo từ quotation_items
+ * Khi chá»n dá»± Ã¡n, náº¿u chÆ°a cÃ³ door_designs, tá»± Ä‘á»™ng táº¡o tá»« quotation_items
  */
 exports.autoImportFromQuotation = async (req, res) => {
     try {
         const projectId = req.params.id;
 
-        // 1. Kiểm tra xem project đã có door_designs chưa
+        // 1. Kiá»ƒm tra xem project Ä‘Ã£ cÃ³ door_designs chÆ°a
         const [existingDesigns] = await db.query(
             `SELECT COUNT(*) as count FROM door_designs WHERE project_id = ?`,
             [projectId]
         );
 
         if (existingDesigns[0].count > 0) {
-            // Đã có door_designs, không cần import
+            // ÄÃ£ cÃ³ door_designs, khÃ´ng cáº§n import
             return res.json({
                 success: true,
-                message: `Dự án đã có ${existingDesigns[0].count} hạng mục thiết kế`,
+                message: `Dá»± Ã¡n Ä‘Ã£ cÃ³ ${existingDesigns[0].count} háº¡ng má»¥c thiáº¿t káº¿`,
                 data: {
                     already_imported: true,
                     count: existingDesigns[0].count
@@ -2588,7 +2588,7 @@ exports.autoImportFromQuotation = async (req, res) => {
             });
         }
 
-        // 2. Lấy báo giá của dự án (ưu tiên báo giá approved, sau đó mới nhất)
+        // 2. Láº¥y bÃ¡o giÃ¡ cá»§a dá»± Ã¡n (Æ°u tiÃªn bÃ¡o giÃ¡ approved, sau Ä‘Ã³ má»›i nháº¥t)
         const [quotations] = await db.query(
             `SELECT id, quotation_code, status, total_amount, created_at
              FROM quotations 
@@ -2603,14 +2603,14 @@ exports.autoImportFromQuotation = async (req, res) => {
         if (quotations.length === 0) {
             return res.json({
                 success: true,
-                message: "Dự án chưa có báo giá. Vui lòng tạo báo giá trước.",
+                message: "Dá»± Ã¡n chÆ°a cÃ³ bÃ¡o giÃ¡. Vui lÃ²ng táº¡o bÃ¡o giÃ¡ trÆ°á»›c.",
                 data: { no_quotation: true }
             });
         }
 
         const quotation = quotations[0];
 
-        // 3. Lấy quotation_items
+        // 3. Láº¥y quotation_items
         const [quotationItems] = await db.query(
             `SELECT * FROM quotation_items WHERE quotation_id = ?`,
             [quotation.id]
@@ -2619,54 +2619,54 @@ exports.autoImportFromQuotation = async (req, res) => {
         if (quotationItems.length === 0) {
             return res.json({
                 success: true,
-                message: "Báo giá không có sản phẩm nào",
+                message: "BÃ¡o giÃ¡ khÃ´ng cÃ³ sáº£n pháº©m nÃ o",
                 data: { no_items: true }
             });
         }
 
-        // 4. Lấy project_code
+        // 4. Láº¥y project_code
         const [projectRows] = await db.query(
             `SELECT project_code FROM projects WHERE id = ?`,
             [projectId]
         );
         const projectCode = projectRows[0]?.project_code || `CT2025-${projectId}`;
 
-        // 5. Tạo door_designs từ quotation_items
+        // 5. Táº¡o door_designs tá»« quotation_items
         let createdCount = 0;
 
         for (const item of quotationItems) {
-            // Parse kích thước từ item_name (ví dụ: "Cửa đi 1 cánh mở ngoài (1200×2200mm)")
-            const sizeMatch = item.item_name.match(/\((\d+)[×x](\d+)mm?\)/i);
+            // Parse kÃ­ch thÆ°á»›c tá»« item_name (vÃ­ dá»¥: "Cá»­a Ä‘i 1 cÃ¡nh má»Ÿ ngoÃ i (1200Ã—2200mm)")
+            const sizeMatch = item.item_name.match(/\((\d+)[Ã—x](\d+)mm?\)/i);
             let width = 1200, height = 2200;
             if (sizeMatch) {
                 width = parseInt(sizeMatch[1]) || 1200;
                 height = parseInt(sizeMatch[2]) || 2200;
             }
 
-            // Xác định loại cửa từ tên
+            // XÃ¡c Ä‘á»‹nh loáº¡i cá»­a tá»« tÃªn
             let doorType = 'swing';
             const itemNameLower = item.item_name.toLowerCase();
-            if (itemNameLower.includes('trượt') || itemNameLower.includes('lùa')) {
+            if (itemNameLower.includes('trÆ°á»£t') || itemNameLower.includes('lÃ¹a')) {
                 doorType = 'sliding';
-            } else if (itemNameLower.includes('fix') || itemNameLower.includes('cố định')) {
+            } else if (itemNameLower.includes('fix') || itemNameLower.includes('cá»‘ Ä‘á»‹nh')) {
                 doorType = 'fixed';
-            } else if (itemNameLower.includes('xếp')) {
+            } else if (itemNameLower.includes('xáº¿p')) {
                 doorType = 'folding';
             }
 
-            // Xác định template_code từ tên
+            // XÃ¡c Ä‘á»‹nh template_code tá»« tÃªn
             let templateCode = 'door_swing';
-            if (itemNameLower.includes('sổ') || itemNameLower.includes('cửa sổ')) {
-                templateCode = itemNameLower.includes('lùa') ? 'window_sliding' : 'window_swing';
-            } else if (itemNameLower.includes('lùa') || itemNameLower.includes('trượt')) {
+            if (itemNameLower.includes('sá»•') || itemNameLower.includes('cá»­a sá»•')) {
+                templateCode = itemNameLower.includes('lÃ¹a') ? 'window_sliding' : 'window_swing';
+            } else if (itemNameLower.includes('lÃ¹a') || itemNameLower.includes('trÆ°á»£t')) {
                 templateCode = 'door_sliding';
-            } else if (itemNameLower.includes('vách') || itemNameLower.includes('kính')) {
+            } else if (itemNameLower.includes('vÃ¡ch') || itemNameLower.includes('kÃ­nh')) {
                 templateCode = 'glass_wall';
-            } else if (itemNameLower.includes('cầu thang') || itemNameLower.includes('tay vịn') || itemNameLower.includes('lan can')) {
+            } else if (itemNameLower.includes('cáº§u thang') || itemNameLower.includes('tay vá»‹n') || itemNameLower.includes('lan can')) {
                 templateCode = 'railing';
             }
 
-            // Tạo số lượng door_designs theo quantity trong báo giá
+            // Táº¡o sá»‘ lÆ°á»£ng door_designs theo quantity trong bÃ¡o giÃ¡
             const quantity = parseInt(item.quantity) || 1;
             for (let q = 0; q < quantity; q++) {
                 const designIndex = createdCount + 1;
@@ -2690,11 +2690,11 @@ exports.autoImportFromQuotation = async (req, res) => {
             }
         }
 
-        console.log(`✅ Auto-imported ${createdCount} door_designs từ báo giá ${quotation.quotation_code} cho project ${projectId}`);
+        console.log(`âœ… Auto-imported ${createdCount} door_designs tá»« bÃ¡o giÃ¡ ${quotation.quotation_code} cho project ${projectId}`);
 
         res.json({
             success: true,
-            message: `Đã tự động import ${createdCount} hạng mục từ báo giá ${quotation.quotation_code || 'BG-' + quotation.id}`,
+            message: `ÄÃ£ tá»± Ä‘á»™ng import ${createdCount} háº¡ng má»¥c tá»« bÃ¡o giÃ¡ ${quotation.quotation_code || 'BG-' + quotation.id}`,
             data: {
                 quotation_id: quotation.id,
                 quotation_code: quotation.quotation_code,
@@ -2706,13 +2706,13 @@ exports.autoImportFromQuotation = async (req, res) => {
         console.error('Error auto-importing from quotation:', err);
         res.status(500).json({
             success: false,
-            message: "Lỗi khi import từ báo giá: " + err.message
+            message: "Lá»—i khi import tá»« bÃ¡o giÃ¡: " + err.message
         });
     }
 };
 
 /**
- * Import door_designs từ một báo giá cụ thể (do user chọn)
+ * Import door_designs tá»« má»™t bÃ¡o giÃ¡ cá»¥ thá»ƒ (do user chá»n)
  * POST /api/projects/:id/doors/from-quotation
  * Body: { quotation_id: number }
  */
@@ -2724,11 +2724,11 @@ exports.importDoorsFromQuotation = async (req, res) => {
         if (!quotation_id) {
             return res.status(400).json({
                 success: false,
-                message: "Vui lòng cung cấp quotation_id"
+                message: "Vui lÃ²ng cung cáº¥p quotation_id"
             });
         }
 
-        // 1. Kiểm tra báo giá tồn tại
+        // 1. Kiá»ƒm tra bÃ¡o giÃ¡ tá»“n táº¡i
         const [quotations] = await db.query(
             `SELECT id, quotation_code, project_id, status FROM quotations WHERE id = ?`,
             [quotation_id]
@@ -2737,21 +2737,21 @@ exports.importDoorsFromQuotation = async (req, res) => {
         if (quotations.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: "Không tìm thấy báo giá"
+                message: "KhÃ´ng tÃ¬m tháº¥y bÃ¡o giÃ¡"
             });
         }
 
         const quotation = quotations[0];
 
-        // Kiểm tra quotation thuộc project này (nếu có project_id)
+        // Kiá»ƒm tra quotation thuá»™c project nÃ y (náº¿u cÃ³ project_id)
         if (quotation.project_id && quotation.project_id != projectId) {
             return res.status(400).json({
                 success: false,
-                message: "Báo giá này không thuộc dự án này"
+                message: "BÃ¡o giÃ¡ nÃ y khÃ´ng thuá»™c dá»± Ã¡n nÃ y"
             });
         }
 
-        // 2. Lấy quotation_items
+        // 2. Láº¥y quotation_items
         const [quotationItems] = await db.query(
             `SELECT * FROM quotation_items WHERE quotation_id = ?`,
             [quotation_id]
@@ -2760,61 +2760,61 @@ exports.importDoorsFromQuotation = async (req, res) => {
         if (quotationItems.length === 0) {
             return res.json({
                 success: true,
-                message: "Báo giá không có sản phẩm nào",
+                message: "BÃ¡o giÃ¡ khÃ´ng cÃ³ sáº£n pháº©m nÃ o",
                 data: { items_created: 0 }
             });
         }
 
-        // 3. Đếm door_designs hiện có để tạo design_code
+        // 3. Äáº¿m door_designs hiá»‡n cÃ³ Ä‘á»ƒ táº¡o design_code
         const [existingDesigns] = await db.query(
             `SELECT COUNT(*) as count FROM door_designs WHERE project_id = ?`,
             [projectId]
         );
         let existingCount = existingDesigns[0].count || 0;
 
-        // 4. Lấy project_code
+        // 4. Láº¥y project_code
         const [projectRows] = await db.query(
             `SELECT project_code FROM projects WHERE id = ?`,
             [projectId]
         );
         const projectCode = projectRows[0]?.project_code || `CT2025-${projectId}`;
 
-        // 5. Tạo door_designs từ quotation_items
+        // 5. Táº¡o door_designs tá»« quotation_items
         let createdCount = 0;
 
         for (const item of quotationItems) {
-            // Parse kích thước từ item_name (ví dụ: "Cửa đi 1 cánh mở ngoài (1200×2200mm)")
-            const sizeMatch = item.item_name.match(/\((\d+)[×x](\d+)mm?\)/i);
+            // Parse kÃ­ch thÆ°á»›c tá»« item_name (vÃ­ dá»¥: "Cá»­a Ä‘i 1 cÃ¡nh má»Ÿ ngoÃ i (1200Ã—2200mm)")
+            const sizeMatch = item.item_name.match(/\((\d+)[Ã—x](\d+)mm?\)/i);
             let width = 1200, height = 2200;
             if (sizeMatch) {
                 width = parseInt(sizeMatch[1]) || 1200;
                 height = parseInt(sizeMatch[2]) || 2200;
             }
 
-            // Xác định loại cửa từ tên
+            // XÃ¡c Ä‘á»‹nh loáº¡i cá»­a tá»« tÃªn
             let doorType = 'swing';
             const itemNameLower = item.item_name.toLowerCase();
-            if (itemNameLower.includes('trượt') || itemNameLower.includes('lùa')) {
+            if (itemNameLower.includes('trÆ°á»£t') || itemNameLower.includes('lÃ¹a')) {
                 doorType = 'sliding';
-            } else if (itemNameLower.includes('fix') || itemNameLower.includes('cố định')) {
+            } else if (itemNameLower.includes('fix') || itemNameLower.includes('cá»‘ Ä‘á»‹nh')) {
                 doorType = 'fixed';
-            } else if (itemNameLower.includes('xếp')) {
+            } else if (itemNameLower.includes('xáº¿p')) {
                 doorType = 'folding';
             }
 
-            // Xác định template_code từ tên
+            // XÃ¡c Ä‘á»‹nh template_code tá»« tÃªn
             let templateCode = 'door_swing';
-            if (itemNameLower.includes('sổ') || itemNameLower.includes('cửa sổ')) {
-                templateCode = itemNameLower.includes('lùa') ? 'window_sliding' : 'window_swing';
-            } else if (itemNameLower.includes('lùa') || itemNameLower.includes('trượt')) {
+            if (itemNameLower.includes('sá»•') || itemNameLower.includes('cá»­a sá»•')) {
+                templateCode = itemNameLower.includes('lÃ¹a') ? 'window_sliding' : 'window_swing';
+            } else if (itemNameLower.includes('lÃ¹a') || itemNameLower.includes('trÆ°á»£t')) {
                 templateCode = 'door_sliding';
-            } else if (itemNameLower.includes('vách') || itemNameLower.includes('kính')) {
+            } else if (itemNameLower.includes('vÃ¡ch') || itemNameLower.includes('kÃ­nh')) {
                 templateCode = 'glass_wall';
-            } else if (itemNameLower.includes('cầu thang') || itemNameLower.includes('tay vịn') || itemNameLower.includes('lan can')) {
+            } else if (itemNameLower.includes('cáº§u thang') || itemNameLower.includes('tay vá»‹n') || itemNameLower.includes('lan can')) {
                 templateCode = 'railing';
             }
 
-            // Tạo số lượng door_designs theo quantity trong báo giá
+            // Táº¡o sá»‘ lÆ°á»£ng door_designs theo quantity trong bÃ¡o giÃ¡
             const quantity = parseInt(item.quantity) || 1;
             for (let q = 0; q < quantity; q++) {
                 existingCount++;
@@ -2838,11 +2838,11 @@ exports.importDoorsFromQuotation = async (req, res) => {
             }
         }
 
-        console.log(`✅ Imported ${createdCount} door_designs từ báo giá ${quotation.quotation_code} cho project ${projectId}`);
+        console.log(`âœ… Imported ${createdCount} door_designs tá»« bÃ¡o giÃ¡ ${quotation.quotation_code} cho project ${projectId}`);
 
         res.json({
             success: true,
-            message: `Đã import ${createdCount} hạng mục từ báo giá`,
+            message: `ÄÃ£ import ${createdCount} háº¡ng má»¥c tá»« bÃ¡o giÃ¡`,
             data: {
                 quotation_id: quotation_id,
                 quotation_code: quotation.quotation_code,
@@ -2854,21 +2854,21 @@ exports.importDoorsFromQuotation = async (req, res) => {
         console.error('Error importing doors from quotation:', err);
         res.status(500).json({
             success: false,
-            message: "Lỗi khi import từ báo giá: " + err.message
+            message: "Lá»—i khi import tá»« bÃ¡o giÃ¡: " + err.message
         });
     }
 };
 
 /**
- * Lấy danh sách sản phẩm từ báo giá để hiển thị ở Bước 2
+ * Láº¥y danh sÃ¡ch sáº£n pháº©m tá»« bÃ¡o giÃ¡ Ä‘á»ƒ hiá»ƒn thá»‹ á»Ÿ BÆ°á»›c 2
  * GET /api/projects/:id/quotation-items-for-design
- * Trả về: quotation_items + trạng thái thiết kế (chưa TK / đã TK / đã bóc tách)
+ * Tráº£ vá»: quotation_items + tráº¡ng thÃ¡i thiáº¿t káº¿ (chÆ°a TK / Ä‘Ã£ TK / Ä‘Ã£ bÃ³c tÃ¡ch)
  */
 exports.getQuotationItemsForDesign = async (req, res) => {
     try {
         const projectId = req.params.id;
 
-        // 1. Lấy báo giá đã approved của project (hoặc mới nhất)
+        // 1. Láº¥y bÃ¡o giÃ¡ Ä‘Ã£ approved cá»§a project (hoáº·c má»›i nháº¥t)
         const [quotations] = await db.query(
             `SELECT id, quotation_code, status, total_amount, created_at
              FROM quotations 
@@ -2883,15 +2883,15 @@ exports.getQuotationItemsForDesign = async (req, res) => {
         if (quotations.length === 0) {
             return res.json({
                 success: true,
-                message: "Dự án chưa có báo giá",
+                message: "Dá»± Ã¡n chÆ°a cÃ³ bÃ¡o giÃ¡",
                 data: { items: [], quotation: null }
             });
         }
 
         const quotation = quotations[0];
 
-        // 2. Lấy quotation_items - columns thực tế trong DB
-        // LƯU Ý: Đọc đúng các cột color, aluminum_system, location từ DB
+        // 2. Láº¥y quotation_items - columns thá»±c táº¿ trong DB
+        // LÆ¯U Ã: Äá»c Ä‘Ãºng cÃ¡c cá»™t color, aluminum_system, location tá»« DB
         const [quotationItems] = await db.query(
             `SELECT 
                 qi.id,
@@ -2919,7 +2919,7 @@ exports.getQuotationItemsForDesign = async (req, res) => {
             [quotation.id]
         );
 
-        // 3. Lấy project_items đã tạo từ quotation_items này
+        // 3. Láº¥y project_items Ä‘Ã£ táº¡o tá»« quotation_items nÃ y
         const [projectItems] = await db.query(
             `SELECT 
                 id, 
@@ -2930,37 +2930,37 @@ exports.getQuotationItemsForDesign = async (req, res) => {
             [projectId, quotation.id]
         );
 
-        // Map để tra cứu nhanh
+        // Map Ä‘á»ƒ tra cá»©u nhanh
         const projectItemMap = {};
         projectItems.forEach(pi => {
             projectItemMap[pi.source_quotation_item_id] = pi;
         });
 
-        // 4. Gắn thêm thông tin thiết kế vào quotation_items
+        // 4. Gáº¯n thÃªm thÃ´ng tin thiáº¿t káº¿ vÃ o quotation_items
         const itemsWithDesignStatus = quotationItems.map(qi => {
             const pi = projectItemMap[qi.id];
 
-            // Parse kích thước từ item_name nếu không có trong columns
+            // Parse kÃ­ch thÆ°á»›c tá»« item_name náº¿u khÃ´ng cÃ³ trong columns
             let width = qi.width;
             let height = qi.height;
             if (!width || !height) {
-                const sizeMatch = (qi.item_name || '').match(/\((\d+)[×x](\d+)mm?\)/i);
+                const sizeMatch = (qi.item_name || '').match(/\((\d+)[Ã—x](\d+)mm?\)/i);
                 if (sizeMatch) {
                     width = parseInt(sizeMatch[1]);
                     height = parseInt(sizeMatch[2]);
                 }
             }
 
-            // Xác định loại sản phẩm
+            // XÃ¡c Ä‘á»‹nh loáº¡i sáº£n pháº©m
             let productType = 'door';
             const nameLower = (qi.item_name || '').toLowerCase();
-            if (nameLower.includes('vách') || nameLower.includes('kính cố định')) {
+            if (nameLower.includes('vÃ¡ch') || nameLower.includes('kÃ­nh cá»‘ Ä‘á»‹nh')) {
                 productType = 'glass_wall';
-            } else if (nameLower.includes('lan can') || nameLower.includes('cầu thang') || nameLower.includes('tay vịn')) {
+            } else if (nameLower.includes('lan can') || nameLower.includes('cáº§u thang') || nameLower.includes('tay vá»‹n')) {
                 productType = 'railing';
-            } else if (nameLower.includes('cửa sổ') || nameLower.includes('sổ')) {
+            } else if (nameLower.includes('cá»­a sá»•') || nameLower.includes('sá»•')) {
                 productType = 'window';
-            } else if (nameLower.includes('mái') || nameLower.includes('giếng trời')) {
+            } else if (nameLower.includes('mÃ¡i') || nameLower.includes('giáº¿ng trá»i')) {
                 productType = 'roof';
             }
 
@@ -2975,11 +2975,11 @@ exports.getQuotationItemsForDesign = async (req, res) => {
                 project_item_id: pi ? pi.id : null,
                 design_status: pi ? pi.status : 'NOT_STARTED',
                 design_status_label: pi
-                    ? (pi.status === 'DESIGNING' ? 'Đang thiết kế'
-                        : pi.status === 'DESIGN_CONFIRMED' ? 'Đã thiết kế'
-                            : pi.status === 'BOM_EXTRACTED' ? 'Đã bóc tách'
+                    ? (pi.status === 'DESIGNING' ? 'Äang thiáº¿t káº¿'
+                        : pi.status === 'DESIGN_CONFIRMED' ? 'ÄÃ£ thiáº¿t káº¿'
+                            : pi.status === 'BOM_EXTRACTED' ? 'ÄÃ£ bÃ³c tÃ¡ch'
                                 : pi.status)
-                    : 'Chưa thiết kế'
+                    : 'ChÆ°a thiáº¿t káº¿'
             };
         });
 
@@ -3008,13 +3008,13 @@ exports.getQuotationItemsForDesign = async (req, res) => {
         console.error('Error getting quotation items for design:', err);
         res.status(500).json({
             success: false,
-            message: "Lỗi: " + err.message
+            message: "Lá»—i: " + err.message
         });
     }
 };
 
 /**
- * Tạo project_item + snapshot từ quotation_item khi user click vào card
+ * Táº¡o project_item + snapshot tá»« quotation_item khi user click vÃ o card
  * POST /api/projects/:id/design-items
  * Body: { quotation_item_id: number }
  */
@@ -3026,11 +3026,11 @@ exports.createDesignItemFromQuotation = async (req, res) => {
         if (!quotation_item_id) {
             return res.status(400).json({
                 success: false,
-                message: "Vui lòng cung cấp quotation_item_id"
+                message: "Vui lÃ²ng cung cáº¥p quotation_item_id"
             });
         }
 
-        // 1. Kiểm tra đã có project_item chưa
+        // 1. Kiá»ƒm tra Ä‘Ã£ cÃ³ project_item chÆ°a
         const [existing] = await db.query(
             `SELECT id, status FROM project_items 
              WHERE project_id = ? AND source_quotation_item_id = ?`,
@@ -3038,10 +3038,10 @@ exports.createDesignItemFromQuotation = async (req, res) => {
         );
 
         if (existing.length > 0) {
-            // Đã có, trả về project_item_id hiện tại
+            // ÄÃ£ cÃ³, tráº£ vá» project_item_id hiá»‡n táº¡i
             return res.json({
                 success: true,
-                message: "Hạng mục đã được khởi tạo trước đó",
+                message: "Háº¡ng má»¥c Ä‘Ã£ Ä‘Æ°á»£c khá»Ÿi táº¡o trÆ°á»›c Ä‘Ã³",
                 data: {
                     project_item_id: existing[0].id,
                     status: existing[0].status,
@@ -3050,7 +3050,7 @@ exports.createDesignItemFromQuotation = async (req, res) => {
             });
         }
 
-        // 2. Lấy thông tin quotation_item
+        // 2. Láº¥y thÃ´ng tin quotation_item
         const [qItems] = await db.query(
             `SELECT qi.*, q.id as quotation_id, q.created_at as quotation_date
              FROM quotation_items qi
@@ -3062,21 +3062,21 @@ exports.createDesignItemFromQuotation = async (req, res) => {
         if (qItems.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: "Không tìm thấy sản phẩm trong báo giá"
+                message: "KhÃ´ng tÃ¬m tháº¥y sáº£n pháº©m trong bÃ¡o giÃ¡"
             });
         }
 
         const qItem = qItems[0];
 
-        // 3. Parse kích thước từ item_name
-        const sizeMatch = qItem.item_name.match(/\((\d+)[×x](\d+)mm?\)/i);
+        // 3. Parse kÃ­ch thÆ°á»›c tá»« item_name
+        const sizeMatch = qItem.item_name.match(/\((\d+)[Ã—x](\d+)mm?\)/i);
         let width = 1200, height = 2200;
         if (sizeMatch) {
             width = parseInt(sizeMatch[1]) || 1200;
             height = parseInt(sizeMatch[2]) || 2200;
         }
 
-        // 4. Tạo snapshot_config (đóng băng dữ liệu từ báo giá)
+        // 4. Táº¡o snapshot_config (Ä‘Ã³ng bÄƒng dá»¯ liá»‡u tá»« bÃ¡o giÃ¡)
         const snapshotConfig = {
             source: 'quotation',
             quotation_date: qItem.quotation_date,
@@ -3102,16 +3102,16 @@ exports.createDesignItemFromQuotation = async (req, res) => {
             notes: qItem.description || ''
         };
 
-        // 5. Tìm product_template phù hợp hoặc dùng mặc định
+        // 5. TÃ¬m product_template phÃ¹ há»£p hoáº·c dÃ¹ng máº·c Ä‘á»‹nh
         let productTemplateId = 1; // Default template ID
         try {
-            // Thử tìm template phù hợp dựa trên tên sản phẩm
+            // Thá»­ tÃ¬m template phÃ¹ há»£p dá»±a trÃªn tÃªn sáº£n pháº©m
             const itemNameLower = qItem.item_name.toLowerCase();
             let productType = 'door_swing'; // Default
 
-            if (itemNameLower.includes('cửa sổ') || itemNameLower.includes('cua so')) {
+            if (itemNameLower.includes('cá»­a sá»•') || itemNameLower.includes('cua so')) {
                 productType = 'window';
-            } else if (itemNameLower.includes('lùa') || itemNameLower.includes('lua') || itemNameLower.includes('trượt')) {
+            } else if (itemNameLower.includes('lÃ¹a') || itemNameLower.includes('lua') || itemNameLower.includes('trÆ°á»£t')) {
                 productType = 'door_sliding';
             }
 
@@ -3127,7 +3127,7 @@ exports.createDesignItemFromQuotation = async (req, res) => {
             console.log('Using default product_template_id:', productTemplateId);
         }
 
-        // 6. Tạo project_item
+        // 6. Táº¡o project_item
         const [result] = await db.query(`
             INSERT INTO project_items 
             (project_id, product_template_id, quantity, snapshot_config, 
@@ -3143,11 +3143,11 @@ exports.createDesignItemFromQuotation = async (req, res) => {
             qItem.description || qItem.item_name
         ]);
 
-        console.log(`✅ Created project_item ${result.insertId} from quotation_item ${quotation_item_id}`);
+        console.log(`âœ… Created project_item ${result.insertId} from quotation_item ${quotation_item_id}`);
 
         res.status(201).json({
             success: true,
-            message: "Đã khởi tạo hạng mục thiết kế",
+            message: "ÄÃ£ khá»Ÿi táº¡o háº¡ng má»¥c thiáº¿t káº¿",
             data: {
                 project_item_id: result.insertId,
                 status: 'DESIGNING',
@@ -3159,7 +3159,7 @@ exports.createDesignItemFromQuotation = async (req, res) => {
         console.error('Error creating design item:', err);
         res.status(500).json({
             success: false,
-            message: "Lỗi: " + err.message
+            message: "Lá»—i: " + err.message
         });
     }
 };
@@ -3167,14 +3167,14 @@ exports.createDesignItemFromQuotation = async (req, res) => {
 /**
  * =====================================================
  * GET /api/projects/:projectId/items/:itemId/bom-detail
- * Lấy chi tiết BOM cho Modal chi tiết sản phẩm (6 tabs)
+ * Láº¥y chi tiáº¿t BOM cho Modal chi tiáº¿t sáº£n pháº©m (6 tabs)
  * =====================================================
  */
 exports.getProjectItemBOMDetail = async (req, res) => {
     try {
         const { projectId, itemId } = req.params;
 
-        // 1. Lấy thông tin project_item và snapshot_config
+        // 1. Láº¥y thÃ´ng tin project_item vÃ  snapshot_config
         const [itemRows] = await db.query(`
             SELECT 
                 pi.*,
@@ -3194,7 +3194,7 @@ exports.getProjectItemBOMDetail = async (req, res) => {
         if (itemRows.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: "Không tìm thấy hạng mục"
+                message: "KhÃ´ng tÃ¬m tháº¥y háº¡ng má»¥c"
             });
         }
 
@@ -3208,14 +3208,14 @@ exports.getProjectItemBOMDetail = async (req, res) => {
             snapshotConfig = {};
         }
 
-        // Lấy kích thước từ snapshot
+        // Láº¥y kÃ­ch thÆ°á»›c tá»« snapshot
         const width = snapshotConfig.size?.w || 1200;
         const height = snapshotConfig.size?.h || 2200;
         const leafCount = snapshotConfig.leaf_count || 1;
         const quantity = item.quantity || 1;
 
 
-        // 2. Lấy BOM Profiles từ atc_product_bom_profiles
+        // 2. Láº¥y BOM Profiles tá»« atc_product_bom_profiles
         const [bomProfiles] = await db.query(`
             SELECT 
                 pbp.*,
@@ -3229,7 +3229,7 @@ exports.getProjectItemBOMDetail = async (req, res) => {
             ORDER BY pbp.sort_order
         `, [item.product_template_id]);
 
-        // 3. Tính KT Cắt (Nhôm) dựa trên formulas
+        // 3. TÃ­nh KT Cáº¯t (NhÃ´m) dá»±a trÃªn formulas
         const aluminumCuts = [];
         let totalAluminumLength = 0;
         let totalAluminumWeight = 0;
@@ -3247,7 +3247,7 @@ exports.getProjectItemBOMDetail = async (req, res) => {
             else if (formula === 'H-100') cutLength = height - 100;
             else if (formula === 'W-100') cutLength = width - 100;
             else {
-                // Thử parse formula phức tạp hơn
+                // Thá»­ parse formula phá»©c táº¡p hÆ¡n
                 try {
                     cutLength = eval(formula.replace(/H/g, height).replace(/W/g, width));
                 } catch (e) {
@@ -3264,11 +3264,11 @@ exports.getProjectItemBOMDetail = async (req, res) => {
             totalAluminumLength += lengthM * qty;
             totalAluminumWeight += weightKg;
 
-            // Xác định vị trí và góc cắt
+            // XÃ¡c Ä‘á»‹nh vá»‹ trÃ­ vÃ  gÃ³c cáº¯t
             let position = 'Ngang';
             let cutAngle = '90-90';
             if (bom.profile_role?.includes('dung') || formula === 'H' || formula.includes('H-')) {
-                position = 'Đứng';
+                position = 'Äá»©ng';
                 cutAngle = '90-45-90';
             } else if (formula === 'W' || formula.includes('W')) {
                 position = 'Ngang';
@@ -3276,7 +3276,7 @@ exports.getProjectItemBOMDetail = async (req, res) => {
             }
 
             aluminumCuts.push({
-                name: bom.profile_name || 'Thanh nhôm',
+                name: bom.profile_name || 'Thanh nhÃ´m',
                 position: position,
                 code: bom.profile_code || 'AL',
                 cut_angle: cutAngle,
@@ -3287,30 +3287,30 @@ exports.getProjectItemBOMDetail = async (req, res) => {
             });
         }
 
-        // Nếu không có BOM profiles, tạo mặc định
+        // Náº¿u khÃ´ng cÃ³ BOM profiles, táº¡o máº·c Ä‘á»‹nh
         if (aluminumCuts.length === 0) {
             aluminumCuts.push(
-                { name: 'Khung bao đứng', position: 'Đứng', code: 'XF55_KB', cut_angle: '90-45-90', qty: 2, length: height, weight_kg: (height / 1000) * 0.5 * 2, price_per_m: 45000 },
+                { name: 'Khung bao Ä‘á»©ng', position: 'Äá»©ng', code: 'XF55_KB', cut_angle: '90-45-90', qty: 2, length: height, weight_kg: (height / 1000) * 0.5 * 2, price_per_m: 45000 },
                 { name: 'Khung bao ngang', position: 'Ngang', code: 'XF55_KB', cut_angle: '45-45', qty: 2, length: width, weight_kg: (width / 1000) * 0.5 * 2, price_per_m: 45000 },
-                { name: 'Cánh đứng', position: 'Đứng', code: 'XF55_CD', cut_angle: '45-45', qty: 2 * leafCount, length: height - 100, weight_kg: ((height - 100) / 1000) * 0.5 * 2 * leafCount, price_per_m: 50000 },
-                { name: 'Cánh ngang', position: 'Ngang', code: 'XF55_CD', cut_angle: '45-45', qty: 2 * leafCount, length: Math.round((width - 50) / leafCount), weight_kg: (((width - 50) / leafCount) / 1000) * 0.5 * 2 * leafCount, price_per_m: 50000 }
+                { name: 'CÃ¡nh Ä‘á»©ng', position: 'Äá»©ng', code: 'XF55_CD', cut_angle: '45-45', qty: 2 * leafCount, length: height - 100, weight_kg: ((height - 100) / 1000) * 0.5 * 2 * leafCount, price_per_m: 50000 },
+                { name: 'CÃ¡nh ngang', position: 'Ngang', code: 'XF55_CD', cut_angle: '45-45', qty: 2 * leafCount, length: Math.round((width - 50) / leafCount), weight_kg: (((width - 50) / leafCount) / 1000) * 0.5 * 2 * leafCount, price_per_m: 50000 }
             );
             totalAluminumWeight = aluminumCuts.reduce((sum, a) => sum + a.weight_kg, 0);
         }
 
-        // 4. Tính KT Kính
+        // 4. TÃ­nh KT KÃ­nh
         const glassWidth = Math.round((width - 100) / leafCount);
         const glassHeight1 = Math.round(height * 0.5);
         const glassHeight2 = Math.round(height * 0.35);
         const glassHeight3 = 328;
 
         const glassPanels = [
-            { name: snapshotConfig.glass?.type || 'Kính cường lực 8mm', width: glassWidth, height: glassHeight1, qty: 2 * leafCount, position: 'Cánh trên' },
-            { name: snapshotConfig.glass?.type || 'Kính cường lực 8mm', width: glassWidth, height: glassHeight2, qty: 2 * leafCount, position: 'Cánh dưới' }
+            { name: snapshotConfig.glass?.type || 'KÃ­nh cÆ°á»ng lá»±c 8mm', width: glassWidth, height: glassHeight1, qty: 2 * leafCount, position: 'CÃ¡nh trÃªn' },
+            { name: snapshotConfig.glass?.type || 'KÃ­nh cÆ°á»ng lá»±c 8mm', width: glassWidth, height: glassHeight2, qty: 2 * leafCount, position: 'CÃ¡nh dÆ°á»›i' }
         ];
 
         if (height > 2500) {
-            glassPanels.push({ name: snapshotConfig.glass?.type || 'Kính cường lực 8mm', width: width - 100, height: glassHeight3, qty: 2, position: 'Vách' });
+            glassPanels.push({ name: snapshotConfig.glass?.type || 'KÃ­nh cÆ°á»ng lá»±c 8mm', width: width - 100, height: glassHeight3, qty: 2, position: 'VÃ¡ch' });
         }
 
         let totalGlassArea = 0;
@@ -3319,7 +3319,7 @@ exports.getProjectItemBOMDetail = async (req, res) => {
             totalGlassArea += g.area;
         });
 
-        // 5. Lấy Phụ kiện từ atc_product_accessory_rules
+        // 5. Láº¥y Phá»¥ kiá»‡n tá»« atc_product_accessory_rules
         const productType = item.product_type || 'door';
         const [accessoryRules] = await db.query(`
             SELECT 
@@ -3355,36 +3355,36 @@ exports.getProjectItemBOMDetail = async (req, res) => {
             hardware.push({
                 name: rule.accessory_name,
                 code: rule.accessory_code,
-                unit: rule.unit || 'Cái',
+                unit: rule.unit || 'CÃ¡i',
                 qty: qty,
                 price: price,
                 total: total
             });
         }
 
-        // Nếu không có rules, dùng mặc định
+        // Náº¿u khÃ´ng cÃ³ rules, dÃ¹ng máº·c Ä‘á»‹nh
         if (hardware.length === 0) {
             hardware.push(
-                { name: 'Bản lề 3D', code: 'BANLE3D', unit: 'Bộ', qty: 3 * leafCount, price: 150000, total: 150000 * 3 * leafCount },
-                { name: 'Khóa đa điểm', code: 'KHOA_DD', unit: 'Bộ', qty: 1, price: 850000, total: 850000 },
-                { name: 'Tay nắm cửa', code: 'TAY_NAM', unit: 'Cái', qty: leafCount, price: 250000, total: 250000 * leafCount }
+                { name: 'Báº£n lá» 3D', code: 'BANLE3D', unit: 'Bá»™', qty: 3 * leafCount, price: 150000, total: 150000 * 3 * leafCount },
+                { name: 'KhÃ³a Ä‘a Ä‘iá»ƒm', code: 'KHOA_DD', unit: 'Bá»™', qty: 1, price: 850000, total: 850000 },
+                { name: 'Tay náº¯m cá»­a', code: 'TAY_NAM', unit: 'CÃ¡i', qty: leafCount, price: 250000, total: 250000 * leafCount }
             );
             totalHardwareCost = hardware.reduce((sum, h) => sum + h.total, 0);
         }
 
-        // 6. Gioăng, Keo (consumables)
+        // 6. GioÄƒng, Keo (consumables)
         const perimeter = 2 * (width + height) / 1000;
         const consumables = [
-            { name: 'Gioăng kính mặt trong', code: 'GKMT', unit: 'm', qty: parseFloat((perimeter * 2).toFixed(2)), price: 5000 },
-            { name: 'Keo kính mặt ngoài', code: 'KKMN', unit: 'm', qty: parseFloat((perimeter * 2).toFixed(2)), price: 8000 },
-            { name: 'Keo tường - 2 mặt', code: 'KT2M', unit: 'm', qty: parseFloat(perimeter.toFixed(2)), price: 12000 },
-            { name: 'Gioăng khung - cánh', code: 'GKK', unit: 'm', qty: parseFloat((perimeter * 1.5).toFixed(2)), price: 6000 },
-            { name: 'Vít nở lắp đặt', code: 'VNLD', unit: 'Cái', qty: Math.ceil(perimeter * 2), price: 2000 }
+            { name: 'GioÄƒng kÃ­nh máº·t trong', code: 'GKMT', unit: 'm', qty: parseFloat((perimeter * 2).toFixed(2)), price: 5000 },
+            { name: 'Keo kÃ­nh máº·t ngoÃ i', code: 'KKMN', unit: 'm', qty: parseFloat((perimeter * 2).toFixed(2)), price: 8000 },
+            { name: 'Keo tÆ°á»ng - 2 máº·t', code: 'KT2M', unit: 'm', qty: parseFloat(perimeter.toFixed(2)), price: 12000 },
+            { name: 'GioÄƒng khung - cÃ¡nh', code: 'GKK', unit: 'm', qty: parseFloat((perimeter * 1.5).toFixed(2)), price: 6000 },
+            { name: 'VÃ­t ná»Ÿ láº¯p Ä‘áº·t', code: 'VNLD', unit: 'CÃ¡i', qty: Math.ceil(perimeter * 2), price: 2000 }
         ];
         const totalConsumablesCost = consumables.reduce((sum, c) => sum + c.qty * c.price, 0);
 
 
-        // 7. Lấy giá từ database (nếu có)
+        // 7. Láº¥y giÃ¡ tá»« database (náº¿u cÃ³)
         let aluminumPricePerKg = 90000;
         let glassPricePerM2 = 245000;
 
@@ -3397,33 +3397,33 @@ exports.getProjectItemBOMDetail = async (req, res) => {
                 glassPricePerM2 = priceSettings[0].glass_price_per_m2 || 245000;
             }
         } catch (e) {
-            // Bảng price_settings không tồn tại, dùng giá mặc định
+            // Báº£ng price_settings khÃ´ng tá»“n táº¡i, dÃ¹ng giÃ¡ máº·c Ä‘á»‹nh
             console.log('Using default prices (price_settings table not found)');
         }
 
-        // 8. Tính giá thành
+        // 8. TÃ­nh giÃ¡ thÃ nh
         const costAluminum = Math.round(totalAluminumWeight * aluminumPricePerKg);
         const costGlass = Math.round(totalGlassArea * glassPricePerM2);
         const totalCost = costAluminum + costGlass + totalHardwareCost + totalConsumablesCost;
 
-        // 9. Trả về response
+        // 9. Tráº£ vá» response
         res.json({
             success: true,
             data: {
-                // Thông tin chung
+                // ThÃ´ng tin chung
                 item_id: item.id,
-                item_name: snapshotConfig.original_item_name || item.notes || item.template_name || 'Sản phẩm',
+                item_name: snapshotConfig.original_item_name || item.notes || item.template_name || 'Sáº£n pháº©m',
                 project_name: item.project_name,
                 customer_name: item.customer_name,
                 door_code: `D${item.id}`,
 
-                // Tab 1: Kích thước
+                // Tab 1: KÃ­ch thÆ°á»›c
                 dimensions: {
                     width: width,
                     height: height,
                     h1: snapshotConfig.h1 || Math.round(height * 0.85),
                     gap_sash: snapshotConfig.gap_sash || 7,
-                    glass_type: snapshotConfig.glass?.type || 'Kính cường lực 8mm',
+                    glass_type: snapshotConfig.glass?.type || 'KÃ­nh cÆ°á»ng lá»±c 8mm',
                     glass_thickness: snapshotConfig.glass?.thickness_mm || 8,
                     quantity: quantity,
                     leaf_count: leafCount,
@@ -3432,22 +3432,22 @@ exports.getProjectItemBOMDetail = async (req, res) => {
                     glass_price_per_m2: glassPricePerM2
                 },
 
-                // Tab 2: KT Cắt (Nhôm)
+                // Tab 2: KT Cáº¯t (NhÃ´m)
                 aluminum: aluminumCuts,
 
-                // Tab 3: KT Kính
+                // Tab 3: KT KÃ­nh
                 glass: {
                     panels: glassPanels,
                     total_area_m2: parseFloat(totalGlassArea.toFixed(3))
                 },
 
-                // Tab 4: Phụ kiện
+                // Tab 4: Phá»¥ kiá»‡n
                 hardware: hardware,
 
-                // Tab 5: Gioăng, Keo
+                // Tab 5: GioÄƒng, Keo
                 consumables: consumables,
 
-                // Tab 6: Giá thành
+                // Tab 6: GiÃ¡ thÃ nh
                 cost: {
                     aluminum_kg: parseFloat(totalAluminumWeight.toFixed(2)),
                     aluminum_cost: costAluminum,
@@ -3466,7 +3466,7 @@ exports.getProjectItemBOMDetail = async (req, res) => {
         console.error('Error getting BOM detail:', err);
         res.status(500).json({
             success: false,
-            message: "Lỗi: " + err.message
+            message: "Lá»—i: " + err.message
         });
     }
 };
@@ -3485,13 +3485,13 @@ exports.getOperationStatus = async (req, res) => {
         );
 
         if (rows.length === 0) {
-            return res.status(404).json({ success: false, message: "Không tìm thấy dự án" });
+            return res.status(404).json({ success: false, message: "KhÃ´ng tÃ¬m tháº¥y dá»± Ã¡n" });
         }
 
         res.json({ success: true, data: rows[0] });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ success: false, message: "Lỗi server" });
+        res.status(500).json({ success: false, message: "Lá»—i server" });
     }
 };
 
@@ -3505,7 +3505,7 @@ exports.updateOperationStatus = async (req, res) => {
         if (!operation_status || ![1, 2, 3, 4].includes(parseInt(operation_status))) {
             return res.status(400).json({
                 success: false,
-                message: "Trạng thái không hợp lệ (1-4)"
+                message: "Tráº¡ng thÃ¡i khÃ´ng há»£p lá»‡ (1-4)"
             });
         }
 
@@ -3516,7 +3516,7 @@ exports.updateOperationStatus = async (req, res) => {
         );
 
         if (current.length === 0) {
-            return res.status(404).json({ success: false, message: "Không tìm thấy dự án" });
+            return res.status(404).json({ success: false, message: "KhÃ´ng tÃ¬m tháº¥y dá»± Ã¡n" });
         }
 
         // Update
@@ -3536,7 +3536,7 @@ exports.updateOperationStatus = async (req, res) => {
                     id,
                     current[0].operation_status?.toString() || 'null',
                     operation_status.toString(),
-                    `Thay đổi trạng thái điều hành: ${getOpStatusLabel(current[0].operation_status)} → ${getOpStatusLabel(operation_status)}`,
+                    `Thay Ä‘á»•i tráº¡ng thÃ¡i Ä‘iá»u hÃ nh: ${getOpStatusLabel(current[0].operation_status)} â†’ ${getOpStatusLabel(operation_status)}`,
                     req.user?.name || 'System'
                 ]
             );
@@ -3544,15 +3544,15 @@ exports.updateOperationStatus = async (req, res) => {
             console.log('Could not log activity:', logErr.message);
         }
 
-        res.json({ success: true, message: "Cập nhật trạng thái thành công" });
+        res.json({ success: true, message: "Cáº­p nháº­t tráº¡ng thÃ¡i thÃ nh cÃ´ng" });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ success: false, message: "Lỗi server" });
+        res.status(500).json({ success: false, message: "Lá»—i server" });
     }
 };
 
 function getOpStatusLabel(status) {
-    const labels = { 1: 'Đang SX', 2: 'Đã giao', 3: 'Vướng mắc', 4: 'Thay đổi TK' };
+    const labels = { 1: 'Äang SX', 2: 'ÄÃ£ giao', 3: 'VÆ°á»›ng máº¯c', 4: 'Thay Ä‘á»•i TK' };
     return labels[status] || 'N/A';
 }
 
@@ -3566,7 +3566,7 @@ exports.getMaterialStatus = async (req, res) => {
         // Check project exists
         const [project] = await db.query("SELECT id FROM projects WHERE id = ?", [id]);
         if (project.length === 0) {
-            return res.status(404).json({ success: false, message: "Không tìm thấy dự án" });
+            return res.status(404).json({ success: false, message: "KhÃ´ng tÃ¬m tháº¥y dá»± Ã¡n" });
         }
 
         const [materials] = await db.query(
@@ -3593,7 +3593,7 @@ exports.getMaterialStatus = async (req, res) => {
         res.json({ success: true, data: materials });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ success: false, message: "Lỗi server" });
+        res.status(500).json({ success: false, message: "Lá»—i server" });
     }
 };
 
@@ -3608,7 +3608,7 @@ exports.updateMaterialStatus = async (req, res) => {
         if (!validTypes.includes(material_type)) {
             return res.status(400).json({
                 success: false,
-                message: "Loại vật tư không hợp lệ"
+                message: "Loáº¡i váº­t tÆ° khÃ´ng há»£p lá»‡"
             });
         }
 
@@ -3617,7 +3617,7 @@ exports.updateMaterialStatus = async (req, res) => {
         if (status && !validStatuses.includes(status)) {
             return res.status(400).json({
                 success: false,
-                message: "Trạng thái không hợp lệ"
+                message: "Tráº¡ng thÃ¡i khÃ´ng há»£p lá»‡"
             });
         }
 
@@ -3658,8 +3658,8 @@ exports.updateMaterialStatus = async (req, res) => {
 
         // Log activity
         try {
-            const typeLabels = { glass: 'Kính', aluminum: 'Nhôm', accessory: 'Phụ kiện', auxiliary: 'VT phụ' };
-            const statusLabels = { ok: 'OK', waiting: 'Chờ', missing: 'Thiếu', ordered: 'Đã đặt', arrived: 'Đã về' };
+            const typeLabels = { glass: 'KÃ­nh', aluminum: 'NhÃ´m', accessory: 'Phá»¥ kiá»‡n', auxiliary: 'VT phá»¥' };
+            const statusLabels = { ok: 'OK', waiting: 'Chá»', missing: 'Thiáº¿u', ordered: 'ÄÃ£ Ä‘áº·t', arrived: 'ÄÃ£ vá»' };
 
             await db.query(
                 `INSERT INTO project_activity_logs (project_id, action_type, old_value, new_value, description, user_name)
@@ -3668,7 +3668,7 @@ exports.updateMaterialStatus = async (req, res) => {
                     id,
                     current[0]?.status || 'null',
                     status || current[0]?.status,
-                    `${typeLabels[material_type]}: ${statusLabels[current[0]?.status] || 'N/A'} → ${statusLabels[status] || 'N/A'}`,
+                    `${typeLabels[material_type]}: ${statusLabels[current[0]?.status] || 'N/A'} â†’ ${statusLabels[status] || 'N/A'}`,
                     req.user?.name || 'System'
                 ]
             );
@@ -3676,10 +3676,10 @@ exports.updateMaterialStatus = async (req, res) => {
             console.log('Could not log activity:', logErr.message);
         }
 
-        res.json({ success: true, message: "Cập nhật vật tư thành công" });
+        res.json({ success: true, message: "Cáº­p nháº­t váº­t tÆ° thÃ nh cÃ´ng" });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ success: false, message: "Lỗi server" });
+        res.status(500).json({ success: false, message: "Lá»—i server" });
     }
 };
 
@@ -3699,20 +3699,20 @@ exports.confirmMaterialArrival = async (req, res) => {
 
         // Log
         try {
-            const typeLabels = { glass: 'Kính', aluminum: 'Nhôm', accessory: 'Phụ kiện', auxiliary: 'VT phụ' };
+            const typeLabels = { glass: 'KÃ­nh', aluminum: 'NhÃ´m', accessory: 'Phá»¥ kiá»‡n', auxiliary: 'VT phá»¥' };
             await db.query(
                 `INSERT INTO project_activity_logs (project_id, action_type, description, user_name)
                  VALUES (?, 'material_arrived', ?, ?)`,
-                [id, `${typeLabels[material_type]} đã về kho (SL: ${quantity_arrived || 'N/A'})`, req.user?.name || 'System']
+                [id, `${typeLabels[material_type]} Ä‘Ã£ vá» kho (SL: ${quantity_arrived || 'N/A'})`, req.user?.name || 'System']
             );
         } catch (logErr) {
             console.log('Could not log activity:', logErr.message);
         }
 
-        res.json({ success: true, message: "Xác nhận vật tư đã về thành công" });
+        res.json({ success: true, message: "XÃ¡c nháº­n váº­t tÆ° Ä‘Ã£ vá» thÃ nh cÃ´ng" });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ success: false, message: "Lỗi server" });
+        res.status(500).json({ success: false, message: "Lá»—i server" });
     }
 };
 
@@ -3735,7 +3735,7 @@ exports.getActivityLogs = async (req, res) => {
         res.json({ success: true, data: logs });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ success: false, message: "Lỗi server" });
+        res.status(500).json({ success: false, message: "Lá»—i server" });
     }
 };
 
@@ -3751,22 +3751,22 @@ exports.addActivityLog = async (req, res) => {
             [id, action_type || 'manual_note', description, req.user?.name || 'User']
         );
 
-        res.json({ success: true, message: "Thêm ghi chú thành công" });
+        res.json({ success: true, message: "ThÃªm ghi chÃº thÃ nh cÃ´ng" });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ success: false, message: "Lỗi server" });
+        res.status(500).json({ success: false, message: "Lá»—i server" });
     }
 };
 
 // ========== CANCEL/RESTORE PROJECT (SOFT DELETE) ==========
 
-// PATCH /api/projects/:id/cancel - Hủy dự án (soft delete)
+// PATCH /api/projects/:id/cancel - Há»§y dá»± Ã¡n (soft delete)
 exports.cancelProject = async (req, res) => {
     try {
         const { id } = req.params;
         const { reason } = req.body;
 
-        // Kiểm tra dự án tồn tại
+        // Kiá»ƒm tra dá»± Ã¡n tá»“n táº¡i
         const [projectRows] = await db.query(
             "SELECT id, project_code, project_name, status FROM projects WHERE id = ?",
             [id]
@@ -3775,24 +3775,24 @@ exports.cancelProject = async (req, res) => {
         if (projectRows.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: "Không tìm thấy dự án"
+                message: "KhÃ´ng tÃ¬m tháº¥y dá»± Ã¡n"
             });
         }
 
         const project = projectRows[0];
 
-        // Kiểm tra dự án đã bị hủy chưa
+        // Kiá»ƒm tra dá»± Ã¡n Ä‘Ã£ bá»‹ há»§y chÆ°a
         if (project.status === 'cancelled') {
             return res.status(400).json({
                 success: false,
-                message: "Dự án này đã bị hủy trước đó"
+                message: "Dá»± Ã¡n nÃ y Ä‘Ã£ bá»‹ há»§y trÆ°á»›c Ä‘Ã³"
             });
         }
 
-        // Lưu trạng thái trước khi hủy để có thể khôi phục
+        // LÆ°u tráº¡ng thÃ¡i trÆ°á»›c khi há»§y Ä‘á»ƒ cÃ³ thá»ƒ khÃ´i phá»¥c
         const previousStatus = project.status || 'new';
 
-        // Cập nhật trạng thái dự án
+        // Cáº­p nháº­t tráº¡ng thÃ¡i dá»± Ã¡n
         await db.query(
             `UPDATE projects 
              SET status = 'cancelled', 
@@ -3803,12 +3803,12 @@ exports.cancelProject = async (req, res) => {
             [reason || null, previousStatus, id]
         );
 
-        // Ghi log hoạt động
+        // Ghi log hoáº¡t Ä‘á»™ng
         try {
             await db.query(
                 `INSERT INTO project_activity_logs (project_id, action_type, description, user_name)
                  VALUES (?, 'project_cancelled', ?, ?)`,
-                [id, `Dự án đã bị hủy. Lý do: ${reason || 'Không có lý do'}`, req.user?.name || 'System']
+                [id, `Dá»± Ã¡n Ä‘Ã£ bá»‹ há»§y. LÃ½ do: ${reason || 'KhÃ´ng cÃ³ lÃ½ do'}`, req.user?.name || 'System']
             );
         } catch (logErr) {
             console.log('Could not log activity:', logErr.message);
@@ -3832,23 +3832,23 @@ exports.cancelProject = async (req, res) => {
 
         res.json({
             success: true,
-            message: "Đã hủy dự án thành công"
+            message: "ÄÃ£ há»§y dá»± Ã¡n thÃ nh cÃ´ng"
         });
     } catch (err) {
         console.error('Error cancelling project:', err);
         res.status(500).json({
             success: false,
-            message: "Lỗi khi hủy dự án"
+            message: "Lá»—i khi há»§y dá»± Ã¡n"
         });
     }
 };
 
-// PATCH /api/projects/:id/restore - Khôi phục dự án đã hủy
+// PATCH /api/projects/:id/restore - KhÃ´i phá»¥c dá»± Ã¡n Ä‘Ã£ há»§y
 exports.restoreProject = async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Kiểm tra dự án tồn tại và đã bị hủy
+        // Kiá»ƒm tra dá»± Ã¡n tá»“n táº¡i vÃ  Ä‘Ã£ bá»‹ há»§y
         const [projectRows] = await db.query(
             "SELECT id, project_code, project_name, status, previous_status FROM projects WHERE id = ?",
             [id]
@@ -3857,7 +3857,7 @@ exports.restoreProject = async (req, res) => {
         if (projectRows.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: "Không tìm thấy dự án"
+                message: "KhÃ´ng tÃ¬m tháº¥y dá»± Ã¡n"
             });
         }
 
@@ -3866,11 +3866,11 @@ exports.restoreProject = async (req, res) => {
         if (project.status !== 'cancelled') {
             return res.status(400).json({
                 success: false,
-                message: "Dự án này chưa bị hủy, không cần khôi phục"
+                message: "Dá»± Ã¡n nÃ y chÆ°a bá»‹ há»§y, khÃ´ng cáº§n khÃ´i phá»¥c"
             });
         }
 
-        // Khôi phục về trạng thái trước khi hủy hoặc 'new' nếu không có
+        // KhÃ´i phá»¥c vá» tráº¡ng thÃ¡i trÆ°á»›c khi há»§y hoáº·c 'new' náº¿u khÃ´ng cÃ³
         const restoreStatus = project.previous_status || 'new';
 
         await db.query(
@@ -3883,12 +3883,12 @@ exports.restoreProject = async (req, res) => {
             [restoreStatus, id]
         );
 
-        // Ghi log hoạt động
+        // Ghi log hoáº¡t Ä‘á»™ng
         try {
             await db.query(
                 `INSERT INTO project_activity_logs (project_id, action_type, description, user_name)
                  VALUES (?, 'project_restored', ?, ?)`,
-                [id, `Dự án đã được khôi phục về trạng thái: ${restoreStatus}`, req.user?.name || 'System']
+                [id, `Dá»± Ã¡n Ä‘Ã£ Ä‘Æ°á»£c khÃ´i phá»¥c vá» tráº¡ng thÃ¡i: ${restoreStatus}`, req.user?.name || 'System']
             );
         } catch (logErr) {
             console.log('Could not log activity:', logErr.message);
@@ -3896,19 +3896,19 @@ exports.restoreProject = async (req, res) => {
 
         res.json({
             success: true,
-            message: "Đã khôi phục dự án thành công",
+            message: "ÄÃ£ khÃ´i phá»¥c dá»± Ã¡n thÃ nh cÃ´ng",
             data: { restored_status: restoreStatus }
         });
     } catch (err) {
         console.error('Error restoring project:', err);
         res.status(500).json({
             success: false,
-            message: "Lỗi khi khôi phục dự án"
+            message: "Lá»—i khi khÃ´i phá»¥c dá»± Ã¡n"
         });
     }
 };
 
-// GET /api/projects/cancelled - Lấy danh sách dự án đã hủy
+// GET /api/projects/cancelled - Láº¥y danh sÃ¡ch dá»± Ã¡n Ä‘Ã£ há»§y
 exports.getCancelledProjects = async (req, res) => {
     try {
         const { search } = req.query;
@@ -3947,192 +3947,97 @@ exports.getCancelledProjects = async (req, res) => {
         console.error('Error getting cancelled projects:', err);
         res.status(500).json({
             success: false,
-            message: "Lỗi server"
+            message: "Lá»—i server"
         });
     }
+};
 
-    // EXPORT REPORT - Xuất báo cáo dự án dạng HTML
-    exports.exportReport = async (req, res) => {
-        try {
-            const { id } = req.params;
+// EXPORT REPORT
+exports.exportReport = async (req, res) => {
+    try {
+        const { id } = req.params;
 
-            // 1. Lấy thông tin dự án
-            const [projects] = await db.query(
-                `SELECT p.*, 
-                c.full_name AS customer_name, c.phone AS customer_phone,
-                a.name AS agency_name
-             FROM projects p
-             LEFT JOIN customers c ON p.customer_id = c.id
-             LEFT JOIN agencies a ON c.agency_id = a.id
-             WHERE p.id = ?`,
-                [id]
-            );
-            if (!projects.length) {
-                return res.status(404).json({ success: false, message: 'Không tìm thấy dự án' });
-            }
-            const project = projects[0];
+        const [projects] = await db.query(
+            'SELECT p.*, c.full_name AS customer_name, c.phone AS customer_phone, a.name AS agency_name FROM projects p LEFT JOIN customers c ON p.customer_id = c.id LEFT JOIN agencies a ON c.agency_id = a.id WHERE p.id = ?',
+            [id]
+        );
+        if (!projects.length) return res.status(404).json({ success: false, message: 'Khong tim thay du an' });
+        const project = projects[0];
 
-            // 2. Lấy báo giá mới nhất
-            const [quotations] = await db.query(
-                `SELECT q.*, 
-                COALESCE(q.total_amount, q.grand_total, 0) AS total_amount
-             FROM quotations q 
-             WHERE q.project_id = ? 
-             ORDER BY q.created_at DESC LIMIT 1`,
-                [id]
-            );
-            const quotation = quotations[0] || null;
+        const [quotations] = await db.query(
+            'SELECT *, COALESCE(total_amount, grand_total, 0) AS total_amount FROM quotations WHERE project_id = ? ORDER BY created_at DESC LIMIT 1',
+            [id]
+        );
+        const quotation = quotations[0] || null;
 
-            // 3. Lấy danh sách sản phẩm từ quotation items
-            let items = [];
-            if (quotation) {
-                const [qItems] = await db.query(
-                    `SELECT qi.* FROM quotation_items qi WHERE qi.quotation_id = ? ORDER BY qi.id`,
-                    [quotation.id]
-                );
-                items = qItems;
-            }
-
-            // 4. Lấy vật tư
-            const [materials] = await db.query(
-                `SELECT * FROM project_materials WHERE project_id = ? ORDER BY material_type, material_name`,
-                [id]
-            );
-
-            // 5. Tổng tài chính
-            const totalValue = parseFloat(project.total_value) || (quotation ? parseFloat(quotation.total_amount) || 0 : 0);
-            const [payments] = await db.query(
-                `SELECT COALESCE(SUM(amount),0) as paid 
-             FROM financial_transactions 
-             WHERE project_id = ? AND transaction_type = 'income' AND status = 'posted'`,
-                [id]
-            );
-            const paid = parseFloat(payments[0]?.paid) || 0;
-            const remaining = totalValue - paid;
-
-            // 6. Format helpers
-            const fmtDate = (d) => d ? new Date(d).toLocaleDateString('vi-VN') : '—';
-            const fmtMoney = (n) => new Intl.NumberFormat('vi-VN').format(Math.round(n || 0)) + ' đ';
-            const statusMap = {
-                new: 'Mới', in_progress: 'Đang thực hiện', completed: 'Hoàn thành',
-                cancelled: 'Đã hủy', closed: 'Đã đóng'
-            };
-
-            // 7. Build HTML
-            const itemsRows = items.map((item, i) => `
-            <tr>
-                <td>${i + 1}</td>
-                <td>${item.code || item.item_code || '—'}</td>
-                <td>${item.item_name || item.name || '—'}</td>
-                <td style="text-align:center">${item.width || 0} x ${item.height || 0}</td>
-                <td style="text-align:center">${item.quantity || 1}</td>
-                <td style="text-align:right">${fmtMoney(item.unit_price)}</td>
-                <td style="text-align:right"><b>${fmtMoney(item.total_price || (item.unit_price * item.quantity))}</b></td>
-            </tr>`).join('');
-
-            const matRows = materials.map((m, i) => `
-            <tr>
-                <td>${i + 1}</td>
-                <td>${m.material_type || '—'}</td>
-                <td>${m.material_name || m.item_name || '—'}</td>
-                <td style="text-align:center">${m.quantity || m.quantity_used || 0} ${m.unit || m.item_unit || ''}</td>
-                <td style="text-align:right">${fmtMoney(m.unit_price)}</td>
-                <td style="text-align:right">${fmtMoney(m.total_cost)}</td>
-            </tr>`).join('');
-
-            const html = `<!DOCTYPE html>
-<html lang="vi">
-<head>
-<meta charset="UTF-8">
-<title>Báo cáo dự án - ${project.project_code}</title>
-<style>
-  body { font-family: Arial, sans-serif; font-size: 13px; color: #222; margin: 20px; }
-  h1 { font-size: 18px; text-align: center; margin-bottom: 4px; }
-  h2 { font-size: 14px; margin: 18px 0 6px; border-bottom: 2px solid #333; padding-bottom: 3px; }
-  .meta { text-align: center; font-size: 12px; color: #666; margin-bottom: 16px; }
-  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 20px; margin-bottom: 12px; }
-  .info-grid div { padding: 3px 0; }
-  .label { font-weight: bold; color: #555; }
-  table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
-  th { background: #333; color: #fff; padding: 6px 8px; text-align: left; font-size: 12px; }
-  td { padding: 5px 8px; border-bottom: 1px solid #ddd; font-size: 12px; }
-  tr:nth-child(even) td { background: #f9f9f9; }
-  .summary { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin: 12px 0; }
-  .summary-card { border: 1px solid #ddd; border-radius: 6px; padding: 10px; text-align: center; }
-  .summary-card .value { font-size: 16px; font-weight: bold; margin-top: 4px; }
-  .green { color: #16a34a; } .red { color: #dc2626; } .blue { color: #2563eb; }
-  .footer { margin-top: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .sign-box { text-align: center; border-top: 1px solid #999; padding-top: 60px; font-size: 12px; }
-  @media print { button { display: none; } }
-</style>
-</head>
-<body>
-<div style="text-align:right; margin-bottom:8px">
-  <button onclick="window.print()" style="padding:6px 16px;background:#2563eb;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:13px">🖨️ In / Lưu PDF</button>
-</div>
-
-<h1>BÁO CÁO DỰ ÁN</h1>
-<p class="meta">Ngày xuất: ${fmtDate(new Date())} | Mã dự án: <b>${project.project_code}</b></p>
-
-<h2>1. THÔNG TIN DỰ ÁN</h2>
-<div class="info-grid">
-  <div><span class="label">Mã dự án:</span> ${project.project_code}</div>
-  <div><span class="label">Trạng thái:</span> ${statusMap[project.status] || project.status}</div>
-  <div><span class="label">Tên dự án:</span> ${project.project_name}</div>
-  <div><span class="label">Tiến độ:</span> ${project.progress_percent || 0}%</div>
-  <div><span class="label">Khách hàng:</span> ${project.customer_name}</div>
-  <div><span class="label">Điện thoại:</span> ${project.customer_phone || '—'}</div>
-  <div><span class="label">Chi nhánh:</span> ${project.agency_name || '—'}</div>
-  <div><span class="label">Địa chỉ:</span> ${project.construction_address || '—'}</div>
-  <div><span class="label">Ngày bắt đầu:</span> ${fmtDate(project.start_date || project.created_at)}</div>
-  <div><span class="label">Hạn hoàn thành:</span> ${fmtDate(project.deadline || project.end_date)}</div>
-</div>
-
-<h2>2. DANH SÁCH SẢN PHẨM${quotation ? ' (Báo giá ' + quotation.quotation_code + ')' : ''}</h2>
-${items.length > 0 ? `
-<table>
-  <thead><tr><th>#</th><th>Mã SP</th><th>Tên sản phẩm</th><th style="text-align:center">K.thước (R×C mm)</th><th style="text-align:center">SL</th><th style="text-align:right">Đơn giá</th><th style="text-align:right">Thành tiền</th></tr></thead>
-  <tbody>${itemsRows}</tbody>
-</table>` : '<p style="color:#888;font-style:italic">Chưa có sản phẩm</p>'}
-
-<h2>3. VẬT TƯ DỰ ÁN</h2>
-${materials.length > 0 ? `
-<table>
-  <thead><tr><th>#</th><th>Loại</th><th>Tên vật tư</th><th style="text-align:center">Số lượng</th><th style="text-align:right">Đơn giá</th><th style="text-align:right">Thành tiền</th></tr></thead>
-  <tbody>${matRows}</tbody>
-</table>` : '<p style="color:#888;font-style:italic">Chưa có vật tư</p>'}
-
-<h2>4. TỔNG KẾT TÀI CHÍNH</h2>
-<div class="summary">
-  <div class="summary-card">
-    <div style="color:#555">Giá trị hợp đồng</div>
-    <div class="value blue">${fmtMoney(totalValue)}</div>
-  </div>
-  <div class="summary-card">
-    <div style="color:#555">Đã thanh toán</div>
-    <div class="value green">${fmtMoney(paid)}</div>
-  </div>
-  <div class="summary-card">
-    <div style="color:#555">Còn lại</div>
-    <div class="value ${remaining > 0 ? 'red' : 'green'}">${fmtMoney(remaining)}</div>
-  </div>
-</div>
-
-${project.notes ? `<h2>5. GHI CHÚ</h2><p>${project.notes}</p>` : ''}
-
-<div class="footer">
-  <div class="sign-box">Khách hàng<br><small>(Ký, ghi rõ họ tên)</small></div>
-  <div class="sign-box">Đại diện ViralWindow<br><small>(Ký, ghi rõ họ tên)</small></div>
-</div>
-</body>
-</html>`;
-
-            res.setHeader('Content-Type', 'text/html; charset=utf-8');
-            res.send(html);
-
-        } catch (err) {
-            console.error('Error exporting report:', err);
-            res.status(500).json({ success: false, message: 'Lỗi server khi xuất báo cáo' });
+        let items = [];
+        if (quotation) {
+            const [qItems] = await db.query('SELECT * FROM quotation_items WHERE quotation_id = ? ORDER BY id', [quotation.id]);
+            items = qItems;
         }
-    };
 
+        const [materials] = await db.query(
+            'SELECT * FROM project_materials WHERE project_id = ? ORDER BY material_type, material_name',
+            [id]
+        );
+
+        const totalValue = parseFloat(project.total_value) || (quotation ? parseFloat(quotation.total_amount) || 0 : 0);
+        const [payments] = await db.query(
+            "SELECT COALESCE(SUM(amount),0) as paid FROM financial_transactions WHERE project_id = ? AND transaction_type = 'income' AND status = 'posted'",
+            [id]
+        );
+        const paid = parseFloat(payments[0] && payments[0].paid) || 0;
+        const remaining = totalValue - paid;
+
+        const fmtDate = (d) => d ? new Date(d).toLocaleDateString('vi-VN') : '-';
+        const fmtMoney = (n) => new Intl.NumberFormat('vi-VN').format(Math.round(n || 0)) + ' d';
+        const statusMap = { new: 'Moi', in_progress: 'Dang thuc hien', completed: 'Hoan thanh', cancelled: 'Da huy', closed: 'Da dong' };
+
+        let itemsHtml = '<p style="color:#888">Chua co san pham</p>';
+        if (items.length > 0) {
+            const rows = items.map((item, i) => '<tr><td>' + (i+1) + '</td><td>' + (item.code||item.item_code||'-') + '</td><td>' + (item.item_name||item.name||'-') + '</td><td>' + (item.width||0) + 'x' + (item.height||0) + '</td><td>' + (item.quantity||1) + '</td><td>' + fmtMoney(item.unit_price) + '</td><td>' + fmtMoney(item.total_price||(item.unit_price*item.quantity)) + '</td></tr>').join('');
+            itemsHtml = '<table><thead><tr><th>#</th><th>Ma</th><th>Ten SP</th><th>Kich thuoc</th><th>SL</th><th>Don gia</th><th>Thanh tien</th></tr></thead><tbody>' + rows + '</tbody></table>';
+        }
+
+        let matHtml = '<p style="color:#888">Chua co vat tu</p>';
+        if (materials.length > 0) {
+            const rows = materials.map((m, i) => '<tr><td>' + (i+1) + '</td><td>' + (m.material_type||'-') + '</td><td>' + (m.material_name||m.item_name||'-') + '</td><td>' + (m.quantity||m.quantity_used||0) + ' ' + (m.unit||m.item_unit||'') + '</td><td>' + fmtMoney(m.unit_price) + '</td><td>' + fmtMoney(m.total_cost) + '</td></tr>').join('');
+            matHtml = '<table><thead><tr><th>#</th><th>Loai</th><th>Ten vat tu</th><th>So luong</th><th>Don gia</th><th>Thanh tien</th></tr></thead><tbody>' + rows + '</tbody></table>';
+        }
+
+        const css = 'body{font-family:Arial,sans-serif;font-size:13px;color:#222;margin:20px}h1{font-size:18px;text-align:center}h2{font-size:14px;margin:16px 0 6px;border-bottom:2px solid #333;padding-bottom:3px}.meta{text-align:center;font-size:12px;color:#666;margin-bottom:12px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 20px;margin-bottom:12px}.grid div{padding:2px 0}.label{font-weight:bold;color:#555}table{width:100%;border-collapse:collapse;margin-bottom:12px}th{background:#333;color:#fff;padding:5px 8px;text-align:left;font-size:12px}td{padding:4px 8px;border-bottom:1px solid #ddd;font-size:12px}tr:nth-child(even) td{background:#f9f9f9}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:12px 0}.card{border:1px solid #ddd;border-radius:6px;padding:10px;text-align:center}.val{font-size:16px;font-weight:bold;margin-top:4px}.footer{margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:20px}.sign{text-align:center;border-top:1px solid #999;padding-top:50px;font-size:12px}@media print{button{display:none}}';
+
+        const html = '<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><title>Bao cao du an - ' + project.project_code + '</title><style>' + css + '</style></head><body>' +
+            '<div style="text-align:right;margin-bottom:8px"><button onclick="window.print()" style="padding:6px 16px;background:#2563eb;color:#fff;border:none;border-radius:4px;cursor:pointer">In / Luu PDF</button></div>' +
+            '<h1>BAO CAO DU AN</h1>' +
+            '<p class="meta">Ngay xuat: ' + fmtDate(new Date()) + ' | Ma du an: <b>' + project.project_code + '</b></p>' +
+            '<h2>1. THONG TIN DU AN</h2><div class="grid">' +
+            '<div><span class="label">Ma du an:</span> ' + project.project_code + '</div>' +
+            '<div><span class="label">Trang thai:</span> ' + (statusMap[project.status] || project.status || '') + '</div>' +
+            '<div><span class="label">Ten du an:</span> ' + (project.project_name || '') + '</div>' +
+            '<div><span class="label">Tien do:</span> ' + (project.progress_percent || 0) + '%</div>' +
+            '<div><span class="label">Khach hang:</span> ' + (project.customer_name || '') + '</div>' +
+            '<div><span class="label">Dien thoai:</span> ' + (project.customer_phone || '-') + '</div>' +
+            '<div><span class="label">Chi nhanh:</span> ' + (project.agency_name || '-') + '</div>' +
+            '<div><span class="label">Dia chi:</span> ' + (project.construction_address || '-') + '</div>' +
+            '<div><span class="label">Ngay bat dau:</span> ' + fmtDate(project.start_date || project.created_at) + '</div>' +
+            '<div><span class="label">Han hoan thanh:</span> ' + fmtDate(project.deadline || project.end_date) + '</div>' +
+            '</div>' +
+            '<h2>2. DANH SACH SAN PHAM' + (quotation ? ' (' + quotation.quotation_code + ')' : '') + '</h2>' + itemsHtml +
+            '<h2>3. VAT TU DU AN</h2>' + matHtml +
+            '<h2>4. TONG KET TAI CHINH</h2><div class="summary">' +
+            '<div class="card"><div style="color:#555">Gia tri hop dong</div><div class="val" style="color:#2563eb">' + fmtMoney(totalValue) + '</div></div>' +
+            '<div class="card"><div style="color:#555">Da thanh toan</div><div class="val" style="color:#16a34a">' + fmtMoney(paid) + '</div></div>' +
+            '<div class="card"><div style="color:#555">Con lai</div><div class="val" style="color:' + (remaining > 0 ? '#dc2626' : '#16a34a') + '">' + fmtMoney(remaining) + '</div></div>' +
+            '</div>' + (project.notes ? '<h2>5. GHI CHU</h2><p>' + project.notes + '</p>' : '') +
+            '<div class="footer"><div class="sign">Khach hang<br><small>(Ky, ghi ro ho ten)</small></div><div class="sign">Dai dien ViralWindow<br><small>(Ky, ghi ro ho ten)</small></div></div>' +
+            '</body></html>';
+
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.send(html);
+
+    } catch (err) {
+        console.error('exportReport error:', err);
+        res.status(500).json({ success: false, message: 'Loi server khi xuat bao cao' });
+    }
+};
