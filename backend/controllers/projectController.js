@@ -3965,7 +3965,7 @@ exports.exportReport = async (req, res) => {
         const project = projects[0];
 
         const [quotations] = await db.query(
-            'SELECT *, COALESCE(total_amount, grand_total, 0) AS total_amount FROM quotations WHERE project_id = ? ORDER BY created_at DESC LIMIT 1',
+            'SELECT * FROM quotations WHERE project_id = ? ORDER BY created_at DESC LIMIT 1',
             [id]
         );
         const quotation = quotations[0] || null;
@@ -3995,13 +3995,13 @@ exports.exportReport = async (req, res) => {
 
         let itemsHtml = '<p style="color:#888">Chua co san pham</p>';
         if (items.length > 0) {
-            const rows = items.map((item, i) => '<tr><td>' + (i+1) + '</td><td>' + (item.code||item.item_code||'-') + '</td><td>' + (item.item_name||item.name||'-') + '</td><td>' + (item.width||0) + 'x' + (item.height||0) + '</td><td>' + (item.quantity||1) + '</td><td>' + fmtMoney(item.unit_price) + '</td><td>' + fmtMoney(item.total_price||(item.unit_price*item.quantity)) + '</td></tr>').join('');
+            const rows = items.map((item, i) => '<tr><td>' + (i + 1) + '</td><td>' + (item.code || item.item_code || '-') + '</td><td>' + (item.item_name || item.name || '-') + '</td><td>' + (item.width || 0) + 'x' + (item.height || 0) + '</td><td>' + (item.quantity || 1) + '</td><td>' + fmtMoney(item.unit_price) + '</td><td>' + fmtMoney(item.total_price || (item.unit_price * item.quantity)) + '</td></tr>').join('');
             itemsHtml = '<table><thead><tr><th>#</th><th>Ma</th><th>Ten SP</th><th>Kich thuoc</th><th>SL</th><th>Don gia</th><th>Thanh tien</th></tr></thead><tbody>' + rows + '</tbody></table>';
         }
 
         let matHtml = '<p style="color:#888">Chua co vat tu</p>';
         if (materials.length > 0) {
-            const rows = materials.map((m, i) => '<tr><td>' + (i+1) + '</td><td>' + (m.material_type||'-') + '</td><td>' + (m.material_name||m.item_name||'-') + '</td><td>' + (m.quantity||m.quantity_used||0) + ' ' + (m.unit||m.item_unit||'') + '</td><td>' + fmtMoney(m.unit_price) + '</td><td>' + fmtMoney(m.total_cost) + '</td></tr>').join('');
+            const rows = materials.map((m, i) => '<tr><td>' + (i + 1) + '</td><td>' + (m.material_type || '-') + '</td><td>' + (m.material_name || m.item_name || '-') + '</td><td>' + (m.quantity || m.quantity_used || 0) + ' ' + (m.unit || m.item_unit || '') + '</td><td>' + fmtMoney(m.unit_price) + '</td><td>' + fmtMoney(m.total_cost) + '</td></tr>').join('');
             matHtml = '<table><thead><tr><th>#</th><th>Loai</th><th>Ten vat tu</th><th>So luong</th><th>Don gia</th><th>Thanh tien</th></tr></thead><tbody>' + rows + '</tbody></table>';
         }
 
