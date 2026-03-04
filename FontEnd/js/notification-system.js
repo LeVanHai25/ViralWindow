@@ -8,7 +8,7 @@
  * 3. Tự động polling mỗi 15 giây để cập nhật
  */
 
-(function() {
+(function () {
     'use strict';
 
     const API_BASE = window.API_BASE || 'http://localhost:3001/api';
@@ -20,7 +20,7 @@
      */
     async function loadUnreadCount() {
         try {
-            const token = localStorage.getItem('token');
+            const token = (window.AuthHelper && window.AuthHelper.getToken()) || sessionStorage.getItem('token') || localStorage.getItem('token');
             if (!token) return;
 
             const response = await fetch(`${API_BASE}/notifications/unread-count`, {
@@ -47,7 +47,7 @@
     function updateNotificationBadge(count) {
         // Tìm tất cả các badge elements
         const badges = document.querySelectorAll('#notificationBadge, [id*="notificationBadge"], .notification-badge');
-        
+
         badges.forEach(badge => {
             if (count > 0) {
                 badge.textContent = count > 99 ? '99+' : count;
@@ -65,7 +65,7 @@
      */
     async function loadNotifications(limit = 10) {
         try {
-            const token = localStorage.getItem('token');
+            const token = (window.AuthHelper && window.AuthHelper.getToken()) || sessionStorage.getItem('token') || localStorage.getItem('token');
             if (!token) return [];
 
             const response = await fetch(`${API_BASE}/notifications?limit=${limit}&only_unread=0`, {
@@ -93,11 +93,11 @@
     async function renderNotificationDropdown() {
         const dropdown = document.getElementById('notificationsDropdown');
         const list = document.getElementById('notificationsList');
-        
+
         if (!dropdown && !list) return;
 
         const container = list || dropdown.querySelector('#notificationsList') || dropdown;
-        
+
         // Show loading
         if (container) {
             container.innerHTML = '<div class="p-4 text-center text-gray-500">Đang tải...</div>';
@@ -176,9 +176,9 @@
     /**
      * Handle notification click
      */
-    window.handleNotificationClick = async function(notificationId, link) {
+    window.handleNotificationClick = async function (notificationId, link) {
         try {
-            const token = localStorage.getItem('token');
+            const token = (window.AuthHelper && window.AuthHelper.getToken()) || sessionStorage.getItem('token') || localStorage.getItem('token');
             if (!token) return;
 
             // Mark as read
@@ -207,9 +207,9 @@
     /**
      * Mark all notifications as read
      */
-    window.markAllNotificationsRead = async function() {
+    window.markAllNotificationsRead = async function () {
         try {
-            const token = localStorage.getItem('token');
+            const token = (window.AuthHelper && window.AuthHelper.getToken()) || sessionStorage.getItem('token') || localStorage.getItem('token');
             if (!token) return;
 
             const response = await fetch(`${API_BASE}/notifications/read-all`, {
@@ -231,12 +231,12 @@
     /**
      * Toggle notification dropdown
      */
-    window.toggleNotifications = function() {
+    window.toggleNotifications = function () {
         const dropdown = document.getElementById('notificationsDropdown');
         if (!dropdown) return;
 
         isDropdownOpen = !dropdown.classList.contains('hidden');
-        
+
         if (isDropdownOpen) {
             dropdown.classList.add('hidden');
             isDropdownOpen = false;
@@ -310,9 +310,9 @@
     /**
      * Initialize notification system
      */
-    window.initNotificationSystem = function() {
+    window.initNotificationSystem = function () {
         // Check if user is logged in
-        const token = localStorage.getItem('token');
+        const token = (window.AuthHelper && window.AuthHelper.getToken()) || sessionStorage.getItem('token') || localStorage.getItem('token');
         if (!token) {
             return;
         }
@@ -321,10 +321,10 @@
         startPolling();
 
         // Close dropdown when clicking outside
-        document.addEventListener('click', function(event) {
+        document.addEventListener('click', function (event) {
             const dropdown = document.getElementById('notificationsDropdown');
             const button = event.target.closest('[onclick*="toggleNotifications"], #notificationButton');
-            
+
             if (dropdown && !dropdown.contains(event.target) && !button) {
                 dropdown.classList.add('hidden');
                 isDropdownOpen = false;

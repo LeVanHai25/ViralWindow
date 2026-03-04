@@ -10,21 +10,21 @@
  * @date 2026-01-22
  */
 
-(function() {
+(function () {
     'use strict';
 
     // Detect environment based on hostname
     const hostname = window.location.hostname;
     const port = window.location.port;
-    
+
     let API_BASE_URL;
-    
+
     // Development environment (localhost)
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
         // Default development port
         const apiPort = 3001;
         API_BASE_URL = `http://${hostname}:${apiPort}/api`;
-    } 
+    }
     // Production environment
     else {
         // In production, API is typically on same domain or configured separately
@@ -33,7 +33,7 @@
 
     // Export to global scope
     window.API_BASE = API_BASE_URL;
-    
+
     // Also export as module if needed
     if (typeof module !== 'undefined' && module.exports) {
         module.exports = { API_BASE: API_BASE_URL };
@@ -54,16 +54,16 @@
  */
 async function apiCall(endpoint, options = {}) {
     const url = `${window.API_BASE}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
-    
+
     // Add auth token if available
-    const token = localStorage.getItem('token');
+    const token = (window.AuthHelper && window.AuthHelper.getToken()) || sessionStorage.getItem('token') || localStorage.getItem('token');
     if (token) {
         options.headers = {
             ...options.headers,
             'Authorization': `Bearer ${token}`
         };
     }
-    
+
     // Default content type for POST/PUT
     if ((options.method === 'POST' || options.method === 'PUT') && options.body && typeof options.body === 'object') {
         options.headers = {
@@ -72,7 +72,7 @@ async function apiCall(endpoint, options = {}) {
         };
         options.body = JSON.stringify(options.body);
     }
-    
+
     return fetch(url, options);
 }
 
@@ -83,10 +83,10 @@ async function apiCall(endpoint, options = {}) {
  */
 async function handleApiResponse(response) {
     const data = await response.json();
-    
+
     if (!response.ok) {
         throw new Error(data.message || `HTTP error! status: ${response.status}`);
     }
-    
+
     return data;
 }

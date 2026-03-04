@@ -15,7 +15,7 @@
      */
     async function loadUnreadCount() {
         try {
-            const token = localStorage.getItem('token');
+            const token = (window.AuthHelper && window.AuthHelper.getToken()) || sessionStorage.getItem('token') || localStorage.getItem('token');
             if (!token) return;
 
             const response = await fetch(`${API_BASE}/notifications/unread-count`, {
@@ -70,7 +70,7 @@
      */
     async function loadNotifications(limit = 20) {
         try {
-            const token = localStorage.getItem('token');
+            const token = (window.AuthHelper && window.AuthHelper.getToken()) || sessionStorage.getItem('token') || localStorage.getItem('token');
             if (!token) return [];
 
             const response = await fetch(`${API_BASE}/notifications?limit=${limit}&only_unread=0`, {
@@ -174,7 +174,7 @@
      */
     window.handleHeaderNotificationClick = async function (notificationId, link) {
         try {
-            const token = localStorage.getItem('token');
+            const token = (window.AuthHelper && window.AuthHelper.getToken()) || sessionStorage.getItem('token') || localStorage.getItem('token');
             if (!token) return;
 
             // Mark as read
@@ -205,7 +205,7 @@
      */
     window.markAllHeaderNotificationsRead = async function () {
         try {
-            const token = localStorage.getItem('token');
+            const token = (window.AuthHelper && window.AuthHelper.getToken()) || sessionStorage.getItem('token') || localStorage.getItem('token');
             if (!token) return;
 
             const response = await fetch(`${API_BASE}/notifications/read-all`, {
@@ -314,7 +314,7 @@
      */
     window.initHeaderNotificationSystem = function () {
         // Check if user is logged in
-        const token = localStorage.getItem('token');
+        const token = (window.AuthHelper && window.AuthHelper.getToken()) || sessionStorage.getItem('token') || localStorage.getItem('token');
         if (!token) {
             return;
         }
