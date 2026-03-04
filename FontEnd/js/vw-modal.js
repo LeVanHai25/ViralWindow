@@ -292,6 +292,49 @@
                     if (toast.parentNode) toast.parentNode.removeChild(toast);
                 }, 320);
             }, duration);
+        },
+
+        /**
+         * Shorthand: Error alert
+         * @param {string} message
+         * @param {object} opts
+         * @returns Promise<void>
+         */
+        error: function (message, opts) {
+            opts = opts || {};
+            opts.type = 'danger';
+            opts.title = opts.title || 'Lỗi';
+            return window.VWModal.alert(message, opts);
+        },
+
+        /**
+         * Shorthand: Success alert
+         */
+        success: function (message, opts) {
+            opts = opts || {};
+            opts.type = 'success';
+            opts.title = opts.title || 'Thành công';
+            return window.VWModal.alert(message, opts);
+        },
+
+        /**
+         * Shorthand: Warning alert
+         */
+        warning: function (message, opts) {
+            opts = opts || {};
+            opts.type = 'warning';
+            opts.title = opts.title || 'Cảnh báo';
+            return window.VWModal.alert(message, opts);
+        },
+
+        /**
+         * Shorthand: Info alert
+         */
+        info: function (message, opts) {
+            opts = opts || {};
+            opts.type = 'info';
+            opts.title = opts.title || 'Thông tin';
+            return window.VWModal.alert(message, opts);
         }
     };
 
