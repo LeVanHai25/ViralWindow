@@ -1140,6 +1140,7 @@ document.addEventListener('keydown', (e) => {
         closeCustomerModal();
         closeMaterialDetailModal();
         closeMaterialSummaryModal();
+        closeCustomerDetailModal();
     }
 });
 
@@ -1539,7 +1540,10 @@ async function openCustomerModal(orderId) {
                 </div>
                 
                 <div class="flex justify-center gap-3">
-                    <button onclick="window.open('customer-detail.html?id=${customer.id}', '_blank')" class="px-4 py-2 border rounded-lg hover:bg-gray-100">Chi tiết</button>
+                    <button onclick="closeCustomerModal(); openCustomerDetailModal(${customer.id})" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        Chi tiết
+                    </button>
                     <button onclick="closeCustomerModal()" class="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">Đóng</button>
                 </div>
             </div>
@@ -1551,6 +1555,258 @@ async function openCustomerModal(orderId) {
 
 function closeCustomerModal() {
     const modal = document.getElementById('customerModal');
+    if (modal) modal.classList.add('hidden');
+}
+
+// ============================================
+// CUSTOMER DETAIL MODAL (inline, full-featured)
+// ============================================
+let customerDetailData = null;
+let customerDetailTab = 'projects';
+
+async function openCustomerDetailModal(customerId) {
+    // Create modal
+    let modal = document.getElementById('customerDetailModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'customerDetailModal';
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+        document.body.appendChild(modal);
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeCustomerDetailModal(); });
+    }
+
+    // Loading state
+    modal.innerHTML = `
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-5 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-white">Chi tiết Khách hàng</h3>
+                <button onclick="closeCustomerDetailModal()" class="text-white hover:text-gray-200 text-2xl">&times;</button>
+            </div>
+            <div class="flex-1 flex items-center justify-center py-16">
+                <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+                <span class="ml-3 text-gray-500">Đang tải...</span>
+            </div>
+        </div>
+    `;
+    modal.classList.remove('hidden');
+
+    try {
+        // Fetch full customer data
+        const custResp = await fetch(`${API_BASE}/customers/${customerId}`);
+        const custResult = await custResp.json();
+        if (!custResult.success) throw new Error(custResult.message || 'Không tìm thấy');
+        customerDetailData = custResult.data;
+
+        // Fetch projects
+        let projects = [];
+        try {
+            const projResp = await fetch(`${API_BASE}/projects?customer_id=${customerId}`);
+            const projResult = await projResp.json();
+            if (projResult.success) projects = projResult.data || [];
+        } catch (e) { }
+
+        // Fetch CRM
+        let crmData = { interactions: [], appointments: [] };
+        try {
+            const crmResp = await fetch(`${API_BASE}/customers/${customerId}/crm`);
+            const crmResult = await crmResp.json();
+            if (crmResult.success) crmData = crmResult.data || crmData;
+        } catch (e) { }
+
+        renderCustomerDetailModal(modal, customerDetailData, projects, crmData);
+    } catch (error) {
+        modal.innerHTML = `
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+                <div class="bg-red-600 text-white px-6 py-4 flex justify-between items-center rounded-t-2xl">
+                    <h3 class="font-bold">Lỗi</h3>
+                    <button onclick="closeCustomerDetailModal()" class="text-white hover:text-gray-200 text-2xl">&times;</button>
+                </div>
+                <div class="p-6 text-center">
+                    <p class="text-red-500 mb-4">${error.message}</p>
+                    <button onclick="closeCustomerDetailModal()" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">Đóng</button>
+                </div>
+            </div>
+        `;
+    }
+}
+
+function renderCustomerDetailModal(modal, c, projects, crmData) {
+    const initial = (c.name || 'K').charAt(0).toUpperCase();
+    const inProgress = projects.filter(p => !['completed', 'cancelled', 'handover'].includes(p.status)).length;
+    const completed = projects.filter(p => ['completed', 'handover'].includes(p.status)).length;
+    const totalValue = projects.reduce((sum, p) => sum + (parseFloat(p.total_amount) || 0), 0);
+
+    // Merge CRM timeline
+    const interactions = crmData.interactions || [];
+    const appointments = crmData.appointments || [];
+    const timeline = [
+        ...interactions.map(i => ({ ...i, _type: 'interaction', _date: i.interaction_date || i.created_at })),
+        ...appointments.map(a => ({ ...a, _type: 'appointment', _date: a.appointment_date || a.created_at }))
+    ].sort((a, b) => new Date(b._date) - new Date(a._date));
+
+    // Format helpers
+    const fmtDate = (d) => { if (!d) return '--'; const dt = new Date(d); return isNaN(dt) ? '--' : dt.toLocaleDateString('vi-VN'); };
+    const fmtCurrency = (v) => { if (!v) return '0đ'; return new Intl.NumberFormat('vi-VN').format(v) + 'đ'; };
+
+    const statusLabel = {
+        'new': 'Mới', 'designing': 'Thiết kế', 'design': 'Thiết kế', 'bom': 'Bóc tách', 'estimation': 'Dự toán',
+        'quotation_pending': 'Chờ BG', 'quotation_approved': 'Đã duyệt', 'in_production': 'Đang SX',
+        'in_progress': 'Đang làm', 'installation': 'Lắp đặt', 'handover': 'Bàn giao', 'completed': 'Hoàn thành',
+        'cancelled': 'Hủy', 'paused': 'Tạm dừng'
+    };
+    const statusColor = {
+        'new': 'bg-gray-100 text-gray-700', 'designing': 'bg-blue-100 text-blue-700', 'design': 'bg-blue-100 text-blue-700',
+        'bom': 'bg-indigo-100 text-indigo-700', 'estimation': 'bg-indigo-100 text-indigo-700',
+        'quotation_pending': 'bg-yellow-100 text-yellow-700', 'quotation_approved': 'bg-emerald-100 text-emerald-700',
+        'in_production': 'bg-orange-100 text-orange-700', 'in_progress': 'bg-orange-100 text-orange-700',
+        'installation': 'bg-teal-100 text-teal-700', 'handover': 'bg-cyan-100 text-cyan-700',
+        'completed': 'bg-green-100 text-green-700', 'cancelled': 'bg-red-100 text-red-700', 'paused': 'bg-gray-100 text-gray-600'
+    };
+
+    // Projects tab HTML
+    const projectsHtml = projects.length === 0
+        ? '<p class="text-gray-400 text-center py-6">Chưa có dự án nào</p>'
+        : projects.map(p => `
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                    </div>
+                    <div>
+                        <p class="font-medium text-gray-800 text-sm">${escapeHtml(p.project_code || '')} - ${escapeHtml(p.project_name || '')}</p>
+                        <p class="text-xs text-gray-400">${fmtDate(p.created_at)}</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-medium text-gray-600">${fmtCurrency(p.total_amount)}</span>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusColor[p.status] || 'bg-gray-100 text-gray-600'}">${statusLabel[p.status] || p.status || '--'}</span>
+                </div>
+            </div>
+        `).join('');
+
+    // CRM timeline HTML
+    const crmHtml = timeline.length === 0
+        ? '<p class="text-gray-400 text-center py-6">Chưa có lịch sử tương tác</p>'
+        : timeline.slice(0, 15).map(item => {
+            const isInt = item._type === 'interaction';
+            const icon = isInt ? '💬' : '📅';
+            const bg = isInt ? 'bg-blue-100' : 'bg-green-100';
+            const typeLabel = isInt
+                ? (item.type === 'call' ? 'Gọi điện' : item.type === 'email' ? 'Email' : item.type === 'visit' ? 'Gặp mặt' : item.type || 'Tương tác')
+                : 'Cuộc hẹn';
+            return `
+                <div class="flex gap-3 pb-3">
+                    <div class="w-8 h-8 ${bg} rounded-full flex items-center justify-center flex-shrink-0">${icon}</div>
+                    <div class="flex-1 bg-gray-50 rounded-lg p-3">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="font-medium text-sm text-gray-800">${escapeHtml(typeLabel)}</span>
+                            <span class="text-xs text-gray-400">${fmtDate(item._date)}</span>
+                        </div>
+                        <p class="text-xs text-gray-600">${escapeHtml(item.content || item.notes || item.description || '--')}</p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+    modal.innerHTML = `
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-5 flex-shrink-0">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center text-2xl font-bold text-white">${initial}</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white">${escapeHtml(c.name || 'Khách hàng')}</h3>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="bg-white/20 text-white text-xs px-2 py-0.5 rounded-full">${escapeHtml(c.customer_code || '#' + c.id)}</span>
+                                <span class="bg-green-400/30 text-white text-xs px-2 py-0.5 rounded-full">${c.status === 'potential' ? 'Tiềm năng' : 'Đang hoạt động'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="closeCustomerDetailModal()" class="text-white hover:text-gray-200 text-2xl leading-none">&times;</button>
+                </div>
+            </div>
+
+            <!-- Info Cards -->
+            <div class="px-6 py-4 grid grid-cols-2 md:grid-cols-4 gap-3 border-b flex-shrink-0">
+                <div class="bg-gray-50 rounded-xl p-3">
+                    <p class="text-xs text-gray-400 mb-1">📞 Điện thoại</p>
+                    <p class="text-sm font-medium text-gray-800">${escapeHtml(c.phone || 'Chưa có')}</p>
+                </div>
+                <div class="bg-gray-50 rounded-xl p-3">
+                    <p class="text-xs text-gray-400 mb-1">📧 Email</p>
+                    <p class="text-sm font-medium text-gray-800 break-all">${escapeHtml(c.email || 'Chưa có')}</p>
+                </div>
+                <div class="bg-gray-50 rounded-xl p-3">
+                    <p class="text-xs text-gray-400 mb-1">📍 Địa chỉ</p>
+                    <p class="text-sm font-medium text-gray-800">${escapeHtml(c.address || 'Chưa có')}</p>
+                </div>
+                <div class="bg-gray-50 rounded-xl p-3">
+                    <p class="text-xs text-gray-400 mb-1">🏢 Chi nhánh</p>
+                    <p class="text-sm font-medium text-gray-800">${escapeHtml(c.agency_name || 'Chưa có')}</p>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="px-6 py-3 grid grid-cols-4 gap-3 border-b flex-shrink-0">
+                <div class="text-center">
+                    <p class="text-2xl font-bold text-blue-600">${projects.length}</p>
+                    <p class="text-xs text-gray-500">Tổng dự án</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-2xl font-bold text-orange-500">${inProgress}</p>
+                    <p class="text-xs text-gray-500">Đang làm</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-2xl font-bold text-green-500">${completed}</p>
+                    <p class="text-xs text-gray-500">Hoàn thành</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-2xl font-bold text-purple-600">${fmtCurrency(totalValue)}</p>
+                    <p class="text-xs text-gray-500">Tổng giá trị</p>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="flex border-b flex-shrink-0">
+                <button class="cdm-tab-btn cdm-tab-active px-5 py-2.5 text-sm font-medium text-gray-600" onclick="switchCDMTab(this, 'cdm-projects')">📋 Dự án</button>
+                <button class="cdm-tab-btn px-5 py-2.5 text-sm font-medium text-gray-600" onclick="switchCDMTab(this, 'cdm-crm')">💬 CRM</button>
+                <button class="cdm-tab-btn px-5 py-2.5 text-sm font-medium text-gray-600" onclick="switchCDMTab(this, 'cdm-notes')">📝 Ghi chú</button>
+            </div>
+
+            <!-- Tab Content (scrollable) -->
+            <div class="flex-1 overflow-y-auto">
+                <div id="cdm-projects" class="cdm-tab-content p-5 space-y-2">${projectsHtml}</div>
+                <div id="cdm-crm" class="cdm-tab-content hidden p-5">${crmHtml}</div>
+                <div id="cdm-notes" class="cdm-tab-content hidden p-5">
+                    <p class="text-gray-600 whitespace-pre-wrap">${escapeHtml(c.notes || 'Chưa có ghi chú')}</p>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="border-t px-6 py-3 flex justify-end bg-gray-50 flex-shrink-0">
+                <button onclick="closeCustomerDetailModal()" class="px-5 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 text-sm font-medium">Đóng</button>
+            </div>
+        </div>
+
+        <style>
+            .cdm-tab-btn { border-bottom: 3px solid transparent; transition: all .15s; }
+            .cdm-tab-btn:hover { color: #2563eb; }
+            .cdm-tab-active { border-bottom-color: #3b82f6 !important; color: #2563eb !important; font-weight: 600 !important; }
+        </style>
+    `;
+}
+
+function switchCDMTab(btn, tabId) {
+    document.querySelectorAll('.cdm-tab-btn').forEach(b => b.classList.remove('cdm-tab-active'));
+    document.querySelectorAll('.cdm-tab-content').forEach(c => c.classList.add('hidden'));
+    btn.classList.add('cdm-tab-active');
+    const tab = document.getElementById(tabId);
+    if (tab) tab.classList.remove('hidden');
+}
+
+function closeCustomerDetailModal() {
+    const modal = document.getElementById('customerDetailModal');
     if (modal) modal.classList.add('hidden');
 }
 
