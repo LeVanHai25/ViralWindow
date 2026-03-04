@@ -2566,7 +2566,8 @@
 
             // Confirm delete project
             async function confirmDeleteProjectInTab(projectId, projectCode, projectName) {
-                if (!confirm(`Bạn có chắc chắn muốn xóa dự án "${projectName}" (${projectCode})?\n\nHành động này không thể hoàn tác!`)) {
+                const confirmed = await VWModal.confirm(`Bạn có chắc chắn muốn xóa dự án "${projectName}" (${projectCode})?\n\nHành động này không thể hoàn tác!`, { type: 'danger', title: 'Xóa dự án' });
+                if (!confirmed) {
                     return;
                 }
 
@@ -3913,7 +3914,8 @@
             }
 
             async function deleteCustomer(id) {
-                if (!confirm('Bạn có chắc muốn xóa khách hàng này?')) return;
+                const confirmed = await VWModal.confirm('Bạn có chắc muốn xóa khách hàng này?', { type: 'danger', title: 'Xóa khách hàng' });
+                if (!confirmed) return;
 
                 try {
                     const token = sessionStorage.getItem('token');
@@ -5398,7 +5400,8 @@
 
             // Delete project
             async function deleteProject(projectId) {
-                if (!confirm('Bạn có chắc chắn muốn xóa dự án này?')) {
+                const confirmed = await VWModal.confirm('Bạn có chắc chắn muốn xóa dự án này?', { type: 'danger', title: 'Xóa dự án' });
+                if (!confirmed) {
                     return;
                 }
 
