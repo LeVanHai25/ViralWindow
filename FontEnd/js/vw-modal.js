@@ -320,13 +320,10 @@
     // Đối với code cũ: ta dùng shim tương thích
 
     window.confirm = function (message) {
-        // Hiện modal async (không chặn)
-        // Trả về true để không block code, nhưng modal sẽ xử lý action thực
-        // Cách tốt nhất: dùng VWModal.confirm() cho code mới
-        window.VWModal.confirm(message);
-        // Để tương thích với code cũ, vẫn trả về false
-        // Code mới nên dùng await VWModal.confirm()
-        return false;
+        // Trả về Promise<boolean> từ VWModal.confirm
+        // Code gọi confirm() PHẢI dùng: await confirm('...')
+        // hoặc: const confirmed = await confirm('...'); if (!confirmed) return;
+        return window.VWModal.confirm(message);
     };
 
     window.alert = function (message) {

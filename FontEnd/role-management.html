@@ -465,7 +465,7 @@
 
         // Delete role
         async function deleteRole(id, name) {
-            if (!confirm(`Bạn có chắc muốn xóa chức vụ "${name}"?`)) return;
+            if (!(await confirm(`Bạn có chắc muốn xóa chức vụ "${name}"?`))) return;
 
             try {
                 const response = await fetchWithAuth(`${API_BASE}/roles/${id}`, {

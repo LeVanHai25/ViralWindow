@@ -681,7 +681,7 @@
             if (d.success) { closeRoleModal(); loadRoles(); alert(currentRoleId ? 'Cập nhật thành công!' : 'Tạo thành công!'); } else { alert('Lỗi: ' + d.message); }
         }
         async function deleteRole(id, name) {
-            if (!confirm(`Xóa chức vụ "${name}"?`)) return;
+            if (!(await confirm(`Xóa chức vụ "${name}"?`))) return;
             const r = await fetchWithAuth(`${API_BASE}/roles/${id}`, { method: 'DELETE' });
             if (!r) return;
             const d = await r.json();

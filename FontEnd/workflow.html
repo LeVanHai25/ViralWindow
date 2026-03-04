@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <script src="js/modal-system.js"></script>
     <script src="js/auth-helper.js"></script>
@@ -17,19 +18,24 @@
         .workflow-step {
             transition: all 0.3s ease;
         }
+
         .workflow-step:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
+
         .workflow-arrow {
             transition: all 0.3s ease;
         }
+
         .workflow-arrow.active {
             color: #10b981;
         }
+
         .workflow-card {
             position: relative;
         }
+
         .workflow-card::before {
             content: '';
             position: absolute;
@@ -42,6 +48,7 @@
             opacity: 0;
             transition: opacity 0.3s ease;
         }
+
         .workflow-card:hover::before {
             opacity: 1;
         }
@@ -51,13 +58,17 @@
     <link rel="stylesheet" href="css/mobile-responsive.css">
     <script src="js/vw-modal.js"></script>
 </head>
+
 <body class="bg-gray-100">
     <!-- HEADER -->
     <div class="bg-white shadow p-5 flex justify-between items-center">
         <div class="flex items-center gap-3">
-            <a href="javascript:void(0)" onclick="history.back()" title="Quay lại trang trước" class="icon-square bg-blue-600 text-white">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            <a href="javascript:void(0)" onclick="history.back()" title="Quay lại trang trước"
+                class="icon-square bg-blue-600 text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
             </a>
             <div>
@@ -77,8 +88,10 @@
                         <p class="text-2xl font-bold text-yellow-600" id="pendingQuotations">0</p>
                     </div>
                     <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-yellow-600">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-6 h-6 text-yellow-600">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                     </div>
                 </div>
@@ -91,8 +104,10 @@
                         <p class="text-2xl font-bold text-blue-600" id="approvedWithoutOrder">0</p>
                     </div>
                     <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-blue-600">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-6 h-6 text-blue-600">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
                     </div>
                 </div>
@@ -105,8 +120,10 @@
                         <p class="text-2xl font-bold text-orange-600" id="ordersPendingInventory">0</p>
                     </div>
                     <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-orange-600">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-6 h-6 text-orange-600">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                         </svg>
                     </div>
                 </div>
@@ -119,8 +136,10 @@
                         <p class="text-2xl font-bold text-red-600" id="overdueDebts">0</p>
                     </div>
                     <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-red-600">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-6 h-6 text-red-600">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
                     </div>
                 </div>
@@ -133,8 +152,10 @@
                         <p class="text-2xl font-bold text-green-600" id="projectsInProgress">0</p>
                     </div>
                     <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-green-600">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            class="w-6 h-6 text-green-600">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
                 </div>
@@ -147,61 +168,76 @@
             <div class="flex items-center justify-between overflow-x-auto pb-4">
                 <div class="workflow-step bg-blue-50 rounded-lg p-4 min-w-[150px] text-center">
                     <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" class="w-6 h-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white"
+                            class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                     </div>
                     <p class="font-semibold text-sm">Báo giá</p>
                 </div>
                 <div class="workflow-arrow text-gray-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-8 h-8">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-8 h-8">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                     </svg>
                 </div>
                 <div class="workflow-step bg-green-50 rounded-lg p-4 min-w-[150px] text-center">
                     <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" class="w-6 h-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white"
+                            class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
                     </div>
                     <p class="font-semibold text-sm">Lệnh SX</p>
                 </div>
                 <div class="workflow-arrow text-gray-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-8 h-8">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-8 h-8">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                     </svg>
                 </div>
                 <div class="workflow-step bg-purple-50 rounded-lg p-4 min-w-[150px] text-center">
                     <div class="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" class="w-6 h-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white"
+                            class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                         </svg>
                     </div>
                     <p class="font-semibold text-sm">Xuất kho</p>
                 </div>
                 <div class="workflow-arrow text-gray-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-8 h-8">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-8 h-8">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                     </svg>
                 </div>
                 <div class="workflow-step bg-orange-50 rounded-lg p-4 min-w-[150px] text-center">
                     <div class="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" class="w-6 h-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white"
+                            class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                     </div>
                     <p class="font-semibold text-sm">Sản xuất</p>
                 </div>
                 <div class="workflow-arrow text-gray-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-8 h-8">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-8 h-8">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                     </svg>
                 </div>
                 <div class="workflow-step bg-teal-50 rounded-lg p-4 min-w-[150px] text-center">
                     <div class="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center mx-auto mb-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white" class="w-6 h-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="white"
+                            class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
                     <p class="font-semibold text-sm">Hoàn thành</p>
@@ -213,7 +249,8 @@
         <div class="bg-white rounded-xl shadow p-6">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-lg font-bold">Workflow theo dự án</h2>
-                <select id="projectFilter" onchange="loadProjectsWorkflow()" class="px-4 py-2 border border-gray-300 rounded-lg">
+                <select id="projectFilter" onchange="loadProjectsWorkflow()"
+                    class="px-4 py-2 border border-gray-300 rounded-lg">
                     <option value="">Tất cả dự án</option>
                 </select>
             </div>
@@ -232,7 +269,7 @@
             try {
                 const response = await fetch(`${API_BASE}/workflow/dashboard`);
                 const result = await response.json();
-                
+
                 if (result.success) {
                     const data = result.data;
                     document.getElementById('pendingQuotations').textContent = data.pending_quotations || 0;
@@ -251,16 +288,16 @@
             try {
                 const projectId = document.getElementById('projectFilter').value;
                 let url = `${API_BASE}/projects`;
-                
+
                 const response = await fetch(url);
                 const result = await response.json();
-                
+
                 if (!result.success || !result.data) {
                     document.getElementById('projectsWorkflowList').innerHTML = '<p class="text-gray-500 text-center py-8">Không có dự án nào</p>';
                     return;
                 }
 
-                const projects = projectId 
+                const projects = projectId
                     ? result.data.filter(p => p.id == projectId)
                     : result.data;
 
@@ -272,7 +309,7 @@
                     try {
                         const workflowResponse = await fetch(`${API_BASE}/workflow/projects/${project.id}`);
                         const workflowResult = await workflowResponse.json();
-                        
+
                         if (workflowResult.success) {
                             displayProjectWorkflow(workflowResult.data);
                         }
@@ -299,7 +336,7 @@
         function displayProjectWorkflow(data) {
             const { project, workflow } = data;
             const container = document.getElementById('projectsWorkflowList');
-            
+
             const hasQuotation = workflow.quotations && workflow.quotations.length > 0;
             const hasOrder = workflow.production_orders && workflow.production_orders.length > 0;
             const hasDebt = workflow.debts && workflow.debts.length > 0;
@@ -405,7 +442,7 @@
         }
 
         async function createProductionOrderFromQuotation(quotationId) {
-            if (!confirm('Tạo lệnh sản xuất từ báo giá này?')) return;
+            if (!(await confirm('Tạo lệnh sản xuất từ báo giá này?'))) return;
 
             try {
                 const response = await fetch(`${API_BASE}/workflow/quotations/${quotationId}/approve`, {
@@ -433,7 +470,7 @@
         }
 
         async function createInventoryIssueFromOrder(orderId) {
-            if (!confirm('Tạo phiếu xuất kho từ lệnh sản xuất này?')) return;
+            if (!(await confirm('Tạo phiếu xuất kho từ lệnh sản xuất này?'))) return;
 
             try {
                 const response = await fetch(`${API_BASE}/workflow/production-orders/${orderId}/create-inventory-issue`, {
@@ -455,7 +492,7 @@
         }
 
         async function completeProductionOrder(orderId) {
-            if (!confirm('Hoàn thành lệnh sản xuất này?')) return;
+            if (!(await confirm('Hoàn thành lệnh sản xuất này?'))) return;
 
             try {
                 const response = await fetch(`${API_BASE}/workflow/production-orders/${orderId}/complete`, {
@@ -485,7 +522,7 @@
         }
 
         // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             loadWorkflowDashboard();
             loadProjectsWorkflow();
         });
@@ -502,29 +539,5 @@
         }
     </style>
 </body>
+
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
