@@ -11,7 +11,7 @@
     <title>Cửa trong dự án - ViralWindow</title>
     <script>
         // Suppress TailwindCSS CDN production warning
-        if (typeof window !== 'undefined') { window.__tailwindCSS = { suppressWarning: true }; }
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">

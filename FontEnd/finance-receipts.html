@@ -11,7 +11,7 @@
     <title>Phiếu thu - ViralWindow</title>
     <script>
         // Suppress TailwindCSS CDN production warning
-        if (typeof window !== 'undefined') { window.__tailwindCSS = { suppressWarning: true }; }
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="css/sidebar-enterprise.css">

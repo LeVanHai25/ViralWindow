@@ -11,7 +11,7 @@
     <title>Trang chủ - ViralWindow</title>
     <script>
         // Suppress TailwindCSS CDN production warning
-        if (typeof window !== 'undefined') { window.__tailwindCSS = { suppressWarning: true }; }
+        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="css/sidebar-enterprise.css">
@@ -2040,8 +2040,12 @@
         function renderGrid() {
             var g = el('cityGrid'); if (!g) return;
             g.innerHTML = CITIES.map(function(c) {
-                return '<button class="wx-city-btn' + (c.code===city.code?' active':'') + '"' +
-                    ' onclick="window.__wxPick('' + c.code + '','' + c.name + '')">' + c.name + '</button>';
+                return '<button class="wx-city-btn' + 
+  (c.code === city.code ? ' active' : '') + 
+  '" onclick="window.__wxPick(' + 
+  c.code + ', \'' + c.name + '\')">' + 
+  c.name + 
+  '</button>';
             }).join('');
         }
 

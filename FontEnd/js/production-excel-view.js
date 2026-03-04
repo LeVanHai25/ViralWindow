@@ -1,10 +1,10 @@
-/**
+﻿/**
  * Production Excel View - Standard Logic Implementation
  * Synced 100% with Kanban, proper enums and computed fields from backend
  */
 
 // Sử dụng API_BASE từ config hoặc fallback
-const API_BASE = window.API_BASE || 'http://localhost:3001/api';
+const API_BASE = window.API_BASE || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:3001/api' : window.location.origin + '/api');
 
 // ============================================
 // LABEL MAPPINGS (from enums to display text)
