@@ -16,7 +16,7 @@ exports.getAllSystems = async (req, res) => {
         query += " ORDER BY code ASC";
 
         const [rows] = await db.query(query, params);
-        
+
         // Đảm bảo cross_section_image, density và aluminum_system được map đúng
         const processedRows = rows.map(row => {
             return {
@@ -62,7 +62,7 @@ exports.getById = async (req, res) => {
         system.cross_section_image = system.cross_section_image || null;
         system.density = system.density || null;
         system.aluminum_system = system.aluminum_system || null;
-        
+
         res.json({
             success: true,
             data: system
@@ -82,7 +82,7 @@ exports.create = async (req, res) => {
         // Handle both JSON and FormData
         // Hỗ trợ cả brand/thickness_mm (cũ) và density/cross_section_image (mới)
         let code, name, brand, thickness_mm, density, weight_per_meter, length_m, quantity, quantity_m, color, description, image_url, cross_section_image, unit_price, aluminum_system = null;
-        
+
         if (req.file) {
             // FormData with file upload
             code = req.body.code;
@@ -118,11 +118,14 @@ exports.create = async (req, res) => {
             // cross_section_image đã được parse từ req.body
         }
 
+        const min_stock_level = req.body ? (parseInt(req.body.min_stock_level) || 5) : 5;
+        const max_stock_level = req.body ? (parseInt(req.body.max_stock_level) || 50) : 50;
+
         const [result] = await db.query(
             `INSERT INTO aluminum_systems 
-             (code, name, brand, thickness_mm, density, weight_per_meter, length_m, quantity, quantity_m, color, description, cross_section_image, unit_price, aluminum_system) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [code, name, brand || null, thickness_mm || null, density || null, weight_per_meter || null, length_m || null, quantity || 0, quantity_m || null, color, description || null, cross_section_image || null, unit_price || 0, aluminum_system || null]
+             (code, name, brand, thickness_mm, density, weight_per_meter, length_m, quantity, quantity_m, color, description, cross_section_image, unit_price, aluminum_system, min_stock_level, max_stock_level) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [code, name, brand || null, thickness_mm || null, density || null, weight_per_meter || null, length_m || null, quantity || 0, quantity_m || null, color, description || null, cross_section_image || null, unit_price || 0, aluminum_system || null, min_stock_level, max_stock_level]
         );
 
         res.status(201).json({
@@ -155,19 +158,19 @@ exports.create = async (req, res) => {
 exports.update = async (req, res) => {
     try {
         const { id } = req.params;
-        
+
         // Handle both JSON and FormData
         // Hỗ trợ cả brand/thickness_mm (cũ) và density/cross_section_image (mới)
         let name, brand, thickness_mm, density, weight_per_meter, length_m, quantity, quantity_m, color, description, image_url, cross_section_image;
         let unit_price, door_type, profiles, matching_rules, aluminum_system;
-        
+
         // Lấy cross_section_image hiện tại từ database trước khi update
         const [currentRows] = await db.query(
             "SELECT cross_section_image FROM aluminum_systems WHERE id = ?",
             [id]
         );
         const currentCrossSectionImage = currentRows.length > 0 ? currentRows[0].cross_section_image : null;
-        
+
         if (req.file) {
             // FormData with file upload
             name = req.body.name;
@@ -190,23 +193,23 @@ exports.update = async (req, res) => {
             matching_rules = req.body.matching_rules ? JSON.parse(req.body.matching_rules) : null;
         } else {
             // JSON request
-            ({ 
+            ({
                 name, brand, thickness_mm, density, weight_per_meter, length_m, quantity, quantity_m, color, description, image_url, cross_section_image,
                 unit_price, door_type, profiles, matching_rules, aluminum_system
             } = req.body);
-            
+
             // Parse density nếu là string
             if (density && typeof density === 'string' && density !== '') {
                 density = parseFloat(density);
             } else if (!density || density === '') {
                 density = null;
             }
-            
+
             // Nếu có quantity thì dùng quantity, nếu không thì dùng quantity_m
             if (quantity === undefined && quantity_m !== undefined) {
                 quantity = parseInt(quantity_m) || 0;
             }
-            
+
             // Nếu không có cross_section_image trong request và không có file mới, giữ nguyên cross_section_image cũ
             if (!cross_section_image) {
                 cross_section_image = currentCrossSectionImage;
@@ -216,7 +219,7 @@ exports.update = async (req, res) => {
         // Build update query dynamically
         const updateFields = [];
         const updateValues = [];
-        
+
         if (name !== undefined) { updateFields.push('name = ?'); updateValues.push(name); }
         if (aluminum_system !== undefined) { updateFields.push('aluminum_system = ?'); updateValues.push(aluminum_system); }
         if (brand !== undefined) { updateFields.push('brand = ?'); updateValues.push(brand); }
@@ -233,14 +236,20 @@ exports.update = async (req, res) => {
         if (door_type !== undefined) { updateFields.push('door_type = ?'); updateValues.push(door_type || 'door'); }
         if (profiles !== undefined) { updateFields.push('profiles = ?'); updateValues.push(profiles ? JSON.stringify(profiles) : null); }
         if (matching_rules !== undefined) { updateFields.push('matching_rules = ?'); updateValues.push(matching_rules ? JSON.stringify(matching_rules) : null); }
-        
+
+        // Handle min/max stock levels
+        const min_stock_level = req.body.min_stock_level;
+        const max_stock_level = req.body.max_stock_level;
+        if (min_stock_level !== undefined) { updateFields.push('min_stock_level = ?'); updateValues.push(parseInt(min_stock_level) || 5); }
+        if (max_stock_level !== undefined) { updateFields.push('max_stock_level = ?'); updateValues.push(parseInt(max_stock_level) || 50); }
+
         if (updateFields.length === 0) {
             return res.status(400).json({
                 success: false,
                 message: "Không có trường nào để cập nhật"
             });
         }
-        
+
         updateValues.push(id);
 
         const [result] = await db.query(
@@ -280,7 +289,7 @@ exports.update = async (req, res) => {
 exports.getByIdWithDetails = async (req, res) => {
     try {
         const { id } = req.params;
-        
+
         // Get system
         const [systemRows] = await db.query(
             "SELECT * FROM aluminum_systems WHERE id = ? AND is_active = 1",
@@ -295,7 +304,7 @@ exports.getByIdWithDetails = async (req, res) => {
         }
 
         const system = systemRows[0];
-        
+
         // Parse JSON fields
         if (system.profiles && typeof system.profiles === 'string') {
             try {

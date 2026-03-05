@@ -2175,6 +2175,16 @@
                             <input type="number" id="aluminumPrice" step="1000" placeholder="VD: 50000"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
                         </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Định mức tối thiểu</label>
+                            <input type="number" id="aluminumMinStock" step="1" value="5"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Định mức tối đa</label>
+                            <input type="number" id="aluminumMaxStock" step="1" value="50"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+                        </div>
                         <div class="col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Màu</label>
                             <input type="text" id="aluminumColor" placeholder="VD: Trắng, Xám, Đen..."
@@ -2370,6 +2380,11 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">Định mức tối thiểu</label>
                             <input type="number" id="otherMinStock" step="1" value="10"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Định mức tối đa</label>
+                            <input type="number" id="otherMaxStock" step="1" value="100"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
                         </div>
                         <div class="col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Mô tả</label>
@@ -10557,6 +10572,8 @@
                         document.getElementById('aluminumLength').value = system.length_m || '';
                         document.getElementById('aluminumQuantity').value = system.quantity || 0;
                         document.getElementById('aluminumPrice').value = system.unit_price || '';
+                        document.getElementById('aluminumMinStock').value = system.min_stock_level || 5;
+                        document.getElementById('aluminumMaxStock').value = system.max_stock_level || 50;
                         document.getElementById('aluminumColor').value = system.color || '';
                         document.getElementById('aluminumDescription').value = system.description || '';
 
@@ -10662,6 +10679,8 @@
                         formData.append('length_m', document.getElementById('aluminumLength').value ? parseFloat(document.getElementById('aluminumLength').value) : '');
                         formData.append('quantity', quantityValue);
                         formData.append('quantity_m', quantityValue);
+                        formData.append('min_stock_level', document.getElementById('aluminumMinStock').value ? parseInt(document.getElementById('aluminumMinStock').value) : 5);
+                        formData.append('max_stock_level', document.getElementById('aluminumMaxStock').value ? parseInt(document.getElementById('aluminumMaxStock').value) : 50);
                         formData.append('unit_price', document.getElementById('aluminumPrice').value ? (parseFloat(document.getElementById('aluminumPrice').value) || 0) : 0);
                         formData.append('color', document.getElementById('aluminumColor').value ? document.getElementById('aluminumColor').value.trim() : '');
                         formData.append('description', document.getElementById('aluminumDescription').value ? document.getElementById('aluminumDescription').value.trim() : '');
@@ -10687,6 +10706,8 @@
                             length_m: document.getElementById('aluminumLength').value ? parseFloat(document.getElementById('aluminumLength').value) : null,
                             quantity: quantityValue,
                             quantity_m: quantityValue,
+                            min_stock_level: document.getElementById('aluminumMinStock').value ? parseInt(document.getElementById('aluminumMinStock').value) : 5,
+                            max_stock_level: document.getElementById('aluminumMaxStock').value ? parseInt(document.getElementById('aluminumMaxStock').value) : 50,
                             unit_price: document.getElementById('aluminumPrice').value ? (parseFloat(document.getElementById('aluminumPrice').value) || 0) : 0,
                             color: document.getElementById('aluminumColor').value ? document.getElementById('aluminumColor').value.trim() : null,
                             description: document.getElementById('aluminumDescription').value ? document.getElementById('aluminumDescription').value.trim() : null
@@ -11613,6 +11634,8 @@
                         const stockValue = item.stock_quantity || item.quantity || 0;
                         document.getElementById('otherStock').value = stockValue;
                         document.getElementById('otherMinStock').value = item.min_stock || item.min_stock_level || 10;
+                        const otherMaxStockEl = document.getElementById('otherMaxStock');
+                        if (otherMaxStockEl) otherMaxStockEl.value = item.max_stock_level || 100;
                         document.getElementById('otherDescription').value = item.description || item.notes || '';
 
                         // Hiển thị ảnh hiện có nếu có (accessories uses image_path)
@@ -11679,6 +11702,7 @@
                 formData.append('unit', unitEl.value.trim());
                 formData.append('stock_quantity', quantity);           // accessories uses 'stock_quantity'
                 formData.append('min_stock_level', parseInt(document.getElementById('otherMinStock').value) || 10);
+                formData.append('max_stock_level', parseInt(document.getElementById('otherMaxStock')?.value) || 100);
                 formData.append('sale_price', unitPrice);              // accessories uses 'sale_price'
                 formData.append('purchase_price', unitPrice);          // accessories uses 'purchase_price'
                 if (document.getElementById('otherDescription').value) {
