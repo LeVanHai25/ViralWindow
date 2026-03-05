@@ -1436,7 +1436,7 @@ exports.exportExcel = async (req, res) => {
             { key: 'featuredProducts', header: 'Sản phẩm ĐC', width: 25 },
             { key: 'customer', header: 'CN-Khách hàng', width: 25 },
             { key: 'quantity', header: 'Khối lượng', width: 12 },
-            { key: 'workshop', header: 'Đơn vị SX', width: 15 },
+            { key: 'workforce', header: 'Nhân lực', width: 15 },
             { key: 'createdAt', header: 'Ngày tạo', width: 12 },
             { key: 'deliveryDate', header: 'Kế hoạch giao', width: 14 },
             { key: 'materialType', header: 'Tình trạng VT', width: 20 },
@@ -1553,7 +1553,7 @@ exports.exportExcel = async (req, res) => {
                 featuredProductsDisplay,
                 customerDisplay,
                 order.quantity > 0 ? order.quantity.toFixed(2) + ' kg' : '',
-                companyName,
+                order.workforce || '',
                 formatDateVN(order.createdAt),
                 formatDateVN(order.deliveryPlanDate),
                 overallStatusLabel,  // Combined status for main row
