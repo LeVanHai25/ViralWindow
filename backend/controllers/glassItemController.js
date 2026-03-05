@@ -19,8 +19,8 @@ exports.getAll = async (req, res) => {
         const params = [];
 
         if (search) {
-            query += ' AND (g.name LIKE ? OR g.code LIKE ? OR g.structure LIKE ?)';
-            params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+            query += ' AND (g.name LIKE ? OR g.code LIKE ? OR g.structure LIKE ? OR g.glass_type LIKE ? OR g.notes LIKE ?)';
+            params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
         }
 
         // Sắp xếp
@@ -78,29 +78,21 @@ exports.getById = async (req, res) => {
 // Tạo mới kính
 exports.create = async (req, res) => {
     try {
-        const { code, name, structure, price, quantity, supplier_id } = req.body;
+        const { code, name, glass_type, structure, price, notes, quantity, supplier_id } = req.body;
 
         if (!name) {
             return res.status(400).json({ success: false, message: 'Tên kính là bắt buộc' });
         }
 
         const [result] = await pool.query(
-            'INSERT INTO glass_items (code, name, structure, price, quantity, supplier_id) VALUES (?, ?, ?, ?, ?, ?)',
-            [code || null, name, structure || null, price || 0, quantity || 0, supplier_id || null]
+            'INSERT INTO glass_items (code, name, glass_type, structure, price, notes, quantity, supplier_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [code || null, name, glass_type || null, structure || null, price || 0, notes || null, quantity || 0, supplier_id || null]
         );
 
         res.status(201).json({
             success: true,
             message: 'Tạo kính thành công',
-            data: {
-                id: result.insertId,
-                code: code || null,
-                name,
-                structure,
-                price: price || 0,
-                quantity: quantity || 0,
-                supplier_id: supplier_id || null
-            }
+            data: { id: result.insertId, code, name, glass_type, structure, price: price || 0, notes }
         });
     } catch (error) {
         console.error('Error creating glass item:', error);
@@ -112,11 +104,11 @@ exports.create = async (req, res) => {
 exports.update = async (req, res) => {
     try {
         const { id } = req.params;
-        const { code, name, structure, price, quantity, supplier_id } = req.body;
+        const { code, name, glass_type, structure, price, notes, quantity, supplier_id } = req.body;
 
         const [result] = await pool.query(
-            'UPDATE glass_items SET code = ?, name = ?, structure = ?, price = ?, quantity = ?, supplier_id = ? WHERE id = ?',
-            [code || null, name, structure || null, price || 0, quantity || 0, supplier_id || null, id]
+            'UPDATE glass_items SET code = ?, name = ?, glass_type = ?, structure = ?, price = ?, notes = ?, quantity = ?, supplier_id = ? WHERE id = ?',
+            [code || null, name, glass_type || null, structure || null, price || 0, notes || null, quantity || 0, supplier_id || null, id]
         );
 
         if (result.affectedRows === 0) {

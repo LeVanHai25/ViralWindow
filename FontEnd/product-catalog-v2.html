@@ -858,11 +858,14 @@
             <table class="simple-table glass-table">
                 <thead>
                     <tr>
-                        <th style="width:60px;text-align:center">STT</th>
-                        <th style="width:40%;text-align:left">Tên kính</th>
-                        <th style="width:25%;text-align:left">Cấu tạo</th>
-                        <th style="width:120px;text-align:right">Giá (VND)</th>
-                        <th style="width:150px;text-align:center">Thao tác</th>
+                        <th style="width:50px;text-align:center">STT</th>
+                        <th style="width:15%;text-align:left">Tên kính</th>
+                        <th style="width:80px;text-align:center">Mã kính</th>
+                        <th style="width:25%;text-align:left">Chủng loại kính</th>
+                        <th style="width:80px;text-align:center">Cấu tạo</th>
+                        <th style="width:120px;text-align:right">Chênh kính áp dụng</th>
+                        <th style="width:15%;text-align:left">Ghi chú</th>
+                        <th style="width:130px;text-align:center">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody id="glassTable"></tbody>
@@ -953,7 +956,7 @@
                 const result = await res.json();
                 if (result.success) {
                     glasses = result.data.map(g => ({
-                        id: g.id, name: g.name, structure: g.structure || '', price: g.price || 0
+                        id: g.id, code: g.code || '', name: g.name, glass_type: g.glass_type || '', structure: g.structure || '', price: g.price || 0, notes: g.notes || ''
                     }));
                     filterGlass();
                 }
@@ -1106,7 +1109,7 @@
         function filterGlass() {
             const search = document.getElementById('searchGlass').value.toLowerCase();
             const sort = document.getElementById('sortGlass').value;
-            let filtered = glasses.filter(g => g.name.toLowerCase().includes(search));
+            let filtered = glasses.filter(g => g.name.toLowerCase().includes(search) || g.code.toLowerCase().includes(search) || g.glass_type.toLowerCase().includes(search) || g.notes.toLowerCase().includes(search));
             filtered.sort((a, b) => {
                 if (sort === 'id') return a.id - b.id;
                 if (sort === 'price') return a.price - b.price;
@@ -1118,17 +1121,22 @@
         function renderGlass(data) {
             document.getElementById('glassTable').innerHTML = data.map((g, i) => `
         <tr style="background:${i % 2 === 0 ? '#f0f9ff' : '#ffffff'}">
-            <td style="text-align:center;font-weight:600;color:#6b7280">${g.id}</td>
-            <td style="padding:10px 12px;font-size:13px;color:#1e3a5f">${g.name}</td>
-            <td style="padding:10px 12px;font-size:12px;color:#64748b">
-                <span style="background:linear-gradient(135deg,#e0f2fe,#bae6fd);color:#0369a1;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:500">${g.structure || '—'}</span>
-            </td>
-            <td style="text-align:right;padding-right:16px">
-                <span style="background:linear-gradient(135deg,#dcfce7,#bbf7d0);color:#166534;padding:5px 12px;border-radius:6px;font-weight:600;font-size:12px">${formatMoney(g.price)}</span>
-            </td>
+            <td style="text-align:center;font-weight:600;color:#6b7280">${i + 1}</td>
+            <td style="padding:8px 10px;font-size:12px;color:#1e3a5f;font-weight:500">${g.name}</td>
             <td style="text-align:center">
-                <button onclick="editItem('glass', ${g.id})" style="background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;padding:5px 14px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;margin-right:6px">Sửa</button>
-                <button onclick="deleteItem('glass', ${g.id})" style="background:linear-gradient(135deg,#ef4444,#dc2626);color:white;border:none;padding:5px 14px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer">Xóa</button>
+                <span style="background:linear-gradient(135deg,#a78bfa,#8b5cf6);color:white;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:600">${g.code || '—'}</span>
+            </td>
+            <td style="padding:8px 10px;font-size:12px;color:#475569">${g.glass_type || '—'}</td>
+            <td style="text-align:center">
+                <span style="background:linear-gradient(135deg,#e0f2fe,#bae6fd);color:#0369a1;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:500">${g.structure || '—'}</span>
+            </td>
+            <td style="text-align:right;padding-right:12px">
+                <span style="background:linear-gradient(135deg,#dcfce7,#bbf7d0);color:#166534;padding:4px 10px;border-radius:6px;font-weight:600;font-size:12px">${g.price ? formatMoney(g.price) : '—'}</span>
+            </td>
+            <td style="padding:8px 10px;font-size:11px;color:#64748b">${g.notes || '—'}</td>
+            <td style="text-align:center">
+                <button onclick="editItem('glass', ${g.id})" style="background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;padding:4px 10px;border-radius:5px;font-size:10px;font-weight:600;cursor:pointer;margin-right:4px">Sửa</button>
+                <button onclick="deleteItem('glass', ${g.id})" style="background:linear-gradient(135deg,#ef4444,#dc2626);color:white;border:none;padding:4px 10px;border-radius:5px;font-size:10px;font-weight:600;cursor:pointer">Xóa</button>
             </td>
         </tr>
     `).join('');
@@ -1222,18 +1230,32 @@
             } else if (type === 'glass') {
                 const item = id ? glasses.find(g => g.id === id) : {};
                 html = `
-                    <div class="form-group">
-                        <label style="color:#0369a1;font-weight:600"> Tên kính</label>
-                        <input type="text" id="formName" value="${item.name || ''}" placeholder="Kính dán an toàn 2 lớp 8.38mm..." style="border:2px solid #7dd3fc;background:#f0f9ff">
-                    </div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                    <div style="display:grid;grid-template-columns:2fr 1fr;gap:12px">
                         <div class="form-group">
-                            <label style="color:#6b7280;font-weight:600"> Cấu tạo</label>
-                            <input type="text" id="formStructure" value="${item.structure || ''}" placeholder="4+4, 5+5, 3+3..." style="border:2px solid #e0f2fe;background:#f0f9ff">
+                            <label style="color:#0369a1;font-weight:600">Tên kính</label>
+                            <input type="text" id="formName" value="${item.name || ''}" placeholder="Kính dán an toàn 2 lớp trắng trong..." style="border:2px solid #7dd3fc;background:#f0f9ff">
                         </div>
                         <div class="form-group">
-                            <label style="color:#166534;font-weight:600"> Giá (VND)</label>
+                            <label style="color:#8b5cf6;font-weight:600">Mã kính</label>
+                            <input type="text" id="formCode" value="${item.code || ''}" placeholder="638TT, 838TT..." style="border:2px solid #c4b5fd;background:#faf5ff">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label style="color:#475569;font-weight:600">Chủng loại kính</label>
+                        <input type="text" id="formGlassType" value="${item.glass_type || ''}" placeholder="Kính dán an toàn 2 lớp 8.38mm..." style="border:2px solid #cbd5e1;background:#f8fafc">
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px">
+                        <div class="form-group">
+                            <label style="color:#6b7280;font-weight:600">Cấu tạo</label>
+                            <input type="text" id="formStructure" value="${item.structure || ''}" placeholder="4+4, 5+5..." style="border:2px solid #e0f2fe;background:#f0f9ff">
+                        </div>
+                        <div class="form-group">
+                            <label style="color:#166534;font-weight:600">Chênh kính áp dụng (VNĐ)</label>
                             <input type="number" id="formPrice" value="${item.price || ''}" placeholder="0" style="border:2px solid #bbf7d0;background:#f0fdf4">
+                        </div>
+                        <div class="form-group">
+                            <label style="color:#92400e;font-weight:600">Ghi chú</label>
+                            <input type="text" id="formNotes" value="${item.notes || ''}" placeholder="HẢI LONG, HẢI LONG (HL1-10)..." style="border:2px solid #fde68a;background:#fffbeb">
                         </div>
                     </div>
                 `;
@@ -1300,9 +1322,12 @@
                     await loadGroupsFromAPI();
                 } else if (currentModal === 'glass') {
                     const body = {
+                        code: document.getElementById('formCode').value,
                         name: document.getElementById('formName').value,
+                        glass_type: document.getElementById('formGlassType').value,
                         structure: document.getElementById('formStructure').value,
-                        price: +document.getElementById('formPrice').value || 0
+                        price: +document.getElementById('formPrice').value || 0,
+                        notes: document.getElementById('formNotes').value
                     };
                     const url = editingId ? `${API_BASE}/glass-items/${editingId}` : `${API_BASE}/glass-items`;
                     const method = editingId ? 'PUT' : 'POST';
