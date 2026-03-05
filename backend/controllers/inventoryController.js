@@ -10,7 +10,8 @@ exports.getAllItems = async (req, res) => {
                         i.id, i.item_code, i.item_name, i.item_type, i.unit, 
                         i.quantity,
                         i.quantity as stock_quantity, 
-                        i.min_stock_level, 
+                        i.min_stock_level,
+                        i.max_stock_level,
                         i.unit_price,
                         i.image_url,
                         i.notes,
@@ -33,11 +34,29 @@ exports.getAllItems = async (req, res) => {
 
         const [rows] = await db.query(query, params);
 
-        // Đảm bảo quantity và unit_price là number cho tất cả items
+        // Tính stock_status và restock_quantity cho mỗi item
         rows.forEach(row => {
             row.quantity = parseFloat(row.quantity) || 0;
             row.stock_quantity = parseFloat(row.quantity) || 0;
             row.unit_price = parseFloat(row.unit_price) || 0;
+            row.min_stock_level = parseFloat(row.min_stock_level) || 0;
+            row.max_stock_level = parseFloat(row.max_stock_level) || 100;
+
+            // Calculate stock status
+            if (row.quantity === 0) {
+                row.stock_status = 'OUT_OF_STOCK';
+            } else if (row.quantity <= row.min_stock_level) {
+                row.stock_status = 'LOW_STOCK';
+            } else if (row.quantity > row.max_stock_level) {
+                row.stock_status = 'OVERSTOCK';
+            } else {
+                row.stock_status = 'NORMAL';
+            }
+
+            // Calculate restock quantity
+            row.restock_quantity = row.max_stock_level > row.quantity
+                ? Math.ceil(row.max_stock_level - row.quantity)
+                : 0;
         });
 
         res.json({
@@ -569,7 +588,7 @@ exports.getById = async (req, res) => {
 // POST create
 exports.create = async (req, res) => {
     try {
-        const { item_code, item_name, item_type, unit, quantity, stock_quantity, min_stock_level, unit_price, description, notes, supplier_id } = req.body;
+        const { item_code, item_name, item_type, unit, quantity, stock_quantity, min_stock_level, max_stock_level, unit_price, description, notes, supplier_id } = req.body;
 
         // Hỗ trợ cả quantity và stock_quantity - đảm bảo là number
         let qty = 0;
@@ -579,9 +598,9 @@ exports.create = async (req, res) => {
             qty = parseFloat(stock_quantity) || 0;
         }
 
-        // Đảm bảo unit_price là number
         const price = parseFloat(unit_price) || 0;
         const minStock = parseInt(min_stock_level) || 10;
+        const maxStock = parseInt(max_stock_level) || 100;
         const supplierId = supplier_id ? parseInt(supplier_id) : null;
 
         // Validate required fields
@@ -616,9 +635,9 @@ exports.create = async (req, res) => {
         // Insert with unit_price, image_url and supplier_id
         const [result] = await db.query(
             `INSERT INTO inventory 
-             (item_code, item_name, item_type, unit, quantity, min_stock_level, unit_price, notes, image_url, supplier_id) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [item_code, item_name, item_type, unit, qty, minStock, price, notes || description || null, image_url, supplierId]
+             (item_code, item_name, item_type, unit, quantity, min_stock_level, max_stock_level, unit_price, notes, image_url, supplier_id) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [item_code, item_name, item_type, unit, qty, minStock, maxStock, price, notes || description || null, image_url, supplierId]
         );
 
         // Thông báo nhập kho mới (Event-based)
@@ -656,7 +675,7 @@ exports.create = async (req, res) => {
 exports.update = async (req, res) => {
     try {
         const { id } = req.params;
-        const { item_name, item_type, unit, quantity, stock_quantity, min_stock_level, unit_price, description, notes, supplier_id } = req.body;
+        const { item_name, item_type, unit, quantity, stock_quantity, min_stock_level, max_stock_level, unit_price, description, notes, supplier_id } = req.body;
 
         // Hỗ trợ cả quantity và stock_quantity - đảm bảo là number
         let qty = 0;
@@ -666,9 +685,9 @@ exports.update = async (req, res) => {
             qty = parseFloat(stock_quantity) || 0;
         }
 
-        // Đảm bảo unit_price là number
         const price = parseFloat(unit_price) || 0;
         const minStock = parseInt(min_stock_level) || 10;
+        const maxStock = parseInt(max_stock_level) || 100;
         const supplierId = supplier_id ? parseInt(supplier_id) : null;
 
         console.log('Updating inventory item:', { id, quantity: qty, unit_price: price, supplier_id: supplierId }); // Debug
@@ -683,15 +702,15 @@ exports.update = async (req, res) => {
         if (image_url !== undefined) {
             query = `UPDATE inventory 
                  SET item_name = ?, item_type = ?, unit = ?, quantity = ?, 
-                 min_stock_level = ?, unit_price = ?, notes = ?, image_url = ?, supplier_id = ? 
+                 min_stock_level = ?, max_stock_level = ?, unit_price = ?, notes = ?, image_url = ?, supplier_id = ? 
                  WHERE id = ?`;
-            params = [item_name, item_type, unit, qty, minStock, price, notes || description || null, image_url, supplierId, id];
+            params = [item_name, item_type, unit, qty, minStock, maxStock, price, notes || description || null, image_url, supplierId, id];
         } else {
             query = `UPDATE inventory 
                  SET item_name = ?, item_type = ?, unit = ?, quantity = ?, 
-                 min_stock_level = ?, unit_price = ?, notes = ?, supplier_id = ? 
+                 min_stock_level = ?, max_stock_level = ?, unit_price = ?, notes = ?, supplier_id = ? 
                  WHERE id = ?`;
-            params = [item_name, item_type, unit, qty, minStock, price, notes || description || null, supplierId, id];
+            params = [item_name, item_type, unit, qty, minStock, maxStock, price, notes || description || null, supplierId, id];
         }
 
         const [result] = await db.query(query, params);
@@ -982,7 +1001,7 @@ exports.deleteAllInventory = async (req, res) => {
 // =====================================================
 exports.getExportSlipsForAluminum = async (req, res) => {
     try {
-        const { aluminum_system_id } = req.params;        if (!aluminum_system_id) {
+        const { aluminum_system_id } = req.params; if (!aluminum_system_id) {
             return res.status(400).json({
                 success: false,
                 message: 'Vui lòng cung cấp aluminum_system_id'
