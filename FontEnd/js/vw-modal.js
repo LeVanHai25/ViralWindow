@@ -348,8 +348,8 @@
             return new Promise(function (resolve) {
                 // Create overlay
                 var overlay = document.createElement('div');
-                overlay.className = 'vw-modal-overlay';
-                overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:99999;opacity:0;transition:opacity .3s';
+                overlay.className = 'vw-prompt-overlay';
+                overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:99999;opacity:0;visibility:visible;transition:opacity .3s';
 
                 var modalHtml = '<div style="background:#fff;border-radius:16px;box-shadow:0 25px 50px -12px rgba(0,0,0,.25);max-width:440px;width:90%;transform:scale(.95);transition:transform .3s;overflow:hidden">' +
                     '<div style="padding:20px 24px 12px;display:flex;align-items:center;gap:14px">' +
