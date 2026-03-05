@@ -98,8 +98,28 @@ async function autoIdQuery(queryFn, sql, params) {
                         }
                         return queryResult;
                     } catch (e) {
-                        // If auto-id fails, fall through to original query
-                        // (table might not have 'id' column at all)
+                        const isDuplicateKey = e.code === 'ER_DUP_ENTRY' || (e.message && e.message.includes('Duplicate'));
+                        // Log the real error so it's never silently lost
+                        console.error(`[AutoID] Error for table "${tableName}": ${e.code} - ${e.message}`);
+                        if (isDuplicateKey) {
+                            // Duplicate key: retry with MAX(id)+1 immediately
+                            try {
+                                const [retryMax] = await originalPoolQuery(
+                                    `SELECT COALESCE(MAX(id), 0) + 1 AS nextId FROM \`${tableName}\``
+                                );
+                                const retryId = Number(retryMax[0].nextId) + Math.floor(Math.random() * 5);
+                                const retrySql2 = newSql2.replace('VALUES (?, ', 'VALUES (?, ');
+                                const retryParams = [retryId, ...params];
+                                const retryResult = await queryFn(retrySql2, retryParams);
+                                if (retryResult && retryResult[0]) retryResult[0].insertId = retryId;
+                                return retryResult;
+                            } catch (retryErr) {
+                                console.error(`[AutoID] Retry also failed for "${tableName}": ${retryErr.message}`);
+                                throw retryErr;
+                            }
+                        }
+                        // Non-duplicate error: re-throw so caller sees real error
+                        throw e;
                     }
                 }
             }
