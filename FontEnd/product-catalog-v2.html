@@ -1310,7 +1310,8 @@
                     if (!result.success) { alert('Lỗi: ' + (result.message || 'Không lưu được')); return; }
                     await loadGlassFromAPI();
                 } else if (currentModal === 'material') {
-                    const body = { name: document.getElementById('formName').value, sale_price: +document.getElementById('formPrice').value || 0 };
+                    const matName = document.getElementById('formName').value;
+                    const body = { code: 'VT-' + Date.now(), name: matName, sale_price: +document.getElementById('formPrice').value || 0 };
                     const token = sessionStorage.getItem('token');
                     const url = editingId ? `${API_BASE}/accessories/${editingId}` : `${API_BASE}/accessories`;
                     const method = editingId ? 'PUT' : 'POST';
@@ -1327,7 +1328,9 @@
         function editItem(type, id) { openModal(type, id); }
 
         async function deleteItem(type, id) {
-            if (!confirm('Bạn có chắc muốn xóa?')) return;
+            // Use VWModal.confirm for async confirmation (not native confirm)
+            const confirmed = await VWModal.confirm('Xác nhận xóa', 'Bạn có chắc muốn xóa mục này?');
+            if (!confirmed) return;
             try {
                 let url, headers = {};
                 if (type === 'product') url = `${API_BASE}/product-catalog/products/${id}`;

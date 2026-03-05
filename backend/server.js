@@ -217,6 +217,11 @@ const productCatalogRoutes = require("./routes/product-catalog");
 app.use("/api/product-catalog", productCatalogRoutes);
 console.log('✅ Route /api/product-catalog đã được đăng ký (Nhóm SP + Sản phẩm cửa)');
 
+// NEW: Glass Items (Bảng kính)
+const glassItemRoutes = require("./routes/glass-items");
+app.use("/api/glass-items", glassItemRoutes);
+console.log('✅ Route /api/glass-items đã được đăng ký (Bảng kính)');
+
 // ============================================
 // RBAC - Role-Based Access Control
 // ============================================
