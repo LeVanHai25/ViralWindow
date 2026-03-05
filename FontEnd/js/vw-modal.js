@@ -335,6 +335,84 @@
             opts.type = 'info';
             opts.title = opts.title || 'Thông tin';
             return window.VWModal.alert(message, opts);
+        },
+
+        /**
+         * Prompt: Modal with text input
+         * @param {string} title - Modal title
+         * @param {string} message - Message / placeholder hint
+         * @param {string} defaultValue - Default input value
+         * @returns Promise<string|false> - User input or false if cancelled
+         */
+        prompt: function (title, message, defaultValue) {
+            return new Promise(function (resolve) {
+                // Create overlay
+                var overlay = document.createElement('div');
+                overlay.className = 'vw-modal-overlay';
+                overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:99999;opacity:0;transition:opacity .3s';
+
+                var modalHtml = '<div style="background:#fff;border-radius:16px;box-shadow:0 25px 50px -12px rgba(0,0,0,.25);max-width:440px;width:90%;transform:scale(.95);transition:transform .3s;overflow:hidden">' +
+                    '<div style="padding:20px 24px 12px;display:flex;align-items:center;gap:14px">' +
+                    '<div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#dbeafe,#bfdbfe);display:flex;align-items:center;justify-content:center;flex-shrink:0">' +
+                    '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#2563eb" stroke-width="2" width="22" height="22"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>' +
+                    '</div>' +
+                    '<h3 style="font-size:17px;font-weight:600;color:#1f2937;margin:0">' + (title || 'Nhập thông tin') + '</h3>' +
+                    '</div>' +
+                    '<div style="padding:0 24px 20px;color:#4b5563;font-size:14px;line-height:1.6">' +
+                    '<p style="margin:0 0 12px">' + (message || '') + '</p>' +
+                    '<input type="text" id="vwPromptInput" value="' + (defaultValue || '') + '" style="width:100%;padding:11px 14px;border:2px solid #e5e7eb;border-radius:10px;font-size:15px;box-sizing:border-box;transition:border-color .2s,box-shadow .2s" placeholder="Nhập tại đây...">' +
+                    '</div>' +
+                    '<div style="padding:14px 24px;background:#f9fafb;display:flex;justify-content:flex-end;gap:10px">' +
+                    '<button id="vwPromptCancel" style="padding:9px 18px;border-radius:10px;font-weight:500;font-size:14px;cursor:pointer;border:1px solid #d1d5db;background:#fff;color:#4b5563;transition:background .15s">Huỷ</button>' +
+                    '<button id="vwPromptOk" style="padding:9px 18px;border-radius:10px;font-weight:500;font-size:14px;cursor:pointer;border:none;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;box-shadow:0 4px 12px rgba(59,130,246,.3);transition:box-shadow .15s">OK</button>' +
+                    '</div>' +
+                    '</div>';
+
+                overlay.innerHTML = modalHtml;
+                document.body.appendChild(overlay);
+
+                // Animate in
+                requestAnimationFrame(function () {
+                    overlay.style.opacity = '1';
+                    var m = overlay.querySelector('div');
+                    if (m) m.style.transform = 'scale(1)';
+                });
+
+                var input = document.getElementById('vwPromptInput');
+                if (input) setTimeout(function () { input.focus(); input.select(); }, 120);
+
+                function close() {
+                    overlay.style.opacity = '0';
+                    setTimeout(function () {
+                        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                    }, 300);
+                }
+
+                // OK button
+                document.getElementById('vwPromptOk').addEventListener('click', function () {
+                    var val = input ? input.value : '';
+                    close();
+                    resolve(val);
+                });
+
+                // Cancel button
+                document.getElementById('vwPromptCancel').addEventListener('click', function () {
+                    close();
+                    resolve(false);
+                });
+
+                // Overlay click = cancel
+                overlay.addEventListener('click', function (e) {
+                    if (e.target === overlay) { close(); resolve(false); }
+                });
+
+                // Enter = OK, Escape = Cancel
+                function onKey(e) {
+                    if (e.key === 'Enter') { var val = input ? input.value : ''; close(); resolve(val); document.removeEventListener('keydown', onKey); }
+                    if (e.key === 'Escape') { close(); resolve(false); document.removeEventListener('keydown', onKey); }
+                }
+                document.addEventListener('keydown', onKey);
+            });
         }
     };
 
