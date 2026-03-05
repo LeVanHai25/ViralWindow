@@ -730,7 +730,8 @@ async function getOrdersData(req, options = {}) {
             COALESCE(pas.total_weight_kg, 0) AS summaryWeight,
             p.manual_weight AS manualWeight,
             COALESCE(p.excel_note, '') AS note,
-            COALESCE(p.fix_compatible, '') AS fixCompatible
+            COALESCE(p.fix_compatible, '') AS fixCompatible,
+            COALESCE(p.workforce, '') AS workforce
         FROM projects p
         LEFT JOIN customers c ON c.id = p.customer_id
         LEFT JOIN agencies a ON a.id = c.agency_id
@@ -926,6 +927,7 @@ async function getOrdersData(req, options = {}) {
             updatedAt: row.updatedAt,
             note: row.note || '',
             fixCompatible: row.fixCompatible || '',
+            workforce: row.workforce || '',
 
             // Computed fields
             isOverdue,
@@ -1192,7 +1194,7 @@ exports.getOrderDetail = async (req, res) => {
 exports.updateOrder = async (req, res) => {
     try {
         const { id } = req.params;
-        const { deliveryPlanDate, note, fixCompatible } = req.body;
+        const { deliveryPlanDate, note, fixCompatible, workforce } = req.body;
         const userId = req.user?.id || 1;
 
         const updates = [];
@@ -1211,6 +1213,11 @@ exports.updateOrder = async (req, res) => {
         if (fixCompatible !== undefined) {
             updates.push('fix_compatible = ?');
             params.push(fixCompatible || '');
+        }
+
+        if (workforce !== undefined) {
+            updates.push('workforce = ?');
+            params.push(workforce || '');
         }
 
         // Handle quantity (manual override for aluminum weight)

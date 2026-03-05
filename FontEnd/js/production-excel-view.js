@@ -69,7 +69,7 @@ let columnSettings = {
     featuredProducts: true,
     customer: true,
     quantity: true,
-    workshop: true,
+    workforce: true,
     createdAt: true,
     deliveryDate: true,
     materialStatus: true,
@@ -383,7 +383,7 @@ function createMainRow(order) {
         <td data-col="featuredProducts"></td>
         <td data-col="customer" class="customer-cell" onclick="event.stopPropagation(); openCustomerModal(${order.id})" title="${escapeHtml(branchCustomer)}">${escapeHtml(branchCustomer)}</td>
         <td data-col="quantity" class="text-right font-medium text-blue-600 editable-cell" onclick="event.stopPropagation();" ondblclick="editCell(this, ${order.id}, 'quantity')">${quantityDisplay}</td>
-        <td data-col="workshop">${companyName}</td>
+        <td data-col="workforce" class="editable-cell" onclick="event.stopPropagation();" ondblclick="editCell(this, ${order.id}, 'workforce')" title="Double-click để nhập nhân lực">${escapeHtml(order.workforce || '')}</td>
         <td data-col="createdAt">${createdAt}</td>
         <td data-col="deliveryDate">${deliveryPlanDate} ${overdueBadge}</td>
         <td data-col="materialStatus" class="material-status-cell cursor-pointer hover:bg-blue-50" onclick="event.stopPropagation(); openMaterialSummaryModal(${order.id})">${materialBadge}</td>
@@ -443,7 +443,7 @@ function createMaterialRow(orderId, material) {
         <td data-col="featuredProducts" class="editable-cell text-xs text-gray-600 cursor-pointer hover:bg-blue-50" ondblclick="editMaterialField(${orderId}, '${material.group}', 'featuredProducts', this)">${escapeHtml(featuredProducts)}</td>
         <td data-col="customer"></td>
         <td data-col="quantity" class="editable-cell text-xs text-gray-600 cursor-pointer hover:bg-blue-50" ondblclick="editMaterialField(${orderId}, '${material.group}', 'quantity', this)">${escapeHtml(quantity)}</td>
-        <td data-col="workshop" colspan="3"></td>
+        <td data-col="workforce" colspan="3"></td>
         <td data-col="materialStatus" class="material-detail-cell cursor-pointer hover:bg-blue-50" onclick="event.stopPropagation(); openMaterialDetailModal(${orderId}, '${material.group}')">${statusBadge}</td>
         <td data-col="materialDate">${planDate}</td>
         <td data-col="fixCompatible"></td>
