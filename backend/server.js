@@ -212,6 +212,11 @@ const itemRoutes = require("./routes/items");
 app.use("/api/items", itemRoutes);
 console.log('✅ Route /api/items đã được đăng ký (Tạo vật tư mới)');
 
+// NEW: Product Catalog (Nhóm SP + Sản phẩm cửa)
+const productCatalogRoutes = require("./routes/product-catalog");
+app.use("/api/product-catalog", productCatalogRoutes);
+console.log('✅ Route /api/product-catalog đã được đăng ký (Nhóm SP + Sản phẩm cửa)');
+
 // ============================================
 // RBAC - Role-Based Access Control
 // ============================================
