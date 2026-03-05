@@ -3856,7 +3856,8 @@
 
             // Confirm delete project
             async function confirmDeleteProjectInTab(projectId, projectCode, projectName) {
-                if (!confirm(`Bạn có chắc chắn muốn xóa dự án "${projectName}" (${projectCode})?\n\nHành động này không thể hoàn tác!`)) {
+                const confirmed = await VWModal.confirm('Xác nhận xóa', `Bạn có chắc chắn muốn xóa dự án "${projectName}" (${projectCode})?\n\nHành động này không thể hoàn tác!`, { confirmText: 'Xóa', cancelText: 'Không' });
+                if (!confirmed) {
                     return;
                 }
 
