@@ -1724,6 +1724,7 @@
             let currentVersion = 1;
             let parentQuotationId = null; // Lưu ID của V1 khi tạo version mới
             let items = [];
+            let cachedGlassCatalog = null;
             let itemCounter = 0;
             let isLocked = false;
             let currentDetailQuotationId = null; // ID của báo giá đang xem trong modal chi tiết
@@ -2702,6 +2703,8 @@
                     design: item?.name || '',
                     spec: item?.name || '', // Quy cách = Tên sản phẩm
                     glass: '',
+                    glass_id: null,
+                    glass_name: '',
                     accessories: '',
                     width: item?.width || 0,
                     height: item?.height || 0,
@@ -3138,32 +3141,47 @@
 
                 let glassData = [];
 
-                // Ưu tiên load từ API
-                try {
-                    const response = await fetch(`${API_BASE}/glass-items`);
-                    const result = await response.json();
-                    if (result.success && result.data && result.data.length > 0) {
-                        glassData = result.data;
-                        window.GLASS_DATA_LOADED = glassData; // Cache để selectGlass dùng
-                        console.log(`✅ Loaded ${glassData.length} glass items from API`);
+                // 1. Performance: Use cache if available
+                if (cachedGlassCatalog) {
+                    glassData = cachedGlassCatalog;
+                    console.log(`🚀 Using cached glass catalog (${glassData.length} items)`);
+                } else {
+                    // 2. Load from API
+                    try {
+                        const response = await fetch(`${API_BASE}/glass-items`);
+                        const result = await response.json();
+                        if (result.success && result.data && result.data.length > 0) {
+                            glassData = result.data;
+                            // Enterprise Solution: Sort by display_order/sort_order || id
+                            glassData.sort((a, b) => (a.sort_order || a.id) - (b.sort_order || b.id));
+                            cachedGlassCatalog = glassData;
+                            console.log(`✅ Loaded and cached ${glassData.length} glass items from API`);
+                        }
+                    } catch (error) {
+                        console.warn('API glass-items không khả dụng, dùng GLASS_DATA static:', error.message);
                     }
-                } catch (error) {
-                    console.warn('API glass-items không khả dụng, dùng GLASS_DATA static:', error.message);
-                }
 
-                // Fallback về GLASS_DATA static nếu API không có dữ liệu
-                if (glassData.length === 0) {
-                    glassData = typeof GLASS_DATA !== 'undefined' ? GLASS_DATA : [];
-                    window.GLASS_DATA_LOADED = glassData;
+                    // 3. Fallback to static GLASS_DATA
+                    if (glassData.length === 0) {
+                        glassData = typeof GLASS_DATA !== 'undefined' ? GLASS_DATA : [];
+                        glassData.sort((a, b) => (a.sort_order || a.id) - (b.sort_order || b.id));
+                        cachedGlassCatalog = glassData;
+                    }
                 }
 
                 let html = '';
                 glassData.forEach(glass => {
                     const priceText = glass.price > 0 ? `+${formatCurrency(glass.price)}/m²` : 'Giá gốc';
+                    // Defensive code: Display glass_type || name
+                    const displayName = glass.glass_type || glass.name;
+
                     html += `
-                    <div class="border rounded-lg p-3 cursor-pointer hover:bg-cyan-50 hover:border-cyan-400 transition-all flex justify-between items-center" onclick="selectGlass(${glass.id})">
+                    <div class="border rounded-lg p-3 cursor-pointer hover:bg-cyan-50 hover:border-cyan-400 transition-all flex justify-between items-center glass-item" 
+                         onclick="selectGlass(${glass.id})"
+                         data-name="${glass.name.toLowerCase()}"
+                         data-type="${(glass.glass_type || '').toLowerCase()}">
                         <div class="flex-1">
-                            <div class="font-medium text-gray-800">${glass.name}</div>
+                            <div class="font-medium text-gray-800">${displayName}</div>
                             <div class="text-sm text-gray-500">Cấu tạo: <span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-medium">${glass.structure || '—'}</span></div>
                         </div>
                         <div class="text-right">
@@ -3175,54 +3193,64 @@
                 container.innerHTML = html || '<p class="text-gray-500 text-center py-8">Không có dữ liệu kính</p>';
             }
 
-            // Filter glass catalog
+
+            // Filter glass catalog - Defensive Search (Type + Name)
             function filterGlassCatalog() {
                 const search = document.getElementById('glassSearch').value.toLowerCase();
-                const glassItems = document.querySelectorAll('#glassList > div');
+                const glassItems = document.querySelectorAll('#glassList > .glass-item');
+
                 glassItems.forEach(item => {
-                    const text = item.textContent.toLowerCase();
-                    item.style.display = text.includes(search) ? 'flex' : 'none';
+                    const name = item.getAttribute('data-name') || '';
+                    const type = item.getAttribute('data-type') || '';
+
+                    const isVisible = name.includes(search) || type.includes(search);
+                    item.style.display = isVisible ? 'flex' : 'none';
                 });
             }
 
-            // Chọn kính và điền vào item
+
+            // Chọn kính và điền vào item - Architecture Refined Data Design
             function selectGlass(glassId) {
                 if (!currentGlassItemId) return;
 
-                // Dùng data từ API (GLASS_DATA_LOADED) hoặc fallback về static
-                const glassData = window.GLASS_DATA_LOADED || (typeof GLASS_DATA !== 'undefined' ? GLASS_DATA : []);
+                // Dùng data đã cache
+                const glassData = cachedGlassCatalog || [];
                 const glass = glassData.find(g => g.id === glassId);
 
                 if (glass) {
                     const item = items.find(i => i.id === currentGlassItemId);
                     if (item) {
-                        // Cập nhật thông tin kính vào item
-                        item.glass = glass.name;
+                        // Architect Design: Store both reference ID and descriptive name
+                        const displayName = glass.glass_type || glass.name;
+
+                        item.glass_id = glass.id;
+                        item.glass_name = displayName;
+                        item.glass = displayName; // For UI and existing exports
                         item.glassPrice = glass.price || 0;
                         item.glassStructure = glass.structure || '';
 
-                        // Cập nhật Đơn Giá = Giá cửa gốc + Giá kính (parseFloat để tránh nối chuỗi)
+                        // Cập nhật Đơn Giá = Giá cửa gốc + Giá kính
                         const basePrice = parseFloat(item.baseUnitPrice) || 0;
                         const glassPrice = parseFloat(item.glassPrice) || 0;
+
                         if (basePrice > 0) {
                             item.unitPrice = basePrice + glassPrice;
-                            console.log(`💰 Đơn giá mới: ${formatCurrency(basePrice)} (cửa) + ${formatCurrency(glassPrice)} (kính) = ${formatCurrency(item.unitPrice)}/m²`);
                         } else {
-                            // Nếu chưa có baseUnitPrice, cộng vào unitPrice hiện tại
                             item.unitPrice = (parseFloat(item.unitPrice) || 0) + glassPrice;
                         }
 
                         // Tính lại thành tiền cho item này
                         calculateItemTotal(currentGlassItemId);
 
-                        // Re-render table để hiển thị kính đã chọn và đơn giá mới
+                        // Re-render table
                         renderItemsTable();
 
-                        console.log(`🪟 Đã chọn kính: ${glass.name} (${glass.structure}) - ${formatCurrency(glass.price)}/m²`);
+                        console.log(`🪟 Selected: ${displayName} [ID:${glass.id}] - ${formatCurrency(glass.price)}/m²`);
                     }
                 }
                 closeGlassCatalogModal();
             }
+
 
             // Xóa kính đã chọn khỏi item
             function clearGlass() {
@@ -3239,10 +3267,13 @@
                         item.unitPrice = Math.max(0, (parseFloat(item.unitPrice) || 0) - glassPrice);
                     }
 
-                    // Reset các trường kính về rỗng
+                    // Architect Design: Clear all glass related fields
                     item.glass = '';
+                    item.glass_id = null;
+                    item.glass_name = '';
                     item.glassPrice = 0;
                     item.glassStructure = '';
+
 
                     // Tính lại thành tiền cho item này
                     calculateItemTotal(currentGlassItemId);
@@ -4546,6 +4577,8 @@
                         area: item.area,
                         spec: item.spec,
                         glass: item.glass,
+                        glass_id: item.glass_id,
+                        glass_name: item.glass_name,
                         accessories: item.accessories,
                         accessory_price: item.accessoryPrice
                     }))
@@ -4998,6 +5031,8 @@
                                 design: item.item_name || '',
                                 spec: item.spec || '',
                                 glass: item.glass || '',
+                                glass_id: item.glass_id || null,
+                                glass_name: item.glass_name || item.glass || '',
                                 accessories: item.accessories || '',
                                 width: item.width || 0,
                                 height: item.height || 0,
