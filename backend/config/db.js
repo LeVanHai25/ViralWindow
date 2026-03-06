@@ -70,11 +70,14 @@ async function autoIdQuery(queryFn, sql, params) {
                 // If 'id' is not in the columns list, add it
                 if (!columns.includes('id')) {
                     try {
-                        // Generate next ID (always use pool query for MAX lookup)
-                        const [maxResult] = await originalPoolQuery(
-                            `SELECT COALESCE(MAX(id), 0) + 1 AS nextId FROM \`${tableName}\``
+                        // FIX: Dùng FOR UPDATE để serialize việc lấy ID trong cùng transaction isolation
+                        const [maxResult] = await queryFn(
+                            `SELECT COALESCE(MAX(id), 0) + 1 AS nextId FROM \`${tableName}\` FOR UPDATE`
                         );
                         const nextId = maxResult[0].nextId;
+
+                        // Log để dễ debug khi có lỗi trùng lặp
+                        // console.log(`[AutoID] Generated ID ${nextId} for table "${tableName}"`);
 
                         // Add 'id' to columns and nextId to values
                         const newSql = sql.replace(
@@ -104,11 +107,12 @@ async function autoIdQuery(queryFn, sql, params) {
                         if (isDuplicateKey) {
                             // Duplicate key: retry with MAX(id)+1 immediately
                             try {
-                                const [retryMax] = await originalPoolQuery(
-                                    `SELECT COALESCE(MAX(id), 0) + 1 AS nextId FROM \`${tableName}\``
+                                // retry cũng dùng queryFn của transaction và FOR UPDATE
+                                const [retryMax] = await queryFn(
+                                    `SELECT COALESCE(MAX(id), 0) + 1 AS nextId FROM \`${tableName}\` FOR UPDATE`
                                 );
-                                const retryId = Number(retryMax[0].nextId) + Math.floor(Math.random() * 5);
-                                // Rebuild modified SQL (newSql2 is out of scope here)
+                                const retryId = Number(retryMax[0].nextId) + Math.floor(Math.random() * 50) + 1;
+                                // Rebuild modified SQL
                                 const retryNewSql = sql.replace(
                                     /INSERT\s+INTO\s+(`?\w+`?)\s*\(([^)]+)\)/is,
                                     `INSERT INTO $1 (id, $2)`

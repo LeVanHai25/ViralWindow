@@ -1429,7 +1429,7 @@
                 <!-- Header cố định -->
                 <div
                     class="flex justify-between items-center p-4 border-b bg-gradient-to-r from-cyan-600 to-blue-600 flex-shrink-0">
-                    <h2 class="text-xl font-bold text-white">🪟 Chọn loại kính</h2>
+                    <h2 class="text-xl font-bold text-white"> Chọn loại kính</h2>
                     <button onclick="closeGlassCatalogModal()" class="text-white hover:text-gray-200">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -4452,9 +4452,9 @@
                             return;
                         }
 
-                        // Sắp xếp theo thời gian tạo
+                        // Sắp xếp theo thời gian tạo (Mới nhất lên đầu)
                         const quotations = quotationsToShow.sort((a, b) =>
-                            new Date(a.created_at) - new Date(b.created_at) // Sắp xếp từ cũ đến mới
+                            new Date(b.created_at) - new Date(a.created_at)
                         );
 
                         // Không cần gán version number nữa vì chỉ có 1 báo giá duy nhất
