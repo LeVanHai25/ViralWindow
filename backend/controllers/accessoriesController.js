@@ -104,7 +104,7 @@ exports.getStatistics = async (req, res) => {
 exports.create = async (req, res) => {
     try {
         const {
-            code, name, category, unit, purchase_price, sale_price, stock_quantity, min_stock_level, description,
+            code, name, category, unit, purchase_price, sale_price, stock_quantity, min_stock_level, max_stock_level, description,
             supplier, supplier_code, application_types, usage_rules
         } = req.body;
 
@@ -116,11 +116,11 @@ exports.create = async (req, res) => {
 
         const [result] = await db.query(
             `INSERT INTO accessories 
-             (code, name, category, unit, purchase_price, sale_price, stock_quantity, min_stock_level, description,
+             (code, name, category, unit, purchase_price, sale_price, stock_quantity, min_stock_level, max_stock_level, description,
               supplier, supplier_code, application_types, usage_rules, image_path) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
-                code, name, category, unit, purchase_price || 0, sale_price || 0, stock_quantity || 0, min_stock_level || 10, description || null,
+                code, name, category, unit, purchase_price || 0, sale_price || 0, stock_quantity || 0, min_stock_level || 10, max_stock_level || 100, description || null,
                 supplier || null, supplier_code || null,
                 application_types ? JSON.stringify(application_types) : null,
                 usage_rules ? JSON.stringify(usage_rules) : null,
@@ -153,7 +153,7 @@ exports.update = async (req, res) => {
     try {
         const { id } = req.params;
         const {
-            name, category, unit, purchase_price, sale_price, stock_quantity, min_stock_level, description,
+            name, category, unit, purchase_price, sale_price, stock_quantity, min_stock_level, max_stock_level, description,
             supplier, supplier_code, application_types, usage_rules
         } = req.body;
 
@@ -167,11 +167,11 @@ exports.update = async (req, res) => {
         if (image_path !== undefined) {
             query = `UPDATE accessories 
                  SET name = ?, category = ?, unit = ?, purchase_price = ?, sale_price = ?, 
-                     stock_quantity = ?, min_stock_level = ?, description = ?,
+                     stock_quantity = ?, min_stock_level = ?, max_stock_level = ?, description = ?,
                      supplier = ?, supplier_code = ?, application_types = ?, usage_rules = ?, image_path = ?
                  WHERE id = ?`;
             params = [
-                name, category, unit, purchase_price, sale_price, stock_quantity, min_stock_level, description || null,
+                name, category, unit, purchase_price, sale_price, stock_quantity, min_stock_level, max_stock_level, description || null,
                 supplier || null, supplier_code || null,
                 application_types ? JSON.stringify(application_types) : null,
                 usage_rules ? JSON.stringify(usage_rules) : null,
@@ -181,11 +181,11 @@ exports.update = async (req, res) => {
         } else {
             query = `UPDATE accessories 
                  SET name = ?, category = ?, unit = ?, purchase_price = ?, sale_price = ?, 
-                     stock_quantity = ?, min_stock_level = ?, description = ?,
+                     stock_quantity = ?, min_stock_level = ?, max_stock_level = ?, description = ?,
                      supplier = ?, supplier_code = ?, application_types = ?, usage_rules = ?
                  WHERE id = ?`;
             params = [
-                name, category, unit, purchase_price, sale_price, stock_quantity, min_stock_level, description || null,
+                name, category, unit, purchase_price, sale_price, stock_quantity, min_stock_level, max_stock_level, description || null,
                 supplier || null, supplier_code || null,
                 application_types ? JSON.stringify(application_types) : null,
                 usage_rules ? JSON.stringify(usage_rules) : null,

@@ -78,15 +78,15 @@ exports.getById = async (req, res) => {
 // Tạo mới kính
 exports.create = async (req, res) => {
     try {
-        const { code, name, glass_type, structure, price, notes, quantity, supplier_id } = req.body;
+        const { code, name, glass_type, structure, price, notes, quantity, supplier_id, min_stock_level, max_stock_level } = req.body;
 
         if (!name) {
             return res.status(400).json({ success: false, message: 'Tên kính là bắt buộc' });
         }
 
         const [result] = await pool.query(
-            'INSERT INTO glass_items (code, name, glass_type, structure, price, notes, quantity, supplier_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            [code || null, name, glass_type || null, structure || null, price || 0, notes || null, quantity || 0, supplier_id || null]
+            'INSERT INTO glass_items (code, name, glass_type, structure, price, notes, quantity, supplier_id, min_stock_level, max_stock_level) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [code || null, name, glass_type || null, structure || null, price || 0, notes || null, quantity || 0, supplier_id || null, min_stock_level || 10, max_stock_level || 100]
         );
 
         res.status(201).json({
@@ -104,11 +104,11 @@ exports.create = async (req, res) => {
 exports.update = async (req, res) => {
     try {
         const { id } = req.params;
-        const { code, name, glass_type, structure, price, notes, quantity, supplier_id } = req.body;
+        const { code, name, glass_type, structure, price, notes, quantity, supplier_id, min_stock_level, max_stock_level } = req.body;
 
         const [result] = await pool.query(
-            'UPDATE glass_items SET code = ?, name = ?, glass_type = ?, structure = ?, price = ?, notes = ?, quantity = ?, supplier_id = ? WHERE id = ?',
-            [code || null, name, glass_type || null, structure || null, price || 0, notes || null, quantity || 0, supplier_id || null, id]
+            'UPDATE glass_items SET code = ?, name = ?, glass_type = ?, structure = ?, price = ?, notes = ?, quantity = ?, supplier_id = ?, min_stock_level = ?, max_stock_level = ? WHERE id = ?',
+            [code || null, name, glass_type || null, structure || null, price || 0, notes || null, quantity || 0, supplier_id || null, min_stock_level || 10, max_stock_level || 100, id]
         );
 
         if (result.affectedRows === 0) {
