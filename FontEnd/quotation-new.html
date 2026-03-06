@@ -2760,7 +2760,7 @@
                 calculateTotals();
             }
 
-            // Render items table
+            // Render items table (MAIN)
             function renderItemsTable() {
                 // Render main table (full screen)
                 const tbody = document.getElementById('itemsTableBody');
@@ -2915,10 +2915,12 @@
                         item.accessoryPrice = selected.price;
                         item.accessories = selected.name; // For backward compatibility in display
 
-                        // Update UI accessory price input
-                        const priceInputs = document.querySelectorAll(`tr[data-id="${id}"] .col-accessory-price input`);
-                        priceInputs.forEach(input => {
-                            input.value = formatNumberWithComma(selected.price);
+                        // Update accessory price display
+                        const accPriceInputs = document.querySelectorAll(`.item-row[data-id="${id}"] .col-accessory-price input`);
+                        accPriceInputs.forEach(input => {
+                            if (!item.isMaterial) {
+                                input.value = formatNumberWithComma(item.accessoryPrice);
+                            }
                         });
 
                         console.log(`🔄 Changed accessory for item ${id}: ${selected.name} - ${formatCurrency(selected.price)}`);
@@ -3102,18 +3104,30 @@
             async function loadDoorCatalog() {
                 // 1. Thử lấy từ API Product Catalog (Dữ liệu do người dùng quản lý)
                 try {
+                    // Cập nhật endpoint mới để lấy đầy đủ thông tin phụ kiện
                     const response = await fetch(`${API_BASE}/product-catalog/products`);
                     const result = await response.json();
                     if (result.success && result.data && result.data.length > 0) {
-                        // Ánh xạ dữ liệu catalog sang định dạng quotation (nếu cần)
-                        window.doorCatalog = result.data.map(p => ({
-                            ...p,
-                            // Đảm bảo mapping đúng với logic hiện tại
-                            accessory: p.accessories && p.accessories.length > 0 ? p.accessories[0].name : p.accessory,
-                            accessoryPrice: p.accessories && p.accessories.length > 0 ? p.accessories[0].price : p.accessory_price
-                        }));
+                        window.doorCatalog = result.data.map(p => {
+                            // Parse accessories_json nếu là string
+                            let availAccs = [];
+                            try {
+                                availAccs = typeof p.accessories_json === 'string' ? JSON.parse(p.accessories_json) : (p.accessories || []);
+                            } catch (e) {
+                                console.error('Error parsing accessories_json:', e);
+                                availAccs = p.accessories || [];
+                            }
+
+                            return {
+                                ...p,
+                                accessories: availAccs,
+                                // Fallback cho logic cũ
+                                accessory: availAccs.length > 0 ? availAccs[0].name : (availAccs[0]?.name || ''),
+                                accessoryPrice: availAccs.length > 0 ? availAccs[0].price : (availAccs[0]?.price || 0)
+                            };
+                        });
                         renderDoorCatalog();
-                        console.log(`📦 Loaded ${result.data.length} products from Product Catalog API`);
+                        console.log(`📦 Loaded ${result.data.length} products from Product Catalog API (V2)`);
                         return;
                     }
                 } catch (error) {
@@ -3191,7 +3205,7 @@
                     // Thêm row với thông tin sản phẩm
                     itemCounter++;
 
-                    // Lấy thông tin phụ kiện mặc định (viralwindow hoặc cmech)
+                    // Lấy thông tin phụ kiện mặc định (viralwindow hoặc cmech hoặc từ danh sách)
                     const availAccs = door.accessories || [];
                     const defaultAcc = availAccs.length > 0 ? availAccs[0] : { name: door.accessory || '', price: door.accessoryPrice || 0 };
 

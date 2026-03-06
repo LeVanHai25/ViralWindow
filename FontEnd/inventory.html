@@ -2979,6 +2979,22 @@
                         </div>
                     </div>
 
+                    <!-- Search Materials -->
+                    <div class="mb-4">
+                        <div class="relative">
+                            <span
+                                class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 pointer-events-none">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </span>
+                            <input type="text" id="stocktakeSearchInput"
+                                class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500 text-sm"
+                                placeholder="Tìm kiếm theo mã hoặc tên vật tư..." onkeyup="renderStocktakeItems()">
+                        </div>
+                    </div>
+
                     <!-- Stocktake Table -->
                     <div class="border border-gray-200 rounded-lg overflow-hidden">
                         <table class="w-full">
@@ -6104,6 +6120,8 @@
                 if (docNoEl) { docNoEl.value = ''; docNoEl.readOnly = false; }
                 document.getElementById('stocktakeDate').valueAsDate = new Date();
                 document.getElementById('stocktakeNote').value = '';
+                const searchInput = document.getElementById('stocktakeSearchInput');
+                if (searchInput) searchInput.value = '';
                 document.getElementById('stocktakeItemsTable').innerHTML = '<tr><td colspan="5" class="px-4 py-6 text-center text-gray-400">Chọn loại vật tư để bắt đầu kiểm kho</td></tr>';
                 document.getElementById('stocktakeModalTitle').innerHTML = 'Tạo Phiếu Kiểm Kho';
                 document.getElementById('stocktakeModal').classList.remove('hidden');
@@ -6234,35 +6252,51 @@
             }
 
             function renderStocktakeItems() {
+                const searchTerm = document.getElementById('stocktakeSearchInput')?.value.toLowerCase() || '';
                 const tbody = document.getElementById('stocktakeItemsTable');
                 let totalMissing = 0, totalExtra = 0;
 
-                tbody.innerHTML = stocktakeItems.map((item, idx) => {
+                // Calculate totals for ALL items (not just filtered)
+                stocktakeItems.forEach(item => {
                     const diff = (item.qty_actual !== null) ? (item.qty_actual - item.qty_system) : 0;
                     if (diff < 0) totalMissing += Math.abs(diff);
                     if (diff > 0) totalExtra += diff;
+                });
 
-                    const diffClass = diff > 0 ? 'text-green-600' : diff < 0 ? 'text-red-600' : 'text-gray-600';
-                    const diffText = diff > 0 ? '+' + diff : diff;
+                // Filter items for display
+                const filteredItems = stocktakeItems.filter(item =>
+                    item.item_code.toLowerCase().includes(searchTerm) ||
+                    item.item_name.toLowerCase().includes(searchTerm)
+                );
 
-                    return `
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-3 py-2 text-sm font-medium">${item.item_code}</td>
-                            <td class="px-3 py-2 text-sm">${item.item_name}</td>
-                            <td class="px-3 py-2 text-center text-sm">${item.qty_system}</td>
-                            <td class="px-3 py-2 text-center">
-                                <input type="number" value="${item.qty_actual ?? ''}" min="0" placeholder="?"
-                                    class="w-20 px-2 py-1 border rounded text-sm text-center"
-                                    onchange="updateStocktakeActual(${idx}, this.value)">
-                            </td>
-                            <td class="px-3 py-2 text-center font-semibold ${diffClass}">${item.qty_actual !== null ? diffText : '-'}</td>
-                        </tr>
-                    `;
-                }).join('');
+                if (filteredItems.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-6 text-center text-gray-400">Không tìm thấy vật tư phù hợp "${searchTerm}"</td></tr>`;
+                } else {
+                    tbody.innerHTML = filteredItems.map((item) => {
+                        const originalIdx = stocktakeItems.indexOf(item);
+                        const diff = (item.qty_actual !== null) ? (item.qty_actual - item.qty_system) : 0;
+                        const diffClass = diff > 0 ? 'text-green-600' : diff < 0 ? 'text-red-600' : 'text-gray-600';
+                        const diffText = diff > 0 ? '+' + diff : diff;
+
+                        return `
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2 text-sm font-medium">${item.item_code}</td>
+                                <td class="px-3 py-2 text-sm">${item.item_name}</td>
+                                <td class="px-3 py-2 text-center text-sm">${item.qty_system}</td>
+                                <td class="px-3 py-2 text-center">
+                                    <input type="number" value="${item.qty_actual ?? ''}" min="0" placeholder="?"
+                                        class="w-20 px-2 py-1 border rounded text-sm text-center"
+                                        onchange="updateStocktakeActual(${originalIdx}, this.value)">
+                                </td>
+                                <td class="px-3 py-2 text-center font-semibold ${diffClass}">${item.qty_actual !== null ? diffText : '-'}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
 
                 document.getElementById('stocktakeTotalItems').textContent = stocktakeItems.length;
-                document.getElementById('stocktakeTotalMissing').textContent = totalMissing;
-                document.getElementById('stocktakeTotalExtra').textContent = totalExtra;
+                document.getElementById('stocktakeTotalMissing').textContent = totalMissing.toFixed(2).replace(/\.00$/, '');
+                document.getElementById('stocktakeTotalExtra').textContent = totalExtra.toFixed(2).replace(/\.00$/, '');
             }
 
             function updateStocktakeActual(idx, value) {
