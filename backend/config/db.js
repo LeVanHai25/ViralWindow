@@ -52,6 +52,17 @@ pool.getConnection()
 const originalPoolQuery = pool.query.bind(pool);
 
 /**
+ * Tables that don't have an 'id' column or shouldn't have one auto-generated.
+ * Junction tables (like role_permissions) or sequence tables.
+ */
+const EXCLUDED_TABLES = [
+    'role_permissions',
+    'design_pr_sequence',
+    'v_stock_onhand',
+    'project_door_library' // Checking if this one also needs exclusion
+];
+
+/**
  * Core auto-ID logic - works with any query function
  * @param {Function} queryFn - The original query function to call
  * @param {string} sql - SQL string
@@ -66,6 +77,11 @@ async function autoIdQuery(queryFn, sql, params) {
             if (match) {
                 const tableName = match[1];
                 const columns = match[2].split(',').map(c => c.trim().replace(/`/g, ''));
+
+                // Skip if table is in exclusion list
+                if (EXCLUDED_TABLES.includes(tableName)) {
+                    return queryFn(sql, params);
+                }
 
                 // If 'id' is not in the columns list, add it
                 if (!columns.includes('id')) {

@@ -1,0 +1,77 @@
+{
+  "timestamp": "2026-03-06T09:46:34.359Z",
+  "action": "updateProduct",
+  "id": "2",
+  "body": {
+    "code": "VRA_VR002",
+    "group_code": "VRA",
+    "group_name": "Vách kính cố định",
+    "name": "VÁCH KÍNH CỐ ĐỊNH dùng nhôm Viralwindow VRA55\n - Độ dày: 1,4mm\n - Màu sơn Xám Metalic, bảo hành 20 năm\n - Sử dụng kính Viralwindow sản xuất tại nhà máy kính Hải Long/Việt Nhật VSG hoặc tương đương.",
+    "accessory": "Viralwindow",
+    "accessory_price": 10000,
+    "accessories": [
+      {
+        "name": "Viralwindow",
+        "price": 10000
+      },
+      {
+        "name": "Cmech",
+        "price": 20000
+      }
+    ],
+    "prices": {
+      "0-0.25": 2523000,
+      "0.25-0.5": 2072000,
+      "0.5-0.75": 1642000,
+      "0.75-1": 1410000,
+      "1-1.25": 1294000,
+      "1.25-1.5": 1226000,
+      "1.5-1.75": 1173000,
+      "1.75-2": 1133000,
+      "2-2.25": 1122000,
+      "2.25-2.5": 1080000,
+      "2.5-2.75": 1061000,
+      "2.75-3": 1005000,
+      "3-3.25": 1021000,
+      "3.25-3.5": 1005000,
+      "3.5-3.75": 992000,
+      "3.75-4": 981000,
+      "4-4.25": 971000,
+      "4.25-4.5": 961000,
+      "4.5-4.75": 952000,
+      "4.75-5": 945000,
+      "5-5.25": 940000,
+      "5.25-5.5": 932000,
+      "5.5-5.75": 926000,
+      "5.75-6": 921000,
+      "6-6.25": 915000,
+      "6.25-6.5": 911000,
+      "6.5-6.75": 905000,
+      "6.75-7": 902000
+    }
+  },
+  "sanitizedAccessories": [
+    {
+      "name": "Viralwindow",
+      "price": 10000
+    },
+    {
+      "name": "Cmech",
+      "price": 20000
+    }
+  ]
+},
+{
+  "timestamp": "2026-03-06T09:46:34.442Z",
+  "action": "updateProduct_result",
+  "id": "2",
+  "result": {
+    "fieldCount": 0,
+    "affectedRows": 1,
+    "insertId": 0,
+    "info": "(Rows matched: 1  Changed: 1  Warnings: 0",
+    "serverStatus": 2,
+    "warningStatus": 0,
+    "changedRows": 1
+  }
+},

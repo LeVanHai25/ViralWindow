@@ -1,4 +1,18 @@
 const db = require('../config/db');
+const fs = require('fs');
+const path = require('path');
+
+// Helper for persistent debug logging
+const logToFile = (data) => {
+    try {
+        const logPath = path.join(__dirname, '..', 'debug_catalog_log.json');
+        const logEntry = {
+            timestamp: new Date().toISOString(),
+            ...data
+        };
+        fs.appendFileSync(logPath, JSON.stringify(logEntry, null, 2) + ',\n');
+    } catch (e) { console.error('Log to file failed:', e); }
+};
 
 // ============================================
 // PRODUCT CATALOG CONTROLLER
@@ -112,10 +126,11 @@ exports.getAllProducts = async (req, res) => {
 
         const [rows] = await db.query(query, params);
 
-        // Parse prices JSON
+        // Parse JSON fields
         const data = rows.map(row => ({
             ...row,
-            prices: row.prices_json ? JSON.parse(row.prices_json) : {}
+            prices: row.prices_json ? JSON.parse(row.prices_json) : {},
+            accessories: row.accessories_json ? JSON.parse(row.accessories_json) : []
         }));
 
         res.json({ success: true, data });
@@ -128,18 +143,29 @@ exports.getAllProducts = async (req, res) => {
 // POST /api/product-catalog/products
 exports.createProduct = async (req, res) => {
     try {
-        const { code, group_code, group_name, name, accessory, accessory_price, prices } = req.body;
+        console.log(`[DEBUG] Creating product:`, JSON.stringify(req.body, null, 2));
+        const { code, group_code, group_name, name, accessory, accessory_price, prices, accessories } = req.body;
+
+        // Ensure accessories are numbers
+        const sanitizedAccessories = (accessories || []).map(acc => ({
+            name: String(acc.name || ''),
+            price: Number(acc.price) || 0
+        }));
+
+        logToFile({ action: 'createProduct', body: req.body, sanitizedAccessories });
+
         if (!code || !name) {
             return res.status(400).json({ success: false, message: 'Mã SP và Tên SP là bắt buộc' });
         }
         const [result] = await db.query(
-            'INSERT INTO product_catalog (code, group_code, group_name, name, accessory, accessory_price, prices_json) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [code, group_code || '', group_name || '', name, accessory || null, accessory_price || 0, JSON.stringify(prices || {})]
+            'INSERT INTO product_catalog (code, group_code, group_name, name, accessory, accessory_price, prices_json, accessories_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [code, group_code || '', group_name || '', name, accessory || null, accessory_price || 0, JSON.stringify(prices || {}), JSON.stringify(sanitizedAccessories)]
         );
+        logToFile({ action: 'createProduct_result', result });
         res.status(201).json({
             success: true,
             message: 'Tạo sản phẩm thành công',
-            data: { id: result.insertId, code, group_code, group_name, name, accessory, accessory_price, prices: prices || {} }
+            data: { id: result.insertId, code, group_code, group_name, name, accessory, accessory_price, prices: prices || {}, accessories: accessories || [] }
         });
     } catch (error) {
         console.error('Error creating product:', error);
@@ -151,11 +177,22 @@ exports.createProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
-        const { code, group_code, group_name, name, accessory, accessory_price, prices } = req.body;
+        console.log(`[DEBUG] Updating product ID ${id}:`, JSON.stringify(req.body, null, 2));
+        const { code, group_code, group_name, name, accessory, accessory_price, prices, accessories } = req.body;
+
+        // Ensure accessories are numbers
+        const sanitizedAccessories = (accessories || []).map(acc => ({
+            name: String(acc.name || ''),
+            price: Number(acc.price) || 0
+        }));
+
+        logToFile({ action: 'updateProduct', id, body: req.body, sanitizedAccessories });
+
         const [result] = await db.query(
-            'UPDATE product_catalog SET code = ?, group_code = ?, group_name = ?, name = ?, accessory = ?, accessory_price = ?, prices_json = ? WHERE id = ?',
-            [code, group_code || '', group_name || '', name, accessory || null, accessory_price || 0, JSON.stringify(prices || {}), id]
+            'UPDATE product_catalog SET code = ?, group_code = ?, group_name = ?, name = ?, accessory = ?, accessory_price = ?, prices_json = ?, accessories_json = ? WHERE id = ?',
+            [code, group_code || '', group_name || '', name, accessory || null, accessory_price || 0, JSON.stringify(prices || {}), JSON.stringify(sanitizedAccessories), id]
         );
+        logToFile({ action: 'updateProduct_result', id, result });
         if (result.affectedRows === 0) {
             return res.status(404).json({ success: false, message: 'Không tìm thấy sản phẩm' });
         }

@@ -986,6 +986,7 @@
                     products = result.data.map(p => ({
                         id: p.id, code: p.code, groupCode: p.group_code, groupName: p.group_name,
                         name: p.name, accessory: p.accessory, accessoryPrice: p.accessory_price,
+                        accessories: p.accessories || [],
                         prices: p.prices || {}
                     }));
                 } else {
@@ -1080,14 +1081,24 @@
                 </div>
             </div>
             <div class="name" style="white-space:pre-line;font-size:12px;line-height:1.5">${p.name}</div>
-            ${p.accessory ? `
+            ${(p.accessories && p.accessories.length > 0) ? `
+            <div style="margin:8px 0;padding:8px;background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-radius:8px;border-left:3px solid #059669">
+                <div style="color:#065f46;font-weight:700;font-size:11px;margin-bottom:4px;text-transform:uppercase">Tùy chọn Phụ kiện:</div>
+                ${p.accessories.map(acc => `
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
+                        <span style="background:#059669;color:white;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600">${acc.name}</span>
+                        <span style="color:#047857;font-weight:700;font-size:11px">${formatMoney(acc.price)}</span>
+                    </div>
+                `).join('')}
+            </div>
+            ` : (p.accessory ? `
             <div style="display:flex;align-items:center;gap:8px;margin:8px 0;padding:8px 12px;background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-radius:8px;border-left:3px solid #059669">
                 <span style="color:#065f46;font-weight:600;font-size:12px">Phụ kiện:</span>
                 <span style="background:#059669;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">${p.accessory}</span>
                 <span style="color:#065f46;font-size:12px">-</span>
                 <span style="color:#047857;font-weight:700;font-size:13px">${p.accessoryPrice ? formatMoney(p.accessoryPrice) : '—'}</span>
             </div>
-            ` : ''}
+            ` : '')}
             <div class="price-grid">
                 ${SIZE_COLUMNS.map(size => `
                     <div class="price-item ${!p.prices[size] ? 'empty' : ''}">
@@ -1166,6 +1177,50 @@
     `).join('');
         }
 
+        // Robust number parser for Vietnamese/International formats
+        function parseLocalPrice(val) {
+            if (typeof val !== 'string') val = String(val || '');
+            // Remove spaces and currency symbol
+            let clean = val.replace(/\s/g, '').replace(/đ/g, '').replace(/VND/g, '');
+            if (!clean) return 0;
+            // If it has a comma and a dot, comma is likely decimal (VN)
+            if (clean.includes(',') && clean.includes('.')) {
+                clean = clean.replace(/\./g, '').replace(',', '.');
+            } else if (clean.includes(',')) {
+                // If only comma, check context: more than 2 digits after comma likely thousand separator
+                // but for simple cases let's assume comma is decimal if it's the only one
+                // Actually, in many cases in this app, comma is decimal.
+                clean = clean.replace(',', '.');
+            }
+            const result = parseFloat(clean);
+            return isNaN(result) ? 0 : result;
+        }
+
+        // ACCESSORY MANAGEMENT
+        function addAccessoryRow(name = '', price = 0) {
+            const container = document.getElementById('accessoryList');
+            if (!container) return;
+            const div = document.createElement('div');
+            div.className = 'accessory-row';
+            div.style.display = 'grid';
+            div.style.gridTemplateColumns = '2fr 1fr auto';
+            div.style.gap = '8px';
+            div.style.marginBottom = '8px';
+
+            // Format price for display (remove decimals if .00)
+            let displayPrice = price;
+            if (typeof price === 'number') {
+                displayPrice = price.toString().replace(/\.00$/, '');
+            }
+
+            div.innerHTML = `
+                <input type="text" class="acc-name" value="${name}" placeholder="Tên hãng phụ kiện..." style="padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px">
+                <input type="text" class="acc-price" value="${displayPrice}" placeholder="Giá..." style="padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px" oninput="this.value = this.value.replace(/[^0-9,.]/g, '')">
+                <button onclick="this.parentElement.remove()" style="color:#ef4444;background:none;border:none;cursor:pointer;font-size:18px">&times;</button>
+            `;
+            container.appendChild(div);
+        }
+
         // MODAL - ĐÃ XÓA Phụ kiện và Loại cửa
         function openModal(type, id = null) {
             currentModal = type;
@@ -1190,19 +1245,13 @@
                 </div>
             </div>
             <div class="form-group"><label>Tên sản phẩm</label><textarea id="formName" rows="4" placeholder="Chi tiết sản phẩm với specs...">${item.name || ''}</textarea></div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
-                <div class="form-group">
-                    <label style="color:#059669">Phụ kiện</label>
-                    <select id="formAccessory" style="padding:10px 14px;border:2px solid #a7f3d0;border-radius:8px;font-size:14px;background:#ecfdf5">
-                        <option value="">-- Chọn phụ kiện --</option>
-                        <option value="Hopo" ${item.accessory === 'Hopo' ? 'selected' : ''}>Hopo</option>
-                        <option value="Viralwindow" ${item.accessory === 'Viralwindow' ? 'selected' : ''}>Viralwindow</option>
-                        <option value="Cmech" ${item.accessory === 'Cmech' ? 'selected' : ''}>Cmech</option>
-                    </select>
+            <div class="form-group" style="margin-top:12px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                    <label style="color:#059669;font-weight:700">Danh sách Phụ kiện có sẵn</label>
+                    <button onclick="addAccessoryRow()" style="background:#059669;color:white;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer">+ Thêm phụ kiện</button>
                 </div>
-                <div class="form-group">
-                    <label style="color:#059669">Giá phụ kiện (VND)</label>
-                    <input type="number" id="formAccessoryPrice" value="${item.accessoryPrice || ''}" placeholder="Nhập giá phụ kiện..." style="padding:10px 14px;border:2px solid #a7f3d0;border-radius:8px">
+                <div id="accessoryList" style="background:#ecfdf5;padding:12px;border-radius:8px;border:1px dashed #059669">
+                    <!-- Accessory rows added here -->
                 </div>
             </div>
             <p class="text-sm font-semibold mb-2 mt-4">Giá theo kích thước (VND) - ${SIZE_COLUMNS.length} mức</p>
@@ -1273,6 +1322,31 @@
             }
 
             document.getElementById('modalBody').innerHTML = html;
+
+            // Populate accessories if editing product
+            if (type === 'product' && id) {
+                const item = products.find(p => p.id === id);
+                if (item.accessories && item.accessories.length > 0) {
+                    item.accessories.forEach(acc => addAccessoryRow(acc.name, acc.price));
+                } else if (item.accessory) {
+                    // Pre-fill with legacy and add Cmech if it's Viralwindow
+                    addAccessoryRow(item.accessory, item.accessoryPrice);
+                    if (item.accessory.toLowerCase() === 'viralwindow') {
+                        addAccessoryRow('Cmech', 0);
+                    } else if (item.accessory.toLowerCase() === 'cmech') {
+                        addAccessoryRow('Viralwindow', 0);
+                    }
+                } else {
+                    // Completely empty - default to both
+                    addAccessoryRow('Viralwindow', 0);
+                    addAccessoryRow('Cmech', 0);
+                }
+            } else if (type === 'product') {
+                // New product defaults
+                addAccessoryRow('Viralwindow', 0);
+                addAccessoryRow('Cmech', 0);
+            }
+
             document.getElementById('modalOverlay').classList.add('show');
         }
 
@@ -1293,17 +1367,38 @@
                     });
                     const groupId = +document.getElementById('formGroupId').value;
                     const selectedGroup = groups.find(g => g.id === groupId) || {};
+                    const accessories = [];
+                    const rowElements = document.querySelectorAll('.accessory-row');
+                    console.log(`[DEBUG] Found ${rowElements.length} accessory rows`);
+
+                    rowElements.forEach((row, idx) => {
+                        const nameEl = row.querySelector('.acc-name');
+                        const priceEl = row.querySelector('.acc-price');
+                        const name = nameEl.value.trim();
+                        const rawPrice = priceEl.value;
+                        const price = parseLocalPrice(rawPrice);
+
+                        console.log(`[DEBUG] Row ${idx}: Name="${name}", RawPrice="${rawPrice}", ParsedPrice=${price}`);
+
+                        if (name) accessories.push({ name, price });
+                    });
+
                     const body = {
                         code: document.getElementById('formCode').value,
                         group_code: selectedGroup.code || '',
                         group_name: selectedGroup.name || '',
                         name: document.getElementById('formName').value,
-                        accessory: document.getElementById('formAccessory')?.value || '',
-                        accessory_price: +document.getElementById('formAccessoryPrice')?.value || 0,
+                        accessory: accessories.length > 0 ? accessories[0].name : '',
+                        accessory_price: accessories.length > 0 ? accessories[0].price : 0,
+                        accessories: accessories,
                         prices: prices
                     };
                     const url = editingId ? `${API_BASE}/product-catalog/products/${editingId}` : `${API_BASE}/product-catalog/products`;
                     const method = editingId ? 'PUT' : 'POST';
+
+                    console.log(`[DEBUG] Saving product:`, body);
+                    console.log(`[DEBUG] URL: ${url}, Method: ${method}`);
+
                     const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
                     const result = await res.json();
                     if (!result.success) { alert('Lỗi: ' + (result.message || 'Không lưu được')); return; }

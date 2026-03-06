@@ -2783,7 +2783,14 @@
                             }
                             </td>
                             <td class="col-accessories border px-1 py-2 table-cell-wrap">
-                                <textarea rows="1" class="table-input px-1 py-1 border rounded text-xs ${isMaterial ? 'bg-gray-100' : ''}" ${isMaterial ? 'disabled' : ''} onchange="updateItem(${item.id}, 'accessories', this.value)" oninput="this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px';">${item.accessories || ''}</textarea>
+                                ${isMaterial ?
+                                '<div class="px-1 py-1 text-gray-400 italic text-xs">N/A</div>' :
+                                (item.availableAccessories && item.availableAccessories.length > 1) ?
+                                    `<select onchange="changeAccessory(${item.id}, this.value)" class="w-full px-1 py-1 border rounded text-[10px] bg-green-50 border-green-300 font-medium">
+                                        ${item.availableAccessories.map(acc => `<option value="${acc.name}" ${acc.name === item.accessory_name ? 'selected' : ''}>${acc.name} - ${formatCurrency(acc.price)}</option>`).join('')}
+                                    </select>` :
+                                    `<textarea rows="1" class="table-input px-1 py-1 border rounded text-xs" onchange="updateItem(${item.id}, 'accessories', this.value)" oninput="this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px';">${item.accessories || ''}</textarea>`
+                            }
                             </td>
                             <td class="col-width border px-1 py-2 table-cell-wrap">
                                 <input type="number" value="${Math.round(item.width) || 0}" min="0" step="1" class="w-full px-1 py-1 border rounded text-xs text-center ${isMaterial ? 'border-orange-400 bg-orange-50' : ''}" onchange="updateItem(${item.id}, 'width', parseInt(this.value))" onblur="${isMaterial ? 'calculateItemTotal' : 'calculateItemArea'}(${item.id})">
@@ -2843,7 +2850,14 @@
                             }
                             </td>
                             <td class="col-accessories border px-1 py-2 table-cell-wrap">
-                                <textarea rows="1" class="table-input px-1 py-1 border rounded text-xs ${isMaterial ? 'bg-gray-100' : ''}" ${isMaterial ? 'disabled' : ''} onchange="updateItem(${item.id}, 'accessories', this.value)" oninput="this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px';">${item.accessories || ''}</textarea>
+                                ${isMaterial ?
+                                '<div class="px-1 py-1 text-gray-400 italic text-xs">N/A</div>' :
+                                (item.availableAccessories && item.availableAccessories.length > 1) ?
+                                    `<select onchange="changeAccessory(${item.id}, this.value)" class="w-full px-1 py-1 border rounded text-[10px] bg-green-50 border-green-300 font-medium">
+                                        ${item.availableAccessories.map(acc => `<option value="${acc.name}" ${acc.name === item.accessory_name ? 'selected' : ''}>${acc.name} - ${formatCurrency(acc.price)}</option>`).join('')}
+                                    </select>` :
+                                    `<textarea rows="1" class="table-input px-1 py-1 border rounded text-xs" onchange="updateItem(${item.id}, 'accessories', this.value)" oninput="this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px';">${item.accessories || ''}</textarea>`
+                            }
                             </td>
                             <td class="col-width border px-1 py-2 table-cell-wrap">
                                 <input type="number" value="${Math.round(item.width) || 0}" min="0" step="1" class="w-full px-1 py-1 border rounded text-xs text-center ${isMaterial ? 'border-orange-400 bg-orange-50' : ''}" onchange="updateItem(${item.id}, 'width', parseInt(this.value))" onblur="${isMaterial ? 'calculateItemTotal' : 'calculateItemArea'}(${item.id})">
@@ -2888,6 +2902,28 @@
                 const item = items.find(i => i.id === id);
                 if (item) {
                     item[field] = value;
+                }
+            }
+
+            // Change accessory (multi-accessory support)
+            function changeAccessory(id, accessoryName) {
+                const item = items.find(i => i.id === id);
+                if (item && item.availableAccessories) {
+                    const selected = item.availableAccessories.find(a => a.name === accessoryName);
+                    if (selected) {
+                        item.accessory_name = selected.name;
+                        item.accessoryPrice = selected.price;
+                        item.accessories = selected.name; // For backward compatibility in display
+
+                        // Update UI accessory price input
+                        const priceInputs = document.querySelectorAll(`tr[data-id="${id}"] .col-accessory-price input`);
+                        priceInputs.forEach(input => {
+                            input.value = formatNumberWithComma(selected.price);
+                        });
+
+                        console.log(`🔄 Changed accessory for item ${id}: ${selected.name} - ${formatCurrency(selected.price)}`);
+                        calculateItemTotal(id);
+                    }
                 }
             }
 
@@ -3145,12 +3181,14 @@
                         spec: door.name || '', // Lưu toàn bộ tên sản phẩm
                         glass: '',
                         accessories: door.accessory || '',
+                        accessory_name: door.accessories && door.accessories.length > 0 ? door.accessories[0].name : (door.accessory || ''),
+                        availableAccessories: door.accessories || [], // Store all available options
                         width: 0,
                         height: 0,
                         area: 0,
                         quantity: 1,
                         unitPrice: 0, // Sẽ tính khi nhập kích thước
-                        accessoryPrice: door.accessoryPrice || 0, // Lấy giá phụ kiện từ sản phẩm
+                        accessoryPrice: door.accessories && door.accessories.length > 0 ? door.accessories[0].price : (door.accessoryPrice || 0), // Lấy giá từ phụ kiện đầu tiên
                         total: 0,
                         productPrices: door.prices || {} // Lưu bảng giá để tra cứu
                     };
@@ -4788,6 +4826,7 @@
                         glass_id: item.glass_id,
                         glass_name: item.glass_name,
                         accessories: item.accessories,
+                        accessory_name: item.accessory_name || item.accessories,
                         accessory_price: item.accessoryPrice,
                         is_material: !!item.isMaterial // Gửi flag này về backend
                     }))
@@ -5233,25 +5272,32 @@
                         }
 
                         if (q.items && q.items.length > 0) {
-                            items = q.items.map((item, index) => ({
-                                id: index + 1,
-                                stt: index + 1,
-                                code: item.code || `C${String(index + 1).padStart(2, '0')}`,
-                                design: item.item_name || '',
-                                spec: item.spec || '',
-                                glass: item.glass || '',
-                                glass_id: item.glass_id || null,
-                                glass_name: item.glass_name || item.glass || '',
-                                accessories: item.accessories || '',
-                                width: item.width || 0,
-                                height: item.height || 0,
-                                area: item.area || 0,
-                                quantity: item.quantity || 1,
-                                unitPrice: item.unit_price || 0,
-                                accessoryPrice: item.accessory_price || 0,
-                                total: item.total_price || 0,
-                                isMaterial: !!item.is_material
-                            }));
+                            items = q.items.map((item, index) => {
+                                // Restore availableAccessories and productPrices from door catalog
+                                const door = window.doorCatalog ? window.doorCatalog.find(d => d.code === item.code) : null;
+                                return {
+                                    id: index + 1,
+                                    stt: index + 1,
+                                    code: item.code || `C${String(index + 1).padStart(2, '0')}`,
+                                    design: item.item_name || '',
+                                    spec: item.spec || '',
+                                    glass: item.glass || '',
+                                    glass_id: item.glass_id || null,
+                                    glass_name: item.glass_name || item.glass || '',
+                                    accessories: item.accessories || '',
+                                    accessory_name: item.accessory_name || item.accessories || '',
+                                    availableAccessories: (door && door.accessories) ? door.accessories : [],
+                                    productPrices: (door && door.prices) ? door.prices : {},
+                                    width: item.width || 0,
+                                    height: item.height || 0,
+                                    area: item.area || 0,
+                                    quantity: item.quantity || 1,
+                                    unitPrice: item.unit_price || 0,
+                                    accessoryPrice: item.accessory_price || 0,
+                                    total: item.total_price || 0,
+                                    isMaterial: !!item.is_material
+                                };
+                            });
                             itemCounter = items.length;
 
                             // Discount, VAT, shipping fee đã bị loại bỏ khỏi hệ thống

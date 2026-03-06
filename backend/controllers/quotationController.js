@@ -281,8 +281,8 @@ exports.create = async (req, res) => {
 
             await connection.query(
                 `INSERT INTO quotation_items 
-                 (quotation_id, item_name, quantity, unit, unit_price, total_price, item_type, code, spec, glass, accessories, width, height, area, accessory_price, is_material) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                 (quotation_id, item_name, quantity, unit, unit_price, total_price, item_type, code, spec, glass, accessories, width, height, area, accessory_price, is_material, accessory_name) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
                     quotation_id,
                     itemName,
@@ -299,7 +299,8 @@ exports.create = async (req, res) => {
                     parseFloat(item.height) || 0,
                     parseFloat(item.area) || 0,
                     parseFloat(item.accessory_price) || 0,
-                    item.is_material ? 1 : 0
+                    item.is_material ? 1 : 0,
+                    item.accessory_name || null
                 ]
             );
         }
@@ -708,8 +709,8 @@ exports.update = async (req, res) => {
             for (const item of items) {
                 await connection.query(
                     `INSERT INTO quotation_items 
-                     (quotation_id, item_name, quantity, unit, unit_price, total_price, item_type, code, spec, glass, accessories, width, height, area, accessory_price, is_material) 
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                     (quotation_id, item_name, quantity, unit, unit_price, total_price, item_type, code, spec, glass, accessories, width, height, area, accessory_price, is_material, accessory_name) 
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                     [
                         id,
                         item.item_name,
@@ -726,7 +727,8 @@ exports.update = async (req, res) => {
                         parseFloat(item.height) || 0,
                         parseFloat(item.area) || 0,
                         parseFloat(item.accessory_price) || 0,
-                        item.is_material ? 1 : 0
+                        item.is_material ? 1 : 0,
+                        item.accessory_name || null
                     ]
                 );
             }
