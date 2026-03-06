@@ -670,7 +670,7 @@
 
         <!-- PROJECTS LIST SECTION -->
         <div class="px-6 pb-6">
-            <h2 id="projectsHeading" class="text-xl font-semibold mb-4">Dự án đã hoàn thành (0)</h2>
+            <h2 id="projectsHeading" class="text-xl font-semibold mb-4">Dự án đã hủy (0)</h2>
 
             <!-- Projects Container - Will be populated dynamically -->
             <div id="projectsContainer"></div>
@@ -1450,7 +1450,7 @@
             // Update count in heading
             const heading = document.getElementById('projectsHeading');
             if (heading) {
-                heading.textContent = `Dự án đã hoàn thành (${visibleCount})`;
+                heading.textContent = `Dự án hủy (${visibleCount})`;
             }
         }
 

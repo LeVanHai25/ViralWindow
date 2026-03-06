@@ -1,0 +1,20 @@
+
+--- Template: accessory_report_template.xlsx ---
+Row 1: CÔNG TY CỔ PHẦN VIRALWINDOW |  |  |  |  |  |  | 
+Row 2: Nhà máy: KM 03, Đường Cienco5, KĐT Thanh Hà, Hà Đông, Hà Nội |  |  |  |  |  |  | 
+Row 3: Hotline: 1800 282839 |  |  |  |  |  |  | 
+Row 4: Email:  viralwindow.vn@gmail.com |  |  |  |  |  |  | 
+Row 5: Website: viralwindow.vn |  |  |  |  |  |  | 
+Row 6: BÁO CÁO NHẬP XUẤT KHO PHỤ KIỆN | BÁO CÁO NHẬP XUẤT KHO PHỤ KIỆN | BÁO CÁO NHẬP XUẤT KHO PHỤ KIỆN | BÁO CÁO NHẬP XUẤT KHO PHỤ KIỆN | BÁO CÁO NHẬP XUẤT KHO PHỤ KIỆN | BÁO CÁO NHẬP XUẤT KHO PHỤ KIỆN | BÁO CÁO NHẬP XUẤT KHO PHỤ KIỆN | 
+Row 7: Từ ngày 28/1/2026 đến ngày 6/3/2026 | Từ ngày 28/1/2026 đến ngày 6/3/2026 | Từ ngày 28/1/2026 đến ngày 6/3/2026 | Từ ngày 28/1/2026 đến ngày 6/3/2026 | Từ ngày 28/1/2026 đến ngày 6/3/2026 | Từ ngày 28/1/2026 đến ngày 6/3/2026 | Từ ngày 28/1/2026 đến ngày 6/3/2026 | 
+Row 8: Ngày xuất: 6/3/2026 06:58:18 | Người xuất: Admin | Ngày xuất: 6/3/2026 06:58:18 | Người xuất: Admin | Ngày xuất: 6/3/2026 06:58:18 | Người xuất: Admin | Ngày xuất: 6/3/2026 06:58:18 | Người xuất: Admin | Ngày xuất: 6/3/2026 06:58:18 | Người xuất: Admin | Ngày xuất: 6/3/2026 06:58:18 | Người xuất: Admin | Ngày xuất: 6/3/2026 06:58:18 | Người xuất: Admin | 
+Row 9: STT | Mã vật tư | Tên vật tư | ĐVT | Tồn đầu | Nhập | Xuất | Tồn cuối
+Row 10: 1 | CM-BL4D-B | Bản lề 4D Cmech màu bạc (010) | cái | 42 | 3 | 11 | 34
+Row 11: 2 | CM-BL4D-D | Bản lề 4D Cmech màu đồng (012) | cái |  | 1 | 1 | 
+Row 12: 3 | CM-BLA | Bản lề A Cmech | cái |  | 2 |  | 2
+Row 13: 4 | CM-BLC65 | Bản lề cối Cmech hệ 65 | cái |  | 1 |  | 1
+Row 14: 5 | CM-BXD | Bánh xe đôi cmech | cái |  |  | 10 | -10
+Row 15: 6 | CM-CB | Chốt bật Cmech | cái |  | 1 |  | 1
+
+--- Template: PhieuXuatKho_Template.xlsx ---
+Error reading PhieuXuatKho_Template.xlsx: Cannot read properties of undefined (reading 'getRow')

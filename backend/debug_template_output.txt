@@ -1,0 +1,38 @@
+--- Analyzing Template with ExcelJS: D:\ViralWindow_Phan_Mem_Nhom_Kinh\backend\templates\PhieuXuatKho_Template.xlsx ---
+Sheet Names: foxz, LÂY NHÔM YANGLY , VẬT TƯ PHỤ , NHÔM , KÍNH , PHIỄU XUÂT KHO 
+Using Sheet: PHIỄU XUÂT KHO 
+Row 1: CÔNG TY CỔ PHẦN VIRALWINDOW |  |  |  |  |  |  |  |  |  |  |  |  |  | 
+Row 2: Nhà máy: KM 03, Đường Cienco5, KĐT Thanh Hà, Hà Đông, Hà Nội | Nhà máy: KM 03, Đường Cienco5, KĐT Thanh Hà, Hà Đông, Hà Nội | Nhà máy: KM 03, Đường Cienco5, KĐT Thanh Hà, Hà Đông, Hà Nội | Nhà máy: KM 03, Đường Cienco5, KĐT Thanh Hà, Hà Đông, Hà Nội | Nhà máy: KM 03, Đường Cienco5, KĐT Thanh Hà, Hà Đông, Hà Nội | Nhà máy: KM 03, Đường Cienco5, KĐT Thanh Hà, Hà Đông, Hà Nội | Nhà máy: KM 03, Đường Cienco5, KĐT Thanh Hà, Hà Đông, Hà Nội | Nhà máy: KM 03, Đường Cienco5, KĐT Thanh Hà, Hà Đông, Hà Nội |  |  |  |  |  |  | 
+Row 3: Hotline: 1800 282839 | Hotline: 1800 282839 | Hotline: 1800 282839 | Hotline: 1800 282839 | Hotline: 1800 282839 | Hotline: 1800 282839 | Hotline: 1800 282839 | Hotline: 1800 282839 |  |  |  |  |  |  | 
+Row 4: Email:  viralwindow.vn@gmail.com | Email:  viralwindow.vn@gmail.com | Email:  viralwindow.vn@gmail.com | Email:  viralwindow.vn@gmail.com | Email:  viralwindow.vn@gmail.com | Email:  viralwindow.vn@gmail.com | Email:  viralwindow.vn@gmail.com | Email:  viralwindow.vn@gmail.com |  |  |  |  |  |  | 
+Row 5: Website: viralwindow.vn | Website: viralwindow.vn | Website: viralwindow.vn | Website: viralwindow.vn | Website: viralwindow.vn | Website: viralwindow.vn | Website: viralwindow.vn | Website: viralwindow.vn |  |  |  |  |  |  | 
+Row 6: PHIẾU XUẤT KHO | PHIẾU XUẤT KHO | PHIẾU XUẤT KHO | PHIẾU XUẤT KHO | PHIẾU XUẤT KHO | PHIẾU XUẤT KHO | PHIẾU XUẤT KHO | PHIẾU XUẤT KHO |  |  |  |  |  |  | 
+Row 7: Số: 01-VRT12 | Số: 01-VRT12 | Số: 01-VRT12 | Số: 01-VRT12 | Số: 01-VRT12 | Số: 01-VRT12 | Số: 01-VRT12 | Số: 01-VRT12 |  |  |  |  |  |  | 
+Row 8:  | Khách hàng  :  | Khách hàng  :  | Khách hàng  :  | Đại lý:   | Đại lý:   | Đại lý:   | Đại lý:   |  |  |  |  |  |  | 
+Row 9:  | Ký hiệu         :  | Ký hiệu         :  |  |  |  |  |  |  |  |  |  |  |  | 
+Row 10:  | Địa chỉ          :  | Địa chỉ          :  | Địa chỉ          :  | Địa chỉ          :  | Địa chỉ          :  | Địa chỉ          :  | Địa chỉ          :  |  |  |  |  |  |  | 
+Row 11:  | Số điện thoại:  | Số điện thoại:  | Số điện thoại:  | Số điện thoại:  | Số điện thoại:  | Số điện thoại:  | Số điện thoại:  |  |  |  |  |  |  | 
+Row 12:  | Lý do xuất   :  | Lý do xuất   :  | Lý do xuất   :  | Lý do xuất   :  | Lý do xuất   :  | Lý do xuất   :  | Lý do xuất   :  |  |  |  |  |  |  | 
+Row 13:  | Xuất tại kho: Công ty cổ phần Viralwindow ,Số 36 Đường Miền Đông Cự Khê Thanh Oai Hà Nội  | Xuất tại kho: Công ty cổ phần Viralwindow ,Số 36 Đường Miền Đông Cự Khê Thanh Oai Hà Nội  | Xuất tại kho: Công ty cổ phần Viralwindow ,Số 36 Đường Miền Đông Cự Khê Thanh Oai Hà Nội  | Xuất tại kho: Công ty cổ phần Viralwindow ,Số 36 Đường Miền Đông Cự Khê Thanh Oai Hà Nội  | Xuất tại kho: Công ty cổ phần Viralwindow ,Số 36 Đường Miền Đông Cự Khê Thanh Oai Hà Nội  | Xuất tại kho: Công ty cổ phần Viralwindow ,Số 36 Đường Miền Đông Cự Khê Thanh Oai Hà Nội  | Xuất tại kho: Công ty cổ phần Viralwindow ,Số 36 Đường Miền Đông Cự Khê Thanh Oai Hà Nội  |  |  |  |  |  |  | 
+Row 14:  | Thời điểm vận chuyển :  | Thời điểm vận chuyển :  | Thời điểm vận chuyển :  | Thời điểm vận chuyển :  | Thời điểm vận chuyển :  | Thời điểm vận chuyển :  | Thời điểm vận chuyển :  |  |  |  |  |  |  | 
+Row 15: STT | Mã hiệu | Nội dung | Kích thước | Kích thước | ĐVT | Tổng số lượng | Diện Tích | Ghi chú |  |  |  |  |  | 
+Row 16: STT | Mã hiệu | Nội dung | Rộng (mm) | Cao (mm) | ĐVT | Tổng số lượng | Diện Tích | Ghi chú |  |  |  |  |  | 
+Row 17:  |  |  |  |  |  |  |  |  |  |  |  |  |  | 
+Row 18:  |  CỘNG |  CỘNG |  |  |  | FORMULA: SUM(G17:G17) | FORMULA: SUM(H17:H17) |  |  |  |  |  |  | 
+Row 19:  |  |  |                                          'Hà Nội, Ngày  24  tháng  11 năm 2025 |                                          'Hà Nội, Ngày  24  tháng  11 năm 2025 |                                          'Hà Nội, Ngày  24  tháng  11 năm 2025 |                                          'Hà Nội, Ngày  24  tháng  11 năm 2025 |                                          'Hà Nội, Ngày  24  tháng  11 năm 2025 |                                          'Hà Nội, Ngày  24  tháng  11 năm 2025 |  |  |  |  |  | 
+Row 20:         Vận chuyển           Người kiểm hàng            Khách hàng               Kế toán               Người lập phiếu  |         Vận chuyển           Người kiểm hàng            Khách hàng               Kế toán               Người lập phiếu  |         Vận chuyển           Người kiểm hàng            Khách hàng               Kế toán               Người lập phiếu  |         Vận chuyển           Người kiểm hàng            Khách hàng               Kế toán               Người lập phiếu  |         Vận chuyển           Người kiểm hàng            Khách hàng               Kế toán               Người lập phiếu  |         Vận chuyển           Người kiểm hàng            Khách hàng               Kế toán               Người lập phiếu  |         Vận chuyển           Người kiểm hàng            Khách hàng               Kế toán               Người lập phiếu  |         Vận chuyển           Người kiểm hàng            Khách hàng               Kế toán               Người lập phiếu  |         Vận chuyển           Người kiểm hàng            Khách hàng               Kế toán               Người lập phiếu  |  |  |  |  |  | 
+Row 21:  |  |  |  |  |  |  |  |  |  |  |  |  |  | 
+Row 22:  |  |  |  |  |  |  |  |  |  |  |  |  |  | 
+Row 23:   |   |   |   |   |   |   |   |   |  |  |  |  |  | 
+Row 24:  |  |  |  |  |  |  |  |  |  |  |  |  |  | 
+Row 25:  |  |  |  |  |  |  |  |  |  |  |  |  |  | 
+Row 26:  |  |  |  |  |  |  |  |  |  |  |  |  |  | 
+Row 27:  |  |  |  |  |  |  |  |  |  |  |  |  |  | 
+Row 28:  |  |  |  |  |  |  |  |  |  |  |  |  |  | 
+Row 29:  |  |  |  |  |  |  |  |  |  |  |  |  |  | 
+Row 30:  |  |  |  |  |  |  |  |  |  |  |  |  |  | 
+Row 31:  |  |  |  |  |  |  |  |  |  |  |  |  |  | 
+Row 32:  |  |  |  |  |  |  |  |  |  |  |  |  |  | 
+Row 33:  |  |  |  |  |  |  |  |  |  |  |  |  |  | 
+Row 34:  |  |  |  |  |  |  |  |  |  |  |  |  |  | 
+Row 35:  |  |  |  |  |  |  |  |  |  |  |  |  |  | 

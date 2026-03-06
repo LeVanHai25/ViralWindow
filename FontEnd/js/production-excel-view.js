@@ -823,24 +823,34 @@ function editMaterialField(orderId, group, fieldName, td) {
 async function exportExcel() {
     try {
         const qs = buildQueryFromUI();
-        const response = await fetch(`${API_BASE}/production/excel/export?${qs}`);
+        const token = localStorage.getItem('token');
+
+        // Show loading notification
+        showNotification('Đang chuẩn bị file Excel chuyên nghiệp...', 'info');
+
+        const response = await fetch(`${API_BASE}/production/excel/export?${qs}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
 
         if (!response.ok) {
-            throw new Error('Export failed');
+            const result = await response.json();
+            throw new Error(result.error || 'Lỗi xuất Excel');
         }
 
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `theo_doi_don_hang_${new Date().toISOString().slice(0, 10)}.xlsx`;
+        a.download = `theo_doi_du_an_${new Date().toISOString().slice(0, 10)}.xlsx`;
         document.body.appendChild(a);
         a.click();
-        document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        showNotification('Xuất Excel thành công', 'success');
     } catch (error) {
         console.error('Export error:', error);
-        alert('Lỗi khi xuất Excel');
+        showNotification('Lỗi khi xuất Excel: ' + error.message, 'error');
     }
 }
 

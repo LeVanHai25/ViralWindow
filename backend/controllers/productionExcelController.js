@@ -3,6 +3,8 @@
  * Synced 100% with Kanban, proper enums and computed fields
  */
 
+const path = require('path');
+const fs = require('fs');
 const db = require('../config/db');
 
 // ============================================
@@ -1357,6 +1359,8 @@ exports.exportExcel = async (req, res) => {
         const result = await getOrdersData(req, { noPagination: true });
         const orders = result.orders;
         const companyName = result.companyName;
+        const userName = req.user?.full_name || 'Admin';
+        const logoPath = path.join(__dirname, '../assets/LogoViralWindow.png');
 
         // Material status label and color mapping
         const MATERIAL_STATUS_CONFIG = {
@@ -1398,29 +1402,48 @@ exports.exportExcel = async (req, res) => {
         // HEADER SECTION (Company info, Title, Date)
         // ============================================
 
+        // 1. Inject Professional Logo
+        try {
+            if (fs.existsSync(logoPath)) {
+                const logo = workbook.addImage({
+                    filename: logoPath,
+                    extension: 'png',
+                });
+                worksheet.addImage(logo, {
+                    tl: { col: 0.1, row: 0.1 },
+                    ext: { width: 100, height: 50 },
+                    editAs: 'oneCell'
+                });
+            }
+        } catch (logoErr) {
+            console.warn('Could not add logo to export:', logoErr.message);
+        }
+
         // Row 1: Company Name
-        worksheet.mergeCells('A1:L1');
-        const companyCell = worksheet.getCell('A1');
+        worksheet.mergeCells('C1:L1');
+        const companyCell = worksheet.getCell('C1');
         companyCell.value = companyName.toUpperCase();
         companyCell.font = { name: 'Arial', size: 16, bold: true, color: { argb: 'FF1E3A8A' } };
         companyCell.alignment = { horizontal: 'center', vertical: 'middle' };
         worksheet.getRow(1).height = 30;
 
         // Row 2: Report Title
-        worksheet.mergeCells('A2:L2');
-        const titleCell = worksheet.getCell('A2');
+        worksheet.mergeCells('C2:L2');
+        const titleCell = worksheet.getCell('C2');
         titleCell.value = 'BÁO CÁO THEO DÕI DỰ ÁN';
-        titleCell.font = { name: 'Arial', size: 14, bold: true, color: { argb: 'FF374151' } };
+        titleCell.font = { name: 'Arial', size: 14, bold: true, color: { argb: 'FF1F2937' } };
         titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
         worksheet.getRow(2).height = 25;
 
-        // Row 3: Export date/time
+        // Row 3: Metadata (Exporter & Date)
         worksheet.mergeCells('A3:L3');
-        const dateCell = worksheet.getCell('A3');
+        const metaCell = worksheet.getCell('A3');
         const now = new Date();
-        dateCell.value = `Ngày xuất: ${formatDateVN(now)} - ${now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`;
-        dateCell.font = { name: 'Arial', size: 10, italic: true, color: { argb: 'FF6B7280' } };
-        dateCell.alignment = { horizontal: 'center', vertical: 'middle' };
+        const dateStr = formatDateVN(now);
+        const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+        metaCell.value = `Ngày xuất: ${dateStr} ${timeStr} | Người xuất: ${userName}`;
+        metaCell.font = { name: 'Arial', size: 10, italic: true, color: { argb: 'FF4B5563' } };
+        metaCell.alignment = { horizontal: 'right', vertical: 'middle' };
         worksheet.getRow(3).height = 20;
 
         // Row 4: Empty row for spacing
@@ -1688,14 +1711,51 @@ exports.exportExcel = async (req, res) => {
         });
 
         // ============================================
-        // FOOTER (Summary)
+        // FOOTER (Summary & Signatures)
         // ============================================
         currentRow += 1;
         worksheet.mergeCells(`A${currentRow}:L${currentRow}`);
-        const footerCell = worksheet.getCell(`A${currentRow}`);
-        footerCell.value = `Tổng số dự án: ${orders.length} | Xuất bởi ViralWindow ERP`;
-        footerCell.font = { name: 'Arial', size: 10, italic: true, color: { argb: 'FF6B7280' } };
-        footerCell.alignment = { horizontal: 'right', vertical: 'middle' };
+        const footerSummary = worksheet.getCell(`A${currentRow}`);
+        footerSummary.value = `Tổng cộng: ${orders.length} dự án.`;
+        footerSummary.font = { name: 'Arial', size: 11, bold: true };
+        footerSummary.alignment = { horizontal: 'right', vertical: 'middle' };
+        worksheet.getRow(currentRow).height = 25;
+
+        currentRow += 2;
+        const signRow = currentRow;
+        worksheet.getRow(signRow).height = 25;
+
+        // Signature headers
+        const signHeaders = [
+            { start: 'A', end: 'D', text: 'NGƯỜI LẬP' },
+            { start: 'E', end: 'H', text: 'QUẢN LÝ' },
+            { start: 'I', end: 'L', text: 'BAN GIÁM ĐỐC' }
+        ];
+
+        signHeaders.forEach(s => {
+            worksheet.mergeCells(`${s.start}${signRow}:${s.end}${signRow}`);
+            const cell = worksheet.getCell(`${s.start}${signRow}`);
+            cell.value = s.text;
+            cell.font = { name: 'Arial', size: 11, bold: true };
+            cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        });
+
+        currentRow += 1;
+        worksheet.mergeCells(`A${currentRow}:L${currentRow}`);
+        const italicCell = worksheet.getCell(`A${currentRow}`);
+        italicCell.value = '(Ký, ghi rõ họ tên)';
+        italicCell.font = { name: 'Arial', size: 10, italic: true };
+        italicCell.alignment = { horizontal: 'center', vertical: 'top' };
+        worksheet.getRow(currentRow).height = 20;
+
+        currentRow += 4; // Space for signatures
+
+        // Final line info
+        worksheet.mergeCells(`A${currentRow}:L${currentRow}`);
+        const lastCell = worksheet.getCell(`A${currentRow}`);
+        lastCell.value = `Ngày in: ${new Date().toLocaleString('vi-VN')} | Hệ thống ViralWindow ERP`;
+        lastCell.font = { name: 'Arial', size: 9, italic: true, color: { argb: 'FF9CA3AF' } };
+        lastCell.alignment = { horizontal: 'center', vertical: 'bottom' };
 
         // ============================================
         // WRITE AND SEND

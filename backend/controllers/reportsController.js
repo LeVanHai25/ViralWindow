@@ -1,10 +1,5 @@
-/**
- * Reports Controller
- * Handles warehouse report exports by date range
- */
-
-const ExcelJS = require('exceljs');
 const db = require('../config/db');
+const inventoryExportService = require('../services/inventoryExportService');
 
 /**
  * Export warehouse report by date range
@@ -48,7 +43,7 @@ exports.exportWarehouseReport = async (req, res) => {
         const startDate = `${date_from} 00:00:00`;
         const endDate = `${date_to} 23:59:59`;
 
-        // Item type translation (in case DB uses different keys)
+        // Item type translation
         const itemTypeMap = {
             'aluminum': ['aluminum', 'nhom', 'Nhom', 'ALUMINUM'],
             'accessory': ['accessory', 'phukien', 'PhuKien', 'ACCESSORY'],
@@ -75,12 +70,7 @@ exports.exportWarehouseReport = async (req, res) => {
             ORDER BY dl.item_code
         `, [itemTypeVariants, startDate, endDate]);
 
-        // Calculate stats for each item
         const itemStats = [];
-        let grandTotalOpening = 0;
-        let grandTotalIn = 0;
-        let grandTotalOut = 0;
-        let grandTotalClosing = 0;
 
         for (const item of itemsWithTransactions) {
             // Get opening balance (last transaction before start date)
@@ -109,7 +99,6 @@ exports.exportWarehouseReport = async (req, res) => {
             const qtyOut = parseFloat(rangeTxns[0]?.total_out) || 0;
             const closingBalance = openingBalance + qtyIn - qtyOut;
 
-            // Only include items with actual transactions or non-zero balances
             if (qtyIn > 0 || qtyOut > 0 || openingBalance !== 0) {
                 itemStats.push({
                     code: item.item_code || `ID:${item.item_id}`,
@@ -120,18 +109,8 @@ exports.exportWarehouseReport = async (req, res) => {
                     out: qtyOut,
                     closing: closingBalance
                 });
-
-                grandTotalOpening += openingBalance;
-                grandTotalIn += qtyIn;
-                grandTotalOut += qtyOut;
-                grandTotalClosing += closingBalance;
             }
         }
-
-        // Create Excel workbook
-        const workbook = new ExcelJS.Workbook();
-        workbook.creator = 'ViralWindow';
-        workbook.created = new Date();
 
         // Warehouse labels
         const warehouseLabels = {
@@ -142,155 +121,14 @@ exports.exportWarehouseReport = async (req, res) => {
         };
         const warehouseLabel = warehouseLabels[item_type] || item_type.toUpperCase();
 
-        const worksheet = workbook.addWorksheet('BaoCao');
+        const fromDateStr = new Date(date_from).toLocaleDateString('vi-VN');
+        const toDateStr = new Date(date_to).toLocaleDateString('vi-VN');
 
-        // Title
-        worksheet.mergeCells('A1:G1');
-        const titleCell = worksheet.getCell('A1');
-        titleCell.value = `BÁO CÁO NHẬP XUẤT KHO ${warehouseLabel}`;
-        titleCell.font = { bold: true, size: 16, color: { argb: 'FF007B5E' } };
-        titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
-        worksheet.getRow(1).height = 35;
-
-        // Date range info
-        worksheet.mergeCells('A2:G2');
-        const dateRangeCell = worksheet.getCell('A2');
-        const fromDate = new Date(date_from).toLocaleDateString('vi-VN');
-        const toDate = new Date(date_to).toLocaleDateString('vi-VN');
-        dateRangeCell.value = `Từ ngày ${fromDate} đến ngày ${toDate}`;
-        dateRangeCell.font = { italic: true, size: 11, color: { argb: 'FF666666' } };
-        dateRangeCell.alignment = { horizontal: 'center' };
-
-        // Export info
-        worksheet.mergeCells('A3:G3');
-        const exportInfoCell = worksheet.getCell('A3');
-        const now = new Date();
-        exportInfoCell.value = `Ngày xuất: ${now.toLocaleDateString('vi-VN')} ${now.toLocaleTimeString('vi-VN')} | Người xuất: ${req.user?.full_name || req.user?.username || 'Admin'}`;
-        exportInfoCell.font = { size: 9, color: { argb: 'FF999999' } };
-        exportInfoCell.alignment = { horizontal: 'center' };
-
-        // Empty row
-        worksheet.getRow(4).height = 10;
-
-        // Headers
-        const headers = ['STT', 'Mã vật tư', 'Tên vật tư', 'ĐVT', 'Tồn đầu', 'Nhập', 'Xuất', 'Tồn cuối'];
-        const headerRow = worksheet.getRow(5);
-        headerRow.values = headers;
-        headerRow.height = 28;
-        headerRow.eachCell((cell, colNumber) => {
-            cell.fill = {
-                type: 'pattern',
-                pattern: 'solid',
-                fgColor: { argb: 'FF007B5E' }
-            };
-            cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
-            cell.alignment = { horizontal: 'center', vertical: 'middle' };
-            cell.border = {
-                top: { style: 'thin' },
-                left: { style: 'thin' },
-                bottom: { style: 'thin' },
-                right: { style: 'thin' }
-            };
+        const buffer = await inventoryExportService.exportToExcel(item_type, itemStats, {
+            title: `BÁO CÁO NHẬP XUẤT KHO ${warehouseLabel}`,
+            dateRange: `Từ ngày ${fromDateStr} đến ngày ${toDateStr}`,
+            generatedBy: req.user?.full_name || req.user?.username || 'Admin'
         });
-
-        // Freeze header
-        worksheet.views = [{ state: 'frozen', ySplit: 5 }];
-
-        // Data rows
-        let currentRow = 6;
-        if (itemStats.length === 0) {
-            // No data message
-            worksheet.mergeCells(`A${currentRow}:H${currentRow}`);
-            const noDataCell = worksheet.getCell(`A${currentRow}`);
-            noDataCell.value = 'Không có dữ liệu giao dịch trong khoảng thời gian này';
-            noDataCell.font = { italic: true, color: { argb: 'FF999999' } };
-            noDataCell.alignment = { horizontal: 'center' };
-            currentRow++;
-        } else {
-            itemStats.forEach((stat, index) => {
-                const dataRow = worksheet.getRow(currentRow);
-                dataRow.values = [
-                    index + 1,
-                    stat.code,
-                    stat.name,
-                    stat.unit,
-                    stat.opening,
-                    stat.in,
-                    stat.out,
-                    stat.closing
-                ];
-
-                dataRow.eachCell((cell, colNumber) => {
-                    cell.border = {
-                        top: { style: 'thin', color: { argb: 'FFE0E0E0' } },
-                        left: { style: 'thin', color: { argb: 'FFE0E0E0' } },
-                        bottom: { style: 'thin', color: { argb: 'FFE0E0E0' } },
-                        right: { style: 'thin', color: { argb: 'FFE0E0E0' } }
-                    };
-                    cell.alignment = { vertical: 'middle' };
-
-                    if (colNumber === 1) {
-                        cell.alignment = { horizontal: 'center', vertical: 'middle' };
-                    }
-                    if (colNumber >= 5) {
-                        cell.alignment = { horizontal: 'right', vertical: 'middle' };
-                        cell.numFmt = '#,##0.##';
-                    }
-                });
-
-                // Alternate row color
-                if (index % 2 === 1) {
-                    dataRow.eachCell(cell => {
-                        cell.fill = {
-                            type: 'pattern',
-                            pattern: 'solid',
-                            fgColor: { argb: 'FFF5F5F5' }
-                        };
-                    });
-                }
-
-                currentRow++;
-            });
-
-            // Total row
-            const totalRow = worksheet.getRow(currentRow);
-            totalRow.values = ['', '', '', 'TỔNG CỘNG:', grandTotalOpening, grandTotalIn, grandTotalOut, grandTotalClosing];
-            totalRow.height = 28;
-            totalRow.eachCell((cell, colNumber) => {
-                cell.font = { bold: true, size: 11 };
-                cell.fill = {
-                    type: 'pattern',
-                    pattern: 'solid',
-                    fgColor: { argb: 'FFE8F5E9' }
-                };
-                cell.border = {
-                    top: { style: 'medium' },
-                    bottom: { style: 'medium' }
-                };
-                if (colNumber >= 5) {
-                    cell.numFmt = '#,##0.##';
-                    cell.alignment = { horizontal: 'right' };
-                }
-            });
-            currentRow++;
-
-            // Summary row
-            currentRow++;
-            worksheet.getCell(`A${currentRow}`).value = `Tổng số mặt hàng có phát sinh: ${itemStats.length}`;
-            worksheet.getCell(`A${currentRow}`).font = { italic: true, size: 10 };
-        }
-
-        // Set column widths
-        worksheet.columns = [
-            { width: 6 },   // STT
-            { width: 15 },  // Mã vật tư
-            { width: 40 },  // Tên vật tư
-            { width: 8 },   // ĐVT
-            { width: 12 },  // Tồn đầu
-            { width: 12 },  // Nhập
-            { width: 12 },  // Xuất
-            { width: 12 }   // Tồn cuối
-        ];
 
         // Generate filename
         const warehouseFileNames = {
@@ -303,13 +141,9 @@ exports.exportWarehouseReport = async (req, res) => {
         const toStr = date_to.replace(/-/g, '');
         const filename = `BaoCao_${warehouseFileNames[item_type]}_${fromStr}-${toStr}.xlsx`;
 
-        // Set response headers
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-
-        // Write to response
-        await workbook.xlsx.write(res);
-        res.end();
+        res.send(buffer);
 
     } catch (error) {
         console.error('Error exporting warehouse report:', error);
