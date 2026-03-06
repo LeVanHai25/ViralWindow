@@ -124,20 +124,45 @@ exports.exportQuotationToExcel = async (req, res) => {
             const quantity = parseInt(item.quantity) || 1;
             const unitPrice = parseFloat(item.unit_price) || 0;
             const accessoryPrice = parseFloat(item.accessory_price) || 0;
+            const isMaterial = !!item.is_material;
+            const storedTotalPrice = parseFloat(item.total_price) || 0;
 
-            // Diện tích 1 bộ (m²)
-            const areaPerUnit = (width * height) / 1000000;
-            // Tổng diện tích = diện tích 1 bộ × số bộ
-            const itemTotalArea = areaPerUnit * quantity;
-            totalArea += itemTotalArea;
+            let itemMaterialCost = 0;
+            let itemAccessoryCost = 0;
 
-            // Tổng tiền vật tư = Diện tích 1 bộ × Đơn giá × Số bộ
-            const materialCost = areaPerUnit * unitPrice * quantity;
-            totalMaterial += materialCost;
+            if (isMaterial) {
+                // Vật tư: Tổng = (Rộng / 1000) × Số bộ × Đơn giá
+                const widthM = width / 1000;
+                itemMaterialCost = widthM * quantity * unitPrice;
+                itemAccessoryCost = 0; // Vật tư không có phụ kiện
+            } else {
+                // Cửa nhôm: Diện tích 1 bộ (m²)
+                const areaPerUnit = (width * height) / 1000000;
+                // Tổng tiền vật tư = Diện tích 1 bộ × Đơn giá × Số bộ
+                itemMaterialCost = areaPerUnit * unitPrice * quantity;
+                // Tổng tiền phụ kiện = Phụ kiện 1 bộ × Số bộ
+                itemAccessoryCost = accessoryPrice * quantity;
 
-            // Tổng tiền phụ kiện = Phụ kiện 1 bộ × Số bộ
-            const accessoryCost = accessoryPrice * quantity;
-            totalAccessories += accessoryCost;
+                // Cập nhật tổng diện tích (chỉ tính cho sản phẩm, vật tư diện tích = 0)
+                totalArea += (areaPerUnit * quantity);
+            }
+
+            // Ưu tiên sử dụng total_price đã lưu nếu kết quả tính lại lệch quá 1 đồng
+            const calculatedTotal = itemMaterialCost + itemAccessoryCost;
+            if (storedTotalPrice > 0 && Math.abs(calculatedTotal - storedTotalPrice) > 1) {
+                // Nếu lệch, sử dụng giá trị đã lưu cho đồng bộ
+                if (isMaterial) {
+                    totalMaterial += storedTotalPrice;
+                } else {
+                    // Tách biệt vật tư/phụ kiện cho sản phẩm nếu dùng storedTotalPrice
+                    // Giả sử tỷ lệ vẫn đúng
+                    totalMaterial += itemMaterialCost;
+                    totalAccessories += itemAccessoryCost;
+                }
+            } else {
+                totalMaterial += itemMaterialCost;
+                totalAccessories += itemAccessoryCost;
+            }
         });
 
         // Tổng giá trị báo giá = Vật tư + Phụ kiện (KHÔNG cộng VAT, chiết khấu, phí vận chuyển)

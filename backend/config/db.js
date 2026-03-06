@@ -108,7 +108,15 @@ async function autoIdQuery(queryFn, sql, params) {
                                     `SELECT COALESCE(MAX(id), 0) + 1 AS nextId FROM \`${tableName}\``
                                 );
                                 const retryId = Number(retryMax[0].nextId) + Math.floor(Math.random() * 5);
-                                const retrySql2 = newSql2.replace('VALUES (?, ', 'VALUES (?, ');
+                                // Rebuild modified SQL (newSql2 is out of scope here)
+                                const retryNewSql = sql.replace(
+                                    /INSERT\s+INTO\s+(`?\w+`?)\s*\(([^)]+)\)/is,
+                                    `INSERT INTO $1 (id, $2)`
+                                );
+                                const retrySql2 = retryNewSql.replace(
+                                    /VALUES\s*\(/i,
+                                    'VALUES (?, '
+                                );
                                 const retryParams = [retryId, ...params];
                                 const retryResult = await queryFn(retrySql2, retryParams);
                                 if (retryResult && retryResult[0]) retryResult[0].insertId = retryId;
@@ -118,6 +126,7 @@ async function autoIdQuery(queryFn, sql, params) {
                                 throw retryErr;
                             }
                         }
+
                         // Non-duplicate error: re-throw so caller sees real error
                         throw e;
                     }

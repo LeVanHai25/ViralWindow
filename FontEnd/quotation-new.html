@@ -1041,6 +1041,10 @@
                                     class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
                                     Chọn mẫu sản phẩm
                                 </button>
+                                <button onclick="openMaterialCatalogModal()"
+                                    class="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600">
+                                    Chọn vật tư
+                                </button>
                                 <button onclick="addItemRow()"
                                     class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700">
                                     + Thêm dòng
@@ -1208,6 +1212,10 @@
                                         <button onclick="openDoorCatalogModal()"
                                             class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
                                             Chọn mẫu sản phẩm
+                                        </button>
+                                        <button onclick="openMaterialCatalogModal()"
+                                            class="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600">
+                                            Chọn vật tư
                                         </button>
                                         <button onclick="addItemRow()"
                                             class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700">
@@ -1379,6 +1387,36 @@
                 <div class="p-6 overflow-y-auto flex-1">
                     <div id="doorList" class="grid grid-cols-2 gap-4">
                         <!-- Doors will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: Chọn vật tư -->
+        <div id="materialCatalogModal"
+            class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
+                <!-- Header cố định -->
+                <div
+                    class="flex justify-between items-center p-4 border-b bg-gradient-to-r from-orange-500 to-amber-500 flex-shrink-0">
+                    <h2 class="text-xl font-bold text-white"> Chọn vật tư từ danh mục</h2>
+                    <button onclick="closeMaterialCatalogModal()" class="text-white hover:text-gray-200">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <!-- Thanh tìm kiếm sticky -->
+                <div class="px-4 py-3 border-b bg-gray-50 flex-shrink-0 sticky top-0 z-10">
+                    <input type="text" id="materialSearch" placeholder="🔍︎ Tìm kiếm vật tư..."
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        onkeyup="filterMaterialCatalog()">
+                </div>
+                <!-- Danh sách cuộn -->
+                <div class="p-4 overflow-y-auto flex-1">
+                    <div id="materialList" class="space-y-2">
+                        <!-- Materials will be loaded here -->
                     </div>
                 </div>
             </div>
@@ -1725,6 +1763,8 @@
             let parentQuotationId = null; // Lưu ID của V1 khi tạo version mới
             let items = [];
             let cachedGlassCatalog = null;
+            let cachedMaterialCatalog = null;
+            let isMaterialCatalogLoading = false;
             let itemCounter = 0;
             let isLocked = false;
             let currentDetailQuotationId = null; // ID của báo giá đang xem trong modal chi tiết
@@ -2700,19 +2740,20 @@
                     id: itemCounter,
                     stt: items.length + 1,
                     code: item?.code || `C${String(items.length + 1).padStart(2, '0')}`, // Ký hiệu = Mã sản phẩm
-                    design: item?.name || '',
-                    spec: item?.name || '', // Quy cách = Tên sản phẩm
-                    glass: '',
-                    glass_id: null,
-                    glass_name: '',
-                    accessories: '',
+                    design: item?.design || item?.name || '',
+                    spec: item?.spec || item?.name || '', // Quy cách = Tên sản phẩm
+                    glass: item?.glass || '',
+                    glass_id: item?.glass_id || null,
+                    glass_name: item?.glass_name || '',
+                    accessories: item?.accessories || '',
                     width: item?.width || 0,
                     height: item?.height || 0,
-                    area: 0,
+                    area: item?.area || 0,
                     quantity: item?.quantity || 1,
-                    unitPrice: item?.unit_price || 0,
-                    accessoryPrice: item?.accessory_price || 0,
-                    total: 0
+                    unitPrice: item?.unit_price || item?.unitPrice || 0,
+                    accessoryPrice: item?.accessory_price || item?.accessoryPrice || 0,
+                    total: item?.total || 0,
+                    isMaterial: !!(item?.isMaterial || item?.is_material) // Hỗ trợ cả flag camelCase và snake_case
                 };
                 items.push(row);
                 renderItemsTable();
@@ -2724,46 +2765,52 @@
                 // Render main table (full screen)
                 const tbody = document.getElementById('itemsTableBody');
                 if (tbody) {
-                    tbody.innerHTML = items.map((item, index) => `
-                    <tr class="item-row" data-id="${item.id}">
-                        <td class="col-stt border px-1 py-2 text-center table-cell-wrap text-sm">${index + 1}</td>
-                        <td class="col-code border px-1 py-2 table-cell-wrap">
-                            <input type="text" value="${item.code}" class="w-full px-1 py-1 border rounded text-xs" onchange="updateItem(${item.id}, 'code', this.value)" onblur="validateItemCode(${item.id})">
-                        </td>
-                        <td class="col-spec border px-1 py-2 table-cell-wrap">
-                            <textarea rows="1" class="table-input px-1 py-1 border rounded text-xs" onchange="updateItem(${item.id}, 'spec', this.value)" oninput="this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px';">${item.spec || ''}</textarea>
-                        </td>
-                        <td class="col-glass border px-1 py-2 table-cell-wrap">
-                            <div onclick="openGlassCatalogModal(${item.id})" class="w-full px-1 py-1 border rounded text-xs cursor-pointer hover:bg-cyan-50 hover:border-cyan-400 min-h-[24px] ${item.glass ? 'bg-cyan-50 border-cyan-300' : 'bg-gray-50 border-gray-300'}">${item.glass || '<span class=\"text-gray-400 italic\">+ Chọn kính</span>'}</div>
-                        </td>
-                        <td class="col-accessories border px-1 py-2 table-cell-wrap">
-                            <textarea rows="1" class="table-input px-1 py-1 border rounded text-xs" onchange="updateItem(${item.id}, 'accessories', this.value)" oninput="this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px';">${item.accessories || ''}</textarea>
-                        </td>
-                        <td class="col-width border px-1 py-2 table-cell-wrap">
-                            <input type="number" value="${Math.round(item.width) || 0}" min="0" step="1" class="w-full px-1 py-1 border rounded text-xs text-center" onchange="updateItem(${item.id}, 'width', parseInt(this.value))" onblur="calculateItemArea(${item.id})">
-                        </td>
-                        <td class="col-height border px-1 py-2 table-cell-wrap">
-                            <input type="number" value="${Math.round(item.height) || 0}" min="0" step="1" class="w-full px-1 py-1 border rounded text-xs text-center" onchange="updateItem(${item.id}, 'height', parseInt(this.value))" onblur="calculateItemArea(${item.id})">
-                        </td>
-                        <td class="col-area border px-1 py-2 text-center table-cell-wrap"><span class="item-area-${item.id} text-xs">${(parseFloat(item.area) || 0).toFixed(2)}</span></td>
-                        <td class="col-quantity border px-1 py-2 table-cell-wrap">
-                            <input type="number" value="${Math.round(item.quantity) || 1}" min="1" step="1" class="w-full px-1 py-1 border rounded text-xs text-center" onchange="updateItem(${item.id}, 'quantity', parseInt(this.value))" onblur="calculateItemTotal(${item.id})">
-                        </td>
-                        <td class="col-unit-price border px-1 py-2 table-cell-wrap">
-                            <input type="text" value="${formatNumberWithComma(item.unitPrice)}" class="w-full px-1 py-1 border rounded text-xs text-right" oninput="handlePriceInput(this, ${item.id}, 'unitPrice')" onblur="formatPriceOnBlur(this)">
-                        </td>
-                        <td class="col-accessory-price border px-1 py-2 table-cell-wrap">
-                            <input type="text" value="${formatNumberWithComma(item.accessoryPrice)}" class="w-full px-1 py-1 border rounded text-xs text-right" oninput="handlePriceInput(this, ${item.id}, 'accessoryPrice')" onblur="formatPriceOnBlur(this)">
-                        </td>
-                        <td class="col-total border px-1 py-2 text-right table-cell-wrap"><span class="item-total-${item.id} font-medium text-xs">${formatCurrency(item.total)}</span></td>
-                        <td class="col-actions border px-1 py-1 text-center table-cell-wrap">
-                            <div class="flex flex-col gap-0.5 items-center">
-                                <button onclick="copyItemRow(${item.id})" class="w-full px-1 py-0.5 bg-blue-100 text-blue-700 rounded text-[9px] hover:bg-blue-200 leading-tight">Copy</button>
-                                <button onclick="deleteItemRow(${item.id})" class="w-full px-1 py-0.5 bg-red-100 text-red-700 rounded text-[9px] hover:bg-red-200 leading-tight">Xóa</button>
-                            </div>
-                        </td>
-                    </tr>
-                `).join('');
+                    tbody.innerHTML = items.map((item, index) => {
+                        const isMaterial = !!item.isMaterial;
+                        return `
+                        <tr class="item-row ${isMaterial ? 'bg-orange-50' : ''}" data-id="${item.id}">
+                            <td class="col-stt border px-1 py-2 text-center table-cell-wrap text-sm">${index + 1}</td>
+                            <td class="col-code border px-1 py-2 table-cell-wrap">
+                                <input type="text" value="${item.code}" class="w-full px-1 py-1 border rounded text-xs" onchange="updateItem(${item.id}, 'code', this.value)" onblur="validateItemCode(${item.id})">
+                            </td>
+                            <td class="col-spec border px-1 py-2 table-cell-wrap">
+                                <textarea rows="1" class="table-input px-1 py-1 border rounded text-xs" onchange="updateItem(${item.id}, 'spec', this.value)" oninput="this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px';">${item.spec || ''}</textarea>
+                            </td>
+                            <td class="col-glass border px-1 py-2 table-cell-wrap">
+                                ${isMaterial ?
+                                '<div class="w-full px-1 py-1 border rounded text-xs bg-orange-100 text-orange-600 border-orange-200 text-center font-medium">Vật tư</div>' :
+                                `<div onclick="openGlassCatalogModal(${item.id})" class="w-full px-1 py-1 border rounded text-xs cursor-pointer hover:bg-cyan-50 hover:border-cyan-400 min-h-[24px] ${item.glass ? 'bg-cyan-50 border-cyan-300' : 'bg-gray-50 border-gray-300'}">${item.glass || '<span class=\"text-gray-400 italic\">+ Chọn kính</span>'}</div>`
+                            }
+                            </td>
+                            <td class="col-accessories border px-1 py-2 table-cell-wrap">
+                                <textarea rows="1" class="table-input px-1 py-1 border rounded text-xs ${isMaterial ? 'bg-gray-100' : ''}" ${isMaterial ? 'disabled' : ''} onchange="updateItem(${item.id}, 'accessories', this.value)" oninput="this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px';">${item.accessories || ''}</textarea>
+                            </td>
+                            <td class="col-width border px-1 py-2 table-cell-wrap">
+                                <input type="number" value="${Math.round(item.width) || 0}" min="0" step="1" class="w-full px-1 py-1 border rounded text-xs text-center ${isMaterial ? 'border-orange-400 bg-orange-50' : ''}" onchange="updateItem(${item.id}, 'width', parseInt(this.value))" onblur="${isMaterial ? 'calculateItemTotal' : 'calculateItemArea'}(${item.id})">
+                            </td>
+                            <td class="col-height border px-1 py-2 table-cell-wrap">
+                                <input type="number" value="${Math.round(item.height) || 0}" ${isMaterial ? 'disabled' : ''} min="0" step="1" class="w-full px-1 py-1 border rounded text-xs text-center ${isMaterial ? 'bg-gray-100 text-gray-400' : ''}" onchange="updateItem(${item.id}, 'height', parseInt(this.value))" onblur="calculateItemArea(${item.id})">
+                            </td>
+                            <td class="col-area border px-1 py-2 text-center table-cell-wrap"><span class="item-area-${item.id} text-xs">${isMaterial ? '—' : (parseFloat(item.area) || 0).toFixed(2)}</span></td>
+                            <td class="col-quantity border px-1 py-2 table-cell-wrap">
+                                <input type="number" value="${Math.round(item.quantity) || 1}" min="1" step="1" class="w-full px-1 py-1 border rounded text-xs text-center font-bold ${isMaterial ? 'border-orange-400 bg-orange-50' : ''}" onchange="updateItem(${item.id}, 'quantity', parseInt(this.value))" onblur="calculateItemTotal(${item.id})">
+                            </td>
+                            <td class="col-unit-price border px-1 py-2 table-cell-wrap">
+                                <input type="text" value="${formatNumberWithComma(item.unitPrice)}" class="w-full px-1 py-1 border rounded text-xs text-right" oninput="handlePriceInput(this, ${item.id}, 'unitPrice')" onblur="formatPriceOnBlur(this)">
+                            </td>
+                            <td class="col-accessory-price border px-1 py-2 table-cell-wrap">
+                                <input type="text" value="${formatNumberWithComma(item.accessoryPrice)}" ${isMaterial ? 'disabled' : ''} class="w-full px-1 py-1 border rounded text-xs text-right ${isMaterial ? 'bg-gray-100 text-gray-400' : ''}" oninput="handlePriceInput(this, ${item.id}, 'accessoryPrice')" onblur="formatPriceOnBlur(this)">
+                            </td>
+                            <td class="col-total border px-1 py-2 text-right table-cell-wrap"><span class="item-total-${item.id} font-bold text-xs ${isMaterial ? 'text-orange-700' : 'text-blue-700'}">${formatCurrency(item.total)}</span></td>
+                            <td class="col-actions border px-1 py-1 text-center table-cell-wrap">
+                                <div class="flex flex-col gap-0.5 items-center">
+                                    <button onclick="copyItemRow(${item.id})" class="w-full px-1 py-0.5 bg-blue-100 text-blue-700 rounded text-[9px] hover:bg-blue-200 leading-tight">Copy</button>
+                                    <button onclick="deleteItemRow(${item.id})" class="w-full px-1 py-0.5 bg-red-100 text-red-700 rounded text-[9px] hover:bg-red-200 leading-tight">Xóa</button>
+                                </div>
+                            </td>
+                        </tr>
+                        `;
+                    }).join('');
 
                     // Auto-adjust textarea heights after render
                     setTimeout(() => {
@@ -2778,46 +2825,52 @@
                 // Render both view table (giống hệt bảng chính)
                 const tbodyBoth = document.getElementById('itemsTableBodyBoth');
                 if (tbodyBoth) {
-                    tbodyBoth.innerHTML = items.map((item, index) => `
-                    <tr class="item-row" data-id="${item.id}">
-                        <td class="col-stt border px-1 py-2 text-center table-cell-wrap text-sm">${index + 1}</td>
-                        <td class="col-code border px-1 py-2 table-cell-wrap">
-                            <input type="text" value="${item.code}" class="w-full px-1 py-1 border rounded text-xs" onchange="updateItem(${item.id}, 'code', this.value)" onblur="validateItemCode(${item.id})">
-                        </td>
-                        <td class="col-spec border px-1 py-2 table-cell-wrap">
-                            <textarea rows="1" class="table-input px-1 py-1 border rounded text-xs" onchange="updateItem(${item.id}, 'spec', this.value)" oninput="this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px';">${item.spec || ''}</textarea>
-                        </td>
-                        <td class="col-glass border px-1 py-2 table-cell-wrap">
-                            <div onclick="openGlassCatalogModal(${item.id})" class="w-full px-1 py-1 border rounded text-xs cursor-pointer hover:bg-cyan-50 hover:border-cyan-400 min-h-[24px] ${item.glass ? 'bg-cyan-50 border-cyan-300' : 'bg-gray-50 border-gray-300'}">${item.glass || '<span class=\"text-gray-400 italic\">+ Chọn kính</span>'}</div>
-                        </td>
-                        <td class="col-accessories border px-1 py-2 table-cell-wrap">
-                            <textarea rows="1" class="table-input px-1 py-1 border rounded text-xs" onchange="updateItem(${item.id}, 'accessories', this.value)" oninput="this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px';">${item.accessories || ''}</textarea>
-                        </td>
-                        <td class="col-width border px-1 py-2 table-cell-wrap">
-                            <input type="number" value="${Math.round(item.width) || 0}" min="0" step="1" class="w-full px-1 py-1 border rounded text-xs text-center" onchange="updateItem(${item.id}, 'width', parseInt(this.value))" onblur="calculateItemArea(${item.id})">
-                        </td>
-                        <td class="col-height border px-1 py-2 table-cell-wrap">
-                            <input type="number" value="${Math.round(item.height) || 0}" min="0" step="1" class="w-full px-1 py-1 border rounded text-xs text-center" onchange="updateItem(${item.id}, 'height', parseInt(this.value))" onblur="calculateItemArea(${item.id})">
-                        </td>
-                        <td class="col-area border px-1 py-2 text-center table-cell-wrap"><span class="item-area-${item.id} text-xs">${(parseFloat(item.area) || 0).toFixed(2)}</span></td>
-                        <td class="col-quantity border px-1 py-2 table-cell-wrap">
-                            <input type="number" value="${Math.round(item.quantity) || 1}" min="1" step="1" class="w-full px-1 py-1 border rounded text-xs text-center" onchange="updateItem(${item.id}, 'quantity', parseInt(this.value))" onblur="calculateItemTotal(${item.id})">
-                        </td>
-                        <td class="col-unit-price border px-1 py-2 table-cell-wrap">
-                            <input type="text" value="${formatNumberWithComma(item.unitPrice)}" class="w-full px-1 py-1 border rounded text-xs text-right" oninput="handlePriceInput(this, ${item.id}, 'unitPrice')" onblur="formatPriceOnBlur(this)">
-                        </td>
-                        <td class="col-accessory-price border px-1 py-2 table-cell-wrap">
-                            <input type="text" value="${formatNumberWithComma(item.accessoryPrice)}" class="w-full px-1 py-1 border rounded text-xs text-right" oninput="handlePriceInput(this, ${item.id}, 'accessoryPrice')" onblur="formatPriceOnBlur(this)">
-                        </td>
-                        <td class="col-total border px-1 py-2 text-right table-cell-wrap"><span class="item-total-${item.id} font-medium text-xs">${formatCurrency(item.total)}</span></td>
-                        <td class="col-actions border px-1 py-1 text-center table-cell-wrap">
-                            <div class="flex flex-col gap-0.5 items-center">
-                                <button onclick="copyItemRow(${item.id})" class="w-full px-1 py-0.5 bg-blue-100 text-blue-700 rounded text-[9px] hover:bg-blue-200 leading-tight">Copy</button>
-                                <button onclick="deleteItemRow(${item.id})" class="w-full px-1 py-0.5 bg-red-100 text-red-700 rounded text-[9px] hover:bg-red-200 leading-tight">Xóa</button>
-                            </div>
-                        </td>
-                    </tr>
-                `).join('');
+                    tbodyBoth.innerHTML = items.map((item, index) => {
+                        const isMaterial = !!item.isMaterial;
+                        return `
+                        <tr class="item-row ${isMaterial ? 'bg-orange-50' : ''}" data-id="${item.id}">
+                            <td class="col-stt border px-1 py-2 text-center table-cell-wrap text-sm">${index + 1}</td>
+                            <td class="col-code border px-1 py-2 table-cell-wrap">
+                                <input type="text" value="${item.code}" class="w-full px-1 py-1 border rounded text-xs" onchange="updateItem(${item.id}, 'code', this.value)" onblur="validateItemCode(${item.id})">
+                            </td>
+                            <td class="col-spec border px-1 py-2 table-cell-wrap">
+                                <textarea rows="1" class="table-input px-1 py-1 border rounded text-xs" onchange="updateItem(${item.id}, 'spec', this.value)" oninput="this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px';">${item.spec || ''}</textarea>
+                            </td>
+                            <td class="col-glass border px-1 py-2 table-cell-wrap">
+                                ${isMaterial ?
+                                '<div class="w-full px-1 py-1 border rounded text-xs bg-orange-100 text-orange-600 border-orange-200 text-center font-medium">Vật tư</div>' :
+                                `<div onclick="openGlassCatalogModal(${item.id})" class="w-full px-1 py-1 border rounded text-xs cursor-pointer hover:bg-cyan-50 hover:border-cyan-400 min-h-[24px] ${item.glass ? 'bg-cyan-50 border-cyan-300' : 'bg-gray-50 border-gray-300'}">${item.glass || '<span class=\"text-gray-400 italic\">+ Chọn kính</span>'}</div>`
+                            }
+                            </td>
+                            <td class="col-accessories border px-1 py-2 table-cell-wrap">
+                                <textarea rows="1" class="table-input px-1 py-1 border rounded text-xs ${isMaterial ? 'bg-gray-100' : ''}" ${isMaterial ? 'disabled' : ''} onchange="updateItem(${item.id}, 'accessories', this.value)" oninput="this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px';">${item.accessories || ''}</textarea>
+                            </td>
+                            <td class="col-width border px-1 py-2 table-cell-wrap">
+                                <input type="number" value="${Math.round(item.width) || 0}" min="0" step="1" class="w-full px-1 py-1 border rounded text-xs text-center ${isMaterial ? 'border-orange-400 bg-orange-50' : ''}" onchange="updateItem(${item.id}, 'width', parseInt(this.value))" onblur="${isMaterial ? 'calculateItemTotal' : 'calculateItemArea'}(${item.id})">
+                            </td>
+                            <td class="col-height border px-1 py-2 table-cell-wrap">
+                                <input type="number" value="${Math.round(item.height) || 0}" ${isMaterial ? 'disabled' : ''} min="0" step="1" class="w-full px-1 py-1 border rounded text-xs text-center ${isMaterial ? 'bg-gray-100 text-gray-400' : ''}" onchange="updateItem(${item.id}, 'height', parseInt(this.value))" onblur="calculateItemArea(${item.id})">
+                            </td>
+                            <td class="col-area border px-1 py-2 text-center table-cell-wrap"><span class="item-area-${item.id} text-xs">${isMaterial ? '—' : (parseFloat(item.area) || 0).toFixed(2)}</span></td>
+                            <td class="col-quantity border px-1 py-2 table-cell-wrap">
+                                <input type="number" value="${Math.round(item.quantity) || 1}" min="1" step="1" class="w-full px-1 py-1 border rounded text-xs text-center font-bold ${isMaterial ? 'border-orange-400 bg-orange-50' : ''}" onchange="updateItem(${item.id}, 'quantity', parseInt(this.value))" onblur="calculateItemTotal(${item.id})">
+                            </td>
+                            <td class="col-unit-price border px-1 py-2 table-cell-wrap">
+                                <input type="text" value="${formatNumberWithComma(item.unitPrice)}" class="w-full px-1 py-1 border rounded text-xs text-right" oninput="handlePriceInput(this, ${item.id}, 'unitPrice')" onblur="formatPriceOnBlur(this)">
+                            </td>
+                            <td class="col-accessory-price border px-1 py-2 table-cell-wrap">
+                                <input type="text" value="${formatNumberWithComma(item.accessoryPrice)}" ${isMaterial ? 'disabled' : ''} class="w-full px-1 py-1 border rounded text-xs text-right ${isMaterial ? 'bg-gray-100 text-gray-400' : ''}" oninput="handlePriceInput(this, ${item.id}, 'accessoryPrice')" onblur="formatPriceOnBlur(this)">
+                            </td>
+                            <td class="col-total border px-1 py-2 text-right table-cell-wrap"><span class="item-total-${item.id} font-bold text-xs ${isMaterial ? 'text-orange-700' : 'text-blue-700'}">${formatCurrency(item.total)}</span></td>
+                            <td class="col-actions border px-1 py-1 text-center table-cell-wrap">
+                                <div class="flex flex-col gap-0.5 items-center">
+                                    <button onclick="copyItemRow(${item.id})" class="w-full px-1 py-0.5 bg-blue-100 text-blue-700 rounded text-[9px] hover:bg-blue-200 leading-tight">Copy</button>
+                                    <button onclick="deleteItemRow(${item.id})" class="w-full px-1 py-0.5 bg-red-100 text-red-700 rounded text-[9px] hover:bg-red-200 leading-tight">Xóa</button>
+                                </div>
+                            </td>
+                        </tr>
+                        `;
+                    }).join('');
 
                     // Auto-adjust textarea heights after render
                     setTimeout(() => {
@@ -2907,20 +2960,28 @@
             function calculateItemTotal(id) {
                 const item = items.find(i => i.id === id);
                 if (item) {
-                    // Diện tích 1 bộ sản phẩm
-                    const areaPerUnit = item.areaPerUnit || (item.width * item.height / 1000000);
-                    // Giá vật tư = Diện tích × Đơn giá/m² (đơn giá đã bao gồm kính nếu có)
-                    const materialPrice = areaPerUnit * (item.unitPrice || 0);
-                    // Phụ kiện 1 bộ
-                    const accessoryPrice = item.accessoryPrice || 0;
-                    // Giá 1 bộ sản phẩm = (Giá vật tư + Phụ kiện)
-                    const pricePerUnit = materialPrice + accessoryPrice;
-                    // Tổng tiền = Giá 1 bộ × Số bộ (làm tròn không có số thập phân)
-                    item.total = Math.round(pricePerUnit * item.quantity);
+                    if (item.isMaterial) {
+                        // Vật tư: Thành tiền = (Rộng / 1000) × Số bộ × Đơn giá
+                        const widthInMeters = (item.width || 0) / 1000;
+                        item.total = Math.round(widthInMeters * (item.quantity || 1) * (item.unitPrice || 0));
 
-                    // Log chi tiết giá
-                    if (item.glassPrice > 0) {
-                        console.log(`💰 Tính tiền: Cửa+Kính=${formatCurrency(materialPrice)} (đơn giá ${formatCurrency(item.unitPrice)} × ${areaPerUnit.toFixed(2)}m²) + PK=${formatCurrency(accessoryPrice)} = ${formatCurrency(pricePerUnit)}/bộ × ${item.quantity} = ${formatCurrency(item.total)}`);
+                        console.log(`📦 Tính tiền vật tư: ${item.design} - Rộng: ${item.width}mm (${widthInMeters.toFixed(3)}m) × SL: ${item.quantity} × Đơn giá: ${formatCurrency(item.unitPrice)} = ${formatCurrency(item.total)}`);
+                    } else {
+                        // Diện tích 1 bộ sản phẩm
+                        const areaPerUnit = item.areaPerUnit || (item.width * item.height / 1000000);
+                        // Giá vật tư = Diện tích × Đơn giá/m² (đơn giá đã bao gồm kính nếu có)
+                        const materialPrice = areaPerUnit * (item.unitPrice || 0);
+                        // Phụ kiện 1 bộ
+                        const accessoryPrice = item.accessoryPrice || 0;
+                        // Giá 1 bộ sản phẩm = (Giá vật tư + Phụ kiện)
+                        const pricePerUnit = materialPrice + accessoryPrice;
+                        // Tổng tiền = Giá 1 bộ × Số bộ (làm tròn không có số thập phân)
+                        item.total = Math.round(pricePerUnit * item.quantity);
+
+                        // Log chi tiết giá
+                        if (item.glassPrice > 0) {
+                            console.log(`💰 Tính tiền: Cửa+Kính=${formatCurrency(materialPrice)} (đơn giá ${formatCurrency(item.unitPrice)} × ${areaPerUnit.toFixed(2)}m²) + PK=${formatCurrency(accessoryPrice)} = ${formatCurrency(pricePerUnit)}/bộ × ${item.quantity} = ${formatCurrency(item.total)}`);
+                        }
                     }
 
                     // Cập nhật tất cả các element có class item-total-${id}
@@ -2937,6 +2998,11 @@
                 const totalArea = items.reduce((sum, item) => sum + (parseFloat(item.area) || 0), 0);
                 // Tổng tiền vật tư/nhôm kính = Tổng (Diện tích 1 bộ × Đơn giá × Số bộ)
                 const totalMaterial = items.reduce((sum, item) => {
+                    if (item.isMaterial) {
+                        // Vật tư: Tổng = (Rộng / 1000) × Số bộ × Đơn giá
+                        const widthM = (parseFloat(item.width) || 0) / 1000;
+                        return sum + (widthM * (parseInt(item.quantity) || 1) * (parseFloat(item.unitPrice) || 0));
+                    }
                     const width = parseFloat(item.width) || 0;
                     const height = parseFloat(item.height) || 0;
                     const unitPrice = parseFloat(item.unitPrice) || 0;
@@ -3106,6 +3172,123 @@
                     const text = door.textContent.toLowerCase();
                     door.style.display = text.includes(search) ? 'block' : 'none';
                 });
+            }
+
+            // ========== MATERIAL CATALOG FUNCTIONS ==========
+            function openMaterialCatalogModal() {
+                document.getElementById('materialCatalogModal').classList.remove('hidden');
+                if (!cachedMaterialCatalog && !isMaterialCatalogLoading) {
+                    loadMaterialCatalog();
+                } else if (cachedMaterialCatalog) {
+                    renderMaterialCatalog();
+                }
+            }
+
+            function closeMaterialCatalogModal() {
+                document.getElementById('materialCatalogModal').classList.add('hidden');
+            }
+
+            async function loadMaterialCatalog() {
+                try {
+                    isMaterialCatalogLoading = true;
+                    const container = document.getElementById('materialList');
+                    container.innerHTML = '<div class="text-center py-4"><span class="animate-spin inline-block w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full"></span> Đang tải vật tư...</div>';
+
+                    const token = sessionStorage.getItem('token');
+                    const response = await fetch(`${API_BASE}/accessories`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        cachedMaterialCatalog = (result.data || []).map(m => ({
+                            id: m.id,
+                            name: m.name,
+                            price: m.sale_price || m.price || 0
+                        }));
+                        // Sort by ID (STT) initially
+                        cachedMaterialCatalog.sort((a, b) => a.id - b.id);
+                        renderMaterialCatalog();
+                    } else {
+                        container.innerHTML = '<div class="text-center py-4 text-red-500">Không thể tải danh mục vật tư</div>';
+                    }
+                } catch (error) {
+                    console.error('Error loading material catalog:', error);
+                    document.getElementById('materialList').innerHTML = '<div class="text-center py-4 text-red-500">Lỗi kết nối server</div>';
+                } finally {
+                    isMaterialCatalogLoading = false;
+                }
+            }
+
+            function renderMaterialCatalog() {
+                if (!cachedMaterialCatalog) return;
+                const container = document.getElementById('materialList');
+                let html = '';
+
+                cachedMaterialCatalog.forEach((material, index) => {
+                    html += `
+                    <div class="flex items-center justify-between p-3 border rounded-lg hover:bg-orange-50 hover:border-orange-300 transition-all cursor-pointer" 
+                         onclick="selectMaterial(${material.id})">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 flex items-center justify-center bg-gray-100 rounded text-xs font-bold text-gray-500">${index + 1}</span>
+                            <div>
+                                <div class="font-bold text-gray-800">${material.name}</div>
+                                <div class="text-sm text-orange-600 font-semibold">${formatCurrency(material.price)}</div>
+                            </div>
+                        </div>
+                        <div class="text-blue-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                        </div>
+                    </div>`;
+                });
+
+                if (cachedMaterialCatalog.length === 0) {
+                    html = '<div class="text-center py-8 text-gray-500">Không tìm thấy vật tư nào</div>';
+                }
+
+                container.innerHTML = html;
+            }
+
+            function filterMaterialCatalog() {
+                const search = document.getElementById('materialSearch').value.toLowerCase();
+                const materials = document.querySelectorAll('#materialList > div');
+                materials.forEach(mat => {
+                    const text = mat.textContent.toLowerCase();
+                    mat.style.display = text.includes(search) ? 'flex' : 'none';
+                });
+            }
+
+            function selectMaterial(materialId) {
+                const material = cachedMaterialCatalog.find(m => m.id === materialId);
+                if (material) {
+                    itemCounter++;
+                    const row = {
+                        id: itemCounter,
+                        stt: items.length + 1,
+                        code: `VT${String(items.length + 1).padStart(2, '0')}`, // Mã tạm cho vật tư
+                        design: material.name,
+                        spec: material.name,
+                        glass: '',
+                        glass_id: null,
+                        glass_name: '',
+                        accessories: '',
+                        width: 0,
+                        height: 0,
+                        area: 0,
+                        quantity: 1,
+                        unitPrice: material.price || 0,
+                        accessoryPrice: 0,
+                        total: material.price || 0,
+                        isMaterial: true // Flag quan trọng
+                    };
+                    items.push(row);
+                    renderItemsTable();
+                    calculateTotals();
+                    closeMaterialCatalogModal();
+                    showSuccessNotification('Đã thêm vật tư', material.name);
+                }
             }
 
             // ========== GLASS CATALOG FUNCTIONS ==========
@@ -3678,7 +3861,8 @@
                                     quantity: item.quantity || 1,
                                     unitPrice: item.unit_price || 0,
                                     accessoryPrice: item.accessory_price || 0,
-                                    total: item.total_price || 0
+                                    total: item.total_price || 0,
+                                    isMaterial: !!item.is_material
                                 }));
                                 itemCounter = items.length;
                                 renderItemsTable();
@@ -3784,7 +3968,8 @@
                             quantity: item.quantity || 1,
                             unitPrice: item.unit_price || 0,
                             accessoryPrice: item.accessory_price || 0,
-                            total: item.total_price || 0
+                            total: item.total_price || 0,
+                            isMaterial: !!item.is_material
                         }));
                         itemCounter = items.length;
                     } else {
@@ -3993,19 +4178,19 @@
                     const tbody = document.getElementById('detailItemsTableBody');
                     if (q.items && q.items.length > 0) {
                         tbody.innerHTML = q.items.map((item, index) => `
-                        <tr class="hover:bg-gray-50">
+                        <tr class="${item.is_material ? 'bg-amber-50' : 'hover:bg-gray-50'}">
                             <td class="border px-2 py-2 text-center text-xs">${index + 1}</td>
                             <td class="border px-2 py-2 text-xs">${item.code || ''}</td>
                             <td class="border px-2 py-2 text-xs">${item.spec || ''}</td>
-                            <td class="border px-2 py-2 text-xs">${item.glass || ''}</td>
+                            <td class="border px-2 py-2 text-xs">${item.is_material ? '<span class="px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full text-[10px] font-bold uppercase">Vật tư</span>' : (item.glass || '')}</td>
                             <td class="border px-2 py-2 text-xs">${item.accessories || ''}</td>
-                            <td class="border px-2 py-2 text-center text-xs">${parseFloat(item.width) || 0}</td>
-                            <td class="border px-2 py-2 text-center text-xs">${parseFloat(item.height) || 0}</td>
-                            <td class="border px-2 py-2 text-center text-xs">${(parseFloat(item.area) || 0).toFixed(2)}</td>
-                            <td class="border px-2 py-2 text-center text-xs">${parseInt(item.quantity) || 0}</td>
+                            <td class="border px-2 py-2 text-center text-xs">${item.is_material ? (parseFloat(item.width) || 0) : (parseFloat(item.width) || 0)}</td>
+                            <td class="border px-2 py-2 text-center text-xs">${item.is_material ? '—' : (parseFloat(item.height) || 0)}</td>
+                            <td class="border px-2 py-2 text-center text-xs">${item.is_material ? '—' : (parseFloat(item.area) || 0).toFixed(2)}</td>
+                            <td class="border px-2 py-2 text-center text-xs font-bold text-blue-700">${parseInt(item.quantity) || 0}</td>
                             <td class="border px-2 py-2 text-right text-xs">${formatNumberWithComma(item.unit_price || 0)}</td>
-                            <td class="border px-2 py-2 text-right text-xs">${formatNumberWithComma(item.accessory_price || 0)}</td>
-                            <td class="border px-2 py-2 text-right text-xs font-medium">${formatCurrency(item.total_price || 0)}</td>
+                            <td class="border px-2 py-2 text-right text-xs">${item.is_material ? '—' : formatNumberWithComma(item.accessory_price || 0)}</td>
+                            <td class="border px-2 py-2 text-right text-xs font-medium text-emerald-700">${formatCurrency(item.total_price || 0)}</td>
                         </tr>
                     `).join('');
                     } else {
@@ -4020,24 +4205,32 @@
 
                     if (q.items) {
                         q.items.forEach(item => {
-                            const width = parseFloat(item.width) || 0;
-                            const height = parseFloat(item.height) || 0;
                             const quantity = parseInt(item.quantity) || 1;
                             const unitPrice = parseFloat(item.unit_price) || 0;
-                            const accessoryPrice = parseFloat(item.accessory_price) || 0;
                             const itemTotalPrice = parseFloat(item.total_price) || 0;
 
-                            const itemArea = (width * height) / 1000000; // mm² to m²
-                            const itemTotalArea = itemArea * quantity;
-                            totalArea += itemTotalArea;
+                            if (item.is_material) {
+                                // Với vật tư: Thành tiền = (Rộng / 1000) × Số bộ × Đơn giá
+                                // (Thành tiền đã được tính và lưu trong total_price)
+                                totalMaterial += itemTotalPrice;
+                            } else {
+                                // Với sản phẩm: tính diện tích và chia tách vật tư/phụ kiện
+                                const width = parseFloat(item.width) || 0;
+                                const height = parseFloat(item.height) || 0;
+                                const accessoryPrice = parseFloat(item.accessory_price) || 0;
 
-                            // Tính tiền vật tư: Diện tích 1 bộ × Đơn giá × Số bộ
-                            const materialCost = itemArea * unitPrice * quantity;
-                            totalMaterial += materialCost;
+                                const itemArea = (width * height) / 1000000; // mm² to m²
+                                const itemTotalArea = itemArea * quantity;
+                                totalArea += itemTotalArea;
 
-                            // Tính tiền phụ kiện: Phụ kiện 1 bộ × Số bộ
-                            const accessoryCost = accessoryPrice * quantity;
-                            totalAccessories += accessoryCost;
+                                // Tính tiền vật tư: Diện tích 1 bộ × Đơn giá × Số bộ
+                                const materialCost = itemArea * unitPrice * quantity;
+                                totalMaterial += materialCost;
+
+                                // Tính tiền phụ kiện: Phụ kiện 1 bộ × Số bộ
+                                const accessoryCost = accessoryPrice * quantity;
+                                totalAccessories += accessoryCost;
+                            }
 
                             // Tổng tiền hạng mục
                             subtotal += itemTotalPrice;
@@ -4045,6 +4238,7 @@
                     }
 
                     // Tổng giá trị = Vật tư + Phụ kiện (LUÔN tính lại từ items, không dùng total_amount cũ từ DB)
+                    // Lưu ý: với vật tư, totalMaterial đã bao gồm cả giá trị của nó
                     const finalTotal = totalMaterial + totalAccessories;
 
                     // Fill tổng hợp
@@ -4326,15 +4520,27 @@
                             let totalValue = 0;
                             if (q.items && q.items.length > 0) {
                                 q.items.forEach(item => {
-                                    const width = parseFloat(item.width) || 0;
-                                    const height = parseFloat(item.height) || 0;
-                                    const unitPrice = parseFloat(item.unit_price) || 0;
-                                    const accessoryPrice = parseFloat(item.accessory_price) || 0;
-                                    const quantity = parseInt(item.quantity) || 1;
-                                    const areaPerUnit = (width * height) / 1000000;
-                                    const materialCost = areaPerUnit * unitPrice * quantity;
-                                    const accessoryCost = accessoryPrice * quantity;
-                                    totalValue += materialCost + accessoryCost;
+                                    // LUÔN ưu tiên sử dụng total_price đã được tính toán và lưu trong DB
+                                    // Nếu không có (trường hợp dữ liệu cũ), mới thực hiện tính lại
+                                    if (item.total_price !== undefined && item.total_price !== null) {
+                                        totalValue += parseFloat(item.total_price);
+                                    } else {
+                                        const width = parseFloat(item.width) || 0;
+                                        const height = parseFloat(item.height) || 0;
+                                        const unitPrice = parseFloat(item.unit_price) || 0;
+                                        const accessoryPrice = parseFloat(item.accessory_price) || 0;
+                                        const quantity = parseInt(item.quantity) || 1;
+
+                                        if (item.is_material) {
+                                            const itemTotal = (width / 1000) * quantity * unitPrice;
+                                            totalValue += itemTotal;
+                                        } else {
+                                            const areaPerUnit = (width * height) / 1000000;
+                                            const materialCost = areaPerUnit * unitPrice * quantity;
+                                            const accessoryCost = accessoryPrice * quantity;
+                                            totalValue += materialCost + accessoryCost;
+                                        }
+                                    }
                                 });
                             }
 
@@ -4519,7 +4725,9 @@
                 }
                 // Validate items
                 for (const item of items) {
-                    if (item.width <= 0 || item.height <= 0) {
+                    // Nếu là Vật tư, bỏ qua kiểm tra Cao (height) và Rộng (width) không bắt buộc > 0 (nhưng nên > 0 để có tiền)
+                    // Tuy nhiên theo yêu cầu, chỉ cần bỏ qua lỗi validation để cho phép lưu
+                    if (!item.isMaterial && (item.width <= 0 || item.height <= 0)) {
                         alert(`Hạng mục ${item.code}: Kích thước phải lớn hơn 0!`);
                         return false;
                     }
@@ -4580,7 +4788,8 @@
                         glass_id: item.glass_id,
                         glass_name: item.glass_name,
                         accessories: item.accessories,
-                        accessory_price: item.accessoryPrice
+                        accessory_price: item.accessoryPrice,
+                        is_material: !!item.isMaterial // Gửi flag này về backend
                     }))
                 };
 
@@ -5040,7 +5249,8 @@
                                 quantity: item.quantity || 1,
                                 unitPrice: item.unit_price || 0,
                                 accessoryPrice: item.accessory_price || 0,
-                                total: item.total_price || 0
+                                total: item.total_price || 0,
+                                isMaterial: !!item.is_material
                             }));
                             itemCounter = items.length;
 
