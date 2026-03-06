@@ -2785,7 +2785,7 @@
                             <td class="col-accessories border px-1 py-2 table-cell-wrap">
                                 ${isMaterial ?
                                 '<div class="px-1 py-1 text-gray-400 italic text-xs">N/A</div>' :
-                                (item.availableAccessories && item.availableAccessories.length > 1) ?
+                                (item.availableAccessories && item.availableAccessories.length > 0) ?
                                     `<select onchange="changeAccessory(${item.id}, this.value)" class="w-full px-1 py-1 border rounded text-[10px] bg-green-50 border-green-300 font-medium">
                                         ${item.availableAccessories.map(acc => `<option value="${acc.name}" ${acc.name === item.accessory_name ? 'selected' : ''}>${acc.name} - ${formatCurrency(acc.price)}</option>`).join('')}
                                     </select>` :
@@ -2852,7 +2852,7 @@
                             <td class="col-accessories border px-1 py-2 table-cell-wrap">
                                 ${isMaterial ?
                                 '<div class="px-1 py-1 text-gray-400 italic text-xs">N/A</div>' :
-                                (item.availableAccessories && item.availableAccessories.length > 1) ?
+                                (item.availableAccessories && item.availableAccessories.length > 0) ?
                                     `<select onchange="changeAccessory(${item.id}, this.value)" class="w-full px-1 py-1 border rounded text-[10px] bg-green-50 border-green-300 font-medium">
                                         ${item.availableAccessories.map(acc => `<option value="${acc.name}" ${acc.name === item.accessory_name ? 'selected' : ''}>${acc.name} - ${formatCurrency(acc.price)}</option>`).join('')}
                                     </select>` :
@@ -3098,31 +3098,49 @@
                 });
             }
 
-            // Load door catalog - ưu tiên PRODUCTS_DATA (đồng bộ với product-catalog-v2.html)
+            // Load door catalog - Ưu tiên lấy từ API Product Catalog (Dữ liệu động)
             async function loadDoorCatalog() {
-                // Ưu tiên PRODUCTS_DATA từ products-data.js (giống product-catalog-v2.html)
+                // 1. Thử lấy từ API Product Catalog (Dữ liệu do người dùng quản lý)
+                try {
+                    const response = await fetch(`${API_BASE}/product-catalog/products`);
+                    const result = await response.json();
+                    if (result.success && result.data && result.data.length > 0) {
+                        // Ánh xạ dữ liệu catalog sang định dạng quotation (nếu cần)
+                        window.doorCatalog = result.data.map(p => ({
+                            ...p,
+                            // Đảm bảo mapping đúng với logic hiện tại
+                            accessory: p.accessories && p.accessories.length > 0 ? p.accessories[0].name : p.accessory,
+                            accessoryPrice: p.accessories && p.accessories.length > 0 ? p.accessories[0].price : p.accessory_price
+                        }));
+                        renderDoorCatalog();
+                        console.log(`📦 Loaded ${result.data.length} products from Product Catalog API`);
+                        return;
+                    }
+                } catch (error) {
+                    console.warn('API product-catalog không khả dụng, thử fallback:', error.message);
+                }
+
+                // 2. Fallback về PRODUCTS_DATA (Static JS file)
                 if (typeof PRODUCTS_DATA !== 'undefined' && PRODUCTS_DATA.length > 0) {
                     window.doorCatalog = PRODUCTS_DATA;
                     renderDoorCatalog();
-                    console.log(`✅ Loaded ${PRODUCTS_DATA.length} products from PRODUCTS_DATA (sync với product-catalog-v2)`);
+                    console.log(`✅ Loaded ${PRODUCTS_DATA.length} products from static PRODUCTS_DATA`);
                     return;
                 }
 
-                // Fallback về API nếu PRODUCTS_DATA không có
+                // 3. Fallback cuối cùng về product-templates (Hệ thống cũ)
                 try {
                     let response = await fetch(`${API_BASE}/product-templates`);
                     let result = await response.json();
                     if (result.success && result.data && result.data.length > 0) {
                         window.doorCatalog = result.data;
                         renderDoorCatalog();
-                        console.log(`📦 Loaded ${result.data.length} products from API (fallback)`);
+                        console.log(`📦 Loaded ${result.data.length} products from API (templates fallback)`);
                         return;
                     }
                 } catch (error) {
-                    console.warn('API product-templates không khả dụng:', error.message);
+                    console.error('❌ Không có dữ liệu sản phẩm:', error.message);
                 }
-
-                console.error('❌ Không có dữ liệu sản phẩm');
             }
 
             // Render door catalog - hiển thị từ PRODUCTS_DATA
@@ -3172,6 +3190,11 @@
                 if (door) {
                     // Thêm row với thông tin sản phẩm
                     itemCounter++;
+
+                    // Lấy thông tin phụ kiện mặc định (viralwindow hoặc cmech)
+                    const availAccs = door.accessories || [];
+                    const defaultAcc = availAccs.length > 0 ? availAccs[0] : { name: door.accessory || '', price: door.accessoryPrice || 0 };
+
                     const row = {
                         id: itemCounter,
                         stt: items.length + 1,
@@ -3180,17 +3203,17 @@
                         design: door.name || '',
                         spec: door.name || '', // Lưu toàn bộ tên sản phẩm
                         glass: '',
-                        accessories: door.accessory || '',
-                        accessory_name: door.accessories && door.accessories.length > 0 ? door.accessories[0].name : (door.accessory || ''),
-                        availableAccessories: door.accessories || [], // Store all available options
+                        accessories: defaultAcc.name,
+                        accessory_name: defaultAcc.name,
+                        availableAccessories: availAccs, // Danh sách để chọn ở dropdown
                         width: 0,
                         height: 0,
                         area: 0,
                         quantity: 1,
                         unitPrice: 0, // Sẽ tính khi nhập kích thước
-                        accessoryPrice: door.accessories && door.accessories.length > 0 ? door.accessories[0].price : (door.accessoryPrice || 0), // Lấy giá từ phụ kiện đầu tiên
+                        accessoryPrice: defaultAcc.price,
                         total: 0,
-                        productPrices: door.prices || {} // Lưu bảng giá để tra cứu
+                        productPrices: door.productPrices || door.prices || {} // Lưu bảng giá để tra cứu
                     };
                     items.push(row);
                     renderItemsTable();
@@ -3198,7 +3221,7 @@
                     closeDoorCatalogModal();
 
                     // Hiển thị thông báo
-                    console.log(`✅ Đã thêm sản phẩm: ${door.code} - Phụ kiện: ${formatCurrency(door.accessoryPrice || 0)}`);
+                    console.log(`✅ Đã thêm sản phẩm: ${door.code} - Phụ kiện mặc định: ${defaultAcc.name} (${formatCurrency(defaultAcc.price)})`);
                 }
             }
 
