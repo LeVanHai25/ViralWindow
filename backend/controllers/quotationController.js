@@ -123,7 +123,8 @@ exports.create = async (req, res) => {
             customer_id, project_id, quotation_date, validity_days, status,
             profit_margin_percent, items, notes, advance_amount,
             version, parent_quotation_id, creator_name,
-            discount_percent, vat_percent, shipping_fee, total_amount: clientTotalAmount
+            discount_percent, vat_percent, shipping_fee, total_amount: clientTotalAmount,
+            accessory_discount_percent
         } = req.body;
 
         console.log('Creating quotation with data:', { customer_id, project_id, items_count: items?.length, version, parent_quotation_id });
@@ -178,18 +179,37 @@ exports.create = async (req, res) => {
 
         // Tính tổng tiền từ items
         let subtotal = 0;
+        let totalAccessories = 0;
         for (const item of items) {
             const itemTotal = parseFloat(item.total_price || item.total || 0);
             if (!isNaN(itemTotal)) {
                 subtotal += itemTotal;
             }
+
+            // Calculate total accessories for discount calculation
+            if (!item.is_material && item.accessory_price) {
+                totalAccessories += (parseFloat(item.accessory_price) || 0) * (parseInt(item.quantity) || 1);
+            }
         }
+
+        // Accessory Discount calculation
+        const accessoryDiscountPct = parseFloat(accessory_discount_percent) || 0;
+        const accessoryDiscountAmount = (totalAccessories * accessoryDiscountPct) / 100;
 
         const profit_margin = parseFloat(profit_margin_percent) || 0;
         const profit_amount = (subtotal * profit_margin) / 100;
 
+        // Tính toán VAT, chiết khấu chung nếu không có clientTotalAmount
+        const generalDiscountPct = parseFloat(discount_percent) || 0;
+        const generalDiscountAmount = (subtotal * generalDiscountPct) / 100;
+        const afterDiscounts = subtotal - generalDiscountAmount - accessoryDiscountAmount;
+
+        const vatPct = parseFloat(vat_percent) || 10;
+        const vatAmount = (afterDiscounts * vatPct) / 100;
+        const shippingAmt = parseFloat(shipping_fee) || 0;
+
         // Sử dụng total_amount từ client nếu có, nếu không thì tính
-        const total_amount = clientTotalAmount || (subtotal + profit_amount);
+        const total_amount = clientTotalAmount || (afterDiscounts + vatAmount + shippingAmt);
         const advance = parseFloat(advance_amount) || Math.round(subtotal * 0.3);
 
         // Xử lý ngày báo giá - sử dụng local date (VN timezone UTC+7)
@@ -208,8 +228,9 @@ exports.create = async (req, res) => {
         const insertQuery = `INSERT INTO quotations 
              (quotation_code, project_id, customer_id, quotation_date, validity_days, 
               status, subtotal, profit_margin_percent, profit_amount, total_amount, notes, advance_amount,
-              version, parent_quotation_id, creator_name, discount_percent, vat_percent, shipping_fee) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+              version, parent_quotation_id, creator_name, discount_percent, vat_percent, shipping_fee,
+              accessory_discount_percent, accessory_discount_amount) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
         const insertValues = [
             quotation_code,
@@ -229,7 +250,9 @@ exports.create = async (req, res) => {
             creator_name || null,
             parseFloat(discount_percent) || 0,
             parseFloat(vat_percent) || 10,
-            parseFloat(shipping_fee) || 0
+            parseFloat(shipping_fee) || 0,
+            accessoryDiscountPct,
+            accessoryDiscountAmount
         ];
 
         // Update project code to VRBG*** BEFORE inserting quotation
@@ -559,16 +582,26 @@ exports.update = async (req, res) => {
             customer_id, project_id, quotation_date, validity_days, status,
             profit_margin_percent, items, notes, quotation_code,
             discount_percent, vat_percent, shipping_fee, total_amount: clientTotalAmount,
-            creator_name
+            creator_name, accessory_discount_percent
         } = req.body;
 
         // Tính lại tổng tiền
         let subtotal = 0;
+        let totalAccessories = 0;
         if (items && Array.isArray(items)) {
             items.forEach(item => {
-                subtotal += parseFloat(item.total_price) || 0;
+                const itemTotal = parseFloat(item.total_price) || 0;
+                subtotal += itemTotal;
+
+                // Calculate total accessories for discount calculation
+                if (!item.is_material && item.accessory_price) {
+                    totalAccessories += (parseFloat(item.accessory_price) || 0) * (parseInt(item.quantity) || 1);
+                }
             });
         }
+
+        const accessoryDiscountPct = parseFloat(accessory_discount_percent) || 0;
+        const accessoryDiscountAmount = (totalAccessories * accessoryDiscountPct) / 100;
 
         const profit_margin = profit_margin_percent || 20;
         const profit_amount = (subtotal * profit_margin) / 100;
@@ -583,11 +616,11 @@ exports.update = async (req, res) => {
             ? parseFloat(shipping_fee) : 0;
 
         const discountAmount = (subtotal * discountPct) / 100;
-        const afterDiscount = subtotal - discountAmount;
-        const vatAmount = (afterDiscount * vatPct) / 100;
+        const afterDiscounts = subtotal - discountAmount - accessoryDiscountAmount;
+        const vatAmount = (afterDiscounts * vatPct) / 100;
 
         // Tính total_amount chính xác từ server (không dùng clientTotalAmount nữa)
-        const total_amount = afterDiscount + vatAmount + shippingAmt;
+        const total_amount = afterDiscounts + vatAmount + shippingAmt;
 
         console.log('📊 Backend calculating total_amount:', {
             subtotal,
@@ -666,6 +699,12 @@ exports.update = async (req, res) => {
             ? parseFloat(shipping_fee)
             : 0;
         updateValues.push(isNaN(shippingValue) ? 0 : shippingValue);
+
+        // Accessory discount fields
+        updateFields.push('accessory_discount_percent = ?');
+        updateValues.push(accessoryDiscountPct);
+        updateFields.push('accessory_discount_amount = ?');
+        updateValues.push(accessoryDiscountAmount);
 
         // Log để debug
         console.log('💾 Saving VAT/discount values:', {

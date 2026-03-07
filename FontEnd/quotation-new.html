@@ -1181,6 +1181,23 @@
                                         <span class="text-xl font-bold text-blue-600" id="totalAccessories">0 ₫</span>
                                     </div>
                                 </div>
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <div class="flex justify-between items-center">
+                                        <div class="flex flex-col">
+                                            <span class="text-lg font-medium text-gray-700">Chiết khấu phụ kiện
+                                                (%):</span>
+                                            <input type="number" id="accessoryDiscountPercent" value="0" min="0"
+                                                max="100"
+                                                class="w-24 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                                                oninput="calculateTotals()">
+                                        </div>
+                                        <div class="flex flex-col items-end">
+                                            <span class="text-sm text-gray-500">Giảm:</span>
+                                            <span class="text-xl font-bold text-rose-500" id="accessoryDiscountAmount">0
+                                                ₫</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <!-- Cột phải: Tổng giá trị báo giá -->
                             <div class="flex items-center justify-center">
@@ -1343,6 +1360,20 @@
                                     <div class="flex justify-between p-3 bg-gray-50 rounded-lg">
                                         <span class="text-gray-700">Tổng tiền phụ kiện:</span>
                                         <span class="font-bold" id="totalAccessoriesBoth">0 ₫</span>
+                                    </div>
+                                    <div class="flex justify-between p-3 bg-gray-50 rounded-lg">
+                                        <div class="flex flex-col">
+                                            <span class="text-gray-700">Chiết khấu phụ kiện (%):</span>
+                                            <input type="number" id="accessoryDiscountPercentBoth" value="0" min="0"
+                                                max="100"
+                                                class="w-24 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                                                oninput="syncFromBothView(); calculateTotals();">
+                                        </div>
+                                        <div class="flex flex-col items-end">
+                                            <span class="text-xs text-gray-500">Giảm:</span>
+                                            <span class="font-bold text-rose-500" id="accessoryDiscountAmountBoth">0
+                                                ₫</span>
+                                        </div>
                                     </div>
                                     <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6 mt-4">
                                         <div class="text-center">
@@ -1708,6 +1739,11 @@
                                 <span class="text-gray-700">Tổng tiền phụ kiện:</span>
                                 <span class="font-bold" id="detailTotalAccessories">0 ₫</span>
                             </div>
+                            <div class="flex justify-between mb-2 text-red-600 italic text-sm hidden"
+                                id="detailAccessoryDiscountRow">
+                                <span>Chiết khấu phụ kiện (<span id="detailAccessoryDiscountPercent">0</span>%):</span>
+                                <span class="font-bold">-<span id="detailAccessoryDiscountAmount">0 ₫</span></span>
+                            </div>
                         </div>
                         <div class="mt-6 bg-white p-6 rounded-lg shadow-lg text-center">
                             <p class="text-gray-700 font-semibold mb-2">Tổng giá trị báo giá</p>
@@ -2043,10 +2079,12 @@
 
                 // Sync input values
                 const discountPercent = document.getElementById('discountPercent')?.value || '0';
+                const accessoryDiscountPercent = document.getElementById('accessoryDiscountPercent')?.value || '0';
                 const vatPercent = document.getElementById('vatPercent')?.value || '10';
                 const shippingFee = document.getElementById('shippingFee')?.value || '0';
 
                 if (document.getElementById('discountPercentBoth')) document.getElementById('discountPercentBoth').value = discountPercent;
+                if (document.getElementById('accessoryDiscountPercentBoth')) document.getElementById('accessoryDiscountPercentBoth').value = accessoryDiscountPercent;
                 if (document.getElementById('vatPercentBoth')) document.getElementById('vatPercentBoth').value = vatPercent;
                 if (document.getElementById('shippingFeeBoth')) document.getElementById('shippingFeeBoth').value = shippingFee;
 
@@ -2057,10 +2095,12 @@
             // Đồng bộ ngược từ view "Cả hai" về view chính
             function syncFromBothView() {
                 const discountPercentBoth = document.getElementById('discountPercentBoth')?.value || '0';
+                const accessoryDiscountPercentBoth = document.getElementById('accessoryDiscountPercentBoth')?.value || '0';
                 const vatPercentBoth = document.getElementById('vatPercentBoth')?.value || '10';
                 const shippingFeeBoth = document.getElementById('shippingFeeBoth')?.value || '0';
 
                 if (document.getElementById('discountPercent')) document.getElementById('discountPercent').value = discountPercentBoth;
+                if (document.getElementById('accessoryDiscountPercent')) document.getElementById('accessoryDiscountPercent').value = accessoryDiscountPercentBoth;
                 if (document.getElementById('vatPercent')) document.getElementById('vatPercent').value = vatPercentBoth;
                 if (document.getElementById('shippingFee')) document.getElementById('shippingFee').value = shippingFeeBoth;
             }
@@ -2745,7 +2785,8 @@
                     glass: item?.glass || '',
                     glass_id: item?.glass_id || null,
                     glass_name: item?.glass_name || '',
-                    accessories: item?.accessories || '',
+                    accessories: item?.accessories || '------',
+                    accessory_name: item?.accessory_name || '------',
                     width: item?.width || 0,
                     height: item?.height || 0,
                     area: item?.area || 0,
@@ -3054,13 +3095,19 @@
                 // Tổng tiền phụ kiện = Tổng (Phụ kiện 1 bộ × Số bộ)
                 const totalAccessories = items.reduce((sum, item) => sum + ((parseFloat(item.accessoryPrice) || 0) * (parseInt(item.quantity) || 1)), 0);
 
-                // Tổng giá trị báo giá = Vật tư + Phụ kiện (KHÔNG có chiết khấu, VAT, phí vận chuyển)
-                const finalTotal = totalMaterial + totalAccessories;
+                // Lấy chiết khấu phụ kiện (%)
+                const accessoryDiscountPercent = parseFloat(document.getElementById(currentViewMode === 'both' ? 'accessoryDiscountPercentBoth' : 'accessoryDiscountPercent')?.value || 0);
+                const accessoryDiscountAmount = Math.round(totalAccessories * (accessoryDiscountPercent / 100));
+                const totalAccessoriesAfterDiscount = totalAccessories - accessoryDiscountAmount;
+
+                // Tổng giá trị báo giá = Vật tư + Phụ kiện sau chiết khấu
+                const finalTotal = totalMaterial + totalAccessoriesAfterDiscount;
 
                 // Update main view
                 if (document.getElementById('totalArea')) document.getElementById('totalArea').textContent = totalArea.toFixed(2) + ' m²';
                 if (document.getElementById('totalMaterial')) document.getElementById('totalMaterial').textContent = formatCurrency(totalMaterial);
                 if (document.getElementById('totalAccessories')) document.getElementById('totalAccessories').textContent = formatCurrency(totalAccessories);
+                if (document.getElementById('accessoryDiscountAmount')) document.getElementById('accessoryDiscountAmount').textContent = formatCurrency(accessoryDiscountAmount);
                 if (document.getElementById('finalTotal')) document.getElementById('finalTotal').textContent = formatCurrency(finalTotal);
                 if (document.getElementById('totalInWords')) document.getElementById('totalInWords').textContent = numberToWords(finalTotal);
 
@@ -3068,6 +3115,7 @@
                 if (document.getElementById('totalAreaBoth')) document.getElementById('totalAreaBoth').textContent = totalArea.toFixed(2) + ' m²';
                 if (document.getElementById('totalMaterialBoth')) document.getElementById('totalMaterialBoth').textContent = formatCurrency(totalMaterial);
                 if (document.getElementById('totalAccessoriesBoth')) document.getElementById('totalAccessoriesBoth').textContent = formatCurrency(totalAccessories);
+                if (document.getElementById('accessoryDiscountAmountBoth')) document.getElementById('accessoryDiscountAmountBoth').textContent = formatCurrency(accessoryDiscountAmount);
                 if (document.getElementById('finalTotalBoth')) document.getElementById('finalTotalBoth').textContent = formatCurrency(finalTotal);
                 if (document.getElementById('totalInWordsBoth')) document.getElementById('totalInWordsBoth').textContent = numberToWords(finalTotal);
             }
@@ -3208,9 +3256,21 @@
                     // Thêm row với thông tin sản phẩm
                     itemCounter++;
 
-                    // Lấy thông tin phụ kiện mặc định (viralwindow hoặc cmech hoặc từ danh sách)
-                    const availAccs = door.accessories || [];
-                    const defaultAcc = availAccs.length > 0 ? availAccs[0] : { name: door.accessory || '', price: door.accessoryPrice || 0 };
+                    // Lấy thông tin phụ kiện mặc định
+                    // Thêm lựa chọn "------" vào đầu danh sách làm mặc định
+                    let doorAccs = [];
+                    if (door.accessories_json) {
+                        try {
+                            doorAccs = typeof door.accessories_json === 'string' ? JSON.parse(door.accessories_json) : door.accessories_json;
+                        } catch (e) {
+                            console.error('Error parsing door.accessories_json:', e);
+                        }
+                    } else if (door.accessories) {
+                        doorAccs = door.accessories;
+                    }
+
+                    const availAccs = [{ name: '------', price: 0 }, ...doorAccs];
+                    const defaultAcc = availAccs[0]; // Mặc định là '------'
 
                     const row = {
                         id: itemCounter,
@@ -4315,9 +4375,29 @@
                         });
                     }
 
-                    // Tổng giá trị = Vật tư + Phụ kiện (LUÔN tính lại từ items, không dùng total_amount cũ từ DB)
-                    // Lưu ý: với vật tư, totalMaterial đã bao gồm cả giá trị của nó
-                    const finalTotal = totalMaterial + totalAccessories;
+                    // Chiết khấu phụ kiện
+                    const accDiscountPct = parseFloat(q.accessory_discount_percent) || 0;
+                    const accDiscountAmt = parseFloat(q.accessory_discount_amount) || (totalAccessories * accDiscountPct / 100);
+
+                    if (accDiscountPct > 0) {
+                        document.getElementById('detailAccessoryDiscountRow').classList.remove('hidden');
+                        document.getElementById('detailAccessoryDiscountPercent').textContent = accDiscountPct;
+                        document.getElementById('detailAccessoryDiscountAmount').textContent = formatCurrency(accDiscountAmt);
+                    } else {
+                        document.getElementById('detailAccessoryDiscountRow').classList.add('hidden');
+                    }
+
+                    // Tính tổng cuối cùng (trừ thêm chiết khấu phụ kiện nếu Backend chưa trừ)
+                    // Note: subtotal ở đây là tổng từ items.
+                    // Chúng ta cần tính: (Subtotal - GeneralDiscount) - AccessoryDiscount + VAT + Shipping
+                    const generalDiscountPct = parseFloat(q.discount_percent) || 0;
+                    const generalDiscountAmt = (subtotal * generalDiscountPct) / 100;
+                    const vatPct = parseFloat(q.vat_percent) || 10;
+                    const shippingFee = parseFloat(q.shipping_fee) || 0;
+
+                    const afterDiscounts = subtotal - generalDiscountAmt - accDiscountAmt;
+                    const vatAmt = (afterDiscounts * vatPct) / 100;
+                    const finalTotal = afterDiscounts + vatAmt + shippingFee;
 
                     // Fill tổng hợp
                     document.getElementById('detailTotalArea').textContent = totalArea.toFixed(2) + ' m²';
@@ -4439,7 +4519,7 @@
                     // Reset button on error
                     const exportBtn = document.querySelector('button[onclick="exportQuotationDetailToExcel()"]');
                     if (exportBtn) {
-                        exportBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg> Xuất Excel';
+                        exportBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 1 0 01-2 2z"></path></svg> Xuất Excel';
                         exportBtn.disabled = false;
                     }
                 }
@@ -4596,7 +4676,7 @@
 
                             // Tính tổng giá trị từ items (không dùng total_amount từ DB vì có thể sai)
                             let totalValue = 0;
-                            if (q.items && q.items.length > 0) {
+                            if (q.items) {
                                 q.items.forEach(item => {
                                     // LUÔN ưu tiên sử dụng total_price đã được tính toán và lưu trong DB
                                     // Nếu không có (trường hợp dữ liệu cũ), mới thực hiện tính lại
@@ -4834,10 +4914,21 @@
                 const afterDiscount = subtotal - discountAmount;
 
                 const vatPercent = parseFloat(document.getElementById('vatPercent')?.value || 10);
-                const vatAmount = afterDiscount * (vatPercent / 100);
-
                 const shippingFee = parseFloat(document.getElementById('shippingFee')?.value || 0);
-                const totalAmount = afterDiscount + vatAmount + shippingFee;
+
+                // Chiết khấu phụ kiện
+                const accessoryDiscountPercent = parseFloat(document.getElementById('accessoryDiscountPercent')?.value || 0);
+                let totalAccessories = 0;
+                items.forEach(item => {
+                    if (!item.isMaterial) {
+                        totalAccessories += (parseFloat(item.accessoryPrice) || 0) * (parseInt(item.quantity) || 1);
+                    }
+                });
+                const accessoryDiscountAmount = (totalAccessories * accessoryDiscountPercent) / 100;
+
+                const afterDiscounts = subtotal - discountAmount - accessoryDiscountAmount;
+                const vatAmount = afterDiscounts * (vatPercent / 100);
+                const totalAmount = afterDiscounts + vatAmount + shippingFee;
 
                 const data = {
                     customer_id: parseInt(document.getElementById('customerSelect').value),
@@ -4849,6 +4940,8 @@
                     discount_percent: discountPercent,
                     vat_percent: vatPercent,
                     shipping_fee: shippingFee,
+                    accessory_discount_percent: accessoryDiscountPercent,
+                    accessory_discount_amount: accessoryDiscountAmount,
                     total_amount: totalAmount,
                     items: items.map(item => ({
                         item_name: item.spec || item.design || item.code, // Quy cách (spec) là cột chính
@@ -5197,6 +5290,13 @@
                         const loadedShipping = parseFloat(q.shipping_fee) || 0;
                         if (shippingFeeEl) shippingFeeEl.value = loadedShipping;
                         if (shippingFeeBothEl) shippingFeeBothEl.value = loadedShipping;
+
+                        // Set accessory discount
+                        const accessoryDiscountPercentEl = document.getElementById('accessoryDiscountPercent');
+                        const accessoryDiscountPercentBothEl = document.getElementById('accessoryDiscountPercentBoth');
+                        const loadedAccDiscount = parseFloat(q.accessory_discount_percent) || 0;
+                        if (accessoryDiscountPercentEl) accessoryDiscountPercentEl.value = loadedAccDiscount;
+                        if (accessoryDiscountPercentBothEl) accessoryDiscountPercentBothEl.value = loadedAccDiscount;
 
                         console.log('Loaded VAT/discount from API:', {
                             discount_percent: loadedDiscount,

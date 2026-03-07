@@ -169,12 +169,23 @@ exports.exportQuotationToExcel = async (req, res) => {
         // Đồng bộ với công thức frontend: finalTotal = totalMaterial + totalAccessories
         const finalTotal = totalMaterial + totalAccessories;
 
-        // Lưu các giá trị VAT/discount để hiển thị riêng nếu cần
+        // Lưu các giá trị VAT/discount để hiển thị riêng
         const discountPercent = parseFloat(quotation.discount_percent) || 0;
+        const discountAmount = (finalTotal * discountPercent) / 100;
+
+        const accessoryDiscountPercent = parseFloat(quotation.accessory_discount_percent) || 0;
+        const accessoryDiscountAmount = parseFloat(quotation.accessory_discount_amount) || ((totalAccessories * accessoryDiscountPercent) / 100);
+
         const vatPercent = quotation.vat_percent !== null && quotation.vat_percent !== undefined
             ? parseFloat(quotation.vat_percent)
-            : 0; // Mặc định 0% nếu không có giá trị
+            : 10; // Mặc định 10%
+
+        const afterDiscounts = finalTotal - discountAmount - accessoryDiscountAmount;
+        const vatAmount = (afterDiscounts * vatPercent) / 100;
         const shippingFee = parseFloat(quotation.shipping_fee) || 0;
+
+        // Tổng cuối cùng
+        const grandTotal = afterDiscounts + vatAmount + shippingFee;
 
         // Tạo workbook mới
         const workbook = new ExcelJS.Workbook();
@@ -497,7 +508,7 @@ exports.exportQuotationToExcel = async (req, res) => {
         worksheet.getCell(`K${currentRow}`).fill = summaryFill;
         worksheet.getCell(`K${currentRow}`).border = summaryBorder;
 
-        // Cột L: Tổng tiền
+        // Cột L: Tổng cộng (Subtotal)
         worksheet.getCell(`L${currentRow}`).value = Math.round(finalTotal);
         worksheet.getCell(`L${currentRow}`).numFmt = '#,##0';
         worksheet.getCell(`L${currentRow}`).alignment = { horizontal: 'right', vertical: 'middle' };
@@ -505,6 +516,97 @@ exports.exportQuotationToExcel = async (req, res) => {
         worksheet.getCell(`L${currentRow}`).fill = summaryFill;
         worksheet.getCell(`L${currentRow}`).border = summaryBorder;
         worksheet.getRow(currentRow).height = 25;
+        currentRow++;
+
+        // --- Hàng Chiết khấu phụ kiện (Nếu có) ---
+        if (accessoryDiscountPercent > 0) {
+            worksheet.mergeCells(`A${currentRow}:K${currentRow}`);
+            const accDiscLabel = worksheet.getCell(`A${currentRow}`);
+            accDiscLabel.value = `Chiết khấu phụ kiện (${accessoryDiscountPercent}%)`;
+            accDiscLabel.alignment = { horizontal: 'right', vertical: 'middle' };
+            accDiscLabel.font = { name: 'Times New Roman', size: 11, italic: true };
+            accDiscLabel.border = summaryBorder;
+
+            const accDiscVal = worksheet.getCell(`L${currentRow}`);
+            accDiscVal.value = Math.round(accessoryDiscountAmount) * -1;
+            accDiscVal.numFmt = '#,##0';
+            accDiscVal.alignment = { horizontal: 'right', vertical: 'middle' };
+            accDiscVal.font = { name: 'Times New Roman', size: 11, color: { argb: 'FFFF0000' } };
+            accDiscVal.border = summaryBorder;
+            currentRow++;
+        }
+
+        // --- Hàng Chiết khấu thương mại (Nếu có) ---
+        if (discountPercent > 0) {
+            worksheet.mergeCells(`A${currentRow}:K${currentRow}`);
+            const generalDiscLabel = worksheet.getCell(`A${currentRow}`);
+            generalDiscLabel.value = `Chiết khấu thương mại (${discountPercent}%)`;
+            generalDiscLabel.alignment = { horizontal: 'right', vertical: 'middle' };
+            generalDiscLabel.font = { name: 'Times New Roman', size: 11, italic: true };
+            generalDiscLabel.border = summaryBorder;
+
+            const generalDiscVal = worksheet.getCell(`L${currentRow}`);
+            generalDiscVal.value = Math.round(discountAmount) * -1;
+            generalDiscVal.numFmt = '#,##0';
+            generalDiscVal.alignment = { horizontal: 'right', vertical: 'middle' };
+            generalDiscVal.font = { name: 'Times New Roman', size: 11, color: { argb: 'FFFF0000' } };
+            generalDiscVal.border = summaryBorder;
+            currentRow++;
+        }
+
+        // --- Hàng Thuế VAT ---
+        if (vatPercent > 0) {
+            worksheet.mergeCells(`A${currentRow}:K${currentRow}`);
+            const vatLabel = worksheet.getCell(`A${currentRow}`);
+            vatLabel.value = `Thuế giá trị gia tăng VAT (${vatPercent}%)`;
+            vatLabel.alignment = { horizontal: 'right', vertical: 'middle' };
+            vatLabel.font = { name: 'Times New Roman', size: 11 };
+            vatLabel.border = summaryBorder;
+
+            const vatVal = worksheet.getCell(`L${currentRow}`);
+            vatVal.value = Math.round(vatAmount);
+            vatVal.numFmt = '#,##0';
+            vatVal.alignment = { horizontal: 'right', vertical: 'middle' };
+            vatVal.font = { name: 'Times New Roman', size: 11 };
+            vatVal.border = summaryBorder;
+            currentRow++;
+        }
+
+        // --- Hàng Phí vận chuyển (Nếu có) ---
+        if (shippingFee > 0) {
+            worksheet.mergeCells(`A${currentRow}:K${currentRow}`);
+            const shipLabel = worksheet.getCell(`A${currentRow}`);
+            shipLabel.value = `Phí vận chuyển/lắp đặt`;
+            shipLabel.alignment = { horizontal: 'right', vertical: 'middle' };
+            shipLabel.font = { name: 'Times New Roman', size: 11 };
+            shipLabel.border = summaryBorder;
+
+            const shipVal = worksheet.getCell(`L${currentRow}`);
+            shipVal.value = Math.round(shippingFee);
+            shipVal.numFmt = '#,##0';
+            shipVal.alignment = { horizontal: 'right', vertical: 'middle' };
+            shipVal.font = { name: 'Times New Roman', size: 11 };
+            shipVal.border = summaryBorder;
+            currentRow++;
+        }
+
+        // --- TỔNG CỘNG THANH TOÁN ---
+        worksheet.mergeCells(`A${currentRow}:K${currentRow}`);
+        const grandTotalLabel = worksheet.getCell(`A${currentRow}`);
+        grandTotalLabel.value = 'TỔNG CỘNG THANH TOÁN (Làm tròn)';
+        grandTotalLabel.alignment = { horizontal: 'right', vertical: 'middle' };
+        grandTotalLabel.font = { name: 'Times New Roman', size: 12, bold: true };
+        grandTotalLabel.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFC000' } }; // Gold color
+        grandTotalLabel.border = summaryBorder;
+
+        const grandTotalVal = worksheet.getCell(`L${currentRow}`);
+        grandTotalVal.value = Math.round(grandTotal);
+        grandTotalVal.numFmt = '#,##0';
+        grandTotalVal.alignment = { horizontal: 'right', vertical: 'middle' };
+        grandTotalVal.font = { name: 'Times New Roman', size: 14, bold: true, color: { argb: 'FFC00000' } }; // Dark red
+        grandTotalVal.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFC000' } };
+        grandTotalVal.border = summaryBorder;
+        worksheet.getRow(currentRow).height = 30;
         currentRow++;
 
         // ========== SỐ TIỀN BẰNG CHỮ ==========
@@ -515,7 +617,7 @@ exports.exportQuotationToExcel = async (req, res) => {
         worksheet.getCell(`A${currentRow}`).border = summaryBorder;
 
         worksheet.mergeCells(`D${currentRow}:L${currentRow}`);
-        worksheet.getCell(`D${currentRow}`).value = numberToWords(finalTotal);
+        worksheet.getCell(`D${currentRow}`).value = numberToWords(grandTotal);
         worksheet.getCell(`D${currentRow}`).alignment = { horizontal: 'center', vertical: 'middle' };
         worksheet.getCell(`D${currentRow}`).font = { name: 'Times New Roman', size: 11, italic: true };
         worksheet.getCell(`D${currentRow}`).border = summaryBorder;
