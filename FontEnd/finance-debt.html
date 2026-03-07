@@ -485,7 +485,21 @@
 
             <!-- FILTERS -->
             <div class="filter-bar-modern p-5 mb-6 fade-in">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tìm kiếm</label>
+                        <div class="relative">
+                            <input type="text" id="searchInput" class="form-input w-full pl-10"
+                                placeholder="Mã BG, dự án, KH/NCC..." oninput="handleSearch()">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Khách hàng/NCC</label>
                         <select id="filterCustomer" class="form-select w-full" onchange="loadDebts()">
@@ -510,28 +524,26 @@
                         </select>
                     </div>
                     <div>
-                        <label class="flex items-center gap-2 cursor-pointer">
+                        <label class="flex items-center gap-2 cursor-pointer pb-2">
                             <input type="checkbox" id="filterOverdue"
                                 class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                                 onchange="loadDebts()">
                             <span class="text-sm font-medium text-gray-700">Chỉ quá hạn</span>
                         </label>
                     </div>
-                    <div>
+                    <div class="lg:col-span-1 grid grid-cols-2 gap-2">
                         <button onclick="resetFilters()"
                             class="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-all btn-modern">
-                            Xóa bộ lọc
+                            Xóa
                         </button>
-                    </div>
-                    <div>
                         <button onclick="exportDebtExcel()"
-                            class="w-full px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-all btn-modern flex items-center justify-center gap-2">
+                            class="w-full px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-all btn-modern flex items-center justify-center gap-2"
+                            title="Xuất Excel">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                             </svg>
-                            Xuất Excel
                         </button>
                     </div>
                 </div>
@@ -750,6 +762,20 @@
                 loadDebtStatistics();
             }
 
+            // Search handle
+            let searchTimeout = null;
+            function handleSearch() {
+                if (searchTimeout) clearTimeout(searchTimeout);
+
+                // Visual feedback
+                const tbody = document.getElementById('debtsTable');
+                if (tbody) tbody.style.opacity = '0.5';
+
+                searchTimeout = setTimeout(() => {
+                    loadDebts();
+                }, 300);
+            }
+
             // Load debts (cải tiến với loading state, retry và pagination)
             async function loadDebts() {
                 const tbody = document.getElementById('debtsTable');
@@ -779,17 +805,21 @@
                     const projectId = document.getElementById('filterProject').value;
                     const status = document.getElementById('filterStatus').value;
                     const overdueOnly = document.getElementById('filterOverdue').checked;
+                    const keyword = document.getElementById('searchInput').value;
 
                     if (customerId) params.append('customerId', customerId);
                     if (projectId) params.append('projectId', projectId);
                     if (status) params.append('status', status);
                     if (overdueOnly) params.append('overdue', 'true');
+                    if (keyword) params.append('keyword', keyword);
 
                     const token = sessionStorage.getItem('token');
                     const res = await fetch(`${API_BASE}/debts?${params}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     const data = await res.json();
+
+                    tbody.style.opacity = '1';
 
                     // Update table header
                     const header = document.getElementById('debtTableHeader');
@@ -1207,6 +1237,7 @@
                 document.getElementById('filterProject').value = '';
                 document.getElementById('filterStatus').value = '';
                 document.getElementById('filterOverdue').checked = false;
+                document.getElementById('searchInput').value = '';
                 currentPage = 1; // Reset pagination
                 loadDebts();
             }

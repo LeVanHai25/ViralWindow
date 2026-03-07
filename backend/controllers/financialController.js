@@ -6,14 +6,17 @@ const SystemNotifier = require("../services/SystemNotifier");
  */
 exports.getAllTransactions = async (req, res) => {
     try {
-        const { type, startDate, endDate, projectId, customerId, expense_type, status, supplier } = req.query;
+        const {
+            type, category, startDate, endDate, status,
+            projectId, customerId, supplier, keyword, referenceNumber
+        } = req.query;
 
-        let query = `
-            SELECT 
-                ft.*,
-                p.project_name,
-                p.project_code,
-                c.full_name AS customer_name
+        // Pagination parameters
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 50;
+        const offset = (page - 1) * limit;
+
+        let baseQuery = `
             FROM financial_transactions ft
             LEFT JOIN projects p ON ft.project_id = p.id
             LEFT JOIN customers c ON ft.customer_id = c.id
@@ -22,62 +25,105 @@ exports.getAllTransactions = async (req, res) => {
         let params = [];
 
         if (type) {
-            query += " AND ft.transaction_type = ?";
+            baseQuery += " AND ft.transaction_type = ?";
             params.push(type);
         }
 
+        if (category) {
+            baseQuery += " AND ft.category = ?";
+            params.push(category);
+        }
+
         if (startDate) {
-            query += " AND ft.transaction_date >= ?";
+            baseQuery += " AND ft.transaction_date >= ?";
             params.push(startDate);
         }
 
         if (endDate) {
-            query += " AND ft.transaction_date <= ?";
+            baseQuery += " AND ft.transaction_date <= ?";
             params.push(endDate);
         }
 
+        // The original code had expense_type, but the instruction removes it from destructuring.
+        // I will keep the filter logic for expense_type as it was not explicitly removed from the query building.
+        const { expense_type } = req.query;
+        if (expense_type && expense_type !== 'all') {
+            baseQuery += " AND ft.expense_type = ?";
+            params.push(expense_type);
+        }
+
+        if (status) {
+            baseQuery += " AND ft.status = ?";
+            params.push(status);
+        }
+
         if (projectId) {
-            query += " AND ft.project_id = ?";
+            baseQuery += " AND ft.project_id = ?";
             params.push(projectId);
         }
 
         if (customerId) {
-            query += " AND ft.customer_id = ?";
+            baseQuery += " AND ft.customer_id = ?";
             params.push(customerId);
         }
 
-        if (expense_type && expense_type !== 'all') {
-            query += " AND ft.expense_type = ?";
-            params.push(expense_type);
-        }
-
-        // Add status filter
-        if (status) {
-            query += " AND ft.status = ?";
-            params.push(status);
-        }
-
-        // Add supplier filter (for payments)
         if (supplier) {
-            query += " AND ft.supplier LIKE ?";
+            baseQuery += " AND ft.supplier LIKE ?";
             params.push(`%${supplier}%`);
         }
 
+        // Smart Search Keyword
+        if (keyword) {
+            baseQuery += ` AND (
+                ft.transaction_code LIKE ? OR
+                ft.description LIKE ? OR
+                ft.supplier LIKE ? OR
+                ft.reference_number LIKE ? OR
+                p.project_name LIKE ? OR
+                p.project_code LIKE ? OR
+                c.full_name LIKE ?
+            )`;
+            const searchPattern = `%${keyword}%`;
+            params.push(
+                searchPattern, searchPattern, searchPattern,
+                searchPattern, searchPattern, searchPattern,
+                searchPattern
+            );
+        }
+
         // Add referenceNumber filter (for checking specific receipts like deposit)
-        const { referenceNumber } = req.query;
         if (referenceNumber) {
-            query += " AND ft.reference_number = ?";
+            baseQuery += " AND ft.reference_number = ?";
             params.push(referenceNumber);
         }
 
-        query += " ORDER BY ft.transaction_date DESC, ft.created_at DESC";
+        const countQuery = `SELECT COUNT(*) as total ${baseQuery}`;
+        const selectQuery = `
+            SELECT
+                ft.*,
+                p.project_name,
+                p.project_code,
+                c.full_name AS customer_name
+            ${baseQuery}
+            ORDER BY ft.transaction_date DESC, ft.created_at DESC
+            LIMIT ? OFFSET ?
+        `;
 
-        const [rows] = await db.query(query, params);
+        const [countResult] = await db.query(countQuery, params);
+        const totalCount = countResult[0].total;
+        const totalPages = Math.ceil(totalCount / limit);
+
+        const [rows] = await db.query(selectQuery, [...params, limit, offset]);
 
         res.json({
             success: true,
             data: rows,
-            count: rows.length
+            pagination: {
+                totalCount,
+                totalPages,
+                currentPage: page,
+                limit
+            }
         });
     } catch (err) {
         console.error('Error getting transactions:', err);

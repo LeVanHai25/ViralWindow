@@ -474,7 +474,21 @@
 
             <!-- FILTERS -->
             <div class="filter-bar-modern p-5 mb-6 fade-in">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tìm kiếm</label>
+                        <div class="relative">
+                            <input type="text" id="searchInput" class="form-input w-full pl-10"
+                                placeholder="Mã phiếu, dự án, KH..." oninput="handleSearch()">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Thời gian</label>
                         <div id="dateRangePicker"></div>
@@ -883,6 +897,20 @@
                 switchTab('all');
             }
 
+            // Search handle
+            let searchTimeout = null;
+            function handleSearch() {
+                if (searchTimeout) clearTimeout(searchTimeout);
+
+                // Visual feedback: dim table or show loading state immediately
+                const tbody = document.getElementById('receiptsTable');
+                if (tbody) tbody.style.opacity = '0.5';
+
+                searchTimeout = setTimeout(() => {
+                    loadReceipts();
+                }, 300); // Reduced to 300ms for more "instant" feel
+            }
+
             // Load receipts
             async function loadReceipts() {
                 try {
@@ -890,6 +918,7 @@
                     const range = dateRangePicker ? dateRangePicker.getRange() : { startDate: null, endDate: null };
                     const customerId = document.getElementById('filterCustomer').value;
                     const projectId = document.getElementById('filterProject').value;
+                    const keyword = document.getElementById('searchInput').value;
                     // Use currentTab if filterStatus is empty, otherwise use filterStatus
                     const status = document.getElementById('filterStatus').value || (currentTab !== 'all' ? currentTab : '');
 
@@ -898,6 +927,7 @@
                     if (customerId) params.append('customerId', customerId);
                     if (projectId) params.append('projectId', projectId);
                     if (status) params.append('status', status);
+                    if (keyword) params.append('keyword', keyword);
                     params.append('type', 'revenue');
 
                     const token = sessionStorage.getItem('token');
@@ -907,6 +937,7 @@
                     const data = await res.json();
 
                     const tbody = document.getElementById('receiptsTable');
+                    tbody.style.opacity = '1'; // Restore opacity
                     if (!data.success || !data.data || data.data.length === 0) {
                         tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-gray-500">Chưa có phiếu thu nào</td></tr>';
                         return;
@@ -1383,6 +1414,7 @@
                 document.getElementById('filterCustomer').value = '';
                 document.getElementById('filterProject').value = '';
                 document.getElementById('filterStatus').value = '';
+                document.getElementById('searchInput').value = '';
                 switchTab('all');
             }
 

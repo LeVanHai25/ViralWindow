@@ -5,7 +5,7 @@ const db = require("../config/db");
  */
 exports.getAllDebts = async (req, res) => {
     try {
-        const { type, status, customerId, projectId, overdue } = req.query;
+        const { type, status, customerId, projectId, overdue, keyword } = req.query;
 
         // Pagination parameters
         const page = parseInt(req.query.page) || 1;
@@ -46,6 +46,23 @@ exports.getAllDebts = async (req, res) => {
             const today = new Date().toISOString().split('T')[0];
             baseQuery += " AND d.due_date < ? AND d.status != 'paid'";
             params.push(today);
+        }
+
+        // Smart Search Keyword
+        if (keyword) {
+            baseQuery += ` AND (
+                d.supplier LIKE ? OR 
+                d.notes LIKE ? OR 
+                p.project_name LIKE ? OR 
+                p.project_code LIKE ? OR 
+                c.full_name LIKE ? OR 
+                q.quotation_code LIKE ?
+            )`;
+            const searchPattern = `%${keyword}%`;
+            params.push(
+                searchPattern, searchPattern, searchPattern,
+                searchPattern, searchPattern, searchPattern
+            );
         }
 
         // Count total for pagination
