@@ -221,7 +221,10 @@ class AuditLogService {
             deleted: 'đã xóa',
             status_changed: 'đổi trạng thái',
             approved: 'đã duyệt',
-            rejected: 'đã từ chối'
+            rejected: 'đã từ chối',
+            user_login: 'vừa đăng nhập',
+            login: 'đã đăng nhập',
+            logout: 'đã đăng xuất'
         };
         const moduleNames = {
             customer: 'Khách hàng',
@@ -229,7 +232,8 @@ class AuditLogService {
             quotation: 'Báo giá',
             inventory: 'Kho',
             production: 'Sản xuất',
-            finance: 'Tài chính'
+            finance: 'Tài chính',
+            system: 'Hệ thống'
         };
 
         return `${moduleNames[module] || module} ${actionNames[action] || action}`;
@@ -240,7 +244,22 @@ class AuditLogService {
      */
     static generateBasicMessage(eventCode, entityName, actor) {
         const [module, action] = eventCode.split('.');
-        return `${entityName || 'Mục'} đã được ${action} bởi ${actor.name || 'hệ thống'}`;
+
+        // Custom message for login
+        if (eventCode === 'system.user_login' || action === 'login') {
+            return `Người dùng "${entityName || actor.name || 'N/A'}" vừa đăng nhập hệ thống`;
+        }
+
+        const actionText = {
+            created: 'được tạo',
+            updated: 'được cập nhật',
+            deleted: 'bị xóa',
+            status_changed: 'thay đổi trạng thái',
+            approved: 'được duyệt',
+            rejected: 'bị từ chối'
+        }[action] || action;
+
+        return `${entityName || 'Mục'} đã ${actionText} bởi ${actor.name || 'hệ thống'}`;
     }
 
     /**

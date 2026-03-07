@@ -272,7 +272,7 @@ class NotificationEventService {
             // SYSTEM EVENTS
             'system.user_login': {
                 title: '🔐 Đăng nhập hệ thống',
-                message: `Người dùng "${payload.username || payload.full_name || 'N/A'}" vừa đăng nhập`,
+                message: `Người dùng "${payload.username || payload.full_name || payload.entity_name || payload.name || 'N/A'}" vừa đăng nhập`,
                 level: 'info'
             },
             'system.backup_done': {
