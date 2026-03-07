@@ -5,6 +5,7 @@
 
 const db = require("../config/db");
 const bcrypt = require("bcryptjs");
+const SystemNotifier = require("../services/SystemNotifier");
 
 /**
  * Lấy danh sách người dùng (có pagination và filter)
@@ -187,6 +188,15 @@ exports.createUser = async (req, res) => {
             VALUES (?, ?, ?, ?, ?, ?, ?, 'user', 1)
         `, [nextId, full_name, email, phone || null, hashedPassword, role_id || null, address || null]);
 
+        // Gửi thông báo tạo user
+        try {
+            await SystemNotifier.notify('system.user_created', {
+                entityName: full_name,
+                entityId: result.insertId,
+                actor: SystemNotifier.getActor(req),
+            });
+        } catch (e) { /* không block */ }
+
         res.status(201).json({
             success: true,
             message: "Tạo người dùng thành công",
@@ -283,6 +293,16 @@ exports.updateUser = async (req, res) => {
             );
         }
 
+        // Gửi thông báo cập nhật user
+        try {
+            await SystemNotifier.notify('system.user_updated', {
+                entityName: full_name || users[0].full_name,
+                entityId: parseInt(id),
+                actor: SystemNotifier.getActor(req),
+                changedFields: updates.map(u => u.split(' = ')[0]),
+            });
+        } catch (e) { /* không block */ }
+
         res.json({
             success: true,
             message: "Cập nhật người dùng thành công"
@@ -329,6 +349,15 @@ exports.toggleUserStatus = async (req, res) => {
             "UPDATE users SET is_active = ? WHERE id = ?",
             [newStatus, id]
         );
+
+        // Gửi thông báo toggle status
+        try {
+            await SystemNotifier.notify(newStatus ? 'system.user_updated' : 'system.user_deactivated', {
+                entityName: users[0].full_name,
+                entityId: parseInt(id),
+                actor: SystemNotifier.getActor(req),
+            });
+        } catch (e) { /* không block */ }
 
         res.json({
             success: true,
@@ -379,6 +408,15 @@ exports.resetUserPassword = async (req, res) => {
             "UPDATE users SET password = ? WHERE id = ?",
             [hashedPassword, id]
         );
+
+        // Gửi thông báo reset password
+        try {
+            await SystemNotifier.notify('system.password_reset', {
+                entityName: users[0].full_name,
+                entityId: parseInt(id),
+                actor: SystemNotifier.getActor(req),
+            });
+        } catch (e) { /* không block */ }
 
         res.json({
             success: true,
@@ -434,6 +472,15 @@ exports.deleteUser = async (req, res) => {
             "DELETE FROM users WHERE id = ?",
             [id]
         );
+
+        // Gửi thông báo xóa user
+        try {
+            await SystemNotifier.notify('system.user_deactivated', {
+                entityName: users[0].full_name,
+                entityId: parseInt(id),
+                actor: SystemNotifier.getActor(req),
+            });
+        } catch (e) { /* không block */ }
 
         res.json({
             success: true,

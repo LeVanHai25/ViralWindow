@@ -491,6 +491,35 @@
                     <div class="space-y-3" id="timeline-info"></div>
                 </div>
 
+                <!-- LỊCH SỬ THAY ĐỔI (Audit Log) -->
+                <div class="info-card bg-white rounded-xl p-6 shadow-lg">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Lịch sử thay đổi
+                        </h2>
+                        <button onclick="loadProjectHistory()"
+                            class="text-green-600 hover:text-green-800 text-sm flex items-center gap-1 font-medium bg-green-50 px-3 py-1.5 rounded-lg transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                                </path>
+                            </svg>
+                            Làm mới
+                        </button>
+                    </div>
+                    <div id="project-history-list"
+                        class="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                        <div class="text-center py-12 text-gray-400">
+                            <div class="inline-block animate-pulse mb-2">● ● ●</div>
+                            <p>Đang tải lịch sử thay đổi...</p>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Sản phẩm -->
                 <div class="info-card bg-white rounded-xl p-6 shadow-lg">
                     <h2 class="text-xl font-bold text-gray-800 mb-4">Danh sách sản phẩm</h2>
@@ -827,6 +856,8 @@
 
                 if (result.success) {
                     displayProjectDetail(result.data);
+                    // Load audit history
+                    loadProjectHistory();
                 } else {
                     showError(result.message || 'Lỗi khi tải dữ liệu');
                 }
@@ -834,6 +865,89 @@
                 console.error('Error loading project detail:', error);
                 showError('Lỗi kết nối server: ' + error.message);
             }
+        }
+
+        async function loadProjectHistory() {
+            const projectId = getProjectId();
+            const container = document.getElementById('project-history-list');
+            if (!projectId || !container) return;
+
+            try {
+                const token = sessionStorage.getItem('token') || (window.AuthHelper && window.AuthHelper.getToken());
+                const response = await fetch(`${API_BASE}/notifications/audit-logs?entity_type=project&entity_id=${projectId}&limit=50`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const result = await response.json();
+                if (result.success && result.data) {
+                    renderProjectHistory(result.data);
+                } else {
+                    container.innerHTML = '<div class="text-center py-8 text-gray-400">Chưa có lịch sử thay đổi</div>';
+                }
+            } catch (error) {
+                console.error('Error loading project history:', error);
+                container.innerHTML = '<div class="text-center py-8 text-red-400">Lỗi khi tải lịch sử</div>';
+            }
+        }
+
+        function renderProjectHistory(logs) {
+            const container = document.getElementById('project-history-list');
+            if (!logs || logs.length === 0) {
+                container.innerHTML = '<div class="text-center py-8 text-gray-400">Chưa có lịch sử thay đổi</div>';
+                return;
+            }
+
+            container.innerHTML = logs.map(log => {
+                const date = new Date(log.created_at);
+                const timeStr = date.toLocaleString('vi-VN');
+                const actorName = log.actor_user_name || log.actor_name || 'Hệ thống';
+
+                // Event code beautification
+                let eventTitle = log.event_code;
+                let colorClass = 'bg-blue-100 text-blue-700';
+                let iconStr = '📝';
+
+                if (log.event_code.includes('created')) { eventTitle = 'Tạo mới dự án'; colorClass = 'bg-green-100 text-green-700'; iconStr = '✨'; }
+                if (log.event_code.includes('updated')) { eventTitle = 'Cập nhật thông tin'; colorClass = 'bg-blue-100 text-blue-700'; iconStr = '✏️'; }
+                if (log.event_code.includes('status_changed')) { eventTitle = 'Thay đổi trạng thái'; colorClass = 'bg-purple-100 text-purple-700'; iconStr = '🔄'; }
+                if (log.event_code.includes('cancelled')) { eventTitle = 'Hủy dự án'; colorClass = 'bg-red-100 text-red-700'; iconStr = '🚫'; }
+                if (log.event_code.includes('completed')) { eventTitle = 'Hoàn thành dự án'; colorClass = 'bg-emerald-100 text-emerald-700'; iconStr = '🏆'; }
+
+                let detailsHtml = '';
+                if (log.reason) {
+                    detailsHtml += `<div class="mt-2 text-sm text-gray-600 bg-gray-50 p-2 rounded italic border-l-2 border-gray-300">"Lý do: ${log.reason}"</div>`;
+                }
+
+                if (log.changed_fields) {
+                    try {
+                        let fields = log.changed_fields;
+                        if (typeof fields === 'string') fields = JSON.parse(fields);
+                        if (Array.isArray(fields) && fields.length > 0) {
+                            detailsHtml += `<div class="mt-2 flex flex-wrap gap-1">
+                                ${fields.map(f => `<span class="text-[10px] px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded border border-gray-200">${f}</span>`).join('')}
+                            </div>`;
+                        }
+                    } catch (e) { }
+                }
+
+                return `
+                    <div class="flex gap-4 p-4 rounded-xl border border-gray-100 hover:border-green-200 hover:bg-green-50/30 transition-all">
+                        <div class="w-10 h-10 rounded-full ${colorClass} flex items-center justify-center shrink-0 text-lg shadow-sm">
+                            ${iconStr}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <h4 class="font-bold text-gray-800 truncate">${eventTitle}</h4>
+                                <span class="text-[11px] text-gray-400 shrink-0 font-medium">${timeStr}</span>
+                            </div>
+                            <div class="text-sm text-gray-600">
+                                Bởi <span class="font-semibold text-gray-700">${actorName}</span>
+                            </div>
+                            ${detailsHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         function displayProjectDetail(data) {

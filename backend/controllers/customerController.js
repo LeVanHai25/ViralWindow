@@ -1,6 +1,7 @@
 const db = require("../config/db");
 const NotificationService = require("../services/notificationService");
 const NotificationEventService = require("../services/notificationEventService");
+const SystemNotifier = require("../services/SystemNotifier");
 
 /**
  * Helper function to generate next customer code
@@ -219,6 +220,15 @@ exports.update = async (req, res) => {
             });
         }
 
+        // Gửi thông báo cập nhật
+        try {
+            await SystemNotifier.notify('customer.updated', {
+                entityName: full_name,
+                entityId: parseInt(id),
+                actor: SystemNotifier.getActor(req),
+            });
+        } catch (e) { /* không block response */ }
+
         res.json({
             success: true,
             message: "Cập nhật khách hàng thành công"
@@ -300,6 +310,15 @@ exports.delete = async (req, res) => {
                 message: "Không tìm thấy khách hàng"
             });
         }
+
+        // Gửi thông báo xóa
+        try {
+            await SystemNotifier.notify('customer.deleted', {
+                entityName: customer.full_name,
+                entityId: parseInt(id),
+                actor: SystemNotifier.getActor(req),
+            });
+        } catch (e) { /* không block response */ }
 
         res.json({
             success: true,

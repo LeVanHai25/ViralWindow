@@ -21,6 +21,7 @@ router.get("/:id/detail", authenticateToken, notificationCtrl.getDetail);
 router.get("/audit-logs", authenticateToken, notificationCtrl.getAuditLogs);
 router.get("/audit-logs/entity/:type/:id", authenticateToken, notificationCtrl.getEntityHistory);
 router.get("/event-types", authenticateToken, notificationCtrl.getEventTypes);
+router.get('/activity-logs', authenticateToken, notificationCtrl.getActivityLogs);
+router.get('/audit-logs', authenticateToken, notificationCtrl.getAuditLogs);
 
 module.exports = router;
-

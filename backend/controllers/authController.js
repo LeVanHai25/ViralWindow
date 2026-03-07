@@ -2,6 +2,7 @@ const db = require("../config/db");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+const SystemNotifier = require("../services/SystemNotifier");
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
 const JWT_EXPIRES_IN = "7d";
@@ -173,6 +174,16 @@ exports.login = async (req, res) => {
         }
 
         // Response với đầy đủ role info
+
+        // Ghi log đăng nhập
+        try {
+            await SystemNotifier.notify('system.user_login', {
+                entityName: user.full_name,
+                entityId: user.id,
+                actor: { id: user.id, name: user.full_name, ip: req.ip, userAgent: req.headers['user-agent'] },
+            });
+        } catch (e) { /* không block */ }
+
         res.json({
             success: true,
             message: "Đăng nhập thành công",

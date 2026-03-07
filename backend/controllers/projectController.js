@@ -1,6 +1,7 @@
 ﻿const db = require("../config/db");
 const NotificationService = require("../services/notificationService");
 const NotificationEventService = require("../services/notificationEventService");
+const SystemNotifier = require("../services/SystemNotifier");
 
 // GET all projects
 exports.getAllProjects = async (req, res) => {
@@ -793,17 +794,19 @@ exports.create = async (req, res) => {
         );
 
         // Táº¡o thÃ´ng bÃ¡o dá»± Ã¡n má»›i (Event-based)
-        await NotificationEventService.emit('project.created', {
-            project_id: result.insertId,
-            project_code: project_code.trim(),
-            project_name: project_name.trim(),
-            customer_name: customerInfo[0]?.full_name || 'N/A',
-            customer_id: customer_id
-        }, {
-            createdBy: req.user?.id,
-            entityType: 'project',
-            entityId: result.insertId
-        });
+        try {
+            await SystemNotifier.notify('project.created', {
+                entityName: project_name.trim(),
+                entityId: result.insertId,
+                actor: SystemNotifier.getActor(req),
+                afterData: {
+                    project_code: project_code.trim(),
+                    customer_name: customerInfo[0]?.full_name || 'N/A'
+                }
+            });
+        } catch (notifErr) {
+            console.error('Error creating notification:', notifErr);
+        }
 
         res.status(201).json({
             success: true,
@@ -949,30 +952,44 @@ exports.update = async (req, res) => {
 
         // ThÃ´ng bÃ¡o náº¿u tráº¡ng thÃ¡i thay Ä‘á»•i (Event-based)
         if (status !== undefined && status !== current.status) {
-            await NotificationEventService.emit('project.status_changed', {
-                project_id: id,
-                project_code: updatedRows[0]?.project_code || current.project_code,
-                project_name: updatedRows[0]?.project_name || current.project_name,
-                old_status: current.status,
-                new_status: status
-            }, {
-                createdBy: req.user?.id,
-                entityType: 'project',
-                entityId: id
-            });
+            try {
+                await SystemNotifier.notify('project.status_changed', {
+                    entityName: updatedRows[0]?.project_name || current.project_name,
+                    entityId: parseInt(id),
+                    actor: SystemNotifier.getActor(req),
+                    beforeData: { status: current.status },
+                    afterData: {
+                        status: status,
+                        project_code: updatedRows[0]?.project_code || current.project_code
+                    }
+                });
+            } catch (notifErr) {
+                console.error('Error creating status change notification:', notifErr);
+            }
 
             // Náº¿u hoÃ n thÃ nh 100%
             if (status === 'completed' || (progress_percent !== undefined && progress_percent >= 100)) {
-                await NotificationEventService.emit('project.completed', {
-                    project_id: id,
-                    project_code: updatedRows[0]?.project_code || current.project_code,
-                    project_name: updatedRows[0]?.project_name || current.project_name
-                }, {
-                    createdBy: req.user?.id,
-                    entityType: 'project',
-                    entityId: id
-                });
+                try {
+                    await SystemNotifier.notify('project.completed', {
+                        entityName: updatedRows[0]?.project_name || current.project_name,
+                        entityId: parseInt(id),
+                        actor: SystemNotifier.getActor(req),
+                        afterData: { project_code: updatedRows[0]?.project_code || current.project_code }
+                    });
+                } catch (e) {
+                    console.error('Error creating completion notification:', e);
+                }
             }
+        } else {
+            // Náº¿u chÆ°a thay Ä‘á»•i status nhÆ°ng cÃ³ update thÃ´ng tin khÃ¡c
+            try {
+                await SystemNotifier.notify('project.updated', {
+                    entityName: updatedRows[0]?.project_name || current.project_name,
+                    entityId: parseInt(id),
+                    actor: SystemNotifier.getActor(req),
+                    changedFields: updateFields.map(f => f.split(' = ')[0])
+                });
+            } catch (e) { }
         }
 
         res.json({
@@ -1361,6 +1378,16 @@ exports.delete = async (req, res) => {
 
         await connection.commit();
         console.log(`âœ… Project ${project.project_code} and all related data deleted successfully`);
+
+        // Gửi thông báo xóa dự án
+        try {
+            await SystemNotifier.notify('project.deleted', {
+                entityName: project.project_name,
+                entityId: parseInt(id),
+                actor: SystemNotifier.getActor(req),
+                afterData: { project_code: project.project_code }
+            });
+        } catch (e) { }
 
         res.json({
             success: true,
@@ -3814,21 +3841,18 @@ exports.cancelProject = async (req, res) => {
             console.log('Could not log activity:', logErr.message);
         }
 
-        // Emit notification event
+        // Gửi thông báo hủy dự án
         try {
-            await NotificationEventService.emit('project.cancelled', {
-                project_id: id,
-                project_code: project.project_code,
-                project_name: project.project_name,
-                reason: reason
-            }, {
-                createdBy: req.user?.id,
-                entityType: 'project',
-                entityId: id
+            await SystemNotifier.notify('project.cancelled', {
+                entityName: project.project_name,
+                entityId: parseInt(id),
+                actor: SystemNotifier.getActor(req),
+                afterData: {
+                    project_code: project.project_code,
+                    reason: reason || 'KhÃ´ng cÃ³ lÃ½ do'
+                }
             });
-        } catch (notifErr) {
-            console.log('Could not send notification:', notifErr.message);
-        }
+        } catch (e) { }
 
         res.json({
             success: true,

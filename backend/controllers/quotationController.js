@@ -1,6 +1,7 @@
 const db = require("../config/db");
 const NotificationService = require("../services/notificationService");
 const NotificationEventService = require("../services/notificationEventService");
+const SystemNotifier = require("../services/SystemNotifier");
 
 // GET all quotations
 exports.getAllQuotations = async (req, res) => {
@@ -909,6 +910,15 @@ exports.delete = async (req, res) => {
         await connection.commit();
         connection.release();
 
+        // Gửi thông báo xóa báo giá
+        try {
+            await SystemNotifier.notify('quotation.deleted', {
+                entityName: `Báo giá #${id}`,
+                entityId: parseInt(id),
+                actor: SystemNotifier.getActor(req),
+            });
+        } catch (e) { /* không block */ }
+
         res.json({
             success: true,
             message: "Xóa báo giá thành công"
@@ -1277,6 +1287,16 @@ exports.signContract = async (req, res) => {
 
         await connection.commit();
         connection.release();
+
+        // Gửi thông báo ký hợp đồng
+        try {
+            await SystemNotifier.notify('quotation.signed', {
+                entityName: quotation.quotation_code || `Báo giá #${id}`,
+                entityId: parseInt(id),
+                actor: SystemNotifier.getActor(req),
+                afterData: { new_project_code: newProjectCode, old_project_code: projectCode },
+            });
+        } catch (e) { /* không block */ }
 
         res.json({
             success: true,

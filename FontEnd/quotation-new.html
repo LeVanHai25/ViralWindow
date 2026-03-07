@@ -2976,8 +2976,11 @@
                     const min = parseFloat(parts[0]);
                     const max = parseFloat(parts[1]);
 
-                    // Tìm khoảng diện tích phù hợp
-                    if (areaSqm >= min && areaSqm < max) {
+                    // Tìm khoảng diện tích phù hợp: area > min && area <= max
+                    // Riêng dải đầu tiên (0 - max) thì dùng >= 0
+                    const isMatch = (min === 0) ? (areaSqm >= min && areaSqm <= max) : (areaSqm > min && areaSqm <= max);
+
+                    if (isMatch) {
                         foundPrice = price;
                         break;
                     }

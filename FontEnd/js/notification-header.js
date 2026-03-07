@@ -9,6 +9,7 @@
     const API_BASE = window.API_BASE || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:3001/api' : window.location.origin + '/api');
     let pollingInterval = null;
     let isDropdownOpen = false;
+    let lastUnreadCount = -1; // Track for toast
 
     /**
      * Load unread count and update badge
@@ -29,10 +30,39 @@
             const result = await response.json();
             if (result.success) {
                 const count = result.data.count || 0;
+
+                // Trigger toast if count increased
+                if (lastUnreadCount !== -1 && count > lastUnreadCount) {
+                    triggerNewNotificationToast();
+                }
+
+                lastUnreadCount = count;
                 updateNotificationBadge(count);
             }
         } catch (error) {
             // Silent fail
+        }
+    }
+
+    /**
+     * Trigger a toast notification for new items
+     */
+    async function triggerNewNotificationToast() {
+        try {
+            // Fetch the latest notification to show in toast
+            const notifications = await loadNotifications(1);
+            if (notifications.length > 0) {
+                const latest = notifications[0];
+                if (typeof window.showSuccessNotification === 'function') {
+                    window.showSuccessNotification(
+                        'Thông báo mới',
+                        latest.title || latest.message,
+                        5000
+                    );
+                }
+            }
+        } catch (e) {
+            console.error('Error triggering toast:', e);
         }
     }
 
@@ -296,7 +326,7 @@
             if (isDropdownOpen) {
                 renderNotificationDropdown();
             }
-        }, 15000);
+        }, 8000);
     }
 
     /**

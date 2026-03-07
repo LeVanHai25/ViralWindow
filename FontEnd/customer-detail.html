@@ -214,8 +214,12 @@
                         💬 Lịch sử CRM
                     </button>
                     <button class="tab-btn px-6 py-3 text-sm text-gray-600 hover:text-blue-600 transition-all"
-                        onclick="switchTab('notes')">
+                        onclick="switchTab('notes', event)">
                         📝 Ghi chú
+                    </button>
+                    <button class="tab-btn px-6 py-3 text-sm text-gray-600 hover:text-blue-600 transition-all"
+                        onclick="switchTab('history', event)">
+                        🕒 Lịch sử thay đổi
                     </button>
                 </div>
 
@@ -244,6 +248,13 @@
                 <div id="tab-notes" class="tab-content hidden p-6">
                     <div id="noteContent" class="min-h-[100px]">
                         <p id="customerNotes" class="text-gray-600 whitespace-pre-wrap">Chưa có ghi chú</p>
+                    </div>
+                </div>
+
+                <!-- Tab: History -->
+                <div id="tab-history" class="tab-content hidden p-6">
+                    <div id="historyList" class="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                        <p class="text-gray-400 text-center py-8">Đang tải lịch sử...</p>
                     </div>
                 </div>
             </div>
@@ -537,12 +548,82 @@
         // ============================================
         // TABS
         // ============================================
-        function switchTab(tabName) {
+        function switchTab(tabName, event) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
 
-            event.target.classList.add('active');
+            if (event) {
+                event.target.classList.add('active');
+            } else {
+                // Fallback for initial load
+                const btn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.textContent.includes(tabName === 'projects' ? 'Dự án' : ''));
+                if (btn) btn.classList.add('active');
+            }
+
             document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+
+            if (tabName === 'history') {
+                loadAuditLog();
+            }
+        }
+
+        async function loadAuditLog() {
+            const container = document.getElementById('historyList');
+            if (!customerId || !container) return;
+
+            try {
+                const token = getAuthToken();
+                const response = await fetch(`${API_BASE}/notifications/audit-logs?entity_type=customer&entity_id=${customerId}&limit=50`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const result = await response.json();
+                if (result.success && result.data) {
+                    renderAuditLog(result.data);
+                } else {
+                    container.innerHTML = '<p class="text-gray-400 text-center py-8">Chưa có lịch sử thay đổi</p>';
+                }
+            } catch (error) {
+                console.error('Error loading audit log:', error);
+                container.innerHTML = '<p class="text-red-400 text-center py-8">Lỗi khi tải lịch sử</p>';
+            }
+        }
+
+        function renderAuditLog(logs) {
+            const container = document.getElementById('historyList');
+            if (!logs || logs.length === 0) {
+                container.innerHTML = '<p class="text-gray-400 text-center py-8">Chưa có lịch sử thay đổi</p>';
+                return;
+            }
+
+            container.innerHTML = logs.map(log => {
+                const date = new Date(log.created_at);
+                const timeStr = date.toLocaleString('vi-VN');
+                const actorName = log.actor_user_name || log.actor_name || 'Hệ thống';
+
+                let icon = '📝';
+                let colorClass = 'bg-blue-100 text-blue-600';
+
+                if (log.event_code.includes('created')) { icon = '✨'; colorClass = 'bg-green-100 text-green-600'; }
+                if (log.event_code.includes('updated')) { icon = '✏️'; colorClass = 'bg-blue-100 text-blue-600'; }
+                if (log.event_code.includes('deleted')) { icon = '🗑️'; colorClass = 'bg-red-100 text-red-600'; }
+
+                let reasonHtml = log.reason ? `<p class="text-xs text-gray-500 mt-1 italic">Lý do: ${escapeHtml(log.reason)}</p>` : '';
+
+                return `
+                    <div class="flex gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all">
+                        <div class="w-10 h-10 ${colorClass} rounded-full flex items-center justify-center shrink-0 text-lg">${icon}</div>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-gray-800">${escapeHtml(log.event_code)}</span>
+                                <span class="text-[11px] text-gray-400">${timeStr}</span>
+                            </div>
+                            <p class="text-sm text-gray-600">Thực hiện bởi <span class="font-semibold">${escapeHtml(actorName)}</span></p>
+                            ${reasonHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         // ============================================

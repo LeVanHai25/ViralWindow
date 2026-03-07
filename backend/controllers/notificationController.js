@@ -580,3 +580,62 @@ exports.getEventTypes = async (req, res) => {
     }
 };
 
+/**
+ * GET /activity-logs - Lấy danh sách nhật ký hoạt động (API request logs)
+ */
+exports.getActivityLogs = async (req, res) => {
+    try {
+        const { user_id, method, status_code, from_date, to_date, limit = 100, offset = 0 } = req.query;
+
+        let query = `
+            SELECT al.*, u.full_name as user_name
+            FROM activity_logs al
+            LEFT JOIN users u ON al.user_id = u.id
+            WHERE 1=1
+        `;
+        const params = [];
+
+        if (user_id) {
+            query += ' AND al.user_id = ?';
+            params.push(user_id);
+        }
+        if (method) {
+            query += ' AND al.method = ?';
+            params.push(method.toUpperCase());
+        }
+        if (status_code) {
+            query += ' AND al.status_code = ?';
+            params.push(parseInt(status_code));
+        }
+        if (from_date) {
+            query += ' AND al.created_at >= ?';
+            params.push(from_date);
+        }
+        if (to_date) {
+            query += ' AND al.created_at <= ?';
+            params.push(to_date);
+        }
+
+        query += ' ORDER BY al.created_at DESC LIMIT ? OFFSET ?';
+        params.push(parseInt(limit), parseInt(offset));
+
+        const [rows] = await db.query(query, params);
+
+        // Get total count for pagination
+        const [totalRows] = await db.query('SELECT COUNT(*) as total FROM activity_logs');
+
+        res.json({
+            success: true,
+            data: rows,
+            total: totalRows[0].total,
+            count: rows.length
+        });
+    } catch (err) {
+        console.error('Error getting activity logs:', err);
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi server'
+        });
+    }
+};
+

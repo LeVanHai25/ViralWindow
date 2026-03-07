@@ -9,6 +9,10 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' })); // Tăng limit để hỗ trợ base64 images
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+// Activity Log Middleware - Tự động ghi log mọi API request thay đổi data
+const activityLogMiddleware = require('./middleware/activityLog');
+app.use(activityLogMiddleware);
+
 // Serve static files (uploads)
 const path = require("path");
 // From FontEnd/uploads (legacy)

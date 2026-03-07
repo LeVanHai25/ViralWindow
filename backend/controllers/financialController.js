@@ -1,4 +1,5 @@
 const db = require("../config/db");
+const SystemNotifier = require("../services/SystemNotifier");
 
 /**
  * GET all financial transactions
@@ -355,6 +356,16 @@ exports.create = async (req, res) => {
                 // Không fail việc tạo transaction nếu lỗi lưu items
             }
         }
+
+        // Gửi thông báo tạo giao dịch
+        try {
+            await SystemNotifier.notify('finance.transaction_created', {
+                entityName: transaction_code,
+                entityId: result.insertId,
+                actor: SystemNotifier.getActor(req),
+                afterData: { transaction_type, amount, description },
+            });
+        } catch (e) { /* không block */ }
 
         res.status(201).json({
             success: true,
@@ -1197,6 +1208,15 @@ exports.postTransaction = async (req, res) => {
             }
         }
 
+        // Gửi thông báo ghi sổ
+        try {
+            await SystemNotifier.notify('finance.transaction_posted', {
+                entityName: transaction.transaction_code,
+                entityId: parseInt(id),
+                actor: SystemNotifier.getActor(req),
+            });
+        } catch (e) { /* không block */ }
+
         res.json({
             success: true,
             message: "Đã ghi sổ thành công"
@@ -1380,6 +1400,16 @@ exports.cancelTransaction = async (req, res) => {
             "UPDATE financial_transactions SET status = 'cancelled', description = CONCAT(COALESCE(description, ''), ' [HỦY: ', ?, ']') WHERE id = ?",
             [cancel_reason, id]
         );
+
+        // Gửi thông báo hủy
+        try {
+            await SystemNotifier.notify('finance.transaction_cancelled', {
+                entityName: transaction.transaction_code,
+                entityId: parseInt(id),
+                actor: SystemNotifier.getActor(req),
+                reason: cancel_reason,
+            });
+        } catch (e) { /* không block */ }
 
         res.json({
             success: true,
