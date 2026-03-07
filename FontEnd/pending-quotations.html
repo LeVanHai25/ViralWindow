@@ -1671,10 +1671,10 @@
                     if (receipts.length === 0) {
                         checkbox.checked = false;
                         await VWModal.error(
-                            'Chưa có phiếu thu đặt cọc!',
                             `Không tìm thấy phiếu thu đặt cọc cho báo giá <b>${quotationCode}</b>.<br><br>` +
                             'Vui lòng tạo phiếu thu đặt cọc trước khi xác nhận thanh toán.<br><br>' +
-                            '<a href="finance-payments.html" class="text-blue-600 underline">Đi đến Phiếu thu</a>'
+                            '<a href="finance-payments.html" class="text-blue-600 underline">Đi đến Phiếu thu</a>',
+                            { title: 'Chưa có phiếu thu đặt cọc!' }
                         );
                         return;
                     }
@@ -1689,10 +1689,10 @@
                         const receiptCode = depositReceipt?.transaction_code || 'không xác định';
                         const receiptStatus = depositReceipt?.status === 'draft' ? 'Nháp' : (depositReceipt?.status || 'Không rõ');
                         await VWModal.error(
-                            'Phiếu thu chưa được ghi sổ!',
                             `Phiếu thu <b>${receiptCode}</b> đang ở trạng thái "<b>${receiptStatus}</b>".<br><br>` +
                             'Vui lòng ghi sổ phiếu thu trước khi xác nhận thanh toán đặt cọc.<br><br>' +
-                            '<a href="finance-payments.html" class="text-blue-600 underline">Đi đến Phiếu thu để ghi sổ</a>'
+                            '<a href="finance-payments.html" class="text-blue-600 underline">Đi đến Phiếu thu để ghi sổ</a>',
+                            { title: 'Phiếu thu chưa được ghi sổ!' }
                         );
                         return;
                     }
@@ -1941,11 +1941,11 @@
                     const result = await response.json();
 
                     if (result.success) {
-                        await VWModal.success('Đã xóa báo giá thành công!', `Báo giá "${quotationCode}" đã được xóa khỏi hệ thống.`);
+                        await VWModal.success(`Báo giá "${quotationCode}" đã được xóa khỏi hệ thống.`, { title: 'Thành công' });
                         // Reload danh sách báo giá
-                        loadQuotations();
+                        loadPendingQuotations();
                     } else {
-                        await VWModal.error('Lỗi: ' + (result.message || 'Không thể xóa báo giá'));
+                        await VWModal.error(`Lỗi: ${result.message || 'Không thể xóa báo giá'}`, { title: 'Lỗi xóa báo giá' });
                     }
                 } catch (error) {
                     console.error('Error deleting quotation:', error);

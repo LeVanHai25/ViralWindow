@@ -301,6 +301,9 @@
          * @returns Promise<void>
          */
         error: function (message, opts) {
+            if (typeof opts === 'string') {
+                opts = { title: opts };
+            }
             opts = opts || {};
             opts.type = 'danger';
             opts.title = opts.title || 'Lỗi';
@@ -311,6 +314,9 @@
          * Shorthand: Success alert
          */
         success: function (message, opts) {
+            if (typeof opts === 'string') {
+                opts = { title: opts };
+            }
             opts = opts || {};
             opts.type = 'success';
             opts.title = opts.title || 'Thành công';
@@ -321,6 +327,9 @@
          * Shorthand: Warning alert
          */
         warning: function (message, opts) {
+            if (typeof opts === 'string') {
+                opts = { title: opts };
+            }
             opts = opts || {};
             opts.type = 'warning';
             opts.title = opts.title || 'Cảnh báo';
@@ -331,6 +340,9 @@
          * Shorthand: Info alert
          */
         info: function (message, opts) {
+            if (typeof opts === 'string') {
+                opts = { title: opts };
+            }
             opts = opts || {};
             opts.type = 'info';
             opts.title = opts.title || 'Thông tin';
