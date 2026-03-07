@@ -3098,10 +3098,36 @@
                 // Lấy chiết khấu phụ kiện (%)
                 const accessoryDiscountPercent = parseFloat(document.getElementById(currentViewMode === 'both' ? 'accessoryDiscountPercentBoth' : 'accessoryDiscountPercent')?.value || 0);
                 const accessoryDiscountAmount = Math.round(totalAccessories * (accessoryDiscountPercent / 100));
-                const totalAccessoriesAfterDiscount = totalAccessories - accessoryDiscountAmount;
 
-                // Tổng giá trị báo giá = Vật tư + Phụ kiện sau chiết khấu
-                const finalTotal = totalMaterial + totalAccessoriesAfterDiscount;
+                // Chiết khấu chung (%)
+                const discountPercent = parseFloat(document.getElementById(currentViewMode === 'both' ? 'discountPercentBoth' : 'discountPercent')?.value || 0);
+                const subtotal = totalMaterial + totalAccessories;
+                const generalDiscountAmount = Math.round(subtotal * (discountPercent / 100));
+
+                // Thuế VAT (%) - Default to 0 instead of 10
+                const vatPercent = parseFloat(document.getElementById(currentViewMode === 'both' ? 'vatPercentBoth' : 'vatPercent')?.value || 0);
+
+                // Phí vận chuyển
+                const shippingFee = parseFloat(document.getElementById(currentViewMode === 'both' ? 'shippingFeeBoth' : 'shippingFee')?.value || 0);
+
+                // Tổng giá trị sau chiết khấu
+                // Formula: (Material + Accessories) - General Discount - Accessory Discount
+                const taxableAmount = subtotal - generalDiscountAmount - accessoryDiscountAmount;
+                const vatAmount = Math.round(taxableAmount * (vatPercent / 100));
+
+                // Tổng giá trị báo giá cuối cùng
+                const finalTotal = taxableAmount + vatAmount + shippingFee;
+
+                console.log('📊 Frontend Final Calculation:', {
+                    totalMaterial,
+                    totalAccessories,
+                    accessoryDiscountAmount,
+                    generalDiscountAmount,
+                    taxableAmount,
+                    vatAmount,
+                    shippingFee,
+                    finalTotal
+                });
 
                 // Update main view
                 if (document.getElementById('totalArea')) document.getElementById('totalArea').textContent = totalArea.toFixed(2) + ' m²';
@@ -4379,25 +4405,18 @@
                     const accDiscountPct = parseFloat(q.accessory_discount_percent) || 0;
                     const accDiscountAmt = parseFloat(q.accessory_discount_amount) || (totalAccessories * accDiscountPct / 100);
 
-                    if (accDiscountPct > 0) {
-                        document.getElementById('detailAccessoryDiscountRow').classList.remove('hidden');
-                        document.getElementById('detailAccessoryDiscountPercent').textContent = accDiscountPct;
-                        document.getElementById('detailAccessoryDiscountAmount').textContent = formatCurrency(accDiscountAmt);
-                    } else {
-                        document.getElementById('detailAccessoryDiscountRow').classList.add('hidden');
-                    }
-
-                    // Tính tổng cuối cùng (trừ thêm chiết khấu phụ kiện nếu Backend chưa trừ)
-                    // Note: subtotal ở đây là tổng từ items.
-                    // Chúng ta cần tính: (Subtotal - GeneralDiscount) - AccessoryDiscount + VAT + Shipping
+                    // Chiết khấu chung
                     const generalDiscountPct = parseFloat(q.discount_percent) || 0;
                     const generalDiscountAmt = (subtotal * generalDiscountPct) / 100;
-                    const vatPct = parseFloat(q.vat_percent) || 10;
+
+                    // VAT & Shipping
+                    const vatPct = parseFloat(q.vat_percent) || 0;
                     const shippingFee = parseFloat(q.shipping_fee) || 0;
 
-                    const afterDiscounts = subtotal - generalDiscountAmt - accDiscountAmt;
-                    const vatAmt = (afterDiscounts * vatPct) / 100;
-                    const finalTotal = afterDiscounts + vatAmt + shippingFee;
+                    // Tính tổng cuối cùng đồng nhất với Backend
+                    const taxableAmount = subtotal - generalDiscountAmt - accDiscountAmt;
+                    const vatAmount = (taxableAmount * vatPct) / 100;
+                    const finalTotal = taxableAmount + vatAmount + shippingFee;
 
                     // Fill tổng hợp
                     document.getElementById('detailTotalArea').textContent = totalArea.toFixed(2) + ' m²';
@@ -4405,6 +4424,16 @@
                     document.getElementById('detailTotalAccessories').textContent = formatCurrency(totalAccessories);
                     document.getElementById('detailFinalTotal').textContent = formatCurrency(finalTotal);
                     document.getElementById('detailTotalInWords').textContent = numberToWords(finalTotal);
+
+                    // Chiết khấu phụ kiện (Hiển thị chi tiết dòng chiết khấu phụ kiện)
+                    const detailAccDiscountRow = document.getElementById('detailAccessoryDiscountRow');
+                    if (accDiscountPct > 0 && detailAccDiscountRow) {
+                        detailAccDiscountRow.classList.remove('hidden');
+                        document.getElementById('detailAccessoryDiscountPercent').textContent = accDiscountPct;
+                        document.getElementById('detailAccessoryDiscountAmount').textContent = formatCurrency(accDiscountAmt);
+                    } else if (detailAccDiscountRow) {
+                        detailAccDiscountRow.classList.add('hidden');
+                    }
 
                     // Fill ghi chú
                     if (q.notes) {
@@ -4674,32 +4703,45 @@
 
                             const isCurrent = q.id == currentQuotationId;
 
-                            // Tính tổng giá trị từ items (không dùng total_amount từ DB vì có thể sai)
-                            let totalValue = 0;
-                            if (q.items) {
-                                q.items.forEach(item => {
-                                    // LUÔN ưu tiên sử dụng total_price đã được tính toán và lưu trong DB
-                                    // Nếu không có (trường hợp dữ liệu cũ), mới thực hiện tính lại
-                                    if (item.total_price !== undefined && item.total_price !== null) {
-                                        totalValue += parseFloat(item.total_price);
-                                    } else {
-                                        const width = parseFloat(item.width) || 0;
-                                        const height = parseFloat(item.height) || 0;
-                                        const unitPrice = parseFloat(item.unit_price) || 0;
-                                        const accessoryPrice = parseFloat(item.accessory_price) || 0;
-                                        const quantity = parseInt(item.quantity) || 1;
+                            // Sử dụng total_amount từ DB nếu có, đây là giá trị chính xác nhất bao gồm tất cả chiết khấu/thuế
+                            let totalValue = parseFloat(q.total_amount);
 
-                                        if (item.is_material) {
-                                            const itemTotal = (width / 1000) * quantity * unitPrice;
-                                            totalValue += itemTotal;
+                            // Nếu không có total_amount (dữ liệu cũ), mới thực hiện tính toán từ items
+                            if (isNaN(totalValue)) {
+                                totalValue = 0;
+                                if (q.items) {
+                                    q.items.forEach(item => {
+                                        if (item.total_price !== undefined && item.total_price !== null) {
+                                            totalValue += parseFloat(item.total_price);
                                         } else {
-                                            const areaPerUnit = (width * height) / 1000000;
-                                            const materialCost = areaPerUnit * unitPrice * quantity;
-                                            const accessoryCost = accessoryPrice * quantity;
-                                            totalValue += materialCost + accessoryCost;
+                                            const width = parseFloat(item.width) || 0;
+                                            const height = parseFloat(item.height) || 0;
+                                            const unitPrice = parseFloat(item.unit_price) || 0;
+                                            const accessoryPrice = parseFloat(item.accessory_price) || 0;
+                                            const quantity = parseInt(item.quantity) || 1;
+
+                                            if (item.is_material) {
+                                                const itemTotal = (width / 1000) * quantity * unitPrice;
+                                                totalValue += itemTotal;
+                                            } else {
+                                                const areaPerUnit = (width * height) / 1000000;
+                                                const materialCost = areaPerUnit * unitPrice * quantity;
+                                                const accessoryCost = accessoryPrice * quantity;
+                                                totalValue += materialCost + accessoryCost;
+                                            }
                                         }
-                                    }
-                                });
+                                    });
+
+                                    // Bổ sung chiết khấu/thuế cho dữ liệu cũ nếu cần tính thủ công
+                                    const accDiscountAmt = parseFloat(q.accessory_discount_amount) || 0;
+                                    const genDiscountPct = parseFloat(q.discount_percent) || 0;
+                                    const genDiscountAmt = (totalValue * genDiscountPct) / 100;
+                                    const vatPct = parseFloat(q.vat_percent) || 10;
+                                    const shippingFee = parseFloat(q.shipping_fee) || 0;
+
+                                    const afterDiscounts = totalValue - genDiscountAmt - accDiscountAmt;
+                                    totalValue = afterDiscounts + (afterDiscounts * vatPct / 100) + shippingFee;
+                                }
                             }
 
                             return `
@@ -4904,31 +4946,44 @@
             // Prepare quotation data
             function prepareQuotationData() {
                 // Tính tổng tiền
-                let subtotal = 0;
-                items.forEach(item => {
-                    subtotal += item.total || 0;
-                });
-
-                const discountPercent = parseFloat(document.getElementById('discountPercent')?.value || 0);
-                const discountAmount = subtotal * (discountPercent / 100);
-                const afterDiscount = subtotal - discountAmount;
-
-                const vatPercent = parseFloat(document.getElementById('vatPercent')?.value || 10);
-                const shippingFee = parseFloat(document.getElementById('shippingFee')?.value || 0);
-
-                // Chiết khấu phụ kiện
-                const accessoryDiscountPercent = parseFloat(document.getElementById('accessoryDiscountPercent')?.value || 0);
+                let totalMaterial = 0;
                 let totalAccessories = 0;
+
                 items.forEach(item => {
-                    if (!item.isMaterial) {
+                    if (item.isMaterial) {
+                        const widthM = (parseFloat(item.width) || 0) / 1000;
+                        totalMaterial += (widthM * (parseInt(item.quantity) || 1) * (parseFloat(item.unitPrice) || 0));
+                    } else {
+                        const areaPerUnit = (parseFloat(item.width) * parseFloat(item.height) / 1000000);
+                        totalMaterial += (areaPerUnit * (parseFloat(item.unitPrice) || 0) * (parseInt(item.quantity) || 1));
                         totalAccessories += (parseFloat(item.accessoryPrice) || 0) * (parseInt(item.quantity) || 1);
                     }
                 });
-                const accessoryDiscountAmount = (totalAccessories * accessoryDiscountPercent) / 100;
 
-                const afterDiscounts = subtotal - discountAmount - accessoryDiscountAmount;
-                const vatAmount = afterDiscounts * (vatPercent / 100);
-                const totalAmount = afterDiscounts + vatAmount + shippingFee;
+                const subtotal = totalMaterial + totalAccessories;
+
+                const suffix = currentViewMode === 'both' ? 'Both' : '';
+
+                const discountPercent = parseFloat(document.getElementById('discountPercent' + suffix)?.value || 0);
+                const generalDiscountAmount = Math.round(subtotal * (discountPercent / 100));
+
+                const accessoryDiscountPercent = parseFloat(document.getElementById('accessoryDiscountPercent' + suffix)?.value || 0);
+                const accessoryDiscountAmount = Math.round(totalAccessories * (accessoryDiscountPercent / 100));
+
+                console.log('💰 Discount Calculation (FE):', {
+                    totalAccessories,
+                    accessoryDiscountPercent,
+                    accessoryDiscountAmount,
+                    currentViewMode,
+                    suffix
+                });
+
+                const vatPercent = parseFloat(document.getElementById('vatPercent' + suffix)?.value || 0);
+                const shippingFee = parseFloat(document.getElementById('shippingFee' + suffix)?.value || 0);
+
+                const taxableAmount = subtotal - generalDiscountAmount - accessoryDiscountAmount;
+                const vatAmount = Math.round(taxableAmount * (vatPercent / 100));
+                const totalAmount = taxableAmount + vatAmount + shippingFee;
 
                 const data = {
                     customer_id: parseInt(document.getElementById('customerSelect').value),

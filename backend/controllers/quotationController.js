@@ -194,7 +194,7 @@ exports.create = async (req, res) => {
 
         // Accessory Discount calculation
         const accessoryDiscountPct = parseFloat(accessory_discount_percent) || 0;
-        const accessoryDiscountAmount = (totalAccessories * accessoryDiscountPct) / 100;
+        const accessoryDiscountAmount = Math.round((totalAccessories * accessoryDiscountPct) / 100);
 
         const profit_margin = parseFloat(profit_margin_percent) || 0;
         const profit_amount = (subtotal * profit_margin) / 100;
@@ -204,12 +204,12 @@ exports.create = async (req, res) => {
         const generalDiscountAmount = (subtotal * generalDiscountPct) / 100;
         const afterDiscounts = subtotal - generalDiscountAmount - accessoryDiscountAmount;
 
-        const vatPct = parseFloat(vat_percent) || 10;
+        const vatPct = parseFloat(vat_percent) || 0;
         const vatAmount = (afterDiscounts * vatPct) / 100;
         const shippingAmt = parseFloat(shipping_fee) || 0;
 
-        // Sử dụng total_amount từ client nếu có, nếu không thì tính
-        const total_amount = clientTotalAmount || (afterDiscounts + vatAmount + shippingAmt);
+        // Server-side total_amount calculation (Always calculate for consistency)
+        const total_amount = Math.round(afterDiscounts + vatAmount + shippingAmt);
         const advance = parseFloat(advance_amount) || Math.round(subtotal * 0.3);
 
         // Xử lý ngày báo giá - sử dụng local date (VN timezone UTC+7)
@@ -601,7 +601,7 @@ exports.update = async (req, res) => {
         }
 
         const accessoryDiscountPct = parseFloat(accessory_discount_percent) || 0;
-        const accessoryDiscountAmount = (totalAccessories * accessoryDiscountPct) / 100;
+        const accessoryDiscountAmount = Math.round((totalAccessories * accessoryDiscountPct) / 100);
 
         const profit_margin = profit_margin_percent || 20;
         const profit_amount = (subtotal * profit_margin) / 100;
@@ -611,7 +611,7 @@ exports.update = async (req, res) => {
         const discountPct = discount_percent !== undefined && discount_percent !== null
             ? parseFloat(discount_percent) : 0;
         const vatPct = vat_percent !== undefined && vat_percent !== null
-            ? parseFloat(vat_percent) : 10;
+            ? parseFloat(vat_percent) : 0;
         const shippingAmt = shipping_fee !== undefined && shipping_fee !== null
             ? parseFloat(shipping_fee) : 0;
 
@@ -620,13 +620,13 @@ exports.update = async (req, res) => {
         const vatAmount = (afterDiscounts * vatPct) / 100;
 
         // Tính total_amount chính xác từ server (không dùng clientTotalAmount nữa)
-        const total_amount = afterDiscounts + vatAmount + shippingAmt;
+        const total_amount = Math.round(afterDiscounts + vatAmount + shippingAmt);
 
         console.log('📊 Backend calculating total_amount:', {
             subtotal,
             discount_percent: discountPct,
             discountAmount,
-            afterDiscount,
+            afterDiscounts,
             vat_percent: vatPct,
             vatAmount,
             shipping_fee: shippingAmt,
