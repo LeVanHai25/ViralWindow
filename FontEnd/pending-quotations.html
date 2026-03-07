@@ -872,6 +872,15 @@
     <script>
         const API_BASE = window.API_BASE || 'http://localhost:3001/api';
 
+        // Helper to get consistent authentication headers
+        function getAuthHeaders() {
+            const token = sessionStorage.getItem('token');
+            return {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+        }
+
         // ===================== SIDEBAR FUNCTIONS =====================
         function toggleSidebarUserMenu() {
             const dropdown = document.getElementById('sidebarUserMenuDropdown');
@@ -886,8 +895,10 @@
 
         async function loadSidebarInfo() {
             try {
-                // Load company settings
-                const settingsRes = await fetch(`${API_BASE}/settings`);
+                // Load            try {
+                const settingsRes = await fetch(`${API_BASE}/settings`, {
+                    headers: getAuthHeaders()
+                });
                 const settingsData = await settingsRes.json();
                 console.log('Settings API response:', settingsData);
 
@@ -973,7 +984,9 @@
 
         async function loadPendingQuotations() {
             try {
-                const response = await fetch(`${API_BASE}/quotations/pending`);
+                const response = await fetch(`${API_BASE}/quotations/pending`, {
+                    headers: getAuthHeaders()
+                });
                 const result = await response.json();
 
                 if (result.success) {
@@ -1150,6 +1163,7 @@
                 const project = escapeHtml(quotation.project_name || 'N/A');
                 const date = formatDate(quotation.quotation_date);
                 const amount = formatCurrency(quotation.total_amount || quotation.subtotal);
+                const finalTotal = parseFloat(quotation.total_amount) || parseFloat(quotation.subtotal) || 0;
                 const qId = parseInt(quotation.id) || 0;
                 const status = getStatusText(quotation.status);
                 const statusColor = getStatusColor(quotation.status);
@@ -1212,26 +1226,26 @@
                                                 <div class="flex items-center gap-2 mb-2">
                                                     <span class="text-xs text-yellow-700">Tiền đặt cọc</span>
                                                     <input type="number" 
-                                                        id="depositPercent-${qId}" 
-                                                        value="40" 
-                                                        min="1" max="100"
-                                                        onchange="updateDepositFromPercent(${qId}, ${parseFloat(quotation.subtotal) || parseFloat(quotation.total_amount) || 0})"
+                                                            id="depositPercent-${qId}" 
+                                                         value="40" 
+                                                         min="1" max="100"
+                                                         onchange="updateDepositFromPercent(${qId}, ${finalTotal})"
                                                         class="w-12 px-1 py-0.5 border border-yellow-300 rounded text-center text-xs font-medium">
                                                     <span class="text-xs text-yellow-700">%</span>
                                                     <span class="text-xs text-gray-400">hoặc</span>
                                                     <input type="text" 
                                                         id="depositAmountInput-${qId}" 
-                                                        value="${Math.round((parseFloat(quotation.subtotal) || parseFloat(quotation.total_amount) || 0) * 0.4).toLocaleString('vi-VN')}"
-                                                        onchange="updateDepositFromAmount(${qId}, ${parseFloat(quotation.subtotal) || parseFloat(quotation.total_amount) || 0})"
+                                                         value="${Math.round(finalTotal * 0.4).toLocaleString('vi-VN')}"
+                                                         onchange="updateDepositFromAmount(${qId}, ${finalTotal})"
                                                         class="w-28 px-2 py-0.5 border border-yellow-300 rounded text-right text-xs font-medium">
                                                     <span class="text-xs text-yellow-700">₫</span>
                                                 </div>
                                             `}
                                         </div>
-                                        <div class="mt-2 bg-blue-50 border border-blue-200 rounded-lg p-2">
-                                            <p class="text-xs text-blue-700 mb-1">Số tiền còn lại</p>
-                                            <p class="text-lg font-bold text-blue-600" id="remainingAmount-${qId}">${formatCurrency((parseFloat(quotation.subtotal) || parseFloat(quotation.total_amount) || 0) - (parseFloat(quotation.deposit_amount) || (parseFloat(quotation.subtotal) || parseFloat(quotation.total_amount) || 0) * 0.4))}</p>
-                                        </div>
+                                         <div class="mt-2 bg-blue-50 border border-blue-200 rounded-lg p-2">
+                                             <p class="text-xs text-blue-700 mb-1">Số tiền còn lại</p>
+                                             <p class="text-lg font-bold text-blue-600" id="remainingAmount-${qId}">${formatCurrency(finalTotal - (parseFloat(quotation.deposit_amount) || finalTotal * 0.4))}</p>
+                                         </div>
                                     ` : ''}
                                 </div>
                                 ${currentTab === 'approved' ? `
@@ -1433,7 +1447,9 @@
         async function viewQuotationDetail(id) {
             currentDetailQuotationId = id;
             try {
-                const response = await fetch(`${API_BASE}/quotations/${id}`);
+                const response = await fetch(`${API_BASE}/quotations/${id}`, {
+                    headers: getAuthHeaders()
+                });
                 const result = await response.json();
 
                 if (!result.success) {
@@ -1453,7 +1469,9 @@
 
                 if (q.project_id) {
                     try {
-                        const projectResponse = await fetch(`${API_BASE}/projects/${q.project_id}`);
+                        const projectResponse = await fetch(`${API_BASE}/projects/${q.project_id}`, {
+                            headers: getAuthHeaders()
+                        });
                         const projectResult = await projectResponse.json();
                         if (projectResult.success && projectResult.data) {
                             const project = projectResult.data;
@@ -1730,7 +1748,7 @@
             try {
                 const response = await fetch(`${API_BASE}/quotations/${quotationId}/status`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: getAuthHeaders(),
                     body: JSON.stringify({ status: 'approved' })
                 });
                 const result = await response.json();
@@ -1764,13 +1782,17 @@
                 const quotationCode = quotation?.quotation_code || '';
 
                 // Bước 1: Thử tìm theo reference_number trước
-                let checkResponse = await fetch(`${API_BASE}/financial/transactions?referenceNumber=${refNumber}`);
+                let checkResponse = await fetch(`${API_BASE}/financial/transactions?referenceNumber=${refNumber}`, {
+                    headers: getAuthHeaders()
+                });
                 let checkResult = await checkResponse.json();
                 let receipts = (checkResult.success && Array.isArray(checkResult.data)) ? checkResult.data : [];
 
                 // Bước 2: Nếu không tìm thấy, tìm theo description chứa mã báo giá
                 if (receipts.length === 0 && quotationCode) {
-                    checkResponse = await fetch(`${API_BASE}/financial/transactions?type=revenue`);
+                    checkResponse = await fetch(`${API_BASE}/financial/transactions?type=revenue`, {
+                        headers: getAuthHeaders()
+                    });
                     checkResult = await checkResponse.json();
 
                     if (checkResult.success && Array.isArray(checkResult.data)) {
@@ -1859,7 +1881,7 @@
             try {
                 const response = await fetch(`${API_BASE}/quotations/${quotationId}/confirm-deposit`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: getAuthHeaders(),
                     body: JSON.stringify({ deposit_amount: depositAmount })
                 });
                 const result = await response.json();
@@ -1891,7 +1913,7 @@
             try {
                 const response = await fetch(`${API_BASE}/quotations/${quotationId}/sign-contract`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: getAuthHeaders()
                 });
                 const result = await response.json();
 
@@ -1909,7 +1931,9 @@
 
         async function viewQuotation(id) {
             try {
-                const response = await fetch(`${API_BASE}/quotations/${id}`);
+                const response = await fetch(`${API_BASE}/quotations/${id}`, {
+                    headers: getAuthHeaders()
+                });
                 const result = await response.json();
 
                 if (result.success) {
@@ -2013,7 +2037,7 @@
             try {
                 const response = await fetch(`${API_BASE}/quotations/${id}/remind`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: getAuthHeaders()
                 });
 
                 const result = await response.json();
@@ -2059,12 +2083,9 @@
             if (!confirmed) return;
 
             try {
-                const token = sessionStorage.getItem('token');
                 const response = await fetch(`${API_BASE}/quotations/${quotationId}`, {
                     method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                    headers: getAuthHeaders()
                 });
 
                 const result = await response.json();
@@ -2093,7 +2114,7 @@
             try {
                 const response = await fetch(`${API_BASE}/quotations/${id}/status`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: getAuthHeaders(),
                     body: JSON.stringify({ status: 'approved' })
                 });
 

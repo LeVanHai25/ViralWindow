@@ -213,9 +213,9 @@ async function createFinancialTransaction(options) {
  * @returns {Object} - Kết quả tạo phiếu
  */
 async function createDepositReceiptFromQuotation(quotation, quotationItems = [], connection = null) {
-    // ✅ FIX: Dùng subtotal (chưa VAT) thay vì total_amount (có VAT) để tính đặt cọc
-    // Đặt cọc dựa trên giá trị hàng hóa, không phải tổng có VAT/phí
-    const baseAmount = parseFloat(quotation.subtotal) || parseFloat(quotation.total_amount) || 0;
+    // ✅ FIX: Dùng total_amount (giá cuối cùng) làm căn cứ tính đặt cọc
+    // Nếu không có total_amount mới dùng subtotal
+    const baseAmount = parseFloat(quotation.total_amount) || parseFloat(quotation.subtotal) || 0;
     const depositPercent = quotation.deposit_percent || 40;
     const depositAmount = quotation.deposit_amount || Math.round(baseAmount * depositPercent / 100);
 
