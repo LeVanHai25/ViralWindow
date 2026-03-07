@@ -151,36 +151,61 @@
             return;
         }
 
+        // Helpers for premium UI
+        const getInitialAvatar = (name) => {
+            if (!name || name === 'Hệ thống') return '<div class="noti-avatar-initial bg-initial-1">S</div>';
+            const initial = name.charAt(0).toUpperCase();
+            const colorIdx = (name.charCodeAt(0) % 6) + 1;
+            return `<div class="noti-avatar-initial bg-initial-${colorIdx}">${initial}</div>`;
+        };
+
+        const formatDateTime = (dateStr) => {
+            if (!dateStr) return '';
+            const d = new Date(dateStr);
+            return d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) + ' ' +
+                d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        };
+
         let html = '';
         notifications.forEach(notif => {
-            // Use icon from database, fallback to color-based icon, then default
-            let notifIcon = notif.icon || '📢';
-            if (!notif.icon && notif.color) {
-                const colorIcons = {
-                    'red': '🚨', 'orange': '⚠️', 'yellow': '⚠️',
-                    'green': '✅', 'blue': 'ℹ️', 'purple': '🔔'
-                };
-                notifIcon = colorIcons[notif.color] || '📢';
-            }
-
             const isRead = notif.is_read;
             const unreadClass = !isRead ? 'unread' : '';
             const link = notif.link || null;
-
             const timeAgo = getTimeAgo(notif.created_at);
+
+            const actorName = notif.actor_name || 'Hệ thống';
+            const actorRole = notif.actor_role || (actorName === 'Hệ thống' ? 'System' : 'Nhân viên');
+            const hasAvatar = notif.actor_avatar && notif.actor_avatar !== '/uploads/default-avatar.png';
+            const avatarHtml = hasAvatar
+                ? `<img src="${notif.actor_avatar}" alt="user" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">`
+                : '';
+            const initialHtml = getInitialAvatar(actorName);
 
             html += `
                 <div class="header-notification-item ${unreadClass}" 
+                     data-time="${notif.created_at}"
                      onclick="handleHeaderNotificationClick(${notif.id}, '${link || ''}')">
-                    <div class="header-notification-item-content">
-                        <div class="header-notification-icon">${notifIcon}</div>
-                        <div class="header-notification-text">
-                            <div class="header-notification-title">${escapeHtml(notif.title)}</div>
-                            <div class="header-notification-message">${escapeHtml(notif.message)}</div>
-                            <div class="header-notification-time">${timeAgo}</div>
+                    
+                    <div class="noti-avatar">
+                        ${avatarHtml}
+                        <div class="noti-initial-wrapper" style="${hasAvatar ? 'display:none' : 'display:flex'}">
+                            ${initialHtml}
                         </div>
-                        ${!isRead ? '<div class="header-notification-dot"></div>' : ''}
                     </div>
+
+                    <div class="noti-content">
+                        <div class="noti-user-container">
+                            <span class="noti-user">${escapeHtml(actorName)}</span>
+                            <span class="noti-role">${escapeHtml(actorRole)}</span>
+                        </div>
+                        <div class="noti-title">${escapeHtml(notif.title)}</div>
+                        <div class="noti-message" style="white-space: pre-line;">${escapeHtml(notif.message)}</div>
+                        <div class="noti-time">
+                            <span class="noti-time-relative">${timeAgo}</span>
+                            <span class="noti-time-absolute">${formatDateTime(notif.created_at)}</span>
+                        </div>
+                    </div>
+                    ${!isRead ? '<div class="header-notification-dot"></div>' : ''}
                 </div>
             `;
         });
@@ -280,22 +305,42 @@
     };
 
     /**
-     * Helper: Get time ago
+     * Helper: Get time ago (Standardized by Architect)
      */
     function getTimeAgo(dateString) {
         if (!dateString) return '';
-        const date = new Date(dateString);
         const now = new Date();
-        const diffMs = now - date;
-        const diffMins = Math.floor(diffMs / 60000);
-        const diffHours = Math.floor(diffMs / 3600000);
-        const diffDays = Math.floor(diffMs / 86400000);
+        const date = new Date(dateString);
+        const seconds = Math.floor((now - date) / 1000);
 
-        if (diffMins < 1) return 'Vừa xong';
-        if (diffMins < 60) return `${diffMins} phút trước`;
-        if (diffHours < 24) return `${diffHours} giờ trước`;
-        if (diffDays < 7) return `${diffDays} ngày trước`;
-        return date.toLocaleDateString('vi-VN');
+        if (seconds < 60) return "vừa xong";
+
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return `${minutes} phút trước`;
+
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return `${hours} giờ trước`;
+
+        const days = Math.floor(hours / 24);
+        if (days < 7) return `${days} ngày trước`;
+
+        return date.toLocaleDateString("vi-VN");
+    }
+
+    /**
+     * Helper: Start live time update interval
+     */
+    function startLiveTimeUpdates() {
+        setInterval(() => {
+            document.querySelectorAll(".header-notification-item")
+                .forEach(item => {
+                    const time = item.dataset.time;
+                    const relativeTimeEl = item.querySelector(".noti-time-relative");
+                    if (time && relativeTimeEl) {
+                        relativeTimeEl.innerText = getTimeAgo(time);
+                    }
+                });
+        }, 15000); // Update every 15s for smoother experience
     }
 
     /**
@@ -351,6 +396,9 @@
 
         // Start polling
         startPolling();
+
+        // Start live time updates for "x minutes ago"
+        startLiveTimeUpdates();
 
         // Close dropdown when clicking outside
         document.addEventListener('click', function (event) {

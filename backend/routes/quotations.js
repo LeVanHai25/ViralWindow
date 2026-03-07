@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { authenticateToken, requirePermission } = require("../middleware/auth");
 const quotationCtrl = require("../controllers/quotationController");
 const quotationBOMCtrl = require("../controllers/quotationBOMController");
 const quotationPDFCtrl = require("../controllers/quotationPDFController");
@@ -9,23 +10,25 @@ router.get("/", quotationCtrl.getAllQuotations);
 router.get("/stats", quotationCtrl.getStatistics);
 router.get("/pending", quotationCtrl.getPendingQuotations);
 router.get("/:id", quotationCtrl.getById);
-router.post("/", quotationCtrl.create);
-router.post("/from-project", quotationCtrl.createFromProject); // Tạo báo giá từ dự án
-router.post("/:id/remind", quotationCtrl.sendReminder);
-router.post("/:id/versions", quotationCtrl.createNewVersion);
-router.post("/:id/sign-contract", quotationCtrl.signContract);
-router.put("/:id/confirm-deposit", quotationCtrl.confirmDeposit);
-router.put("/:id", quotationCtrl.update);
-router.put("/:id/status", quotationCtrl.updateStatus);
-router.delete("/:id", quotationCtrl.delete);
+
+// Protected mutation routes (Enforce authentication for correct actor attribution)
+router.post("/", authenticateToken, quotationCtrl.create);
+router.post("/from-project", authenticateToken, quotationCtrl.createFromProject);
+router.post("/:id/remind", authenticateToken, quotationCtrl.sendReminder);
+router.post("/:id/versions", authenticateToken, quotationCtrl.createNewVersion);
+router.post("/:id/sign-contract", authenticateToken, quotationCtrl.signContract);
+router.put("/:id/confirm-deposit", authenticateToken, quotationCtrl.confirmDeposit);
+router.put("/:id", authenticateToken, quotationCtrl.update);
+router.put("/:id/status", authenticateToken, quotationCtrl.updateStatus);
+router.delete("/:id", authenticateToken, quotationCtrl.delete);
 
 // Quotation Items CRUD
-router.post("/:id/items", quotationCtrl.addQuotationItem);
-router.put("/items/:itemId", quotationCtrl.updateQuotationItem);
-router.delete("/items/:itemId", quotationCtrl.deleteQuotationItem);
+router.post("/:id/items", authenticateToken, quotationCtrl.addQuotationItem);
+router.put("/items/:itemId", authenticateToken, quotationCtrl.updateQuotationItem);
+router.delete("/items/:itemId", authenticateToken, quotationCtrl.deleteQuotationItem);
 
 // BOM integration routes
-router.post("/calculate-from-bom", quotationBOMCtrl.calculateQuotationFromBOM);
+router.post("/calculate-from-bom", authenticateToken, quotationBOMCtrl.calculateQuotationFromBOM);
 router.get("/projects/:projectId/doors", quotationBOMCtrl.getDoorsForQuotation);
 
 // Export routes

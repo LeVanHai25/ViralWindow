@@ -307,40 +307,57 @@
             noData.classList.add('hidden');
             tableBody.innerHTML = logs.map(log => {
                 const date = new Date(log.created_at);
-                const timeStr = date.toLocaleString('vi-VN');
                 const isError = log.status_code >= 400;
 
-                // Format description based on endpoint
-                let description = log.url;
-                if (log.method === 'POST') description = 'Tạo mới: ' + log.url;
-                if (log.method === 'PUT' || log.method === 'PATCH') description = 'Cập nhật: ' + log.url;
-                if (log.method === 'DELETE') description = 'Xóa: ' + log.url;
+                // Ưu tiên dùng action_description từ backend (Tiếng Việt)
+                let description = log.action_description;
+
+                // Fallback nếu null (cho log cũ chưa có description)
+                if (!description) {
+                    description = log.url;
+                    if (log.method === 'POST') description = 'Tạo mới: ' + log.url;
+                    if (log.method === 'PUT' || log.method === 'PATCH') description = 'Cập nhật: ' + log.url;
+                    if (log.method === 'DELETE') description = 'Xóa: ' + log.url;
+                }
+
+                // Cải thiện hiển thị người dùng
+                const displayUserName = log.user_name || 'Hệ thống';
+                const avatarChar = displayUserName.charAt(0).toUpperCase();
+
+                // Phân biệt màu sắc User thật và Hệ thống
+                const avatarBg = log.user_id ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-600';
 
                 return `
                     <tr class="hover:bg-slate-50 transition border-b border-slate-100 last:border-0">
-                        <td class="px-6 py-4 text-sm text-slate-700 whitespace-nowrap">${timeStr}</td>
+                        <td class="px-6 py-4 text-sm text-slate-700 whitespace-nowrap">
+                            <div class="font-bold text-slate-800">${date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</div>
+                            <div class="text-[10px] text-slate-400 font-medium">${date.toLocaleDateString('vi-VN')}</div>
+                        </td>
                         <td class="px-6 py-4">
-                            <div class="flex items-center gap-2">
-                                <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600">
-                                    ${log.user_name ? log.user_name.charAt(0) : 'S'}
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-full ${avatarBg} flex items-center justify-center text-xs font-bold shadow-sm ring-2 ring-white">
+                                    ${avatarChar}
                                 </div>
-                                <span class="text-sm font-medium text-slate-800">${log.user_name || 'Hệ thống'}</span>
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-semibold text-slate-700 leading-tight">${displayUserName}</span>
+                                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">${log.user_id ? 'Người dùng' : 'SYSTEM'}</span>
+                                </div>
                             </div>
                         </td>
                         <td class="px-6 py-4">
                             <span class="method-badge method-${log.method}">${log.method}</span>
                         </td>
                         <td class="px-6 py-4">
-                            <div class="text-xs font-mono text-slate-500 break-all">${log.url}</div>
-                            <div class="text-sm text-slate-700 mt-0.5">${description}</div>
+                            <div class="text-sm font-bold text-slate-800">${description}</div>
+                            <div class="text-[10px] font-mono text-slate-400 mt-1 break-all bg-slate-50 px-1 rounded inline-block">${log.url}</div>
                         </td>
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-1.5 ${isError ? 'status-error' : 'status-success'}">
-                                <span class="w-2 h-2 rounded-full ${isError ? 'bg-red-500' : 'bg-green-500'}"></span>
-                                <span class="text-sm font-bold">${log.status_code}</span>
+                                <div class="w-2 h-2 rounded-full ${isError ? 'bg-red-500 animate-pulse' : 'bg-green-500'}"></div>
+                                <span class="text-sm font-black">${log.status_code}</span>
                             </div>
                         </td>
-                        <td class="px-6 py-4 text-sm text-slate-500">${log.response_time}ms</td>
+                        <td class="px-6 py-4 text-xs font-bold text-slate-500 tabular-nums">${log.duration_ms || 0}ms</td>
                     </tr>
                 `;
             }).join('');

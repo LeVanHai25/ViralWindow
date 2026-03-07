@@ -507,6 +507,16 @@ exports.update = async (req, res) => {
             }
         }
 
+        // Gửi thông báo cập nhật giao dịch
+        try {
+            await SystemNotifier.notify('finance.transaction_updated', {
+                entityName: currentRows[0]?.transaction_code || `Giao dịch #${id}`,
+                entityId: parseInt(id),
+                actor: SystemNotifier.getActor(req),
+                afterData: { amount, description, status: currentStatus }
+            });
+        } catch (e) { }
+
         res.json({
             success: true,
             message: "Cập nhật giao dịch thành công"
@@ -559,6 +569,16 @@ exports.delete = async (req, res) => {
                 message: "Không tìm thấy giao dịch hoặc giao dịch không ở trạng thái 'Nháp'"
             });
         }
+
+        // Gửi thông báo xóa giao dịch
+        try {
+            await SystemNotifier.notify('finance.transaction_deleted', {
+                entityName: currentRows[0]?.transaction_code || `Giao dịch #${id}`,
+                entityId: parseInt(id),
+                actor: SystemNotifier.getActor(req),
+                beforeData: currentRows[0]
+            });
+        } catch (e) { }
 
         res.json({
             success: true,

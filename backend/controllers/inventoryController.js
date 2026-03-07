@@ -1,6 +1,7 @@
 ﻿const db = require("../config/db");
 const NotificationService = require("../services/notificationService");
 const NotificationEventService = require("../services/notificationEventService");
+const SystemNotifier = require("../services/SystemNotifier");
 
 // GET all inventory items
 exports.getAllItems = async (req, res) => {
@@ -272,6 +273,20 @@ exports.issueScrap = async (req, res) => {
         }
 
         // TODO: Write ledger entry for scrap usage
+
+        // Thông báo Xuất nhôm thừa (Chuẩn hóa SystemNotifier)
+        try {
+            await SystemNotifier.notify('inventory.exported', {
+                entityName: scrap.profile_name || `Nhôm Đề C #${id}`,
+                entityId: parseInt(id),
+                actor: SystemNotifier.getActor(req),
+                afterData: {
+                    use_cm,
+                    remaining_cm: remainingCm,
+                    project_id: project_id
+                }
+            });
+        } catch (e) { }
 
         res.json({
             success: true,
@@ -640,21 +655,21 @@ exports.create = async (req, res) => {
             [item_code, item_name, item_type, unit, qty, minStock, maxStock, price, notes || description || null, image_url, supplierId]
         );
 
-        // Thông báo nhập kho mới (Event-based)
+        // Thông báo nhập kho mới (Chuẩn hóa SystemNotifier)
         try {
-            await NotificationEventService.emit('inventory.imported', {
-                item_id: result.insertId,
-                item_name: item_name,
-                item_code: item_code,
-                quantity: qty,
-                unit: unit
-            }, {
-                createdBy: req.user?.id,
-                entityType: 'inventory',
-                entityId: result.insertId
+            await SystemNotifier.notify('inventory.imported', {
+                entityName: item_name,
+                entityId: result.insertId,
+                actor: SystemNotifier.getActor(req),
+                afterData: {
+                    item_code: item_code,
+                    quantity: qty,
+                    unit: unit
+                },
+                link: 'inventory.html'
             });
         } catch (notifErr) {
-            console.error('Error creating notification:', notifErr);
+            console.error('[InventoryController] Notification error:', notifErr.message);
         }
 
         res.status(201).json({
@@ -721,6 +736,16 @@ exports.update = async (req, res) => {
                 message: "Không tìm thấy vật tư"
             });
         }
+
+        // Thông báo Cập nhật vật tư
+        try {
+            await SystemNotifier.notify('inventory.updated', {
+                entityName: item_name,
+                entityId: parseInt(id),
+                actor: SystemNotifier.getActor(req),
+                afterData: { quantity: qty, unit_price: price }
+            });
+        } catch (e) { }
 
         res.json({
             success: true,

@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const SystemNotifier = require('../services/SystemNotifier');
 
 /**
  * Manufacturing Controller - Smart Status Tracking
@@ -304,6 +305,17 @@ exports.startManufacturing = async (req, res) => {
         await connection.commit();
         connection.release();
 
+        // Thông báo Bắt đầu sản xuất
+        try {
+            await SystemNotifier.notify('production.started', {
+                entityName: `Sản phẩm ${productId}`,
+                entityId: parseInt(projectId),
+                actor: SystemNotifier.getActor(req),
+                afterData: { product_id: productId, project_id: projectId },
+                link: `production.html?id=${projectId}`
+            });
+        } catch (e) { }
+
         res.json({
             success: true,
             message: 'Đã bắt đầu gia công sản phẩm'
@@ -355,6 +367,17 @@ exports.completeManufacturing = async (req, res) => {
 
         await connection.commit();
         connection.release();
+
+        // Thông báo Hoàn thành sản xuất
+        try {
+            await SystemNotifier.notify('production.completed', {
+                entityName: `Sản phẩm ${productId}`,
+                entityId: parseInt(projectId),
+                actor: SystemNotifier.getActor(req),
+                afterData: { product_id: productId, project_id: projectId },
+                link: `production.html?id=${projectId}`
+            });
+        } catch (e) { }
 
         res.json({
             success: true,
@@ -749,6 +772,21 @@ exports.updateProductionStep = async (req, res) => {
         }
 
         await db.query(updateQuery, params);
+
+        // Thông báo Cập nhật tiến độ sản xuất dự án
+        try {
+            const VN_STATUS = { 'preparing': 'Chuẩn bị SX', 'manufacturing': 'Đang sản xuất', 'completed': 'Hoàn thành SX' };
+            await SystemNotifier.notify('project.status_changed', {
+                entityName: `Dự án nội bộ #${projectId}`,
+                entityId: parseInt(projectId),
+                actor: SystemNotifier.getActor(req),
+                afterData: {
+                    production_step: step,
+                    status_vi: VN_STATUS[step]
+                },
+                link: `production.html?id=${projectId}`
+            });
+        } catch (e) { }
 
         res.json({
             success: true,

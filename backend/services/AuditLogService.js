@@ -34,7 +34,9 @@ class AuditLogService {
             changedFields = null,
             reason = null,
             actor = {},
-            createNotification = true
+            metadata = null,
+            createNotification = true,
+            isDynamic = false
         } = params;
 
         let connection;
@@ -46,17 +48,18 @@ class AuditLogService {
             const [logResult] = await connection.query(
                 `INSERT INTO audit_logs 
                  (event_code, entity_type, entity_id, entity_name, action, 
-                  actor_user_id, actor_name, before_data, after_data, changed_fields, 
+                  actor_user_id, actor_name, actor_role, before_data, after_data, changed_fields, 
                   reason, ip_address, user_agent)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
                     eventCode,
                     entityType,
                     entityId,
                     entityName,
                     action,
-                    actor.userId || null,
+                    actor.userId || actor.id || null,
                     actor.name || null,
+                    actor.role || null,
                     beforeData ? JSON.stringify(beforeData) : null,
                     afterData ? JSON.stringify(afterData) : null,
                     changedFields ? JSON.stringify(changedFields) : null,
@@ -77,7 +80,9 @@ class AuditLogService {
                     entityId,
                     entityName,
                     afterData,
-                    actor
+                    actor,
+                    metadata,
+                    isDynamic
                 });
             }
 
@@ -114,11 +119,12 @@ class AuditLogService {
 
                 await connection.query(
                     `INSERT INTO notifications 
-                     (type, title, message, icon, color, priority, link, is_read, entity_type, entity_id, audit_log_id, created_at)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, NOW())`,
+                     (type, title, actor_role, message, icon, color, priority, link, is_read, entity_type, entity_id, audit_log_id, created_at, metadata, template_code)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?)`,
                     [
                         entityType,
                         title,
+                        actor.role || 'Hệ thống',
                         message,
                         '📢',
                         'blue',
@@ -126,7 +132,10 @@ class AuditLogService {
                         this.generateLink(entityType, entityId),
                         entityType,
                         entityId,
-                        auditLogId
+                        auditLogId,
+                        new Date(),
+                        params.metadata ? JSON.stringify(params.metadata) : null,
+                        eventCode
                     ]
                 );
                 return;
@@ -137,9 +146,17 @@ class AuditLogService {
             // Build template data
             const templateData = {
                 entity_name: entityName,
+                actor: actor.name || 'Hệ thống', // Architect recommendation: use {actor}
                 actor_name: actor.name || 'Hệ thống',
+                actor_id: actor.userId || null,
                 ...this.flattenObject(afterData || {})
             };
+
+            // Smart mapping: map entity_name to project_name, customer_name, etc.
+            if (entityType && entityName) {
+                templateData[`${entityType}_name`] = entityName;
+                templateData[`${entityType}_code`] = entityName; // Some use code as name
+            }
 
             // Replace placeholders
             const title = this.replacePlaceholders(eventType.title_template, templateData);
@@ -148,19 +165,23 @@ class AuditLogService {
             // Insert notification
             await connection.query(
                 `INSERT INTO notifications 
-                 (type, title, message, icon, color, priority, link, is_read, entity_type, entity_id, audit_log_id, created_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, NOW())`,
+                 (type, title, actor_role, message, icon, color, priority, link, is_read, entity_type, entity_id, audit_log_id, created_at, metadata, template_code)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?)`,
                 [
-                    entityType,
+                    eventType.event_code, // Save the actual event code (e.g. customer.updated)
                     title,
+                    actor.role || 'Hệ thống',
                     message,
-                    eventType.icon,
-                    eventType.color,
-                    eventType.severity,
-                    this.generateLink(entityType, entityId),
+                    eventType.icon || '📢',
+                    eventType.color || 'blue',
+                    eventType.priority || 'normal',
+                    this.generateLink(entityType, entityId, afterData),
                     entityType,
                     entityId,
-                    auditLogId
+                    auditLogId,
+                    new Date(), // Local Node.js server time
+                    params.metadata ? JSON.stringify(params.metadata) : null,
+                    eventCode
                 ]
             );
         } catch (error) {
@@ -174,7 +195,18 @@ class AuditLogService {
     static replacePlaceholders(template, data) {
         if (!template) return '';
         return template.replace(/\{(\w+)\}/g, (match, key) => {
-            return data[key] !== undefined ? data[key] : match;
+            // Priority 1: Direct key in data
+            if (data[key] !== undefined && data[key] !== null) return data[key];
+
+            // Priority 2: Smart fallback for {module_name} or {entity_name}
+            const fallbackKeys = ['entity_name', 'name', 'full_name', 'customer_name', 'project_name'];
+            if (key.includes('_name') || key === 'name') {
+                for (const f of fallbackKeys) {
+                    if (data[f]) return data[f];
+                }
+            }
+
+            return match;
         });
     }
 
@@ -213,10 +245,13 @@ class AuditLogService {
 
     /**
      * Generate link based on entity type
+     * @param {string} entityType 
+     * @param {number} entityId 
+     * @param {Object} data - Optional state data for complex links
      */
-    static generateLink(entityType, entityId) {
+    static generateLink(entityType, entityId, data = {}) {
         const links = {
-            customer: `customers.html?id=${entityId}`,
+            customer: `customer-detail.html?id=${entityId}`,
             project: `project-detail.html?id=${entityId}`,
             quotation: `quotation-new.html?quotation_id=${entityId}`,
             inventory: `inventory.html`,

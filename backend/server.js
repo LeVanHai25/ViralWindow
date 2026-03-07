@@ -2,6 +2,9 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 
+// Standardize timezone for whole app
+process.env.TZ = "Asia/Ho_Chi_Minh";
+
 const app = express();
 
 // Middleware
@@ -9,9 +12,15 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' })); // Tăng limit để hỗ trợ base64 images
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+// Auth Middlewares
+const { optionalAuth } = require('./middleware/auth');
+
 // Activity Log Middleware - Tự động ghi log mọi API request thay đổi data
 const activityLogMiddleware = require('./middleware/activityLog');
-app.use(activityLogMiddleware);
+
+// Register middlewares in corect order
+app.use(optionalAuth); // Populate req.user
+app.use(activityLogMiddleware); // Log activity using populated req.user
 
 // Serve static files (uploads)
 const path = require("path");

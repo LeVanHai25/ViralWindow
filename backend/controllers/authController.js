@@ -73,9 +73,16 @@ exports.register = async (req, res) => {
         );
         const roleName = roleData.length > 0 ? roleData[0].role_name : 'Chưa phân quyền';
 
-        // Generate token with role_id
+        // Generate token with role_id and role_name
         const token = jwt.sign(
-            { id: result.insertId, email, user_type: userType, role_id: defaultRoleId },
+            {
+                id: result.insertId,
+                email,
+                full_name,
+                user_type: userType,
+                role_id: defaultRoleId,
+                role_name: 'Nhân viên' // Default role for new register
+            },
             JWT_SECRET,
             { expiresIn: JWT_EXPIRES_IN }
         );
@@ -144,14 +151,16 @@ exports.login = async (req, res) => {
             });
         }
 
-        // Generate token - thêm role_id vào JWT
+        // Generate token - thêm role_id, role_name và full_name vào JWT
         const expiresIn = remember_me ? "30d" : JWT_EXPIRES_IN;
         const token = jwt.sign(
             {
                 id: user.id,
                 email: user.email,
+                full_name: user.full_name,
                 user_type: user.user_type,
-                role_id: user.role_id || null
+                role_id: user.role_id || null,
+                role_name: user.role_name || 'Nhân viên'
             },
             JWT_SECRET,
             { expiresIn }

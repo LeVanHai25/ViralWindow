@@ -75,3 +75,57 @@
     "changedRows": 1
   }
 },
+{
+  "timestamp": "2026-03-07T06:40:05.938Z",
+  "action": "updateProduct",
+  "id": "11",
+  "body": {
+    "code": "VRA_VR011",
+    "group_code": "VRA",
+    "group_name": "Cửa sổ mở quay 50",
+    "name": "CỬA SỔ MỞ QUAY 1 CÁNH dùng nhôm Viralwindow VRA50\n - Độ dày: 1,2 -1,4mm\n - Màu sơn Xám Metalic, bảo hành 20 năm\n - Sử dụng kính Viralwindow sản xuất tại nhà máy kính Hải Long/Việt Nhật VSG hoặc tương đương.\n - Phụ kiện: tay nắm đa điểm, bản lề A.",
+    "accessory": "Viralwindow",
+    "accessory_price": 521000,
+    "accessories": [
+      {
+        "name": "Viralwindow",
+        "price": 521000
+      },
+      {
+        "name": "Cmech",
+        "price": 100000
+      }
+    ],
+    "prices": {
+      "0.25-0.5": 2882000,
+      "0.5-0.75": 2228000,
+      "0.75-1": 1860000,
+      "1-1.25": 1708000,
+      "1.25-1.5": 1590000
+    }
+  },
+  "sanitizedAccessories": [
+    {
+      "name": "Viralwindow",
+      "price": 521000
+    },
+    {
+      "name": "Cmech",
+      "price": 100000
+    }
+  ]
+},
+{
+  "timestamp": "2026-03-07T06:40:05.991Z",
+  "action": "updateProduct_result",
+  "id": "11",
+  "result": {
+    "fieldCount": 0,
+    "affectedRows": 1,
+    "insertId": 0,
+    "info": "(Rows matched: 1  Changed: 1  Warnings: 0",
+    "serverStatus": 2,
+    "warningStatus": 0,
+    "changedRows": 1
+  }
+},

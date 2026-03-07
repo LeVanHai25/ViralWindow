@@ -369,26 +369,26 @@ exports.create = async (req, res) => {
             }
         }
 
-        // Tạo thông báo báo giá mới (Event-based)
+        // Tạo thông báo báo giá mới (ChangeTracker Standard)
         try {
             const [customerInfo] = await db.query(
                 "SELECT full_name FROM customers WHERE id = ?",
                 [customer_id]
             );
-            await NotificationEventService.emit('quotation.created', {
-                quotation_id: quotation_id,
-                quotation_code: quotation_code,
-                customer_name: customerInfo[0]?.full_name || 'N/A',
-                customer_id: customer_id,
-                project_id: project_id || null,
-                total_amount: total_amount
-            }, {
-                createdBy: req.user?.id,
+            await SystemNotifier.track('quotation.created', {
                 entityType: 'quotation',
-                entityId: quotation_id
+                entityId: quotation_id,
+                entityName: quotation_code,
+                action: 'created',
+                after: { quotation_code, total_amount, status },
+                actor: SystemNotifier.getActor(req),
+                extraMetadata: {
+                    quotation_code: quotation_code,
+                    customer_name: customerInfo[0]?.full_name || 'N/A'
+                }
             });
         } catch (notifErr) {
-            console.error('Error creating notification:', notifErr);
+            console.error('[QuotationController] Create Notification error:', notifErr.message);
         }
 
         res.status(201).json({
@@ -542,6 +542,24 @@ exports.createFromProject = async (req, res) => {
         await connection.commit();
         connection.release();
 
+        // [Senior Architect] Track quotation creation from project
+        try {
+            await SystemNotifier.track('quotation.created', {
+                entityType: 'quotation',
+                entityId: quotation_id,
+                entityName: quotation_code,
+                action: 'created_from_project',
+                after: { quotation_code, total_amount, status },
+                actor: SystemNotifier.getActor(req),
+                extraMetadata: {
+                    quotation_code: quotation_code,
+                    project_id: project_id
+                }
+            });
+        } catch (notifErr) {
+            console.error('[QuotationController] createFromProject notification error:', notifErr.message);
+        }
+
         res.status(201).json({
             success: true,
             message: "Tạo báo giá thành công",
@@ -584,6 +602,10 @@ exports.update = async (req, res) => {
             discount_percent, vat_percent, shipping_fee, total_amount: clientTotalAmount,
             creator_name, accessory_discount_percent
         } = req.body;
+
+        // Fetch old data for ChangeTracker
+        const [oldRows] = await connection.query("SELECT * FROM quotations WHERE id = ?", [id]);
+        const oldQuotation = oldRows[0];
 
         // Tính lại tổng tiền
         let subtotal = 0;
@@ -789,6 +811,24 @@ exports.update = async (req, res) => {
             }
         }
 
+        // Gửi thông báo cập nhật báo giá (ChangeTracker Standard)
+        try {
+            await SystemNotifier.track('quotation.updated', {
+                entityType: 'quotation',
+                entityId: parseInt(id),
+                entityName: quotation_code || oldQuotation.quotation_code,
+                action: 'updated',
+                before: oldQuotation,
+                after: { status, total_amount, quotation_code, discount_percent, vat_percent },
+                actor: SystemNotifier.getActor(req),
+                extraMetadata: {
+                    quotation_code: quotation_code || oldQuotation.quotation_code
+                }
+            });
+        } catch (e) {
+            console.error('[QuotationController] Update Notification error:', e.message);
+        }
+
         res.json({
             success: true,
             message: "Cập nhật báo giá thành công"
@@ -872,33 +912,25 @@ exports.updateStatus = async (req, res) => {
             }
         }
 
-        // Tạo thông báo khi status thay đổi
+        // Tạo thông báo khi status thay đổi (ChangeTracker Standard)
         try {
-            if (status === 'approved' && oldStatus !== 'approved') {
-                await NotificationEventService.emit('quotation.approved', {
-                    quotation_id: id,
+            let eventCode = 'quotation.updated';
+            if (status === 'approved') eventCode = 'quotation.approved';
+            else if (status === 'rejected') eventCode = 'quotation.rejected';
+
+            await SystemNotifier.track(eventCode, {
+                entityType: 'quotation',
+                entityId: parseInt(id),
+                entityName: quotation.quotation_code,
+                action: 'status_changed',
+                before: { status: oldStatus },
+                after: { status: status },
+                actor: SystemNotifier.getActor(req),
+                extraMetadata: {
                     quotation_code: quotation.quotation_code,
-                    customer_name: quotation.customer_name || 'N/A',
-                    customer_id: quotation.customer_id,
-                    project_id: quotation.project_id,
-                    total_amount: quotation.total_amount
-                }, {
-                    createdBy: req.user?.id,
-                    entityType: 'quotation',
-                    entityId: id
-                });
-            } else if (status === 'sent' && oldStatus !== 'sent') {
-                await NotificationEventService.emit('quotation.submitted', {
-                    quotation_id: id,
-                    quotation_code: quotation.quotation_code,
-                    customer_name: quotation.customer_name || 'N/A',
-                    customer_id: quotation.customer_id
-                }, {
-                    createdBy: req.user?.id,
-                    entityType: 'quotation',
-                    entityId: id
-                });
-            }
+                    customer_name: quotation.customer_name || 'N/A'
+                }
+            });
         } catch (notifErr) {
             console.error('Error creating notification:', notifErr);
         }
@@ -949,12 +981,14 @@ exports.delete = async (req, res) => {
         await connection.commit();
         connection.release();
 
-        // Gửi thông báo xóa báo giá
+        // Gửi thông báo xóa báo giá (Standardize to track)
         try {
-            await SystemNotifier.notify('quotation.deleted', {
-                entityName: `Báo giá #${id}`,
+            await SystemNotifier.track('quotation.deleted', {
+                entityType: 'quotation',
                 entityId: parseInt(id),
-                actor: SystemNotifier.getActor(req),
+                entityName: `Báo giá #${id}`,
+                action: 'deleted',
+                actor: SystemNotifier.getActor(req)
             });
         } catch (e) { /* không block */ }
 

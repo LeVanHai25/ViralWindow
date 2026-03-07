@@ -169,16 +169,20 @@ exports.create = async (req, res) => {
             [customer_code, full_name, phone || null, email || null, address || null, tax_code || null, notes || null, customer_status || 'potential', source || null, agency_id || null]
         );
 
-        // Tạo thông báo (Event-based)
-        await NotificationEventService.emit('customer.created', {
-            customer_id: result.insertId,
-            customer_name: full_name,
-            customer_code: customer_code
-        }, {
-            createdBy: req.user?.id,
-            entityType: 'customer',
-            entityId: result.insertId
-        });
+        // Tạo thông báo & Audit Log (ChangeTracker Standard)
+        try {
+            await SystemNotifier.track('customer.created', {
+                entityType: 'customer',
+                entityId: result.insertId,
+                entityName: full_name,
+                action: 'created',
+                after: { customer_code, full_name, phone, email, address, source },
+                actor: SystemNotifier.getActor(req),
+                extraMetadata: { customer_name: full_name }
+            });
+        } catch (notifErr) {
+            console.error('[CustomerController] Notification error:', notifErr.message);
+        }
 
         res.status(201).json({
             success: true,
@@ -203,8 +207,9 @@ exports.create = async (req, res) => {
 // PUT update
 exports.update = async (req, res) => {
     try {
-        const { id } = req.params;
-        const { full_name, phone, email, address, tax_code, notes, customer_status, source, agency_id } = req.body;
+        // Fetch old data for ChangeTracker
+        const [oldRows] = await db.query("SELECT * FROM customers WHERE id = ?", [id]);
+        const oldData = oldRows[0];
 
         const [result] = await db.query(
             `UPDATE customers 
@@ -220,12 +225,17 @@ exports.update = async (req, res) => {
             });
         }
 
-        // Gửi thông báo cập nhật
+        // Gửi thông báo cập nhật (ChangeTracker Standard)
         try {
-            await SystemNotifier.notify('customer.updated', {
-                entityName: full_name,
+            await SystemNotifier.track('customer.updated', {
+                entityType: 'customer',
                 entityId: parseInt(id),
+                entityName: full_name,
+                action: 'updated',
+                before: oldData,
+                after: { full_name, phone, email, address, tax_code, notes, customer_status, source, agency_id },
                 actor: SystemNotifier.getActor(req),
+                extraMetadata: { customer_name: full_name }
             });
         } catch (e) { /* không block response */ }
 
@@ -311,12 +321,15 @@ exports.delete = async (req, res) => {
             });
         }
 
-        // Gửi thông báo xóa
+        // Gửi thông báo xóa (ChangeTracker Standard)
         try {
-            await SystemNotifier.notify('customer.deleted', {
-                entityName: customer.full_name,
+            await SystemNotifier.track('customer.deleted', {
+                entityType: 'customer',
                 entityId: parseInt(id),
+                entityName: customer.full_name,
+                action: 'deleted',
                 actor: SystemNotifier.getActor(req),
+                extraMetadata: { customer_name: customer.full_name }
             });
         } catch (e) { /* không block response */ }
 

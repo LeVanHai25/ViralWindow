@@ -16,9 +16,11 @@ const dbConfig = {
     // Thêm timeout để tránh lỗi ETIMEDOUT
     connectTimeout: 60000, // 60 giây
     acquireTimeout: 60000, // 60 giây
-    timeout: 60000, // 60 giây
     // Thêm retry logic
-    reconnect: true
+    reconnect: true,
+    // Standardize time to Vietnam (ICT)
+    timezone: '+07:00',
+    dateStrings: true // Return date as string to avoid JS Date object shifting
 };
 
 // TiDB Cloud / Production SSL support
@@ -31,6 +33,11 @@ if (process.env.DB_SSL === 'true') {
 }
 
 const pool = mysql.createPool(dbConfig);
+
+// Set session timezone for every new connection in the pool
+pool.on('connection', function (connection) {
+    connection.query("SET time_zone = '+07:00'");
+});
 
 // Test connection
 pool.getConnection()
@@ -60,7 +67,8 @@ const EXCLUDED_TABLES = [
     'role_permissions',
     'design_pr_sequence',
     'v_stock_onhand',
-    'project_door_library' // Checking if this one also needs exclusion
+    'project_door_library',
+    'activity_logs' // FIX: Tránh lỗi ER_DUP_ENTRY do bảng này đã có AUTO_INCREMENT
 ];
 
 /**
@@ -191,6 +199,8 @@ const wrappedPool = new Proxy(pool, {
             // Wrap getConnection to return wrapped connections
             return async () => {
                 const connection = await target.getConnection();
+                // CRITICAL: Force ICT timezone for all transaction-based queries
+                await connection.query("SET time_zone = '+07:00'");
                 return wrapConnection(connection);
             };
         }

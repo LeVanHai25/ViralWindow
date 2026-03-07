@@ -22,6 +22,41 @@ async function getNotificationColumns() {
 }
 
 /**
+ * Helper: Render template with metadata
+ */
+const renderMessage = (template, metadata = {}) => {
+    if (!template) return '';
+
+    // Handle string metadata (if legacy)
+    let data = metadata;
+    if (typeof metadata === 'string') {
+        try {
+            data = JSON.parse(metadata);
+        } catch (e) {
+            data = {};
+        }
+    }
+
+    if (!data) data = {};
+
+    let rendered = template.replace(/[\{\(](\w+)[\}\)]/g, (match, key) => {
+        // Special handle for 'changes' array
+        if (key === 'changes' && Array.isArray(data.changes)) {
+            return data.changes.map(c => `• ${c.field}: ${c.old || 'None'} → ${c.new || 'None'}`).join('\n');
+        }
+
+        // Use data[key] if available, then data.actor_name for 'actor', then match
+        if (data[key] !== undefined) return data[key];
+        if (key === 'actor') return data.actor_name || match;
+
+        return match;
+    });
+    return rendered;
+}
+
+exports.renderMessage = renderMessage;
+
+/**
  * GET /notifications - Lấy danh sách thông báo của user hiện tại
  * Supports both old schema (with icon, color, priority) and new schema (with level, entity_type)
  */
@@ -71,30 +106,70 @@ exports.getAllNotifications = async (req, res) => {
         }
 
         const query = `
-            SELECT ${selectCols.join(', ')}
-            FROM notifications
+            SELECT 
+                n.*,
+                COALESCE(n.actor_role, al.actor_role, 'Hệ thống') as actor_role,
+                COALESCE(al.actor_name, 'Hệ thống') as actor_name,
+                u.avatar_url as actor_avatar,
+                al.entity_name,
+                et.title_template,
+                et.message_template,
+                et.icon as event_icon,
+                et.color as event_color
+            FROM notifications n
+            LEFT JOIN audit_logs al ON n.audit_log_id = al.id
+            LEFT JOIN users u ON al.actor_user_id = u.id
+            LEFT JOIN event_types et ON n.template_code = et.event_code
             ${whereClause}
-            ORDER BY created_at DESC
+            ORDER BY n.created_at DESC
             LIMIT ? OFFSET ?
         `;
         params.push(parseInt(limit), parseInt(offset));
 
         const [rows] = await db.query(query, params);
 
-        // Add default values for missing columns
-        const data = rows.map(row => ({
-            id: row.id,
-            type: row.type || 'system',
-            title: row.title || '',
-            message: row.message || '',
-            icon: row.icon || '📢',
-            color: row.color || (row.level === 'urgent' ? 'red' : row.level === 'important' ? 'yellow' : 'blue'),
-            priority: row.priority || row.level || 'normal',
-            link: row.link || '',
-            is_read: row.is_read || 0,
-            created_at: row.created_at,
-            updated_at: row.updated_at || row.created_at
-        }));
+        // Add default values and actor info
+        const data = rows.map(row => {
+            let metadata = row.metadata;
+            if (metadata && typeof metadata === 'string') {
+                try { metadata = JSON.parse(metadata); } catch (e) { }
+            }
+
+            // Dynamic Rendering with context fallback (Senior Architect Standard)
+            const renderContext = {
+                ...metadata,
+                actor_name: row.actor_name,
+                actor: row.actor_name, // fallback for (actor) or {actor}
+                entity_name: row.entity_name
+            };
+
+            const title = row.title_template
+                ? renderMessage(row.title_template, renderContext)
+                : (row.title || '');
+
+            const message = row.message_template
+                ? renderMessage(row.message_template, renderContext)
+                : (row.message || '');
+
+            return {
+                id: row.id,
+                type: row.type || 'system',
+                title: title,
+                message: message,
+                icon: row.event_icon || row.icon || '📢',
+                color: row.event_color || row.color || (row.level === 'urgent' ? 'red' : row.level === 'important' ? 'yellow' : 'blue'),
+                priority: row.priority || row.level || 'normal',
+                link: row.link || '',
+                is_read: row.is_read || 0,
+                created_at: row.created_at,
+                updated_at: row.updated_at || row.created_at,
+                actor_name: row.actor_name || 'Hệ thống',
+                actor_role: row.actor_role,
+                actor_avatar: row.actor_avatar || null,
+                entity_name: row.entity_name || null,
+                metadata: metadata // Include metadata for potential frontend complex rendering
+            };
+        });
 
         // Get total unread count
         let unreadCount = 0;
