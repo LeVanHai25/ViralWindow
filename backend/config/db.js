@@ -9,15 +9,15 @@ const dbConfig = {
     database: process.env.DB_NAME || 'viral_window_db',
     port: parseInt(process.env.DB_PORT) || 3306,
     connectionLimit: 10,
+    maxIdle: 10, // Duy trì tối đa 10 kết nối nhàn rỗi
+    idleTimeout: 30000, // Đóng kết nối nhàn rỗi sau 30 giây (tránh ECONNRESET)
     waitForConnections: true,
     queueLimit: 0,
     enableKeepAlive: true,
-    keepAliveInitialDelay: 0,
+    keepAliveInitialDelay: 10000, // Gửi gói tin keep-alive sau 10 giây
     // Thêm timeout để tránh lỗi ETIMEDOUT
     connectTimeout: 60000, // 60 giây
     acquireTimeout: 60000, // 60 giây
-    // Thêm retry logic
-    reconnect: true,
     // Standardize time to Vietnam (ICT)
     timezone: '+07:00',
     dateStrings: true // Return date as string to avoid JS Date object shifting
@@ -33,6 +33,14 @@ if (process.env.DB_SSL === 'true') {
 }
 
 const pool = mysql.createPool(dbConfig);
+
+// Handle pool errors to prevent process crash
+pool.on('error', (err) => {
+    console.error('📊 Unexpected error on idle database connection', err);
+    if (err.code === 'PROTOCOL_CONNECTION_LOST' || err.code === 'ECONNRESET') {
+        console.warn('🔄 Connection lost. Pool will handle reconnection on next query.');
+    }
+});
 
 // Set session timezone for every new connection in the pool
 pool.on('connection', function (connection) {

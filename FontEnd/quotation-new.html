@@ -990,7 +990,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Ghi chú chung</label>
                                 <textarea id="quoteNotes" rows="2"
                                     class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all resize-none"
-                                    placeholder="Vận chuyển, lắp đặt, VAT..."></textarea>
+                                    placeholder="Vận chuyển, lắp đặt..."></textarea>
                             </div>
                         </div>
                     </div>
@@ -2080,12 +2080,10 @@
                 // Sync input values
                 const discountPercent = document.getElementById('discountPercent')?.value || '0';
                 const accessoryDiscountPercent = document.getElementById('accessoryDiscountPercent')?.value || '0';
-                const vatPercent = document.getElementById('vatPercent')?.value || '10';
                 const shippingFee = document.getElementById('shippingFee')?.value || '0';
 
                 if (document.getElementById('discountPercentBoth')) document.getElementById('discountPercentBoth').value = discountPercent;
                 if (document.getElementById('accessoryDiscountPercentBoth')) document.getElementById('accessoryDiscountPercentBoth').value = accessoryDiscountPercent;
-                if (document.getElementById('vatPercentBoth')) document.getElementById('vatPercentBoth').value = vatPercent;
                 if (document.getElementById('shippingFeeBoth')) document.getElementById('shippingFeeBoth').value = shippingFee;
 
                 // Recalculate to sync all values
@@ -2096,12 +2094,10 @@
             function syncFromBothView() {
                 const discountPercentBoth = document.getElementById('discountPercentBoth')?.value || '0';
                 const accessoryDiscountPercentBoth = document.getElementById('accessoryDiscountPercentBoth')?.value || '0';
-                const vatPercentBoth = document.getElementById('vatPercentBoth')?.value || '10';
                 const shippingFeeBoth = document.getElementById('shippingFeeBoth')?.value || '0';
 
                 if (document.getElementById('discountPercent')) document.getElementById('discountPercent').value = discountPercentBoth;
                 if (document.getElementById('accessoryDiscountPercent')) document.getElementById('accessoryDiscountPercent').value = accessoryDiscountPercentBoth;
-                if (document.getElementById('vatPercent')) document.getElementById('vatPercent').value = vatPercentBoth;
                 if (document.getElementById('shippingFee')) document.getElementById('shippingFee').value = shippingFeeBoth;
             }
 
@@ -3104,8 +3100,8 @@
                 const subtotal = totalMaterial + totalAccessories;
                 const generalDiscountAmount = Math.round(subtotal * (discountPercent / 100));
 
-                // Thuế VAT (%) - Default to 0 instead of 10
-                const vatPercent = parseFloat(document.getElementById(currentViewMode === 'both' ? 'vatPercentBoth' : 'vatPercent')?.value || 0);
+                // Thuế VAT đã bị loại bỏ khỏi hệ thống (mặc định 0%)
+                const vatPercent = 0;
 
                 // Phí vận chuyển
                 const shippingFee = parseFloat(document.getElementById(currentViewMode === 'both' ? 'shippingFeeBoth' : 'shippingFee')?.value || 0);
@@ -3113,10 +3109,10 @@
                 // Tổng giá trị sau chiết khấu
                 // Formula: (Material + Accessories) - General Discount - Accessory Discount
                 const taxableAmount = subtotal - generalDiscountAmount - accessoryDiscountAmount;
-                const vatAmount = Math.round(taxableAmount * (vatPercent / 100));
+                const vatAmount = 0;
 
-                // Tổng giá trị báo giá cuối cùng
-                const finalTotal = taxableAmount + vatAmount + shippingFee;
+                // Tổng giá trị báo giá cuối cùng (không bao gồm VAT)
+                const finalTotal = taxableAmount + shippingFee;
 
                 console.log('📊 Frontend Final Calculation:', {
                     totalMaterial,
@@ -4159,12 +4155,10 @@
                             document.getElementById('discountPercentBoth').value = latestQ.discount_percent;
                         }
                     }
-                    if (latestQ.vat_percent !== undefined) {
-                        document.getElementById('vatPercent').value = latestQ.vat_percent;
-                        if (document.getElementById('vatPercentBoth')) {
-                            document.getElementById('vatPercentBoth').value = latestQ.vat_percent;
-                        }
-                    }
+                    // VAT đã bị loại bỏ (mặc định 0)
+                    if (document.getElementById('vatPercent')) document.getElementById('vatPercent').value = 0;
+                    if (document.getElementById('vatPercentBoth')) document.getElementById('vatPercentBoth').value = 0;
+
                     if (latestQ.shipping_fee !== undefined) {
                         document.getElementById('shippingFee').value = latestQ.shipping_fee;
                         if (document.getElementById('shippingFeeBoth')) {
@@ -4409,13 +4403,13 @@
                     const generalDiscountPct = parseFloat(q.discount_percent) || 0;
                     const generalDiscountAmt = (subtotal * generalDiscountPct) / 100;
 
-                    // VAT & Shipping
-                    const vatPct = parseFloat(q.vat_percent) || 0;
+                    // VAT & Shipping - VAT đã bị loại bỏ khỏi hệ thống (mặc định 0%)
+                    const vatPct = 0;
                     const shippingFee = parseFloat(q.shipping_fee) || 0;
 
                     // Tính tổng cuối cùng đồng nhất với Backend
                     const taxableAmount = subtotal - generalDiscountAmt - accDiscountAmt;
-                    const vatAmount = (taxableAmount * vatPct) / 100;
+                    const vatAmount = 0;
                     const finalTotal = taxableAmount + vatAmount + shippingFee;
 
                     // Fill tổng hợp
@@ -4732,15 +4726,14 @@
                                         }
                                     });
 
-                                    // Bổ sung chiết khấu/thuế cho dữ liệu cũ nếu cần tính thủ công
+                                    // Chiết khấu/Thuế cho dữ liệu cũ - VAT luôn là 0%
                                     const accDiscountAmt = parseFloat(q.accessory_discount_amount) || 0;
                                     const genDiscountPct = parseFloat(q.discount_percent) || 0;
                                     const genDiscountAmt = (totalValue * genDiscountPct) / 100;
-                                    const vatPct = parseFloat(q.vat_percent) || 10;
                                     const shippingFee = parseFloat(q.shipping_fee) || 0;
 
                                     const afterDiscounts = totalValue - genDiscountAmt - accDiscountAmt;
-                                    totalValue = afterDiscounts + (afterDiscounts * vatPct / 100) + shippingFee;
+                                    totalValue = afterDiscounts + shippingFee;
                                 }
                             }
 
@@ -4978,12 +4971,12 @@
                     suffix
                 });
 
-                const vatPercent = parseFloat(document.getElementById('vatPercent' + suffix)?.value || 0);
+                const vatPercent = 0;
                 const shippingFee = parseFloat(document.getElementById('shippingFee' + suffix)?.value || 0);
 
                 const taxableAmount = subtotal - generalDiscountAmount - accessoryDiscountAmount;
-                const vatAmount = Math.round(taxableAmount * (vatPercent / 100));
-                const totalAmount = taxableAmount + vatAmount + shippingFee;
+                const vatAmount = 0;
+                const totalAmount = taxableAmount + shippingFee;
 
                 const data = {
                     customer_id: parseInt(document.getElementById('customerSelect').value),
@@ -4993,7 +4986,7 @@
                     notes: document.getElementById('quoteNotes').value,
                     creator_name: document.getElementById('quoteCreator').value,
                     discount_percent: discountPercent,
-                    vat_percent: vatPercent,
+                    vat_percent: 0,
                     shipping_fee: shippingFee,
                     accessory_discount_percent: accessoryDiscountPercent,
                     accessory_discount_amount: accessoryDiscountAmount,
@@ -5336,10 +5329,9 @@
                         if (discountPercentEl) discountPercentEl.value = loadedDiscount;
                         if (discountPercentBothEl) discountPercentBothEl.value = loadedDiscount;
 
-                        // Set VAT percent (default 10)
-                        const loadedVat = (q.vat_percent !== undefined && q.vat_percent !== null) ? parseFloat(q.vat_percent) : 10;
-                        if (vatPercentEl) vatPercentEl.value = loadedVat;
-                        if (vatPercentBothEl) vatPercentBothEl.value = loadedVat;
+                        // VAT đã bị loại bỏ, luôn set về 0
+                        if (vatPercentEl) vatPercentEl.value = 0;
+                        if (vatPercentBothEl) vatPercentBothEl.value = 0;
 
                         // Set shipping fee (default 0)
                         const loadedShipping = parseFloat(q.shipping_fee) || 0;
@@ -5355,7 +5347,7 @@
 
                         console.log('Loaded VAT/discount from API:', {
                             discount_percent: loadedDiscount,
-                            vat_percent: loadedVat,
+                            vat_percent: 0,
                             shipping_fee: loadedShipping
                         });
 

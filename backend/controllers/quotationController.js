@@ -204,8 +204,8 @@ exports.create = async (req, res) => {
         const generalDiscountAmount = (subtotal * generalDiscountPct) / 100;
         const afterDiscounts = subtotal - generalDiscountAmount - accessoryDiscountAmount;
 
-        const vatPct = parseFloat(vat_percent) || 0;
-        const vatAmount = (afterDiscounts * vatPct) / 100;
+        const vatPct = 0; // [Senior Architect] Set VAT to 0 permanently
+        const vatAmount = 0;
         const shippingAmt = parseFloat(shipping_fee) || 0;
 
         // Server-side total_amount calculation (Always calculate for consistency)
@@ -249,7 +249,7 @@ exports.create = async (req, res) => {
             parent_quotation_id || null,
             creator_name || null,
             parseFloat(discount_percent) || 0,
-            parseFloat(vat_percent) || 10,
+            0, // [Senior Architect] VAT set to 0
             parseFloat(shipping_fee) || 0,
             accessoryDiscountPct,
             accessoryDiscountAmount
@@ -509,8 +509,8 @@ exports.createFromProject = async (req, res) => {
         const [result] = await connection.query(
             `INSERT INTO quotations 
              (quotation_code, project_id, customer_id, quotation_date, validity_days, 
-              status, subtotal, profit_margin_percent, profit_amount, total_amount, notes, advance_amount) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              status, subtotal, profit_margin_percent, profit_amount, total_amount, notes, advance_amount, vat_percent) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 quotation_code,
                 project_id,
@@ -523,7 +523,8 @@ exports.createFromProject = async (req, res) => {
                 profit_amount,
                 total_amount,
                 `Báo giá cho dự án: ${project.project_name || project.project_code}`,
-                advance_amount
+                advance_amount,
+                0 // [Senior Architect] VAT set to 0
             ]
         );
 
@@ -639,7 +640,9 @@ exports.update = async (req, res) => {
 
         const discountAmount = (subtotal * discountPct) / 100;
         const afterDiscounts = subtotal - discountAmount - accessoryDiscountAmount;
-        const vatAmount = (afterDiscounts * vatPct) / 100;
+
+        // [Senior Architect] Removed VAT calculation as per requirement
+        const vatAmount = 0;
 
         // Tính total_amount chính xác từ server (không dùng clientTotalAmount nữa)
         const total_amount = Math.round(afterDiscounts + vatAmount + shippingAmt);
@@ -711,10 +714,9 @@ exports.update = async (req, res) => {
         updateValues.push(isNaN(discountValue) ? 0 : discountValue);
 
         updateFields.push('vat_percent = ?');
-        const vatValue = vat_percent !== undefined && vat_percent !== null
-            ? parseFloat(vat_percent)
-            : 10;
-        updateValues.push(isNaN(vatValue) ? 10 : vatValue);
+        // [Senior Architect] Set VAT to 0 permanently
+        const vatValue = 0;
+        updateValues.push(vatValue);
 
         updateFields.push('shipping_fee = ?');
         const shippingValue = shipping_fee !== undefined && shipping_fee !== null

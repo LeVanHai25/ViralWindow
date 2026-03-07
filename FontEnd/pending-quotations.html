@@ -814,23 +814,47 @@
                     <div class="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg">
                         <h3 class="font-bold text-xl mb-4">Tổng giá trị</h3>
                         <div class="bg-white p-4 rounded-lg shadow">
-                            <div class="flex justify-between mb-2">
-                                <span class="text-gray-700">Tổng diện tích:</span>
-                                <span class="font-bold" id="detailTotalArea">0 m²</span>
+                            <div class="flex justify-between mb-2 text-gray-600 text-sm">
+                                <span>Tổng diện tích:</span>
+                                <span class="font-medium" id="detailTotalArea">0.00 m²</span>
                             </div>
-                            <div class="flex justify-between mb-2">
-                                <span class="text-gray-700">Tổng tiền vật tư/nhôm kính:</span>
-                                <span class="font-bold" id="detailTotalMaterial">0 ₫</span>
+                            <div class="flex justify-between mb-2 text-gray-600 text-sm">
+                                <span>Tiền nhôm & kính:</span>
+                                <span class="font-medium" id="detailTotalMaterial">0 ₫</span>
                             </div>
-                            <div class="flex justify-between mb-2">
-                                <span class="text-gray-700">Tổng tiền phụ kiện:</span>
-                                <span class="font-bold" id="detailTotalAccessories">0 ₫</span>
+                            <div class="flex justify-between mb-2 text-gray-600 text-sm">
+                                <span>Tiền phụ kiện:</span>
+                                <span class="font-medium" id="detailTotalAccessories">0 ₫</span>
+                            </div>
+                            <div class="border-t my-2 border-gray-100"></div>
+                            <div class="flex justify-between mb-2 text-red-600 italic text-sm hidden"
+                                id="detailAccessoryDiscountRow">
+                                <span>Chiết khấu phụ kiện (<span id="detailAccessoryDiscountPercent">0</span>%):</span>
+                                <span class="font-bold">-<span id="detailAccessoryDiscountAmount">0 ₫</span></span>
+                            </div>
+                            <div class="flex justify-between mb-2 text-red-600 italic text-sm hidden"
+                                id="detailGeneralDiscountRow">
+                                <span>Chiết khấu chung (<span id="detailGeneralDiscountPercent">0</span>%):</span>
+                                <span class="font-bold">-<span id="detailGeneralDiscountAmount">0 ₫</span></span>
+                            </div>
+                            <div class="flex justify-between mb-2 text-blue-600 italic text-sm hidden"
+                                id="detailShippingFeeRow">
+                                <span>Phí vận chuyển:</span>
+                                <span class="font-bold">+<span id="detailShippingFeeAmount">0 ₫</span></span>
                             </div>
                         </div>
                         <div class="mt-6 bg-white p-6 rounded-lg shadow-lg text-center">
                             <p class="text-gray-700 font-semibold mb-2">Tổng giá trị báo giá</p>
                             <p class="text-4xl font-bold text-blue-600" id="detailFinalTotal">0 ₫</p>
+                            <p class="text-sm text-gray-600 mt-2">Bằng chữ: <span id="detailTotalInWords">Không
+                                    đồng</span></p>
                         </div>
+                    </div>
+
+                    <!-- Ghi chú -->
+                    <div class="mt-6 bg-gray-50 p-4 rounded-lg" id="detailNotesSection">
+                        <h3 class="font-bold text-lg mb-2">Ghi chú</h3>
+                        <p class="text-sm text-gray-700" id="detailNotes">Không có ghi chú</p>
                     </div>
 
                     <!-- Action buttons -->
@@ -843,256 +867,257 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <script>
-            const API_BASE = window.API_BASE || 'http://localhost:3001/api';
+    <script>
+        const API_BASE = window.API_BASE || 'http://localhost:3001/api';
 
-            // ===================== SIDEBAR FUNCTIONS =====================
-            function toggleSidebarUserMenu() {
-                const dropdown = document.getElementById('sidebarUserMenuDropdown');
-                dropdown.classList.toggle('hidden');
-            }
+        // ===================== SIDEBAR FUNCTIONS =====================
+        function toggleSidebarUserMenu() {
+            const dropdown = document.getElementById('sidebarUserMenuDropdown');
+            dropdown.classList.toggle('hidden');
+        }
 
-            function handleLogout() {
-                sessionStorage.removeItem('token');
-                sessionStorage.removeItem('user');
-                window.location.href = 'login.html';
-            }
+        function handleLogout() {
+            sessionStorage.removeItem('token');
+            sessionStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
 
-            async function loadSidebarInfo() {
-                try {
-                    // Load company settings
-                    const settingsRes = await fetch(`${API_BASE}/settings`);
-                    const settingsData = await settingsRes.json();
-                    console.log('Settings API response:', settingsData);
+        async function loadSidebarInfo() {
+            try {
+                // Load company settings
+                const settingsRes = await fetch(`${API_BASE}/settings`);
+                const settingsData = await settingsRes.json();
+                console.log('Settings API response:', settingsData);
 
-                    // API trả về { success: true, data: {...} }
-                    if (settingsData.success && settingsData.data) {
-                        const settings = settingsData.data;
-                        if (settings.company_name) {
-                            const companyNameEl = document.getElementById('companyName');
-                            if (companyNameEl) companyNameEl.textContent = settings.company_name;
-                        }
-                        // DB column là logo_path, không phải company_logo
-                        if (settings.logo_path) {
-                            const logoImg = document.getElementById('companyLogo');
-                            const logoIcon = document.getElementById('companyLogoIcon');
-                            if (logoImg) {
-                                logoImg.src = settings.logo_path;
-                                logoImg.classList.remove('hidden');
-                            }
-                            if (logoIcon) logoIcon.classList.add('hidden');
-                        }
+                // API trả về { success: true, data: {...} }
+                if (settingsData.success && settingsData.data) {
+                    const settings = settingsData.data;
+                    if (settings.company_name) {
+                        const companyNameEl = document.getElementById('companyName');
+                        if (companyNameEl) companyNameEl.textContent = settings.company_name;
                     }
-
-                    // Load user info from localStorage
-                    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
-                    if (user.full_name) {
-                        const userNameEl = document.getElementById('sidebarUserName');
-                        const userInitialEl = document.getElementById('sidebarUserAvatarInitial');
-                        if (userNameEl) userNameEl.textContent = user.full_name;
-                        if (userInitialEl) userInitialEl.textContent = user.full_name.charAt(0).toUpperCase();
-                    }
-                    // Fix: Sử dụng avatar_url thay vì avatar (đồng bộ với các trang khác)
-                    if (user.avatar_url || user.avatar) {
-                        const avatarImg = document.getElementById('sidebarUserAvatarImage');
-                        const avatarInitial = document.getElementById('sidebarUserAvatarInitial');
-                        if (avatarImg) {
-                            avatarImg.src = user.avatar_url || user.avatar;
-                            avatarImg.classList.remove('hidden');
+                    // DB column là logo_path, không phải company_logo
+                    if (settings.logo_path) {
+                        const logoImg = document.getElementById('companyLogo');
+                        const logoIcon = document.getElementById('companyLogoIcon');
+                        if (logoImg) {
+                            logoImg.src = settings.logo_path;
+                            logoImg.classList.remove('hidden');
                         }
-                        if (avatarInitial) avatarInitial.classList.add('hidden');
+                        if (logoIcon) logoIcon.classList.add('hidden');
                     }
-                } catch (error) {
-                    console.error('Error loading sidebar info:', error);
                 }
+
+                // Load user info from localStorage
+                const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+                if (user.full_name) {
+                    const userNameEl = document.getElementById('sidebarUserName');
+                    const userInitialEl = document.getElementById('sidebarUserAvatarInitial');
+                    if (userNameEl) userNameEl.textContent = user.full_name;
+                    if (userInitialEl) userInitialEl.textContent = user.full_name.charAt(0).toUpperCase();
+                }
+                // Fix: Sử dụng avatar_url thay vì avatar (đồng bộ với các trang khác)
+                if (user.avatar_url || user.avatar) {
+                    const avatarImg = document.getElementById('sidebarUserAvatarImage');
+                    const avatarInitial = document.getElementById('sidebarUserAvatarInitial');
+                    if (avatarImg) {
+                        avatarImg.src = user.avatar_url || user.avatar;
+                        avatarImg.classList.remove('hidden');
+                    }
+                    if (avatarInitial) avatarInitial.classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Error loading sidebar info:', error);
             }
-            // ===================== END SIDEBAR FUNCTIONS =====================
+        }
+        // ===================== END SIDEBAR FUNCTIONS =====================
 
-            let currentFilter = 'all';
-            let currentSort = 'date-desc';
-            let searchTerm = '';
-            let allQuotations = [];
-            let stats = {
-                totalPending: 0,
-                totalValue: 0,
-                overdue7Days: 0,
-                correctionRequests: 0
-            };
+        let currentFilter = 'all';
+        let currentSort = 'date-desc';
+        let searchTerm = '';
+        let allQuotations = [];
+        let stats = {
+            totalPending: 0,
+            totalValue: 0,
+            overdue7Days: 0,
+            correctionRequests: 0
+        };
 
-            // Current tab: 'pending' or 'approved'
-            let currentTab = 'pending';
+        // Current tab: 'pending' or 'approved'
+        let currentTab = 'pending';
 
-            // Switch tab
-            function switchTab(tab) {
-                currentTab = tab;
+        // Switch tab
+        function switchTab(tab) {
+            currentTab = tab;
 
-                // Update tab UI
-                const pendingBtn = document.getElementById('tabPending');
-                const approvedBtn = document.getElementById('tabApproved');
+            // Update tab UI
+            const pendingBtn = document.getElementById('tabPending');
+            const approvedBtn = document.getElementById('tabApproved');
 
-                if (tab === 'pending') {
-                    pendingBtn.classList.remove('bg-white', 'border-2', 'border-gray-300', 'text-gray-700');
-                    pendingBtn.classList.add('bg-blue-600', 'text-white');
-                    approvedBtn.classList.remove('bg-blue-600', 'text-white');
-                    approvedBtn.classList.add('bg-white', 'border-2', 'border-gray-300', 'text-gray-700');
+            if (tab === 'pending') {
+                pendingBtn.classList.remove('bg-white', 'border-2', 'border-gray-300', 'text-gray-700');
+                pendingBtn.classList.add('bg-blue-600', 'text-white');
+                approvedBtn.classList.remove('bg-blue-600', 'text-white');
+                approvedBtn.classList.add('bg-white', 'border-2', 'border-gray-300', 'text-gray-700');
+            } else {
+                approvedBtn.classList.remove('bg-white', 'border-2', 'border-gray-300', 'text-gray-700');
+                approvedBtn.classList.add('bg-green-600', 'text-white');
+                pendingBtn.classList.remove('bg-blue-600', 'text-white');
+                pendingBtn.classList.add('bg-white', 'border-2', 'border-gray-300', 'text-gray-700');
+            }
+
+            applyFiltersAndDisplay();
+        }
+
+        async function loadPendingQuotations() {
+            try {
+                const response = await fetch(`${API_BASE}/quotations/pending`);
+                const result = await response.json();
+
+                if (result.success) {
+                    allQuotations = result.data || [];
+                    stats = result.stats || stats;
+
+                    updateStats();
+                    applyFiltersAndDisplay();
                 } else {
-                    approvedBtn.classList.remove('bg-white', 'border-2', 'border-gray-300', 'text-gray-700');
-                    approvedBtn.classList.add('bg-green-600', 'text-white');
-                    pendingBtn.classList.remove('bg-blue-600', 'text-white');
-                    pendingBtn.classList.add('bg-white', 'border-2', 'border-gray-300', 'text-gray-700');
+                    showError('Không thể tải dữ liệu');
                 }
+            } catch (error) {
+                console.error('Lỗi:', error);
+                showError('Lỗi khi tải dữ liệu. Vui lòng thử lại.');
+            }
+        }
 
-                applyFiltersAndDisplay();
+        function updateStats() {
+            document.getElementById('totalPending').textContent = stats.totalPending || 0;
+            document.getElementById('totalValue').textContent = formatValue(stats.totalValue || 0);
+            document.getElementById('overdue7Days').textContent = stats.overdue7Days || 0;
+            document.getElementById('correctionRequests').textContent = stats.correctionRequests || 0;
+        }
+
+        function formatValue(value) {
+            if (value >= 1000000000) {
+                return (value / 1000000000).toFixed(1) + 'B';
+            } else if (value >= 1000000) {
+                return (value / 1000000).toFixed(1) + 'M';
+            } else if (value >= 1000) {
+                return (value / 1000).toFixed(1) + 'K';
+            }
+            return value.toFixed(0);
+        }
+
+        function getDaysSince(dateString) {
+            if (!dateString) return 0;
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        }
+
+        function filterQuotations(filter) {
+            currentFilter = filter;
+
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-blue-500', 'text-white');
+                btn.classList.add('bg-white', 'border', 'border-gray-300', 'text-gray-700');
+            });
+
+            const activeBtn = document.getElementById('filter-' + filter);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-white', 'border', 'border-gray-300', 'text-gray-700');
+                activeBtn.classList.add('active', 'bg-blue-500', 'text-white');
             }
 
-            async function loadPendingQuotations() {
-                try {
-                    const response = await fetch(`${API_BASE}/quotations/pending`);
-                    const result = await response.json();
+            applyFiltersAndDisplay();
+        }
 
-                    if (result.success) {
-                        allQuotations = result.data || [];
-                        stats = result.stats || stats;
+        function handleSearch() {
+            searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            applyFiltersAndDisplay();
+        }
 
-                        updateStats();
-                        applyFiltersAndDisplay();
-                    } else {
-                        showError('Không thể tải dữ liệu');
-                    }
-                } catch (error) {
-                    console.error('Lỗi:', error);
-                    showError('Lỗi khi tải dữ liệu. Vui lòng thử lại.');
-                }
+        function handleSort() {
+            currentSort = document.getElementById('sortSelect').value;
+            applyFiltersAndDisplay();
+        }
+
+        function applyFiltersAndDisplay() {
+            let filtered = [...allQuotations];
+
+            // Count for both tabs
+            const pendingQuotations = allQuotations.filter(q => q.status !== 'approved' && q.status !== 'contract_signed');
+            const approvedQuotations = allQuotations.filter(q => q.status === 'approved');
+
+            // Update tab counts
+            document.getElementById('countPending').textContent = pendingQuotations.length;
+            document.getElementById('countApproved').textContent = approvedQuotations.length;
+
+            // Filter by current tab
+            if (currentTab === 'pending') {
+                filtered = pendingQuotations;
+            } else {
+                filtered = approvedQuotations;
             }
 
-            function updateStats() {
-                document.getElementById('totalPending').textContent = stats.totalPending || 0;
-                document.getElementById('totalValue').textContent = formatValue(stats.totalValue || 0);
-                document.getElementById('overdue7Days').textContent = stats.overdue7Days || 0;
-                document.getElementById('correctionRequests').textContent = stats.correctionRequests || 0;
-            }
-
-            function formatValue(value) {
-                if (value >= 1000000000) {
-                    return (value / 1000000000).toFixed(1) + 'B';
-                } else if (value >= 1000000) {
-                    return (value / 1000000).toFixed(1) + 'M';
-                } else if (value >= 1000) {
-                    return (value / 1000).toFixed(1) + 'K';
-                }
-                return value.toFixed(0);
-            }
-
-            function getDaysSince(dateString) {
-                if (!dateString) return 0;
-                const date = new Date(dateString);
-                const now = new Date();
-                const diffTime = Math.abs(now - date);
-                return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            }
-
-            function filterQuotations(filter) {
-                currentFilter = filter;
-
-                document.querySelectorAll('.filter-btn').forEach(btn => {
-                    btn.classList.remove('active', 'bg-blue-500', 'text-white');
-                    btn.classList.add('bg-white', 'border', 'border-gray-300', 'text-gray-700');
+            // Apply search filter
+            if (searchTerm) {
+                filtered = filtered.filter(q => {
+                    const code = (q.quotation_code || '').toLowerCase();
+                    const customer = (q.customer_name || '').toLowerCase();
+                    const project = (q.project_name || '').toLowerCase();
+                    return code.includes(searchTerm) || customer.includes(searchTerm) || project.includes(searchTerm);
                 });
-
-                const activeBtn = document.getElementById('filter-' + filter);
-                if (activeBtn) {
-                    activeBtn.classList.remove('bg-white', 'border', 'border-gray-300', 'text-gray-700');
-                    activeBtn.classList.add('active', 'bg-blue-500', 'text-white');
-                }
-
-                applyFiltersAndDisplay();
             }
 
-            function handleSearch() {
-                searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
-                applyFiltersAndDisplay();
-            }
-
-            function handleSort() {
-                currentSort = document.getElementById('sortSelect').value;
-                applyFiltersAndDisplay();
-            }
-
-            function applyFiltersAndDisplay() {
-                let filtered = [...allQuotations];
-
-                // Count for both tabs
-                const pendingQuotations = allQuotations.filter(q => q.status !== 'approved' && q.status !== 'contract_signed');
-                const approvedQuotations = allQuotations.filter(q => q.status === 'approved');
-
-                // Update tab counts
-                document.getElementById('countPending').textContent = pendingQuotations.length;
-                document.getElementById('countApproved').textContent = approvedQuotations.length;
-
-                // Filter by current tab
-                if (currentTab === 'pending') {
-                    filtered = pendingQuotations;
-                } else {
-                    filtered = approvedQuotations;
-                }
-
-                // Apply search filter
-                if (searchTerm) {
-                    filtered = filtered.filter(q => {
-                        const code = (q.quotation_code || '').toLowerCase();
-                        const customer = (q.customer_name || '').toLowerCase();
-                        const project = (q.project_name || '').toLowerCase();
-                        return code.includes(searchTerm) || customer.includes(searchTerm) || project.includes(searchTerm);
-                    });
-                }
-
-                // Apply status filter
-                if (currentFilter === 'overdue7') {
-                    filtered = filtered.filter(q => {
-                        const days = q.days_pending || getDaysSince(q.quotation_date);
-                        return days > 7;
-                    });
-                } else if (currentFilter === 'overdue14') {
-                    filtered = filtered.filter(q => {
-                        const days = q.days_pending || getDaysSince(q.quotation_date);
-                        return days > 14;
-                    });
-                }
-
-                // Apply sorting
-                filtered.sort((a, b) => {
-                    switch (currentSort) {
-                        case 'date-desc':
-                            return new Date(b.quotation_date) - new Date(a.quotation_date);
-                        case 'date-asc':
-                            return new Date(a.quotation_date) - new Date(b.quotation_date);
-                        case 'amount-desc':
-                            return (parseFloat(b.total_amount) || 0) - (parseFloat(a.total_amount) || 0);
-                        case 'amount-asc':
-                            return (parseFloat(a.total_amount) || 0) - (parseFloat(b.total_amount) || 0);
-                        case 'days-desc':
-                            return (b.days_pending || getDaysSince(b.quotation_date)) - (a.days_pending || getDaysSince(a.quotation_date));
-                        default:
-                            return 0;
-                    }
+            // Apply status filter
+            if (currentFilter === 'overdue7') {
+                filtered = filtered.filter(q => {
+                    const days = q.days_pending || getDaysSince(q.quotation_date);
+                    return days > 7;
                 });
-
-                displayQuotations(filtered);
+            } else if (currentFilter === 'overdue14') {
+                filtered = filtered.filter(q => {
+                    const days = q.days_pending || getDaysSince(q.quotation_date);
+                    return days > 14;
+                });
             }
 
-            function displayQuotations(quotations) {
-                const container = document.getElementById('quotationsList');
-                const countEl = document.getElementById('quotationCount');
-
-                if (countEl) {
-                    countEl.textContent = `(${quotations.length})`;
+            // Apply sorting
+            filtered.sort((a, b) => {
+                switch (currentSort) {
+                    case 'date-desc':
+                        return new Date(b.quotation_date) - new Date(a.quotation_date);
+                    case 'date-asc':
+                        return new Date(a.quotation_date) - new Date(b.quotation_date);
+                    case 'amount-desc':
+                        return (parseFloat(b.total_amount) || 0) - (parseFloat(a.total_amount) || 0);
+                    case 'amount-asc':
+                        return (parseFloat(a.total_amount) || 0) - (parseFloat(b.total_amount) || 0);
+                    case 'days-desc':
+                        return (b.days_pending || getDaysSince(b.quotation_date)) - (a.days_pending || getDaysSince(a.quotation_date));
+                    default:
+                        return 0;
                 }
+            });
 
-                if (!container) return;
+            displayQuotations(filtered);
+        }
 
-                if (quotations.length === 0) {
-                    container.innerHTML = `
+        function displayQuotations(quotations) {
+            const container = document.getElementById('quotationsList');
+            const countEl = document.getElementById('quotationCount');
+
+            if (countEl) {
+                countEl.textContent = `(${quotations.length})`;
+            }
+
+            if (!container) return;
+
+            if (quotations.length === 0) {
+                container.innerHTML = `
                     <div class="flex flex-col items-center justify-center py-16 text-gray-400 fade-in">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-20 h-20 mb-4 text-gray-300">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -1101,36 +1126,35 @@
                         <p class="text-sm text-gray-400 mt-2">Tất cả báo giá đã được xử lý</p>
                     </div>
                 `;
-                    return;
+                return;
+            }
+
+            let html = '<div class="space-y-4">';
+
+            quotations.forEach((quotation, index) => {
+                const days = quotation.days_pending || getDaysSince(quotation.quotation_date);
+                const isOverdue = days > 7;
+                const isOverdue14 = days > 14;
+
+                let overdueBadge = '';
+                if (isOverdue14) {
+                    overdueBadge = `<span class="badge bg-red-100 text-red-700">Quá hạn ${days} ngày</span>`;
+                } else if (isOverdue) {
+                    overdueBadge = `<span class="badge bg-orange-100 text-orange-700">Quá hạn ${days} ngày</span>`;
                 }
 
-                let html = '<div class="space-y-4">';
+                const code = escapeHtml(quotation.quotation_code || 'N/A');
+                const customer = escapeHtml(quotation.customer_name || 'N/A');
+                const branch = escapeHtml(quotation.branch_name || quotation.agency_name || '');
+                const branchCustomer = branch ? `${branch} - ${customer}` : customer;
+                const project = escapeHtml(quotation.project_name || 'N/A');
+                const date = formatDate(quotation.quotation_date);
+                const amount = formatCurrency(quotation.total_amount || quotation.subtotal);
+                const qId = parseInt(quotation.id) || 0;
+                const status = getStatusText(quotation.status);
+                const statusColor = getStatusColor(quotation.status);
 
-                quotations.forEach((quotation, index) => {
-                    const days = quotation.days_pending || getDaysSince(quotation.quotation_date);
-                    const isOverdue = days > 7;
-                    const isOverdue14 = days > 14;
-
-                    let overdueBadge = '';
-                    if (isOverdue14) {
-                        overdueBadge = `<span class="badge bg-red-100 text-red-700">Quá hạn ${days} ngày</span>`;
-                    } else if (isOverdue) {
-                        overdueBadge = `<span class="badge bg-orange-100 text-orange-700">Quá hạn ${days} ngày</span>`;
-                    }
-
-                    const code = escapeHtml(quotation.quotation_code || 'N/A');
-                    const customer = escapeHtml(quotation.customer_name || 'N/A');
-                    const branch = escapeHtml(quotation.branch_name || quotation.agency_name || '');
-                    const branchCustomer = branch ? `${branch} - ${customer}` : customer;
-                    const project = escapeHtml(quotation.project_name || 'N/A');
-                    const date = formatDate(quotation.quotation_date);
-                    // ✅ FIX: Dùng subtotal (chưa VAT) để khớp với Tổng giá trị báo giá trong quotation-new.html
-                    const amount = formatCurrency(quotation.subtotal || quotation.total_amount);
-                    const qId = parseInt(quotation.id) || 0;
-                    const status = getStatusText(quotation.status);
-                    const statusColor = getStatusColor(quotation.status);
-
-                    html += `
+                html += `
                     <div class="quotation-card border border-gray-200 rounded-lg p-3 bg-white fade-in" style="animation-delay: ${index * 0.03}s">
                         <div class="flex flex-col lg:flex-row justify-between items-start gap-3">
                             <div class="flex-1 min-w-0">
@@ -1280,68 +1304,117 @@
                         </div>
                     </div>
                 `;
-                });
+            });
 
-                html += '</div>';
-                container.innerHTML = html;
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            if (typeof text !== 'string') text = String(text);
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatCurrency(amount) {
+            if (amount === undefined || amount === null) return '0 ₫';
+            return new Intl.NumberFormat('vi-VN').format(amount) + ' ₫';
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('vi-VN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'draft': 'Chờ chốt từ khách hàng',
+                'sent': 'Đã gửi',
+                'pending': 'Đang chờ duyệt',
+                'approved': 'Đã chốt',
+                'rejected': 'Từ chối',
+                'expired': 'Hết hạn',
+                'revision_requested': 'Yêu cầu sửa',
+                'contract_signed': 'Đã ký hợp đồng',
+                'cancelled': 'Đã hủy'
+            };
+            return statusMap[status] || status || 'N/A';
+        }
+
+        function getStatusColor(status) {
+            const colorMap = {
+                'draft': 'bg-gray-100 text-gray-700',
+                'sent': 'bg-blue-100 text-blue-700',
+                'pending': 'bg-yellow-100 text-yellow-700',
+                'approved': 'bg-green-100 text-green-700',
+                'rejected': 'bg-red-100 text-red-700',
+                'expired': 'bg-gray-100 text-gray-700',
+                'revision_requested': 'bg-orange-100 text-orange-700',
+                'contract_signed': 'bg-indigo-100 text-indigo-800',
+                'cancelled': 'bg-red-100 text-red-800'
+            };
+            return colorMap[status] || 'bg-gray-100 text-gray-700';
+        }
+
+        // Vietnamese Number to Words
+        function numberToWords(num) {
+            if (!num || num === 0) return 'Không đồng';
+            num = Math.floor(num);
+            const ones = ['', 'một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám', 'chín'];
+            const tens = ['', 'mười', 'hai mươi', 'ba mươi', 'bốn mươi', 'năm mươi', 'sáu mươi', 'bảy mươi', 'tám mươi', 'chín mươi'];
+            const hundreds = ['', 'một trăm', 'hai trăm', 'ba trăm', 'bốn trăm', 'năm trăm', 'sáu trăm', 'bảy trăm', 'tám trăm', 'chín trăm'];
+
+            function readThreeDigits(n) {
+                if (n === 0) return '';
+                let result = '';
+                const hundred = Math.floor(n / 100);
+                const remainder = n % 100;
+                const ten = Math.floor(remainder / 10);
+                const one = remainder % 10;
+                if (hundred > 0) result += hundreds[hundred] + ' ';
+                if (remainder === 0) return result.trim();
+                if (ten === 0) {
+                    if (one === 5) result += 'lẻ năm';
+                    else if (one > 0) result += 'lẻ ' + ones[one];
+                } else if (ten === 1) {
+                    if (one === 0) result += 'mười';
+                    else if (one === 5) result += 'mười lăm';
+                    else result += 'mười ' + ones[one];
+                } else {
+                    result += tens[ten];
+                    if (one === 1) result += ' mốt';
+                    else if (one === 5) result += ' lăm';
+                    else if (one > 0) result += ' ' + ones[one];
+                }
+                return result.trim();
             }
 
-            function formatCurrency(amount) {
-                if (!amount) return '0 ₫';
-                return new Intl.NumberFormat('vi-VN', {
-                    style: 'currency',
-                    currency: 'VND'
-                }).format(amount);
-            }
+            if (num < 1000) return readThreeDigits(num).charAt(0).toUpperCase() + readThreeDigits(num).slice(1) + ' đồng';
+            const billions = Math.floor(num / 1000000000);
+            const millions = Math.floor((num % 1000000000) / 1000000);
+            const thousands = Math.floor((num % 1000000) / 1000);
+            const units = num % 1000;
+            let result = '';
+            if (billions > 0) result += readThreeDigits(billions) + ' tỷ ';
+            if (millions > 0) result += readThreeDigits(millions) + ' triệu ';
+            if (thousands > 0) result += readThreeDigits(thousands) + ' nghìn ';
+            if (units > 0) result += readThreeDigits(units);
+            result = result.trim();
+            if (result === '') return 'Không đồng';
+            return result.charAt(0).toUpperCase() + result.slice(1) + ' đồng';
+        }
 
-            function formatDate(dateString) {
-                if (!dateString) return 'N/A';
-                const date = new Date(dateString);
-                return date.toLocaleDateString('vi-VN', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit'
-                });
-            }
-
-            function escapeHtml(text) {
-                if (!text) return '';
-                if (typeof text !== 'string') text = String(text);
-                const div = document.createElement('div');
-                div.textContent = text;
-                return div.innerHTML;
-            }
-
-            function getStatusText(status) {
-                const texts = {
-                    'draft': 'Chờ chốt từ khách hàng',
-                    'sent': 'Đã gửi',
-                    'pending': 'Đang chờ duyệt',
-                    'approved': 'Đã chốt',
-                    'rejected': 'Từ chối',
-                    'expired': 'Hết hạn',
-                    'revision_requested': 'Yêu cầu sửa'
-                };
-                return texts[status] || status || 'Chờ duyệt';
-            }
-
-            function getStatusColor(status) {
-                const colors = {
-                    'draft': 'bg-gray-100 text-gray-700',
-                    'sent': 'bg-blue-100 text-blue-700',
-                    'pending': 'bg-yellow-100 text-yellow-700',
-                    'approved': 'bg-green-100 text-green-700',
-                    'rejected': 'bg-red-100 text-red-700',
-                    'expired': 'bg-gray-100 text-gray-700',
-                    'revision_requested': 'bg-orange-100 text-orange-700'
-                };
-                return colors[status] || 'bg-gray-100 text-gray-700';
-            }
-
-            function showError(message) {
-                const container = document.getElementById('quotationsList');
-                if (container) {
-                    container.innerHTML = `
+        function showError(message) {
+            const container = document.getElementById('quotationsList');
+            if (container) {
+                container.innerHTML = `
                     <div class="flex flex-col items-center justify-center py-16 text-red-400 fade-in">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-20 h-20 mb-4 text-red-300">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -1350,112 +1423,112 @@
                         <p class="text-sm text-red-400 mt-2">Vui lòng thử lại sau</p>
                     </div>
                 `;
-                }
             }
+        }
 
-            // Current quotation ID for modal actions
-            let currentDetailQuotationId = null;
+        // Current quotation ID for modal actions
+        let currentDetailQuotationId = null;
 
-            // Xem chi tiết báo giá - hiển thị modal inline
-            async function viewQuotationDetail(id) {
-                currentDetailQuotationId = id;
-                try {
-                    const response = await fetch(`${API_BASE}/quotations/${id}`);
-                    const result = await response.json();
+        // Xem chi tiết báo giá - hiển thị modal inline
+        async function viewQuotationDetail(id) {
+            currentDetailQuotationId = id;
+            try {
+                const response = await fetch(`${API_BASE}/quotations/${id}`);
+                const result = await response.json();
 
-                    if (!result.success) {
-                        VWModal.error('Không thể tải chi tiết báo giá');
-                        return;
-                    }
+                if (!result.success) {
+                    VWModal.error('Không thể tải chi tiết báo giá');
+                    return;
+                }
 
-                    const q = result.data;
-                    const items = q.items || [];
+                const q = result.data;
+                const items = q.items || [];
 
-                    // Load project info if available
-                    let projectName = q.project_name || '';
-                    let projectCode = q.project_code || q.quotation_code || '';
-                    let branchName = q.branch_name || q.agency_name || '';
-                    let customerName = q.customer_name || '';
-                    let projectAddress = '';
+                // Load project info if available
+                let projectName = q.project_name || '';
+                let projectCode = q.project_code || q.quotation_code || '';
+                let branchName = q.branch_name || q.agency_name || '';
+                let customerName = q.customer_name || '';
+                let projectAddress = '';
 
-                    if (q.project_id) {
-                        try {
-                            const projectResponse = await fetch(`${API_BASE}/projects/${q.project_id}`);
-                            const projectResult = await projectResponse.json();
-                            if (projectResult.success && projectResult.data) {
-                                const project = projectResult.data;
-                                projectName = project.project_name || projectName;
-                                projectCode = project.project_code || projectCode;
-                                branchName = project.agency_name || project.branch_name || branchName;
-                                customerName = project.customer_name || customerName;
-                                let addressParts = [];
-                                if (project.construction_address) addressParts.push(project.construction_address);
-                                if (project.construction_district) addressParts.push(project.construction_district);
-                                if (project.construction_province) addressParts.push(project.construction_province);
-                                projectAddress = addressParts.join(', ') || 'Chưa có địa chỉ';
-                            }
-                        } catch (e) {
-                            console.error('Error loading project:', e);
+                if (q.project_id) {
+                    try {
+                        const projectResponse = await fetch(`${API_BASE}/projects/${q.project_id}`);
+                        const projectResult = await projectResponse.json();
+                        if (projectResult.success && projectResult.data) {
+                            const project = projectResult.data;
+                            projectName = project.project_name || projectName;
+                            projectCode = project.project_code || projectCode;
+                            branchName = project.agency_name || project.branch_name || branchName;
+                            customerName = project.customer_name || customerName;
+                            let addressParts = [];
+                            if (project.construction_address) addressParts.push(project.construction_address);
+                            if (project.construction_district) addressParts.push(project.construction_district);
+                            if (project.construction_province) addressParts.push(project.construction_province);
+                            projectAddress = addressParts.join(', ') || 'Chưa có địa chỉ';
                         }
+                    } catch (e) {
+                        console.error('Error loading project:', e);
                     }
+                }
 
-                    // Fill modal header
-                    document.getElementById('detailModalTitle').textContent = projectName ? `Chi tiết báo giá - ${projectName}` : 'Chi tiết báo giá';
-                    document.getElementById('detailQuoteCode').textContent = q.quotation_code || 'N/A';
+                // Fill modal header
+                document.getElementById('detailModalTitle').textContent = projectName ? `Chi tiết báo giá - ${projectName}` : 'Chi tiết báo giá';
+                document.getElementById('detailQuoteCode').textContent = q.quotation_code || 'N/A';
 
-                    // Fill project info
-                    document.getElementById('detailProjectCode').textContent = projectCode || 'N/A';
-                    document.getElementById('detailProjectName').textContent = projectName || 'N/A';
-                    document.getElementById('detailBranchName').textContent = branchName || 'Chưa có';
-                    document.getElementById('detailCustomerName').textContent = customerName || 'N/A';
-                    document.getElementById('detailProjectAddress').textContent = projectAddress || 'Chưa có địa chỉ';
-                    document.getElementById('detailValidityDays').textContent = (q.validity_days || 15) + ' ngày';
+                // Fill project info
+                document.getElementById('detailProjectCode').textContent = projectCode || 'N/A';
+                document.getElementById('detailProjectName').textContent = projectName || 'N/A';
+                document.getElementById('detailBranchName').textContent = branchName || 'Chưa có';
+                document.getElementById('detailCustomerName').textContent = customerName || 'N/A';
+                document.getElementById('detailProjectAddress').textContent = projectAddress || 'Chưa có địa chỉ';
+                document.getElementById('detailValidityDays').textContent = (q.validity_days || 15) + ' ngày';
 
-                    // Fill status info
-                    document.getElementById('detailStatus').textContent = getStatusText(q.status);
-                    document.getElementById('detailRevisionCount').textContent = (q.revision_count || 0) + ' lần';
-                    let createdDateTime = 'N/A';
-                    if (q.created_at) {
-                        const d = new Date(q.created_at);
-                        createdDateTime = d.toLocaleDateString('vi-VN') + ' ' + d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-                    }
-                    document.getElementById('detailCreatedAt').textContent = createdDateTime;
-                    document.getElementById('detailCreator').textContent = q.creator_name || 'N/A';
+                // Fill status info
+                document.getElementById('detailStatus').textContent = getStatusText(q.status);
+                document.getElementById('detailRevisionCount').textContent = (q.revision_count || 0) + ' lần';
+                let createdDateTime = 'N/A';
+                if (q.created_at) {
+                    const d = new Date(q.created_at);
+                    createdDateTime = d.toLocaleDateString('vi-VN') + ' ' + d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                }
+                document.getElementById('detailCreatedAt').textContent = createdDateTime;
+                document.getElementById('detailCreator').textContent = q.creator_name || 'N/A';
 
-                    // Render items table
-                    const tbody = document.getElementById('detailItemsTableBody');
-                    let totalArea = 0, totalMaterial = 0, totalAccessories = 0, totalAmount = 0;
+                // Render items table
+                const tbody = document.getElementById('detailItemsTableBody');
+                let totalArea = 0, totalMaterial = 0, totalAccessories = 0, subtotal = 0;
 
-                    if (items.length > 0) {
-                        tbody.innerHTML = items.map((item, idx) => {
-                            const width = parseFloat(item.width) || 0;
-                            const height = parseFloat(item.height) || 0;
-                            const qty = parseInt(item.quantity) || 1;
-                            const unitPrice = parseFloat(item.unit_price) || 0;
-                            const accessoryPrice = parseFloat(item.accessory_price) || 0;
+                if (items.length > 0) {
+                    tbody.innerHTML = items.map((item, idx) => {
+                        const width = parseFloat(item.width) || 0;
+                        const height = parseFloat(item.height) || 0;
+                        const qty = parseInt(item.quantity) || 1;
+                        const unitPrice = parseFloat(item.unit_price) || 0;
+                        const accessoryPrice = parseFloat(item.accessory_price) || 0;
 
-                            // Diện tích 1 bộ sản phẩm (m²)
-                            const areaPerUnit = (width * height) / 1000000;
-                            // Tổng diện tích = Diện tích 1 bộ × Số bộ (chỉ để hiển thị)
-                            const totalItemArea = areaPerUnit * qty;
+                        // Diện tích 1 bộ sản phẩm (m²)
+                        const areaPerUnit = (width * height) / 1000000;
+                        // Tổng diện tích = Diện tích 1 bộ × Số bộ (chỉ để hiển thị)
+                        const totalItemArea = areaPerUnit * qty;
 
-                            // ✅ FIX: Công thức đúng giống quotation-new.html
-                            // Giá vật tư 1 bộ = Diện tích 1 bộ × Đơn giá/m²
-                            const materialCostPerUnit = areaPerUnit * unitPrice;
-                            // Tổng tiền = (Giá vật tư 1 bộ + Phụ kiện 1 bộ) × Số bộ
-                            // Ưu tiên dùng total_price từ DB nếu có
-                            const itemTotal = parseFloat(item.total_price) || Math.round((materialCostPerUnit + accessoryPrice) * qty);
+                        // ✅ FIX: Công thức đúng giống quotation-new.html
+                        // Giá vật tư 1 bộ = Diện tích 1 bộ × Đơn giá/m²
+                        const materialCostPerUnit = areaPerUnit * unitPrice;
+                        // Tổng tiền = (Giá vật tư 1 bộ + Phụ kiện 1 bộ) × Số bộ
+                        // Ưu tiên dùng total_price từ DB nếu có
+                        const itemTotal = parseFloat(item.total_price) || Math.round((materialCostPerUnit + accessoryPrice) * qty);
 
-                            // Tính lại chi tiết để hiển thị đúng
-                            const materialCost = materialCostPerUnit * qty;
-                            const accessoryCost = accessoryPrice * qty;
+                        // Tính lại chi tiết để hiển thị đúng
+                        const materialCost = materialCostPerUnit * qty;
+                        const accessoryCost = accessoryPrice * qty;
 
-                            totalArea += totalItemArea;
-                            totalMaterial += materialCost;
-                            totalAccessories += accessoryCost;
-                            totalAmount += itemTotal;
+                        totalArea += totalItemArea;
+                        totalMaterial += materialCost;
+                        totalAccessories += accessoryCost;
+                        subtotal += itemTotal;
 
-                            return `<tr class="hover:bg-gray-50">
+                        return `<tr class="hover:bg-gray-50">
                             <td class="border px-2 py-2 text-center text-xs">${idx + 1}</td>
                             <td class="border px-2 py-2 text-xs font-medium">${escapeHtml(item.code || '')}</td>
                             <td class="border px-2 py-2 text-xs">${escapeHtml(item.item_name || item.spec || '')}</td>
@@ -1469,360 +1542,416 @@
                             <td class="border px-2 py-2 text-right text-xs">${formatCurrency(accessoryPrice).replace(' ₫', '')}</td>
                             <td class="border px-2 py-2 text-right text-xs font-medium">${formatCurrency(itemTotal)}</td>
                         </tr>`;
-                        }).join('');
-                    } else {
-                        tbody.innerHTML = '<tr><td colspan="12" class="text-center py-8 text-gray-400">Không có hạng mục</td></tr>';
-                    }
-
-                    // Fill totals
-                    document.getElementById('detailTotalArea').textContent = totalArea.toFixed(2) + ' m²';
-                    document.getElementById('detailTotalMaterial').textContent = formatCurrency(totalMaterial);
-                    document.getElementById('detailTotalAccessories').textContent = formatCurrency(totalAccessories);
-                    // ✅ FIX: Dùng subtotal (tổng từ items, chưa VAT) để khớp với hiển thị trong quotation-new.html
-                    document.getElementById('detailFinalTotal').textContent = formatCurrency(parseFloat(q.subtotal) || totalAmount);
-
-                    // Show modal
-                    document.getElementById('quotationDetailModal').classList.remove('hidden');
-                } catch (error) {
-                    console.error('Error loading quotation detail:', error);
-                    VWModal.error('Lỗi khi tải chi tiết báo giá');
-                }
-            }
-
-            function closeQuotationDetailModal() {
-                document.getElementById('quotationDetailModal').classList.add('hidden');
-                currentDetailQuotationId = null;
-            }
-
-            // Chốt báo giá từ modal
-            async function approveQuotationFromModal() {
-                if (!currentDetailQuotationId) return;
-
-                const confirmed = await VWModal.confirm('Xác nhận chốt báo giá', 'Bạn có chắc muốn chốt báo giá này?');
-                if (!confirmed) return;
-
-                try {
-                    const response = await fetch(`${API_BASE}/quotations/${currentDetailQuotationId}/status`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ status: 'approved' })
-                    });
-                    const result = await response.json();
-                    if (result.success) {
-                        showSuccessNotification('Đã chốt báo giá thành công!');
-                        document.getElementById('detailStatus').textContent = 'Đã chốt';
-                        document.getElementById('approveFromModalBtn').classList.add('hidden');
-                        document.getElementById('signContractFromModalBtn').classList.remove('hidden');
-                        loadPendingQuotations();
-                    } else {
-                        VWModal.error(result.message || 'Không thể chốt báo giá');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    VWModal.error('Lỗi khi chốt báo giá');
-                }
-            }
-
-            // Chốt hợp đồng từ modal
-            async function signContractFromModal() {
-                if (!currentDetailQuotationId) return;
-
-                const confirmed = await VWModal.confirm(
-                    'Xác nhận chốt hợp đồng',
-                    'Sau khi chốt, dự án sẽ chuyển sang giai đoạn thiết kế.<br><br>Bạn có chắc muốn tiếp tục?'
-                );
-                if (!confirmed) return;
-
-                try {
-                    const response = await fetch(`${API_BASE}/quotations/${currentDetailQuotationId}/sign-contract`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' }
-                    });
-                    const result = await response.json();
-                    if (result.success) {
-                        showSuccessNotification('Đã chốt hợp đồng thành công!', `Mã dự án: ${result.data.new_project_code}`);
-                        closeQuotationDetailModal();
-                        loadPendingQuotations();
-                    } else {
-                        VWModal.error(result.message || 'Không thể chốt hợp đồng');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    VWModal.error('Lỗi khi chốt hợp đồng');
-                }
-            }
-
-            function exportQuotationDetailToExcel() {
-                if (!currentDetailQuotationId) return;
-                window.open(`${API_BASE}/quotations/${currentDetailQuotationId}/export-excel`, '_blank');
-            }
-
-            // Cập nhật số tiền đặt cọc khi thay đổi %
-            function updateDepositFromPercent(quotationId, totalAmount) {
-                const percentInput = document.getElementById(`depositPercent-${quotationId}`);
-                const depositAmountInput = document.getElementById(`depositAmountInput-${quotationId}`);
-                const remainingAmountEl = document.getElementById(`remainingAmount-${quotationId}`);
-
-                if (percentInput && depositAmountInput && remainingAmountEl) {
-                    const percent = parseFloat(percentInput.value) || 40;
-                    const depositAmount = totalAmount * (percent / 100);
-                    const remainingAmount = totalAmount - depositAmount;
-
-                    depositAmountInput.value = Math.round(depositAmount).toLocaleString('vi-VN');
-                    remainingAmountEl.textContent = formatCurrency(remainingAmount);
-                }
-            }
-
-            // Cập nhật % khi thay đổi số tiền đặt cọc
-            function updateDepositFromAmount(quotationId, totalAmount) {
-                const percentInput = document.getElementById(`depositPercent-${quotationId}`);
-                const depositAmountInput = document.getElementById(`depositAmountInput-${quotationId}`);
-                const remainingAmountEl = document.getElementById(`remainingAmount-${quotationId}`);
-
-                if (percentInput && depositAmountInput && remainingAmountEl) {
-                    // Parse số từ input (loại bỏ dấu phân cách)
-                    const depositAmount = parseFloat(depositAmountInput.value.replace(/[.,\s]/g, '')) || 0;
-                    const percent = totalAmount > 0 ? Math.round((depositAmount / totalAmount) * 100) : 0;
-                    const remainingAmount = totalAmount - depositAmount;
-
-                    percentInput.value = percent;
-                    remainingAmountEl.textContent = formatCurrency(remainingAmount);
-                }
-            }
-
-            // Chốt báo giá từ card (Tab 1) - chuyển sang Tab 2 (Chờ chốt hợp đồng)
-            async function approveQuotationFromCard(quotationId) {
-                const confirmed = await VWModal.confirm(
-                    'Xác nhận chốt báo giá',
-                    'Sau khi chốt, báo giá sẽ chuyển sang trạng thái "Chờ chốt hợp đồng".<br><br>Bạn có chắc chắn?'
-                );
-                if (!confirmed) return;
-
-                try {
-                    const response = await fetch(`${API_BASE}/quotations/${quotationId}/status`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ status: 'approved' })
-                    });
-                    const result = await response.json();
-
-                    if (result.success) {
-                        showSuccessNotification('Đã chốt báo giá thành công!', 'Báo giá đã chuyển sang tab "Chờ chốt hợp đồng"');
-                        loadPendingQuotations();
-                        // Auto switch to Tab 2
-                        switchTab('approved');
-                    } else {
-                        VWModal.error(result.message || 'Không thể chốt báo giá');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    VWModal.error('Lỗi khi chốt báo giá');
-                }
-            }
-
-            // Xác nhận khách hàng đã thanh toán tiền đặt cọc
-            async function confirmDepositPayment(quotationId, checkbox) {
-                const quotation = allQuotations.find(q => q.id == quotationId);
-
-                // ============================================================
-                // KIỂM TRA PHIẾU THU ĐÃ GHI SỔ CHƯA TRƯỚC KHI XÁC NHẬN
-                // ============================================================
-                try {
-                    // Tìm phiếu thu đặt cọc theo:
-                    // 1. reference_number = DEPOSIT-{quotationId}
-                    // 2. hoặc description chứa mã báo giá
-                    const refNumber = `DEPOSIT-${quotationId}`;
-                    const quotationCode = quotation?.quotation_code || '';
-
-                    // Bước 1: Thử tìm theo reference_number trước
-                    let checkResponse = await fetch(`${API_BASE}/financial/transactions?referenceNumber=${refNumber}`);
-                    let checkResult = await checkResponse.json();
-                    let receipts = (checkResult.success && Array.isArray(checkResult.data)) ? checkResult.data : [];
-
-                    // Bước 2: Nếu không tìm thấy, tìm theo description chứa mã báo giá
-                    if (receipts.length === 0 && quotationCode) {
-                        checkResponse = await fetch(`${API_BASE}/financial/transactions?type=revenue`);
-                        checkResult = await checkResponse.json();
-
-                        if (checkResult.success && Array.isArray(checkResult.data)) {
-                            // Lọc phiếu thu có description chứa mã báo giá
-                            // KHÔNG filter theo category vì có thể là "Tiền đặt cọc", "Tiền cọc báo giá", "Sản phẩm", v.v.
-                            receipts = checkResult.data.filter(t =>
-                                t.description &&
-                                t.description.includes(quotationCode)
-                            );
-
-                            console.log('🔍 Found receipts by description:', receipts.map(f => ({
-                                code: f.transaction_code,
-                                category: f.category,
-                                status: f.status
-                            })));
-                        }
-                    }
-
-                    console.log('🔍 Checking deposit receipt:', {
-                        quotationId,
-                        quotationCode,
-                        found: receipts.length,
-                        receipts: receipts.map(r => ({ code: r.transaction_code, status: r.status, ref: r.reference_number }))
-                    });
-
-                    // Bước 3: Kiểm tra kết quả sau tất cả các bước tìm kiếm
-                    if (receipts.length === 0) {
-                        checkbox.checked = false;
-                        await VWModal.error(
-                            `Không tìm thấy phiếu thu đặt cọc cho báo giá <b>${quotationCode}</b>.<br><br>` +
-                            'Vui lòng tạo phiếu thu đặt cọc trước khi xác nhận thanh toán.<br><br>' +
-                            '<a href="finance-payments.html" class="text-blue-600 underline">Đi đến Phiếu thu</a>',
-                            { title: 'Chưa có phiếu thu đặt cọc!' }
-                        );
-                        return;
-                    }
-
-                    // Bước 4: Ưu tiên phiếu đã ghi sổ (posted), fallback sang phiếu đầu tiên
-                    const postedReceipt = receipts.find(r => r.status === 'posted');
-                    const depositReceipt = postedReceipt || receipts[0];
-
-                    // ✅ FIX: Luôn kiểm tra depositReceipt tồn tại trước khi truy cập .status
-                    if (!depositReceipt || depositReceipt.status !== 'posted') {
-                        checkbox.checked = false;
-                        const receiptCode = depositReceipt?.transaction_code || 'không xác định';
-                        const receiptStatus = depositReceipt?.status === 'draft' ? 'Nháp' : (depositReceipt?.status || 'Không rõ');
-                        await VWModal.error(
-                            `Phiếu thu <b>${receiptCode}</b> đang ở trạng thái "<b>${receiptStatus}</b>".<br><br>` +
-                            'Vui lòng ghi sổ phiếu thu trước khi xác nhận thanh toán đặt cọc.<br><br>' +
-                            '<a href="finance-payments.html" class="text-blue-600 underline">Đi đến Phiếu thu để ghi sổ</a>',
-                            { title: 'Phiếu thu chưa được ghi sổ!' }
-                        );
-                        return;
-                    }
-
-                    console.log('✅ Deposit receipt found and posted:', depositReceipt.transaction_code);
-                } catch (checkError) {
-                    console.error('Error checking deposit receipt:', checkError);
-                    // Tiếp tục nếu không kiểm tra được (để không block workflow)
-                }
-
-                // Lấy số tiền đặt cọc từ input số tiền (ưu tiên) hoặc tính từ %
-                const depositAmountInput = document.getElementById(`depositAmountInput-${quotationId}`);
-                const percentInput = document.getElementById(`depositPercent-${quotationId}`);
-                // ✅ FIX: Dùng subtotal (chưa VAT) để tính % đặt cọc
-                const baseAmount = parseFloat(quotation?.subtotal) || parseFloat(quotation?.total_amount) || 0;
-
-                let depositAmount;
-                if (depositAmountInput) {
-                    depositAmount = parseFloat(depositAmountInput.value.replace(/[.,\s]/g, '')) || 0;
+                    }).join('');
                 } else {
-                    const percent = parseFloat(percentInput?.value) || 40;
-                    depositAmount = baseAmount * (percent / 100);
+                    tbody.innerHTML = '<tr><td colspan="12" class="text-center py-8 text-gray-400">Không có hạng mục</td></tr>';
                 }
-                const percent = baseAmount > 0 ? Math.round((depositAmount / baseAmount) * 100) : 0;
 
-                const confirmed = await VWModal.confirm(
-                    'Xác nhận thanh toán đặt cọc',
-                    `Xác nhận khách hàng đã thanh toán tiền đặt cọc <strong>${percent}%</strong> = <strong>${formatCurrency(depositAmount)}</strong>?<br><br><em>Sau khi xác nhận sẽ không thể hoàn tác.</em>`
-                );
-                if (!confirmed) {
+                // Chiết khấu phụ kiện
+                const accDiscountPct = parseFloat(q.accessory_discount_percent) || 0;
+                const accDiscountAmt = parseFloat(q.accessory_discount_amount) || (totalAccessories * accDiscountPct / 100);
+
+                // Chiết khấu chung
+                const generalDiscountPct = parseFloat(q.discount_percent) || 0;
+                const generalDiscountAmt = (subtotal * generalDiscountPct) / 100;
+
+                // VAT & Shipping - VAT đã bị loại bỏ khỏi hệ thống (mặc định 0%)
+                const vatPct = 0;
+                const shippingFee = parseFloat(q.shipping_fee) || 0;
+
+                // Tính tổng cuối cùng đồng nhất với Backend và quotation-new.html
+                const taxableAmount = subtotal - generalDiscountAmt - accDiscountAmt;
+                const vatAmount = 0;
+                const finalTotal = taxableAmount + vatAmount + shippingFee;
+
+                // Fill tổng hợp
+                document.getElementById('detailTotalArea').textContent = totalArea.toFixed(2) + ' m²';
+                document.getElementById('detailTotalMaterial').textContent = formatCurrency(totalMaterial);
+                document.getElementById('detailTotalAccessories').textContent = formatCurrency(totalAccessories);
+                document.getElementById('detailFinalTotal').textContent = formatCurrency(finalTotal);
+                document.getElementById('detailTotalInWords').textContent = numberToWords(finalTotal);
+
+                // Hiển thị dòng chiết khấu phụ kiện
+                const detailAccDiscountRow = document.getElementById('detailAccessoryDiscountRow');
+                if (accDiscountAmt > 0 && detailAccDiscountRow) {
+                    detailAccDiscountRow.classList.remove('hidden');
+                    document.getElementById('detailAccessoryDiscountPercent').textContent = accDiscountPct;
+                    document.getElementById('detailAccessoryDiscountAmount').textContent = formatCurrency(accDiscountAmt);
+                } else if (detailAccDiscountRow) {
+                    detailAccDiscountRow.classList.add('hidden');
+                }
+
+                // Hiển thị dòng chiết khấu chung
+                const detailGenDiscountRow = document.getElementById('detailGeneralDiscountRow');
+                if (generalDiscountAmt > 0 && detailGenDiscountRow) {
+                    detailGenDiscountRow.classList.remove('hidden');
+                    document.getElementById('detailGeneralDiscountPercent').textContent = generalDiscountPct;
+                    document.getElementById('detailGeneralDiscountAmount').textContent = formatCurrency(generalDiscountAmt);
+                } else if (detailGenDiscountRow) {
+                    detailGenDiscountRow.classList.add('hidden');
+                }
+
+                // Hiển thị dòng phí vận chuyển
+                const detailShippingRow = document.getElementById('detailShippingFeeRow');
+                if (shippingFee > 0 && detailShippingRow) {
+                    detailShippingRow.classList.remove('hidden');
+                    document.getElementById('detailShippingFeeAmount').textContent = formatCurrency(shippingFee);
+                } else if (detailShippingRow) {
+                    detailShippingRow.classList.add('hidden');
+                }
+
+                // Fill ghi chú
+                const notesSection = document.getElementById('detailNotesSection');
+                const notesEl = document.getElementById('detailNotes');
+                if (q.notes && notesSection && notesEl) {
+                    notesEl.textContent = q.notes;
+                    notesSection.style.display = 'block';
+                } else if (notesSection) {
+                    notesSection.style.display = 'none';
+                }
+
+                // Show modal
+                document.getElementById('quotationDetailModal').classList.remove('hidden');
+            } catch (error) {
+                console.error('Error loading quotation detail:', error);
+                VWModal.error('Lỗi khi tải chi tiết báo giá');
+            }
+        }
+
+        function closeQuotationDetailModal() {
+            document.getElementById('quotationDetailModal').classList.add('hidden');
+            currentDetailQuotationId = null;
+        }
+
+        // Chốt báo giá từ modal
+        async function approveQuotationFromModal() {
+            if (!currentDetailQuotationId) return;
+
+            const confirmed = await VWModal.confirm('Xác nhận chốt báo giá', 'Bạn có chắc muốn chốt báo giá này?');
+            if (!confirmed) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/quotations/${currentDetailQuotationId}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'approved' })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showSuccessNotification('Đã chốt báo giá thành công!');
+                    document.getElementById('detailStatus').textContent = 'Đã chốt';
+                    document.getElementById('approveFromModalBtn').classList.add('hidden');
+                    document.getElementById('signContractFromModalBtn').classList.remove('hidden');
+                    loadPendingQuotations();
+                } else {
+                    VWModal.error(result.message || 'Không thể chốt báo giá');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                VWModal.error('Lỗi khi chốt báo giá');
+            }
+        }
+
+        // Chốt hợp đồng từ modal
+        async function signContractFromModal() {
+            if (!currentDetailQuotationId) return;
+
+            const confirmed = await VWModal.confirm(
+                'Xác nhận chốt hợp đồng',
+                'Sau khi chốt, dự án sẽ chuyển sang giai đoạn thiết kế.<br><br>Bạn có chắc muốn tiếp tục?'
+            );
+            if (!confirmed) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/quotations/${currentDetailQuotationId}/sign-contract`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showSuccessNotification('Đã chốt hợp đồng thành công!', `Mã dự án: ${result.data.new_project_code}`);
+                    closeQuotationDetailModal();
+                    loadPendingQuotations();
+                } else {
+                    VWModal.error(result.message || 'Không thể chốt hợp đồng');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                VWModal.error('Lỗi khi chốt hợp đồng');
+            }
+        }
+
+        function exportQuotationDetailToExcel() {
+            if (!currentDetailQuotationId) return;
+            window.open(`${API_BASE}/quotations/${currentDetailQuotationId}/export-excel`, '_blank');
+        }
+
+        // Cập nhật số tiền đặt cọc khi thay đổi %
+        function updateDepositFromPercent(quotationId, totalAmount) {
+            const percentInput = document.getElementById(`depositPercent-${quotationId}`);
+            const depositAmountInput = document.getElementById(`depositAmountInput-${quotationId}`);
+            const remainingAmountEl = document.getElementById(`remainingAmount-${quotationId}`);
+
+            if (percentInput && depositAmountInput && remainingAmountEl) {
+                const percent = parseFloat(percentInput.value) || 40;
+                const depositAmount = totalAmount * (percent / 100);
+                const remainingAmount = totalAmount - depositAmount;
+
+                depositAmountInput.value = Math.round(depositAmount).toLocaleString('vi-VN');
+                remainingAmountEl.textContent = formatCurrency(remainingAmount);
+            }
+        }
+
+        // Cập nhật % khi thay đổi số tiền đặt cọc
+        function updateDepositFromAmount(quotationId, totalAmount) {
+            const percentInput = document.getElementById(`depositPercent-${quotationId}`);
+            const depositAmountInput = document.getElementById(`depositAmountInput-${quotationId}`);
+            const remainingAmountEl = document.getElementById(`remainingAmount-${quotationId}`);
+
+            if (percentInput && depositAmountInput && remainingAmountEl) {
+                // Parse số từ input (loại bỏ dấu phân cách)
+                const depositAmount = parseFloat(depositAmountInput.value.replace(/[.,\s]/g, '')) || 0;
+                const percent = totalAmount > 0 ? Math.round((depositAmount / totalAmount) * 100) : 0;
+                const remainingAmount = totalAmount - depositAmount;
+
+                percentInput.value = percent;
+                remainingAmountEl.textContent = formatCurrency(remainingAmount);
+            }
+        }
+
+        // Chốt báo giá từ card (Tab 1) - chuyển sang Tab 2 (Chờ chốt hợp đồng)
+        async function approveQuotationFromCard(quotationId) {
+            const confirmed = await VWModal.confirm(
+                'Xác nhận chốt báo giá',
+                'Sau khi chốt, báo giá sẽ chuyển sang trạng thái "Chờ chốt hợp đồng".<br><br>Bạn có chắc chắn?'
+            );
+            if (!confirmed) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/quotations/${quotationId}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'approved' })
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    showSuccessNotification('Đã chốt báo giá thành công!', 'Báo giá đã chuyển sang tab "Chờ chốt hợp đồng"');
+                    loadPendingQuotations();
+                    // Auto switch to Tab 2
+                    switchTab('approved');
+                } else {
+                    VWModal.error(result.message || 'Không thể chốt báo giá');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                VWModal.error('Lỗi khi chốt báo giá');
+            }
+        }
+
+        // Xác nhận khách hàng đã thanh toán tiền đặt cọc
+        async function confirmDepositPayment(quotationId, checkbox) {
+            const quotation = allQuotations.find(q => q.id == quotationId);
+
+            // ============================================================
+            // KIỂM TRA PHIẾU THU ĐÃ GHI SỔ CHƯA TRƯỚC KHI XÁC NHẬN
+            // ============================================================
+            try {
+                // Tìm phiếu thu đặt cọc theo:
+                // 1. reference_number = DEPOSIT-{quotationId}
+                // 2. hoặc description chứa mã báo giá
+                const refNumber = `DEPOSIT-${quotationId}`;
+                const quotationCode = quotation?.quotation_code || '';
+
+                // Bước 1: Thử tìm theo reference_number trước
+                let checkResponse = await fetch(`${API_BASE}/financial/transactions?referenceNumber=${refNumber}`);
+                let checkResult = await checkResponse.json();
+                let receipts = (checkResult.success && Array.isArray(checkResult.data)) ? checkResult.data : [];
+
+                // Bước 2: Nếu không tìm thấy, tìm theo description chứa mã báo giá
+                if (receipts.length === 0 && quotationCode) {
+                    checkResponse = await fetch(`${API_BASE}/financial/transactions?type=revenue`);
+                    checkResult = await checkResponse.json();
+
+                    if (checkResult.success && Array.isArray(checkResult.data)) {
+                        // Lọc phiếu thu có description chứa mã báo giá
+                        // KHÔNG filter theo category vì có thể là "Tiền đặt cọc", "Tiền cọc báo giá", "Sản phẩm", v.v.
+                        receipts = checkResult.data.filter(t =>
+                            t.description &&
+                            t.description.includes(quotationCode)
+                        );
+
+                        console.log('🔍 Found receipts by description:', receipts.map(f => ({
+                            code: f.transaction_code,
+                            category: f.category,
+                            status: f.status
+                        })));
+                    }
+                }
+
+                console.log('🔍 Checking deposit receipt:', {
+                    quotationId,
+                    quotationCode,
+                    found: receipts.length,
+                    receipts: receipts.map(r => ({ code: r.transaction_code, status: r.status, ref: r.reference_number }))
+                });
+
+                // Bước 3: Kiểm tra kết quả sau tất cả các bước tìm kiếm
+                if (receipts.length === 0) {
                     checkbox.checked = false;
+                    await VWModal.error(
+                        `Không tìm thấy phiếu thu đặt cọc cho báo giá <b>${quotationCode}</b>.<br><br>` +
+                        'Vui lòng tạo phiếu thu đặt cọc trước khi xác nhận thanh toán.<br><br>' +
+                        '<a href="finance-payments.html" class="text-blue-600 underline">Đi đến Phiếu thu</a>',
+                        { title: 'Chưa có phiếu thu đặt cọc!' }
+                    );
                     return;
                 }
 
-                try {
-                    const response = await fetch(`${API_BASE}/quotations/${quotationId}/confirm-deposit`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ deposit_amount: depositAmount })
-                    });
-                    const result = await response.json();
+                // Bước 4: Ưu tiên phiếu đã ghi sổ (posted), fallback sang phiếu đầu tiên
+                const postedReceipt = receipts.find(r => r.status === 'posted');
+                const depositReceipt = postedReceipt || receipts[0];
 
-                    if (result.success) {
-                        showSuccessNotification('Đã xác nhận thanh toán tiền đặt cọc!');
-
-                        // Reload để refresh UI - ẩn input fields vì deposit_paid = true
-                        loadPendingQuotations();
-                    } else {
-                        checkbox.checked = false;
-                        VWModal.error(result.message || 'Không thể xác nhận đặt cọc');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
+                // ✅ FIX: Luôn kiểm tra depositReceipt tồn tại trước khi truy cập .status
+                if (!depositReceipt || depositReceipt.status !== 'posted') {
                     checkbox.checked = false;
-                    VWModal.error('Lỗi khi xác nhận đặt cọc');
+                    const receiptCode = depositReceipt?.transaction_code || 'không xác định';
+                    const receiptStatus = depositReceipt?.status === 'draft' ? 'Nháp' : (depositReceipt?.status || 'Không rõ');
+                    await VWModal.error(
+                        `Phiếu thu <b>${receiptCode}</b> đang ở trạng thái "<b>${receiptStatus}</b>".<br><br>` +
+                        'Vui lòng ghi sổ phiếu thu trước khi xác nhận thanh toán đặt cọc.<br><br>' +
+                        '<a href="finance-payments.html" class="text-blue-600 underline">Đi đến Phiếu thu để ghi sổ</a>',
+                        { title: 'Phiếu thu chưa được ghi sổ!' }
+                    );
+                    return;
                 }
+
+                console.log('✅ Deposit receipt found and posted:', depositReceipt.transaction_code);
+            } catch (checkError) {
+                console.error('Error checking deposit receipt:', checkError);
+                // Tiếp tục nếu không kiểm tra được (để không block workflow)
             }
 
-            // Chốt hợp đồng (chỉ sau khi đã xác nhận đặt cọc)
-            async function signContractForQuotation(quotationId) {
-                const confirmed = await VWModal.confirm(
-                    'Xác nhận chốt hợp đồng',
-                    'Sau khi chốt, mã dự án sẽ đổi từ <strong>VRBG</strong> thành <strong>VR</strong> và dự án chuyển sang giai đoạn thiết kế.<br><br>Bạn có chắc muốn tiếp tục?'
-                );
-                if (!confirmed) return;
+            // Lấy số tiền đặt cọc từ input số tiền (ưu tiên) hoặc tính từ %
+            const depositAmountInput = document.getElementById(`depositAmountInput-${quotationId}`);
+            const percentInput = document.getElementById(`depositPercent-${quotationId}`);
+            // ✅ FIX: Dùng subtotal (chưa VAT) để tính % đặt cọc
+            const baseAmount = parseFloat(quotation?.subtotal) || parseFloat(quotation?.total_amount) || 0;
 
-                try {
-                    const response = await fetch(`${API_BASE}/quotations/${quotationId}/sign-contract`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' }
-                    });
-                    const result = await response.json();
+            let depositAmount;
+            if (depositAmountInput) {
+                depositAmount = parseFloat(depositAmountInput.value.replace(/[.,\s]/g, '')) || 0;
+            } else {
+                const percent = parseFloat(percentInput?.value) || 40;
+                depositAmount = baseAmount * (percent / 100);
+            }
+            const percent = baseAmount > 0 ? Math.round((depositAmount / baseAmount) * 100) : 0;
 
-                    if (result.success) {
-                        showSuccessNotification('Đã chốt hợp đồng thành công!', `Mã dự án mới: ${result.data.new_project_code}`);
-                        loadPendingQuotations(); // Reload data
-                    } else {
-                        VWModal.error(result.message || 'Không thể chốt hợp đồng');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    VWModal.error('Lỗi khi chốt hợp đồng');
-                }
+            const confirmed = await VWModal.confirm(
+                'Xác nhận thanh toán đặt cọc',
+                `Xác nhận khách hàng đã thanh toán tiền đặt cọc <strong>${percent}%</strong> = <strong>${formatCurrency(depositAmount)}</strong>?<br><br><em>Sau khi xác nhận sẽ không thể hoàn tác.</em>`
+            );
+            if (!confirmed) {
+                checkbox.checked = false;
+                return;
             }
 
-            async function viewQuotation(id) {
-                try {
-                    const response = await fetch(`${API_BASE}/quotations/${id}`);
-                    const result = await response.json();
+            try {
+                const response = await fetch(`${API_BASE}/quotations/${quotationId}/confirm-deposit`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ deposit_amount: depositAmount })
+                });
+                const result = await response.json();
 
-                    if (result.success) {
-                        showQuotationModal(result.data);
-                    } else {
-                        VWModal.error('Không thể tải chi tiết báo giá');
-                    }
-                } catch (error) {
-                    console.error('Lỗi:', error);
+                if (result.success) {
+                    showSuccessNotification('Đã xác nhận thanh toán tiền đặt cọc!');
+
+                    // Reload để refresh UI - ẩn input fields vì deposit_paid = true
+                    loadPendingQuotations();
+                } else {
+                    checkbox.checked = false;
+                    VWModal.error(result.message || 'Không thể xác nhận đặt cọc');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                checkbox.checked = false;
+                VWModal.error('Lỗi khi xác nhận đặt cọc');
+            }
+        }
+
+        // Chốt hợp đồng (chỉ sau khi đã xác nhận đặt cọc)
+        async function signContractForQuotation(quotationId) {
+            const confirmed = await VWModal.confirm(
+                'Xác nhận chốt hợp đồng',
+                'Sau khi chốt, mã dự án sẽ đổi từ <strong>VRBG</strong> thành <strong>VR</strong> và dự án chuyển sang giai đoạn thiết kế.<br><br>Bạn có chắc muốn tiếp tục?'
+            );
+            if (!confirmed) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/quotations/${quotationId}/sign-contract`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    showSuccessNotification('Đã chốt hợp đồng thành công!', `Mã dự án mới: ${result.data.new_project_code}`);
+                    loadPendingQuotations(); // Reload data
+                } else {
+                    VWModal.error(result.message || 'Không thể chốt hợp đồng');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                VWModal.error('Lỗi khi chốt hợp đồng');
+            }
+        }
+
+        async function viewQuotation(id) {
+            try {
+                const response = await fetch(`${API_BASE}/quotations/${id}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    showQuotationModal(result.data);
+                } else {
                     VWModal.error('Không thể tải chi tiết báo giá');
                 }
+            } catch (error) {
+                console.error('Lỗi:', error);
+                VWModal.error('Không thể tải chi tiết báo giá');
+            }
+        }
+
+        function showQuotationModal(quotation) {
+            const qId = parseInt(quotation.id) || 0;
+            const code = escapeHtml(quotation.quotation_code || 'N/A');
+            const customer = escapeHtml(quotation.customer_name || 'N/A');
+            const project = escapeHtml(quotation.project_name || 'N/A');
+            const date = formatDate(quotation.quotation_date);
+            const status = getStatusText(quotation.status);
+            const statusColor = getStatusColor(quotation.status);
+            const amount = formatCurrency(quotation.subtotal || quotation.total_amount);
+            const notes = escapeHtml(quotation.notes || '');
+            const items = quotation.items || [];
+
+            const modal = document.createElement('div');
+            modal.id = 'quotationModal';
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+            modal.onclick = function (e) {
+                if (e.target === modal) closeQuotationModal();
+            };
+
+            let itemsHtml = '';
+            if (items.length > 0) {
+                itemsHtml = '<div class="mt-4"><h4 class="font-semibold mb-2">Chi tiết sản phẩm:</h4><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50"><tr><th class="px-4 py-2 text-left">Tên</th><th class="px-4 py-2 text-right">SL</th><th class="px-4 py-2 text-right">Đơn giá</th><th class="px-4 py-2 text-right">Thành tiền</th></tr></thead><tbody>';
+                items.forEach(item => {
+                    itemsHtml += `<tr class="border-t"><td class="px-4 py-2">${escapeHtml(item.item_name || '')}</td><td class="px-4 py-2 text-right">${item.quantity || 0} ${escapeHtml(item.unit || '')}</td><td class="px-4 py-2 text-right">${formatCurrency(item.unit_price)}</td><td class="px-4 py-2 text-right font-medium">${formatCurrency(item.total_price)}</td></tr>`;
+                });
+                itemsHtml += '</tbody></table></div></div>';
             }
 
-            function showQuotationModal(quotation) {
-                const qId = parseInt(quotation.id) || 0;
-                const code = escapeHtml(quotation.quotation_code || 'N/A');
-                const customer = escapeHtml(quotation.customer_name || 'N/A');
-                const project = escapeHtml(quotation.project_name || 'N/A');
-                const date = formatDate(quotation.quotation_date);
-                const status = getStatusText(quotation.status);
-                const statusColor = getStatusColor(quotation.status);
-                const amount = formatCurrency(quotation.subtotal || quotation.total_amount);
-                const notes = escapeHtml(quotation.notes || '');
-                const items = quotation.items || [];
-
-                const modal = document.createElement('div');
-                modal.id = 'quotationModal';
-                modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
-                modal.onclick = function (e) {
-                    if (e.target === modal) closeQuotationModal();
-                };
-
-                let itemsHtml = '';
-                if (items.length > 0) {
-                    itemsHtml = '<div class="mt-4"><h4 class="font-semibold mb-2">Chi tiết sản phẩm:</h4><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50"><tr><th class="px-4 py-2 text-left">Tên</th><th class="px-4 py-2 text-right">SL</th><th class="px-4 py-2 text-right">Đơn giá</th><th class="px-4 py-2 text-right">Thành tiền</th></tr></thead><tbody>';
-                    items.forEach(item => {
-                        itemsHtml += `<tr class="border-t"><td class="px-4 py-2">${escapeHtml(item.item_name || '')}</td><td class="px-4 py-2 text-right">${item.quantity || 0} ${escapeHtml(item.unit || '')}</td><td class="px-4 py-2 text-right">${formatCurrency(item.unit_price)}</td><td class="px-4 py-2 text-right font-medium">${formatCurrency(item.total_price)}</td></tr>`;
-                    });
-                    itemsHtml += '</tbody></table></div></div>';
-                }
-
-                modal.innerHTML = `
+            modal.innerHTML = `
                 <div class="bg-white rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-bold text-gray-900">Chi tiết báo giá</h2>
@@ -1858,141 +1987,141 @@
                 </div>
             `;
 
-                document.body.appendChild(modal);
-            }
+            document.body.appendChild(modal);
+        }
 
-            function closeQuotationModal() {
-                const modal = document.getElementById('quotationModal');
-                if (modal) modal.remove();
-            }
+        function closeQuotationModal() {
+            const modal = document.getElementById('quotationModal');
+            if (modal) modal.remove();
+        }
 
-            function printQuotation(id) {
-                window.open(`${API_BASE}/quotations/${id}/pdf-data`, '_blank');
-            }
+        function printQuotation(id) {
+            window.open(`${API_BASE}/quotations/${id}/pdf-data`, '_blank');
+        }
 
-            function exportQuotationPDF(id) {
-                window.open(`${API_BASE}/quotations/${id}/pdf-data`, '_blank');
-            }
+        function exportQuotationPDF(id) {
+            window.open(`${API_BASE}/quotations/${id}/pdf-data`, '_blank');
+        }
 
-            async function sendReminder(id) {
-                const confirmed = await VWModal.confirm(
-                    'Gửi nhắc nhở',
-                    'Gửi email nhắc nhở khách hàng về báo giá này?'
-                );
-                if (!confirmed) return;
+        async function sendReminder(id) {
+            const confirmed = await VWModal.confirm(
+                'Gửi nhắc nhở',
+                'Gửi email nhắc nhở khách hàng về báo giá này?'
+            );
+            if (!confirmed) return;
 
-                try {
-                    const response = await fetch(`${API_BASE}/quotations/${id}/remind`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' }
-                    });
+            try {
+                const response = await fetch(`${API_BASE}/quotations/${id}/remind`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
 
-                    const result = await response.json();
-                    if (result.success) {
-                        showSuccessNotification('Đã gửi email nhắc nhở thành công!');
-                    } else {
-                        VWModal.error(result.message || 'Không thể gửi email');
-                    }
-                } catch (error) {
-                    console.error('Lỗi:', error);
-                    VWModal.error('Lỗi khi gửi email nhắc nhở');
+                const result = await response.json();
+                if (result.success) {
+                    showSuccessNotification('Đã gửi email nhắc nhở thành công!');
+                } else {
+                    VWModal.error(result.message || 'Không thể gửi email');
                 }
+            } catch (error) {
+                console.error('Lỗi:', error);
+                VWModal.error('Lỗi khi gửi email nhắc nhở');
+            }
+        }
+
+        // Mở báo giá để sửa
+        function editQuotation(id) {
+            // Redirect to quotation-new.html with quotation ID to load and edit
+            window.location.href = `quotation-new.html?quotation_id=${id}`;
+        }
+
+        // Mở báo giá (nút Mở BG) - redirect trực tiếp với id param
+        // quotation-new.html sẽ tự load từ API với ?id=
+        function openQuotation(id) {
+            window.location.href = `quotation-new.html?id=${id}`;
+        }
+
+        // Hủy báo giá (xóa khỏi hệ thống)
+        async function deleteQuotation(quotationId, quotationCode, status) {
+            // Kiểm tra status trước khi xóa - chỉ cho phép xóa báo giá ở trạng thái chờ duyệt
+            const allowedStatuses = ['draft', 'sent', 'revised'];
+            if (status && !allowedStatuses.includes(status)) {
+                await VWModal.error('Không thể hủy báo giá đã được chốt hoặc đã ký hợp đồng!');
+                return;
             }
 
-            // Mở báo giá để sửa
-            function editQuotation(id) {
-                // Redirect to quotation-new.html with quotation ID to load and edit
-                window.location.href = `quotation-new.html?quotation_id=${id}`;
-            }
-
-            // Mở báo giá (nút Mở BG) - redirect trực tiếp với id param
-            // quotation-new.html sẽ tự load từ API với ?id=
-            function openQuotation(id) {
-                window.location.href = `quotation-new.html?id=${id}`;
-            }
-
-            // Hủy báo giá (xóa khỏi hệ thống)
-            async function deleteQuotation(quotationId, quotationCode, status) {
-                // Kiểm tra status trước khi xóa - chỉ cho phép xóa báo giá ở trạng thái chờ duyệt
-                const allowedStatuses = ['draft', 'sent', 'revised'];
-                if (status && !allowedStatuses.includes(status)) {
-                    await VWModal.error('Không thể hủy báo giá đã được chốt hoặc đã ký hợp đồng!');
-                    return;
-                }
-
-                // Xác nhận trước khi xóa
-                const confirmed = await VWModal.confirm(
-                    'Xác nhận hủy báo giá',
-                    `Bạn có chắc chắn muốn xóa báo giá <b>${quotationCode}</b>?<br><br>
+            // Xác nhận trước khi xóa
+            const confirmed = await VWModal.confirm(
+                'Xác nhận hủy báo giá',
+                `Bạn có chắc chắn muốn xóa báo giá <b>${quotationCode}</b>?<br><br>
                     <span class="text-red-600">⚠️ Hành động này không thể hoàn tác!</span>`
-                );
+            );
 
-                if (!confirmed) return;
+            if (!confirmed) return;
 
-                try {
-                    const token = sessionStorage.getItem('token');
-                    const response = await fetch(`${API_BASE}/quotations/${quotationId}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
-                    });
-
-                    const result = await response.json();
-
-                    if (result.success) {
-                        await VWModal.success(`Báo giá "${quotationCode}" đã được xóa khỏi hệ thống.`, { title: 'Thành công' });
-                        // Reload danh sách báo giá
-                        loadPendingQuotations();
-                    } else {
-                        await VWModal.error(`Lỗi: ${result.message || 'Không thể xóa báo giá'}`, { title: 'Lỗi xóa báo giá' });
+            try {
+                const token = sessionStorage.getItem('token');
+                const response = await fetch(`${API_BASE}/quotations/${quotationId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
                     }
-                } catch (error) {
-                    console.error('Error deleting quotation:', error);
-                    await VWModal.error('Lỗi kết nối server: ' + error.message);
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    await VWModal.success(`Báo giá "${quotationCode}" đã được xóa khỏi hệ thống.`, { title: 'Thành công' });
+                    // Reload danh sách báo giá
+                    loadPendingQuotations();
+                } else {
+                    await VWModal.error(`Lỗi: ${result.message || 'Không thể xóa báo giá'}`, { title: 'Lỗi xóa báo giá' });
                 }
+            } catch (error) {
+                console.error('Error deleting quotation:', error);
+                await VWModal.error('Lỗi kết nối server: ' + error.message);
             }
+        }
 
-            // Chốt báo giá (approve)
-            async function approveQuotation(id) {
-                const confirmed = await VWModal.confirm(
-                    'Xác nhận chốt báo giá',
-                    'Sau khi chốt, báo giá sẽ không hiển thị trong danh sách chờ duyệt nữa.<br><br>Bạn có chắc muốn tiếp tục?'
-                );
-                if (!confirmed) return;
+        // Chốt báo giá (approve)
+        async function approveQuotation(id) {
+            const confirmed = await VWModal.confirm(
+                'Xác nhận chốt báo giá',
+                'Sau khi chốt, báo giá sẽ không hiển thị trong danh sách chờ duyệt nữa.<br><br>Bạn có chắc muốn tiếp tục?'
+            );
+            if (!confirmed) return;
 
-                try {
-                    const response = await fetch(`${API_BASE}/quotations/${id}/status`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ status: 'approved' })
-                    });
+            try {
+                const response = await fetch(`${API_BASE}/quotations/${id}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'approved' })
+                });
 
-                    const result = await response.json();
-                    if (result.success) {
-                        showSuccessNotification('Đã chốt báo giá thành công!');
-                        // Reload data to remove approved quotation from list
-                        loadPendingQuotations();
-                    } else {
-                        VWModal.error(result.message || 'Không thể chốt báo giá');
-                    }
-                } catch (error) {
-                    console.error('Lỗi:', error);
-                    VWModal.error('Lỗi khi chốt báo giá. Vui lòng thử lại.');
+                const result = await response.json();
+                if (result.success) {
+                    showSuccessNotification('Đã chốt báo giá thành công!');
+                    // Reload data to remove approved quotation from list
+                    loadPendingQuotations();
+                } else {
+                    VWModal.error(result.message || 'Không thể chốt báo giá');
                 }
+            } catch (error) {
+                console.error('Lỗi:', error);
+                VWModal.error('Lỗi khi chốt báo giá. Vui lòng thử lại.');
             }
+        }
 
-            function refreshData() {
-                loadPendingQuotations();
-            }
+        function refreshData() {
+            loadPendingQuotations();
+        }
 
-            // Initialize
-            document.addEventListener('DOMContentLoaded', function () {
-                loadSidebarInfo();
-                loadPendingQuotations();
-            });
-        </script>
-        <script src="js/sidebar-enterprise.js"></script>
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function () {
+            loadSidebarInfo();
+            loadPendingQuotations();
+        });
+    </script>
+    <script src="js/sidebar-enterprise.js"></script>
     </div> <!-- End main-content -->
 </body>
 

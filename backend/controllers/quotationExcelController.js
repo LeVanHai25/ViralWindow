@@ -176,14 +176,12 @@ exports.exportQuotationToExcel = async (req, res) => {
         const accessoryDiscountPercent = parseFloat(quotation.accessory_discount_percent) || 0;
         const accessoryDiscountAmount = parseFloat(quotation.accessory_discount_amount) || ((totalAccessories * accessoryDiscountPercent) / 100);
 
-        const vatPercent = quotation.vat_percent !== null && quotation.vat_percent !== undefined
-            ? parseFloat(quotation.vat_percent)
-            : 10; // Mặc định 10%
-
-        const afterDiscounts = finalTotal - discountAmount - accessoryDiscountAmount;
-        const vatAmount = (afterDiscounts * vatPercent) / 100;
+        // VAT đã bị loại bỏ khỏi hệ thống (mặc định 0%)
+        const vatPercent = 0;
+        const vatAmount = 0;
         const shippingFee = parseFloat(quotation.shipping_fee) || 0;
 
+        const afterDiscounts = finalTotal - discountAmount - accessoryDiscountAmount;
         // Tổng cuối cùng
         const grandTotal = afterDiscounts + vatAmount + shippingFee;
 
@@ -631,7 +629,7 @@ exports.exportQuotationToExcel = async (req, res) => {
         currentRow++;
 
         const notes = [
-            `- Đơn giá trên là đơn giá hoàn thiện. Đã bao gồm VAT, bao gồm chi phí vận chuyển và chi phí lắp đặt, thiết bị và biện pháp thi công cho các hệ cửa.`,
+            `- Đơn giá trên là đơn giá hoàn thiện. Đã bao gồm chi phí vận chuyển và chi phí lắp đặt, thiết bị và biện pháp thi công cho các hệ cửa.`,
             '- Trường hợp khách hàng ở tỉnh đơn giá vẫn giữ nguyên, tính thêm chi phí vận chuyển',
             '- Giá trị 1 bộ cửa(vnđ) = {Đơn giá*m2 cửa} + phụ kiện(vnđ/bộ)',
             '- Báo giá có hiệu lực trong 7-10 ngày kể từ khi báo giá hoặc đến khi có báo giá mới.',
