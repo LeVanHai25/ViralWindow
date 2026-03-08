@@ -374,7 +374,9 @@ function createMainRow(order) {
     const overdueBadge = order.isOverdue ? '<span class="status-badge status-late">Trễ hạn</span>' : '';
 
     // Format quantity (total aluminum weight in kg)
-    const quantityDisplay = order.quantity ? `${parseFloat(order.quantity).toFixed(2)} kg` : '';
+    const quantityDisplay = order.quantity
+        ? (/[a-zA-Z]/.test(order.quantity) ? order.quantity : `${parseFloat(order.quantity).toFixed(2)} kg`)
+        : '';
 
     tr.innerHTML = `
         <td class="expand-cell"><button class="expand-btn">${expandIcon}</button></td>
@@ -382,7 +384,7 @@ function createMainRow(order) {
         <td data-col="orderName">${escapeHtml(order.orderName)}</td>
         <td data-col="featuredProducts"></td>
         <td data-col="customer" class="customer-cell" onclick="event.stopPropagation(); openCustomerModal(${order.id})" title="${escapeHtml(branchCustomer)}">${escapeHtml(branchCustomer)}</td>
-        <td data-col="quantity" class="text-right font-medium text-blue-600 editable-cell" onclick="event.stopPropagation();" ondblclick="editCell(this, ${order.id}, 'quantity')">${quantityDisplay}</td>
+        <td data-col="quantity" data-value="${order.quantity || ''}" class="text-right font-medium text-blue-600 editable-cell" onclick="event.stopPropagation();" ondblclick="editCell(this, ${order.id}, 'quantity')">${quantityDisplay}</td>
         <td data-col="workforce" class="editable-cell" onclick="event.stopPropagation();" ondblclick="editCell(this, ${order.id}, 'workforce')" title="Double-click để nhập nhân lực">${escapeHtml(order.workforce || '')}</td>
         <td data-col="createdAt">${createdAt}</td>
         <td data-col="deliveryDate">${deliveryPlanDate} ${overdueBadge}</td>
@@ -633,7 +635,7 @@ function openDetail(orderId) {
             </div>
             <div class="mb-4">
                 <p class="text-sm text-gray-500">Khối lượng nhôm</p>
-                <p class="text-lg font-bold text-blue-600">${order.quantity ? parseFloat(order.quantity).toFixed(2) : 0} kg</p>
+                <p class="text-lg font-bold text-blue-600">${order.quantity ? (/[a-zA-Z]/.test(order.quantity) ? order.quantity : `${parseFloat(order.quantity).toFixed(2)} kg`) : 0}</p>
             </div>
             <hr class="my-4"/>
             <div class="mb-4">
@@ -689,7 +691,7 @@ async function loadOrderHistory(orderId) {
 // INLINE EDITING
 // ============================================
 function editCell(td, orderId, field) {
-    const currentValue = td.textContent.trim();
+    const currentValue = td.dataset.value !== undefined ? td.dataset.value : td.textContent.trim();
 
     // Use textarea for multiline support
     const textarea = document.createElement('textarea');

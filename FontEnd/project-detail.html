@@ -918,13 +918,92 @@
                     detailsHtml += `<div class="mt-2 text-sm text-gray-600 bg-gray-50 p-2 rounded italic border-l-2 border-gray-300">"Lý do: ${log.reason}"</div>`;
                 }
 
-                if (log.changed_fields) {
+                // [Senior Architect] Xử lý hiển thị thay đổi chi tiết từ metadata
+                if (log.metadata) {
+                    try {
+                        let meta = log.metadata;
+                        if (typeof meta === 'string') meta = JSON.parse(meta);
+
+                        if (meta.changes && Array.isArray(meta.changes) && meta.changes.length > 0) {
+                            const fieldMap = {
+                                'project_name': 'Tên dự án',
+                                'project_code': 'Mã dự án',
+                                'customer_name': 'Tên khách hàng',
+                                'customer_phone': 'SĐT khách hàng',
+                                'agency_name': 'Chi nhánh',
+                                'start_date': 'Ngày bắt đầu',
+                                'deadline': 'Hạn giao hàng',
+                                'construction_province': 'Tỉnh/Thành',
+                                'construction_district': 'Quận/Huyện',
+                                'construction_address': 'Địa chỉ',
+                                'status': 'Trạng thái',
+                                'progress_percent': 'Tiến độ (%)',
+                                'total_value': 'Tổng giá trị',
+                                'notes': 'Ghi chú'
+                            };
+
+                            detailsHtml += `<div class="mt-3 space-y-1.5 border-t border-gray-100 pt-3">`;
+                            meta.changes.forEach(change => {
+                                // [Senior Architect] Bỏ qua các trường technical ID để tránh gây rối cho người dùng
+                                if (['customer_id', 'agency_id', 'user_id', 'created_by', 'updated_at', 'id'].includes(change.field)) return;
+
+                                const fieldLabel = fieldMap[change.field] || change.field;
+
+                                // Format values for better reading
+                                let oldVal = change.old;
+                                let newVal = change.new;
+
+                                // Format date if field matches
+                                if (['start_date', 'deadline'].includes(change.field)) {
+                                    oldVal = typeof formatDate === 'function' ? formatDate(oldVal) : oldVal;
+                                    newVal = typeof formatDate === 'function' ? formatDate(newVal) : newVal;
+                                }
+                                // Format currency
+                                if (change.field === 'total_value') {
+                                    oldVal = typeof formatCurrency === 'function' ? formatCurrency(oldVal) : oldVal;
+                                    newVal = typeof formatCurrency === 'function' ? formatCurrency(newVal) : newVal;
+                                }
+                                // Format status
+                                if (change.field === 'status') {
+                                    oldVal = typeof getStatusName === 'function' ? getStatusName(oldVal) : oldVal;
+                                    newVal = typeof getStatusName === 'function' ? getStatusName(newVal) : newVal;
+                                }
+
+                                detailsHtml += `
+                                    <div class="text-xs flex items-start gap-2">
+                                        <span class="font-semibold text-gray-500 min-w-[100px]">${fieldLabel}:</span>
+                                        <div class="flex flex-wrap items-center gap-1.5 min-w-0">
+                                            <span class="text-gray-400 line-through truncate max-w-[150px]">${oldVal || 'Trống'}</span>
+                                            <svg class="w-3 h-3 text-gray-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+                                            <span class="text-green-600 font-medium break-all">${newVal || 'Trống'}</span>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            detailsHtml += `</div>`;
+                        }
+                    } catch (e) {
+                        console.error('Error parsing log metadata:', e);
+                    }
+                } else if (log.changed_fields) {
                     try {
                         let fields = log.changed_fields;
                         if (typeof fields === 'string') fields = JSON.parse(fields);
                         if (Array.isArray(fields) && fields.length > 0) {
+                            const fieldMap = {
+                                'project_name': 'Tên dự án',
+                                'start_date': 'Ngày bắt đầu',
+                                'deadline': 'Hạn giao hàng',
+                                'status': 'Trạng thái',
+                                'progress_percent': 'Tiến độ',
+                                'total_value': 'Giá trị',
+                                'notes': 'Ghi chú',
+                                'construction_province': 'Tỉnh/Thành',
+                                'construction_district': 'Quận/Huyện',
+                                'construction_address': 'Địa chỉ'
+                            };
                             detailsHtml += `<div class="mt-2 flex flex-wrap gap-1">
-                                ${fields.map(f => `<span class="text-[10px] px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded border border-gray-200">${f}</span>`).join('')}
+                                ${fields.map(f => `<span class="text-[10px] px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded border border-gray-200">${fieldMap[f] || f}</span>`).join('')}
                             </div>`;
                         }
                     } catch (e) { }

@@ -49,8 +49,8 @@ class AuditLogService {
                 `INSERT INTO audit_logs 
                  (event_code, entity_type, entity_id, entity_name, action, 
                   actor_user_id, actor_name, actor_role, before_data, after_data, changed_fields, 
-                  reason, ip_address, user_agent)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                  metadata, reason, ip_address, user_agent)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
                     eventCode,
                     entityType,
@@ -63,6 +63,7 @@ class AuditLogService {
                     beforeData ? JSON.stringify(beforeData) : null,
                     afterData ? JSON.stringify(afterData) : null,
                     changedFields ? JSON.stringify(changedFields) : null,
+                    metadata ? JSON.stringify(metadata) : null,
                     reason,
                     actor.ip || null,
                     actor.userAgent || null

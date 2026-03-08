@@ -847,12 +847,20 @@ exports.update = async (req, res) => {
             project_name, customer_id, start_date, deadline, status,
             progress_percent, total_value, notes,
             construction_province, construction_district, construction_address,
-            agency_id
+            agency_id, workforce, manual_weight
         } = req.body;
 
-        // Lấy thông tin dự án hiện tại
+        // Lấy thông tin dự án hiện tại (JOIN c., a. để có name so sánh)
         const [currentRows] = await db.query(
-            "SELECT * FROM projects WHERE id = ?",
+            `SELECT 
+                p.*,
+                c.full_name AS customer_name,
+                c.phone AS customer_phone,
+                a.name AS agency_name
+            FROM projects p
+            LEFT JOIN customers c ON p.customer_id = c.id
+            LEFT JOIN agencies a ON p.agency_id = a.id
+            WHERE p.id = ?`,
             [id]
         );
 
@@ -935,6 +943,14 @@ exports.update = async (req, res) => {
             updateFields.push("notes = ?");
             updateValues.push(notes || null);
         }
+        if (workforce !== undefined) {
+            updateFields.push("workforce = ?");
+            updateValues.push(workforce || "");
+        }
+        if (manual_weight !== undefined) {
+            updateFields.push("manual_weight = ?");
+            updateValues.push(manual_weight || "");
+        }
 
         if (updateFields.length === 0) {
             return res.status(400).json({
@@ -962,14 +978,16 @@ exports.update = async (req, res) => {
             });
         }
 
-        // Láº¥y láº¡i thÃ´ng tin dá»± Ã¡n Ä‘Ã£ cáº­p nháº­t
+        // Lấy lại thông tin dự án đã cập nhật
         const [updatedRows] = await db.query(
             `SELECT 
                 p.*,
                 c.full_name AS customer_name,
-                c.phone AS customer_phone
+                c.phone AS customer_phone,
+                a.name AS agency_name
             FROM projects p
             LEFT JOIN customers c ON p.customer_id = c.id
+            LEFT JOIN agencies a ON p.agency_id = a.id
             WHERE p.id = ?`,
             [id]
         );
@@ -977,15 +995,16 @@ exports.update = async (req, res) => {
         // ThÃ´ng bÃ¡o náº¿u tráº¡ng thÃ¡i thay Ä‘á»•i (Event-based)
         if (status !== undefined && status !== current.status) {
             try {
-                await SystemNotifier.notify('project.status_changed', {
-                    entityName: updatedRows[0]?.project_name || current.project_name,
+                // [Senior Architect] Sáng cáº¥p sá» lÃ½ track Ä‘á»ƒ cÃ³ diff chi tiáº¿t
+                await SystemNotifier.track('project.status_changed', {
+                    entityType: 'project',
                     entityId: parseInt(id),
+                    entityName: updatedRows[0]?.project_name || current.project_name,
+                    action: 'status_changed',
+                    before: current,
+                    after: updatedRows[0],
                     actor: SystemNotifier.getActor(req),
-                    beforeData: { status: current.status },
-                    afterData: {
-                        status: status,
-                        project_code: updatedRows[0]?.project_code || current.project_code
-                    }
+                    extraMetadata: { project_code: updatedRows[0]?.project_code || current.project_code }
                 });
             } catch (notifErr) {
                 console.error('Error creating status change notification:', notifErr);
@@ -1007,11 +1026,14 @@ exports.update = async (req, res) => {
         } else {
             // Náº¿u chÆ°a thay Ä‘á»•i status nhÆ°ng cÃ³ update thÃ´ng tin khÃ¡c
             try {
-                await SystemNotifier.notify('project.updated', {
-                    entityName: updatedRows[0]?.project_name || current.project_name,
+                await SystemNotifier.track('project.updated', {
+                    entityType: 'project',
                     entityId: parseInt(id),
-                    actor: SystemNotifier.getActor(req),
-                    changedFields: updateFields.map(f => f.split(' = ')[0])
+                    entityName: updatedRows[0]?.project_name || current.project_name,
+                    action: 'updated',
+                    before: current,
+                    after: updatedRows[0],
+                    actor: SystemNotifier.getActor(req)
                 });
             } catch (e) { }
         }

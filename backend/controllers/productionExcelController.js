@@ -902,10 +902,19 @@ async function getOrdersData(req, options = {}) {
         const materialPlanDate = computeMaterialPlanDate(mergedMaterials);
 
         // Get aluminum weight: prioritize manual > calculated BOM weight > summary table > 0
-        const manualWeight = parseFloat(row.manualWeight) || 0;
-        const bomWeight = aluminumWeightMap[row.id] || 0;
-        const summaryWeight = parseFloat(row.summaryWeight) || 0;
-        const finalWeight = manualWeight > 0 ? manualWeight : (bomWeight > 0 ? bomWeight : summaryWeight);
+        let finalWeight;
+        const manualWeightStr = String(row.manualWeight || '').trim();
+        const manualWeightVal = parseFloat(manualWeightStr) || 0;
+
+        // Use manual weight if it's non-empty and (is not zero or contains letters)
+        if (manualWeightStr !== '' && (manualWeightVal > 0 || /[a-zA-Z]/.test(manualWeightStr))) {
+            // Use as string if it contains letters, otherwise as number
+            finalWeight = /[a-zA-Z]/.test(manualWeightStr) ? manualWeightStr : manualWeightVal;
+        } else {
+            const bomWeight = aluminumWeightMap[row.id] || 0;
+            const summaryWeight = parseFloat(row.summaryWeight) || 0;
+            finalWeight = bomWeight > 0 ? bomWeight : summaryWeight;
+        }
 
         return {
             id: row.id,
@@ -922,7 +931,7 @@ async function getOrdersData(req, options = {}) {
                 email: row.customerEmail || '',
                 address: row.customerAddress || ''
             },
-            quantity: parseFloat(finalWeight.toFixed(2)) || 0,
+            quantity: typeof finalWeight === 'number' ? (parseFloat(finalWeight.toFixed(2)) || 0) : finalWeight,
             status: row.status,
             createdAt: row.createdAt,
             deliveryPlanDate: row.deliveryPlanDate,
@@ -1224,13 +1233,8 @@ exports.updateOrder = async (req, res) => {
 
         // Handle quantity (manual override for aluminum weight)
         if (req.body.quantity !== undefined) {
-            // Parse quantity - remove 'kg' suffix if present
-            let quantityValue = req.body.quantity;
-            if (typeof quantityValue === 'string') {
-                quantityValue = parseFloat(quantityValue.replace(/[^\d.-]/g, '')) || null;
-            }
             updates.push('manual_weight = ?');
-            params.push(quantityValue);
+            params.push(req.body.quantity || '');
         }
 
         if (updates.length > 0) {
