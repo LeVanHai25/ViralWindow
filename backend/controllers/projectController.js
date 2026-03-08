@@ -843,9 +843,14 @@ exports.create = async (req, res) => {
 exports.update = async (req, res) => {
     try {
         const { id } = req.params;
-        const { project_name, customer_id, start_date, deadline, status, progress_percent, total_value, notes } = req.body;
+        const {
+            project_name, customer_id, start_date, deadline, status,
+            progress_percent, total_value, notes,
+            construction_province, construction_district, construction_address,
+            agency_id
+        } = req.body;
 
-        // Láº¥y thÃ´ng tin dá»± Ã¡n hiá»‡n táº¡i
+        // Lấy thông tin dự án hiện tại
         const [currentRows] = await db.query(
             "SELECT * FROM projects WHERE id = ?",
             [id]
@@ -854,13 +859,13 @@ exports.update = async (req, res) => {
         if (currentRows.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: "KhÃ´ng tÃ¬m tháº¥y dá»± Ã¡n"
+                message: "Không tìm thấy dự án"
             });
         }
 
         const current = currentRows[0];
 
-        // Chá»‰ cáº­p nháº­t cÃ¡c trÆ°á»ng Ä‘Æ°á»£c cung cáº¥p (partial update)
+        // Chỉ cập nhật các trường được cung cấp (partial update)
         const updateFields = [];
         const updateValues = [];
 
@@ -872,6 +877,10 @@ exports.update = async (req, res) => {
             updateFields.push("customer_id = ?");
             updateValues.push(customer_id);
         }
+        if (agency_id !== undefined) {
+            updateFields.push("agency_id = ?");
+            updateValues.push(agency_id);
+        }
         if (start_date !== undefined) {
             updateFields.push("start_date = ?");
             updateValues.push(start_date);
@@ -879,6 +888,18 @@ exports.update = async (req, res) => {
         if (deadline !== undefined) {
             updateFields.push("deadline = ?");
             updateValues.push(deadline);
+        }
+        if (construction_province !== undefined) {
+            updateFields.push("construction_province = ?");
+            updateValues.push(construction_province);
+        }
+        if (construction_district !== undefined) {
+            updateFields.push("construction_district = ?");
+            updateValues.push(construction_district);
+        }
+        if (construction_address !== undefined) {
+            updateFields.push("construction_address = ?");
+            updateValues.push(construction_address);
         }
         if (status !== undefined) {
             updateFields.push("status = ?");
@@ -923,6 +944,9 @@ exports.update = async (req, res) => {
         }
 
         updateValues.push(id);
+
+        console.log(`[DEBUG] Executing UPDATE with fields: ${updateFields.join(", ")}`);
+        console.log(`[DEBUG] Values:`, updateValues);
 
         const [result] = await db.query(
             `UPDATE projects 
@@ -2534,44 +2558,45 @@ exports.updateProjectTotalValue = async function (projectId) {
     try {
         let totalValue = 0;
 
-        // Láº¥y quotation cá»§a project (náº¿u cÃ³) - Æ°u tiÃªn bÃ¡o giÃ¡ má»›i nháº¥t
+        // Lấy quotation của project (nếu có) - ưu tiên báo giá mới nhất hoặc approved
         const [quotationRows] = await db.query(
             `SELECT id, total_amount, subtotal
              FROM quotations 
              WHERE project_id = ? 
-             ORDER BY created_at DESC 
+             ORDER BY 
+                CASE WHEN status = 'approved' THEN 0 ELSE 1 END,
+                created_at DESC 
              LIMIT 1`,
             [projectId]
         );
 
-        // TÃ­nh tá»•ng giÃ¡ trá»‹ tá»« quotation_items (báº£ng giÃ¡) náº¿u cÃ³
         if (quotationRows.length > 0) {
             const quotation = quotationRows[0];
 
-            // Láº¥y tá»•ng tá»« quotation_items
-            const [quotationItems] = await db.query(
-                `SELECT SUM(total_price) as total 
-                 FROM quotation_items 
-                 WHERE quotation_id = ?`,
-                [quotation.id]
-            );
-
-            if (quotationItems[0] && quotationItems[0].total !== null && quotationItems[0].total > 0) {
-                // DÃ¹ng tá»•ng tá»« quotation_items
-                totalValue = parseFloat(quotationItems[0].total) || 0;
-                console.log(`Project ${projectId} total value from quotation_items: ${totalValue}`);
-            } else if (quotation.total_amount && quotation.total_amount > 0) {
-                // Fallback: dÃ¹ng total_amount
+            // [Senior Architect] Ưu tiên lấy total_amount (giá trị cuối cùng sau chiết khấu/VAT)
+            if (quotation.total_amount !== null && quotation.total_amount > 0) {
                 totalValue = parseFloat(quotation.total_amount) || 0;
-                console.log(`Project ${projectId} total value from quotation total_amount: ${totalValue}`);
-            } else if (quotation.subtotal && quotation.subtotal > 0) {
-                // Fallback: dÃ¹ng subtotal
-                totalValue = parseFloat(quotation.subtotal) || 0;
-                console.log(`Project ${projectId} total value from quotation subtotal: ${totalValue}`);
+                console.log(`Project ${projectId} total value from quotation total_amount (Final): ${totalValue}`);
+            } else {
+                // Fallback: Tính tổng từ quotation_items nếu total_amount chưa có hoặc = 0
+                const [quotationItems] = await db.query(
+                    `SELECT SUM(total_price) as total 
+                     FROM quotation_items 
+                     WHERE quotation_id = ?`,
+                    [quotation.id]
+                );
+
+                if (quotationItems[0] && quotationItems[0].total !== null && quotationItems[0].total > 0) {
+                    totalValue = parseFloat(quotationItems[0].total) || 0;
+                    console.log(`Project ${projectId} total value from quotation_items (Fallback): ${totalValue}`);
+                } else if (quotation.subtotal && quotation.subtotal > 0) {
+                    totalValue = parseFloat(quotation.subtotal) || 0;
+                    console.log(`Project ${projectId} total value from quotation subtotal (Fallback): ${totalValue}`);
+                }
             }
         }
 
-        // Cáº­p nháº­t total_value cá»§a project
+        // Cập nhật total_value của project
         await db.query(
             `UPDATE projects 
              SET total_value = ? 

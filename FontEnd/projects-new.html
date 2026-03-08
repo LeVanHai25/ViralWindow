@@ -6950,8 +6950,8 @@
                 'Phú Yên'            // Phú Yên + Nam Định (giữ lại)
             ];
 
-            async function loadProvinces() {
-                const select = document.getElementById('projectProvince');
+            async function loadProvinces(selectId = 'projectProvince') {
+                const select = document.getElementById(selectId);
                 if (!select) return;
 
                 select.innerHTML = '<option value="">-- Chọn tỉnh/TP --</option>';
@@ -6989,8 +6989,8 @@
                 'Quảng Ngãi': ['TP Quảng Ngãi', 'Ba Tơ', 'Bình Sơn', 'Đức Phổ', 'Minh Long', 'Mộ Đức', 'Nghĩa Hành', 'Sơn Hà', 'Sơn Tây (QNg)', 'Sơn Tịnh', 'Tây Trà', 'Trà Bồng', 'Tư Nghĩa', 'Lý Sơn', 'TP Quy Nhơn', 'TX An Nhơn', 'TX Hoài Nhơn', 'An Lão (BĐ)', 'Hoài Ân', 'Phù Cát', 'Phù Mỹ', 'Tây Sơn', 'Tuy Phước', 'Vân Canh', 'Vĩnh Thạnh (BĐ)']
             };
 
-            function loadDistricts(province) {
-                const select = document.getElementById('projectDistrict');
+            function loadDistricts(province, selectId = 'projectDistrict') {
+                const select = document.getElementById(selectId);
                 if (!select) return;
 
                 select.innerHTML = '<option value="">-- Chọn quận/huyện --</option>';
@@ -7830,8 +7830,17 @@
                         document.getElementById('editProjectStatus').value = project.status || 'new';
                         document.getElementById('editProjectProgress').value = project.progress_percent || 0;
                         document.getElementById('editProjectTotalValue').value = project.total_value || '';
-                        document.getElementById('editProjectProvince').value = project.construction_province || '';
-                        document.getElementById('editProjectDistrict').value = project.construction_district || '';
+
+                        // Populate address dropdowns
+                        await loadProvinces('editProjectProvince');
+                        if (project.construction_province) {
+                            document.getElementById('editProjectProvince').value = project.construction_province;
+                            loadDistricts(project.construction_province, 'editProjectDistrict');
+                            if (project.construction_district) {
+                                document.getElementById('editProjectDistrict').value = project.construction_district;
+                            }
+                        }
+
                         document.getElementById('editProjectAddress').value = project.construction_address || '';
                         document.getElementById('editProjectNotes').value = project.notes || '';
 
@@ -7963,17 +7972,20 @@
                             <!-- Tỉnh/Thành phố -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Tỉnh/Thành phố</label>
-                                <input type="text" id="editProjectProvince"
+                                <select id="editProjectProvince"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    placeholder="VD: Hà Nội, TP.HCM, Bắc Ninh...">
+                                    onchange="loadDistricts(this.value, 'editProjectDistrict')">
+                                    <option value="">-- Chọn tỉnh/TP --</option>
+                                </select>
                             </div>
                             
                             <!-- Quận/Huyện -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Quận/Huyện</label>
-                                <input type="text" id="editProjectDistrict"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    placeholder="VD: Cầu Giấy, Bình Thạnh...">
+                                <select id="editProjectDistrict"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">-- Chọn quận/huyện --</option>
+                                </select>
                             </div>
                             
                             <!-- Địa chỉ chi tiết -->
