@@ -272,7 +272,18 @@ exports.updateUser = async (req, res) => {
             params.push(email);
         }
 
-        if (phone !== undefined) {
+        if (phone !== undefined && phone !== users[0].phone) {
+            // Check if phone already exists
+            const [existingPhone] = await db.query(
+                "SELECT id FROM users WHERE phone = ? AND id != ?",
+                [phone, id]
+            );
+            if (existingPhone.length > 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Số điện thoại đã được sử dụng bởi tài khoản khác"
+                });
+            }
             updates.push("phone = ?");
             params.push(phone);
         }

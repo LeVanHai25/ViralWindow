@@ -484,6 +484,18 @@ exports.updateProfile = async (req, res) => {
             updateValues.push(full_name);
         }
         if (phone !== undefined) {
+            // Check if phone already exists for another user
+            const [phoneExists] = await db.query(
+                "SELECT id FROM users WHERE phone = ? AND id != ?",
+                [phone, userId]
+            );
+
+            if (phoneExists.length > 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Số điện thoại đã được sử dụng bởi tài khoản khác"
+                });
+            }
             updateFields.push("phone = ?");
             updateValues.push(phone);
         }
