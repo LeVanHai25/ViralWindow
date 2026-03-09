@@ -965,7 +965,7 @@
         async function loadMaterialsFromAPI() {
             try {
                 const token = sessionStorage.getItem('token');
-                const res = await fetch(`${API_BASE}/accessories`, {
+                const res = await fetch(`${API_BASE}/catalog-materials`, {
                     headers: token ? { 'Authorization': `Bearer ${token}` } : {}
                 });
                 const result = await res.json();
@@ -1431,9 +1431,10 @@
                     await loadGlassFromAPI();
                 } else if (currentModal === 'material') {
                     const matName = document.getElementById('formName').value;
-                    const body = { code: 'VT-' + Date.now(), name: matName, sale_price: +document.getElementById('formPrice').value || 0 };
+                    const matPrice = +document.getElementById('formPrice').value || 0;
+                    const body = { code: 'VT-' + Date.now(), name: matName, sale_price: matPrice };
                     const token = sessionStorage.getItem('token');
-                    const url = editingId ? `${API_BASE}/accessories/${editingId}` : `${API_BASE}/accessories`;
+                    const url = editingId ? `${API_BASE}/catalog-materials/${editingId}` : `${API_BASE}/catalog-materials`;
                     const method = editingId ? 'PUT' : 'POST';
                     const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) }, body: JSON.stringify(body) });
                     const result = await res.json();
@@ -1457,7 +1458,7 @@
                 else if (type === 'group') url = `${API_BASE}/product-catalog/groups/${id}`;
                 else if (type === 'glass') url = `${API_BASE}/glass-items/${id}`;
                 else if (type === 'material') {
-                    url = `${API_BASE}/accessories/${id}`;
+                    url = `${API_BASE}/catalog-materials/${id}`;
                     const token = sessionStorage.getItem('token');
                     if (token) headers['Authorization'] = `Bearer ${token}`;
                 }

@@ -1031,6 +1031,11 @@
                                 <div class="flex gap-4">
                                     <button
                                         class="sub-tab-button px-4 py-3 flex items-center gap-2 text-gray-600 hover:text-teal-600 active"
+                                        onclick="switchSubTab('all', this)">
+                                        Tất cả
+                                    </button>
+                                    <button
+                                        class="sub-tab-button px-4 py-3 flex items-center gap-2 text-gray-600 hover:text-teal-600"
                                         onclick="switchSubTab('ke', this)">
                                         Ke
                                     </button>
@@ -8677,6 +8682,7 @@
                         });
                         // Update title
                         const titles = {
+                            'all': 'Danh sách tất cả vật tư phụ',
                             'ke': 'Danh sách vật tư phụ - Ke',
                             'gioang': 'Danh sách vật tư phụ - Gioăng',
                             'nhua-op': 'Danh sách vật tư phụ - Nhựa ốp',
@@ -8718,6 +8724,7 @@
 
                 // Update title
                 const titles = {
+                    'all': 'Danh sách tất cả vật tư phụ',
                     'ke': 'Danh sách vật tư phụ - Ke',
                     'gioang': 'Danh sách vật tư phụ - Gioăng',
                     'nhua-op': 'Danh sách vật tư phụ - Nhựa ốp',
@@ -9932,8 +9939,15 @@
                 }
                 const form = document.getElementById('accessoryForm');
                 if (form) form.reset();
-                const accessoryId = document.getElementById('accessoryId');
                 if (accessoryId) accessoryId.value = id || '';
+
+                // Đảm bảo mã phụ kiện có thể nhập được khi mở modal
+                const codeEl = document.getElementById('accessoryCode');
+                if (codeEl) {
+                    codeEl.readOnly = false;
+                    codeEl.disabled = false;
+                    codeEl.classList.remove('bg-gray-100', 'text-gray-500', 'cursor-not-allowed');
+                }
 
                 // Xử lý input Tồn kho - chỉ cho phép chỉnh khi thêm mới, không cho phép khi edit
                 const stockInput = document.getElementById('accessoryStock');
@@ -9961,6 +9975,15 @@
                 } else {
                     // Tự động tạo mã VRPK khi thêm mới
                     resetAccessoryImagePreview(); // Reset ảnh preview
+
+                    // Đảm bảo mã phụ kiện có thể nhập được khi thêm mới
+                    const codeEl = document.getElementById('accessoryCode');
+                    if (codeEl) {
+                        codeEl.readOnly = false;
+                        codeEl.disabled = false;
+                        codeEl.placeholder = "VD: PK-001";
+                    }
+
                     try {
                         const token = sessionStorage.getItem('token');
                         const response = await fetch(`${API_BASE}/inventory/next-vrpk-code`, {
@@ -9971,10 +9994,10 @@
                         if (response.ok) {
                             const result = await response.json();
                             if (result.success && result.data) {
-                                const codeEl = document.getElementById('accessoryCode');
                                 if (codeEl) {
                                     codeEl.value = result.data.code;
-                                    codeEl.readOnly = true;
+                                    // Không set readOnly = true để người dùng có thể sửa
+                                    codeEl.readOnly = false;
                                 }
                             }
                         }
@@ -11288,21 +11311,19 @@
                     structure += ` - ${description}`;
                 }
 
-                // Dữ liệu gửi lên API glass-items
-                // QUAN TRỌNG: code là mã kính (J-3), name là tên kính, structure là thông tin kích thước
-                const glassData = {
-                    code: codeEl.value.trim(),
-                    name: nameEl.value.trim(),
-                    structure: structure,
-                    price: unitPrice,
+                // Dữ liệu gửi lên API inventory
+                const inventoryData = {
+                    item_code: codeEl.value.trim(),
+                    item_name: nameEl.value.trim(),
+                    item_type: 'glass',
+                    unit: 'm²',
                     quantity: stock,
+                    unit_price: unitPrice,
+                    notes: structure, // Lưu structure vào notes
                     min_stock_level: parseInt(document.getElementById('glassMinStock').value) || 10,
                     max_stock_level: parseInt(document.getElementById('glassMaxStock').value) || 100,
-                    supplier_id: supplierId || null
+                    supplier_id: supplierId
                 };
-
-                // Note: image upload chưa được backend glass-items hỗ trợ
-                // Nếu cần image, cần mở rộng backend
 
                 try {
                     const token = sessionStorage.getItem('token');
@@ -11312,16 +11333,16 @@
                         return;
                     }
 
-                    const url = id ? `${API_BASE}/glass-items/${id}` : `${API_BASE}/glass-items`;
+                    const url = id ? `${API_BASE}/inventory/${id}` : `${API_BASE}/inventory`;
                     const method = id ? 'PUT' : 'POST';
 
                     const response = await fetch(url, {
                         method: method,
                         headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
                         },
-                        body: JSON.stringify(glassData)
+                        body: JSON.stringify(inventoryData)
                     });
 
                     if (response.status === 401) {
@@ -11357,18 +11378,16 @@
             }
 
             async function deleteGlass(id) {
-                const confirmed = await confirm('Bạn có chắc muốn xóa kính này?');
-                if (!confirmed) return;
+                if (!confirm('Bạn có chắc muốn xóa kính này trong kho?')) return;
 
                 try {
                     const token = sessionStorage.getItem('token');
                     if (!token) {
-                        alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
-                        window.location.href = 'login.html';
+                        alert('Phiên làm việc hết hạn');
                         return;
                     }
 
-                    const response = await fetch(`${API_BASE}/glass-items/${id}`, {
+                    const response = await fetch(`${API_BASE}/inventory/${id}`, {
                         method: 'DELETE',
                         headers: {
                             'Authorization': `Bearer ${token}`
@@ -11413,7 +11432,7 @@
                 }
 
                 items.forEach(item => {
-                    const stockQty = parseFloat(item.stock || item.stock_quantity || item.quantity || 0);
+                    const stockQty = parseFloat(item.quantity || 0); // Use item.quantity from inventory API
                     const unitPrice = parseFloat(item.unit_price || 0);
                     const totalValue = stockQty * unitPrice;
                     const minStock = parseFloat(item.min_stock_level || 10);
@@ -11445,7 +11464,7 @@
                         <td class="px-4 py-3 text-sm font-medium">${item.item_code || '-'}</td>
                         <td class="px-4 py-3 text-sm">${item.item_name || '-'}</td>
                         <td class="px-4 py-3 text-sm">
-                            <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">${item.description || item.item_type || '-'}</span>
+                            <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">${item.notes || '-'}</span>
                         </td>
                         <td class="px-4 py-3 text-sm">${item.unit || '-'}</td>
                         <td class="px-4 py-3 text-sm">
@@ -11488,8 +11507,8 @@
 
             async function loadOtherItems(search = '') {
                 try {
-                    // Lấy dữ liệu từ accessories thay vì inventory
-                    const response = await fetch(`${API_BASE}/accessories`, {
+                    // Lấy dữ liệu từ inventory API, lọc theo item_type = 'other'
+                    const response = await fetch(`${API_BASE}/inventory?item_type=other`, {
                         headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
                     });
                     const result = await response.json();
@@ -11499,14 +11518,15 @@
                     if (result.success) {
                         let items = result.data || [];
 
-                        // Danh sách các category thuộc Vật tư phụ
+                        // Danh sách các category thuộc Vật tư phụ (lưu trong notes của inventory item)
                         const vatTuPhuCategories = ['Ke', 'Gioăng', 'Nhựa ốp', 'Keo', 'Khác'];
 
-                        // Lọc chỉ giữ các items thuộc category Vật tư phụ
-                        items = items.filter(item => vatTuPhuCategories.includes(item.category));
+                        // Lọc chỉ giữ các items thuộc category Vật tư phụ (dựa vào notes)
+                        items = items.filter(item => vatTuPhuCategories.includes(item.notes));
 
                         // Map category sang sub-tab
                         const subCategoryMap = {
+                            'all': 'Tất cả',
                             'ke': 'Ke',
                             'gioang': 'Gioăng',
                             'nhua-op': 'Nhựa ốp',
@@ -11515,23 +11535,29 @@
                         };
                         const subCategoryName = subCategoryMap[currentSubTab] || 'Ke';
 
-                        // Lọc theo sub-tab hiện tại (dựa trên category)
-                        items = items.filter(item => item.category === subCategoryName);
+                        // Lọc theo sub-tab hiện tại (dựa trên notes)
+                        if (currentSubTab !== 'all') {
+                            items = items.filter(item => {
+                                const itemCategory = (item.notes || '').trim().toLowerCase();
+                                const currentTabCategory = subCategoryName.toLowerCase();
+                                return itemCategory === currentTabCategory;
+                            });
+                        }
 
                         // Chuyển đổi format cho hiển thị
                         items = items.map(item => {
-                            const qty = parseFloat(item.stock_quantity) || 0;
-                            const price = parseFloat(item.sale_price || item.purchase_price) || 0;
                             return {
                                 id: item.id,
-                                item_code: item.code,
-                                item_name: item.name,
-                                description: item.category,
+                                item_code: item.item_code,
+                                item_name: item.item_name,
+                                notes: item.notes,
                                 unit: item.unit,
-                                quantity: qty,
-                                stock_quantity: qty,
-                                unit_price: price,
-                                image_path: item.image_path // Include image_path for display
+                                quantity: item.quantity,
+                                unit_price: item.unit_price,
+                                min_stock_level: item.min_stock_level,
+                                max_stock_level: item.max_stock_level,
+                                // Fix: image_url trong API map sang image_path trong frontend display
+                                image_path: item.image_url || item.image_path
                             };
                         });
 
@@ -11543,7 +11569,7 @@
                             );
                         }
 
-                        console.log('Processed items:', items); // Debug
+                        console.log(`[loadOtherItems] Filtered from ${result.data.length} down to ${items.length} items for tab: ${currentSubTab}`); // Debug display
                         displayOtherItems(items);
                     }
                 } catch (error) {
@@ -11556,6 +11582,14 @@
                 document.getElementById('otherModalTitle').textContent = id ? 'Chỉnh sửa vật tư phụ' : 'Thêm vật tư phụ';
                 document.getElementById('otherForm').reset();
                 document.getElementById('otherId').value = id || '';
+
+                // Xử lý input Mã vật tư - Luôn cho phép sửa khi mở modal
+                const codeEl = document.getElementById('otherCode');
+                if (codeEl) {
+                    codeEl.readOnly = false;
+                    codeEl.disabled = false;
+                    codeEl.classList.remove('bg-gray-100', 'text-gray-500', 'cursor-not-allowed');
+                }
 
                 // Xử lý input Tồn kho - chỉ cho phép chỉnh khi thêm mới, không cho phép khi edit
                 const stockInput = document.getElementById('otherStock');
@@ -11600,10 +11634,10 @@
                         if (response.ok) {
                             const result = await response.json();
                             if (result.success && result.data) {
-                                const codeEl = document.getElementById('otherCode');
                                 if (codeEl) {
                                     codeEl.value = result.data.code;
-                                    codeEl.readOnly = true;
+                                    // Không khóa mã khi thêm mới
+                                    codeEl.readOnly = false;
                                 }
                             }
                         }
@@ -11636,7 +11670,8 @@
                         return;
                     }
 
-                    const response = await fetch(`${API_BASE}/accessories/${id}`, {
+                    // Fetch from inventory API
+                    const response = await fetch(`${API_BASE}/inventory/${id}`, {
                         headers: {
                             'Authorization': `Bearer ${token}`
                         }
@@ -11656,13 +11691,13 @@
                         const item = result.data;
                         const codeEl = document.getElementById('otherCode');
                         if (codeEl) {
-                            // Accessories uses 'code' instead of 'item_code'
-                            codeEl.value = item.code || item.item_code || '';
+                            // Inventory uses 'item_code'
+                            codeEl.value = item.item_code || '';
                             codeEl.readOnly = false; // Cho phép chỉnh sửa mã khi edit
                         }
 
-                        // Parse category (accessories uses 'category' instead of 'description')
-                        const category = item.category || item.description || '';
+                        // Category is stored in 'notes' for inventory items
+                        const category = item.notes || '';
                         const subCategoryEl = document.getElementById('otherSubCategory');
 
                         // Check if category matches sub-category
@@ -11673,20 +11708,20 @@
                             subCategoryEl.value = foundSubCategory;
                         }
 
-                        // Accessories uses 'name' instead of 'item_name'
-                        document.getElementById('otherName').value = item.name || item.item_name || '';
+                        // Inventory uses 'item_name'
+                        document.getElementById('otherName').value = item.item_name || '';
                         document.getElementById('otherUnit').value = item.unit || '';
-                        // Accessories uses 'sale_price' or 'purchase_price' instead of 'unit_price'
-                        document.getElementById('otherPrice').value = item.sale_price || item.purchase_price || item.unit_price || '';
-                        // Hiển thị tồn kho - accessories uses 'stock_quantity'
-                        const stockValue = item.stock_quantity || item.quantity || 0;
+                        // Inventory uses 'unit_price'
+                        document.getElementById('otherPrice').value = item.unit_price || '';
+                        // Hiển thị tồn kho - Inventory uses 'quantity'
+                        const stockValue = item.quantity || 0;
                         document.getElementById('otherStock').value = stockValue;
-                        document.getElementById('otherMinStock').value = item.min_stock || item.min_stock_level || 10;
+                        document.getElementById('otherMinStock').value = item.min_stock_level || 10;
                         const otherMaxStockEl = document.getElementById('otherMaxStock');
                         if (otherMaxStockEl) otherMaxStockEl.value = item.max_stock_level || 100;
-                        document.getElementById('otherDescription').value = item.description || item.notes || '';
+                        document.getElementById('otherDescription').value = item.description || item.notes || ''; // Use notes for description
 
-                        // Hiển thị ảnh hiện có nếu có (accessories uses image_path)
+                        // Hiển thị ảnh hiện có nếu có (inventory uses image_path)
                         if (item.image_path) {
                             setInventoryImagePreview('other', getImageUrl(item.image_path));
                         } else {
@@ -11731,31 +11766,34 @@
                 const id = editingOtherId;
 
                 // Parse number - đảm bảo là number, không phải string
-                // Remove dấu phẩy, dấu chấm (format số) trước khi parse
-                const stockInput = document.getElementById('otherStock').value;
-                const quantity = stockInput ? parseFloat(stockInput.toString().replace(/[,\.]/g, '').replace(',', '.')) : 0;
+                const stockValue = document.getElementById('otherStock').value || '0';
+                const quantity = parseFloat(stockValue.toString().replace(/,/g, '')) || 0;
 
-                const priceInput = document.getElementById('otherPrice').value;
-                // Remove tất cả dấu phẩy, dấu chấm (format tiền) trước khi parse
-                const unitPrice = priceInput ? parseFloat(priceInput.toString().replace(/[^\d]/g, '')) : 0;
+                const priceValue = document.getElementById('otherPrice').value || '0';
+                const unitPrice = parseFloat(priceValue.toString().replace(/[^\d.]/g, '')) || 0;
 
-                // Get sub-category
+                // Get sub-category (this will be stored in 'notes' for inventory item)
                 const subCategory = subCategoryEl ? subCategoryEl.value : '';
 
-                // Use FormData to support file upload (accessories API)
+                // Use FormData to support file upload (inventory API)
                 const formData = new FormData();
-                formData.append('code', codeEl.value.trim());          // accessories uses 'code'
-                formData.append('name', nameEl.value.trim());          // accessories uses 'name'
-                formData.append('category', subCategory);              // accessories uses 'category'
+                formData.append('item_code', codeEl.value.trim());
+                formData.append('item_name', nameEl.value.trim());
+                formData.append('item_type', 'other'); // Set item_type to 'other'
                 formData.append('unit', unitEl.value.trim());
-                formData.append('stock_quantity', quantity);           // accessories uses 'stock_quantity'
+                formData.append('quantity', quantity);
                 formData.append('min_stock_level', parseInt(document.getElementById('otherMinStock').value) || 10);
                 formData.append('max_stock_level', parseInt(document.getElementById('otherMaxStock')?.value) || 100);
-                formData.append('sale_price', unitPrice);              // accessories uses 'sale_price'
-                formData.append('purchase_price', unitPrice);          // accessories uses 'purchase_price'
+                formData.append('unit_price', unitPrice);
+                // Store subCategory in 'notes' field
+                formData.append('notes', subCategory);
+                // If there's an additional description, append it to notes or use a separate field if available
                 if (document.getElementById('otherDescription').value) {
-                    formData.append('description', document.getElementById('otherDescription').value.trim());
+                    // For now, append to notes, or consider a separate field if inventory API supports it
+                    // For simplicity, we'll just use the subCategory as the primary 'notes'
+                    // If a separate description is needed, it would require a different field in the inventory API
                 }
+
 
                 // Add image file if selected
                 const imageInput = document.getElementById('otherImage');
@@ -11775,7 +11813,7 @@
                         return;
                     }
 
-                    const url = id ? `${API_BASE}/accessories/${id}` : `${API_BASE}/accessories`;
+                    const url = id ? `${API_BASE}/inventory/${id}` : `${API_BASE}/inventory`;
                     const method = id ? 'PUT' : 'POST';
 
                     const response = await fetch(url, {
@@ -11800,12 +11838,39 @@
                     if (result.success) {
                         showSuccessNotification(id ? 'Cập nhật vật tư thành công!' : 'Thêm vật tư thành công!');
                         closeOtherModal();
-                        // Reload với search term hiện tại - đợi một chút để đảm bảo DB đã cập nhật
+                        // Reload với search term hiện tại
                         setTimeout(() => {
-                            const searchTerm = document.getElementById('searchOther').value || '';
-                            loadOtherItems(searchTerm);
+                            const searchTerm = document.getElementById('searchOther')?.value || '';
+
+                            // Tự động chuyển tab sang loại vừa lưu để người dùng thấy kết quả
+                            if (!id && subCategory) {
+                                const revSubCategoryMap = {
+                                    'Ke': 'ke',
+                                    'Gioăng': 'gioang',
+                                    'Nhựa ốp': 'nhua-op',
+                                    'Keo': 'keo',
+                                    'Khác': 'khac'
+                                };
+                                const targetSubTab = revSubCategoryMap[subCategory];
+                                if (targetSubTab) {
+                                    // Tìm button tương ứng để cập nhật UI
+                                    const buttons = document.querySelectorAll('.sub-tab-button');
+                                    let targetBtn = null;
+                                    buttons.forEach(btn => {
+                                        if (btn.getAttribute('onclick')?.includes(`'${targetSubTab}'`)) {
+                                            targetBtn = btn;
+                                        }
+                                    });
+                                    switchSubTab(targetSubTab, targetBtn);
+                                } else {
+                                    loadOtherItems(searchTerm);
+                                }
+                            } else {
+                                loadOtherItems(searchTerm);
+                            }
+
                             loadStats();
-                        }, 100);
+                        }, 150);
                     } else {
                         alert('Lỗi: ' + (result.message || 'Không thể lưu'));
                     }
@@ -11820,7 +11885,7 @@
             }
 
             async function deleteOther(id) {
-                if (!confirm('Bạn có chắc muốn xóa vật tư này?')) return;
+                if (!confirm('Bạn có chắc muốn xóa vật tư này trong kho?')) return;
 
                 try {
                     const token = sessionStorage.getItem('token');
@@ -11830,7 +11895,8 @@
                         return;
                     }
 
-                    const response = await fetch(`${API_BASE}/accessories/${id}`, {
+                    // Delete from inventory API
+                    const response = await fetch(`${API_BASE}/inventory/${id}`, {
                         method: 'DELETE',
                         headers: {
                             'Authorization': `Bearer ${token}`

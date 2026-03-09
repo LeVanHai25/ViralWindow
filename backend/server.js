@@ -34,6 +34,7 @@ app.use(express.static(path.join(__dirname, '..', 'FontEnd')));
 
 // Import routes
 const aluminumRoutes = require("./routes/aluminum");
+const catalogMaterialsRoutes = require('./routes/catalog-materials');
 const projectRoutes = require("./routes/projects");
 const accessoriesRoutes = require("./routes/accessories");
 const customerRoutes = require("./routes/customers");
@@ -116,6 +117,7 @@ app.use("/api/debts", debtRoutes);
 app.use("/api/profit-reports", profitReportRoutes);
 app.use("/api/workflow", workflowRoutes);
 app.use("/api/aluminum-systems", aluminumRoutes);
+app.use("/api/catalog-materials", catalogMaterialsRoutes);
 app.use("/api/aluminum-profiles", aluminumProfileRoutes);
 app.use("/api/cutting-formulas", cuttingFormulaRoutes);
 app.use("/api/accessory-usage", accessoryUsageRoutes);
