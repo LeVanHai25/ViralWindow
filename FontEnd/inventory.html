@@ -541,12 +541,14 @@
         <div class="p-6">
             <!-- SUMMARY CARDS -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                <div class="kpi-card kpi-card-gradient bg-white rounded-xl shadow p-5 fade-in">
+                <div class="kpi-card kpi-card-gradient bg-white rounded-xl shadow p-5 fade-in cursor-pointer hover:shadow-lg transition-shadow"
+                    onclick="showTotalItemsBreakdown()">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-600 mb-1">Tổng mặt hàng</p>
                             <p class="text-3xl font-bold" id="statTotalItems">0</p>
-                            <p class="text-xs text-gray-500 mt-1">Tổng hợp từ 4 module</p>
+                            <p class="text-xs text-gray-500 mt-1">Tổng hợp từ 4 kho: Phụ kiện, Kho nhôm, Kính, Vật tư
+                                phụ</p>
                         </div>
                         <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -558,12 +560,14 @@
                     </div>
                 </div>
 
-                <div class="kpi-card kpi-card-gradient bg-white rounded-xl shadow p-5 fade-in">
+                <div class="kpi-card kpi-card-gradient bg-white rounded-xl shadow p-5 fade-in cursor-pointer hover:shadow-lg transition-shadow"
+                    onclick="showLowStockBreakdown()">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-600 mb-1">Cảnh báo tồn kho</p>
                             <p class="text-3xl font-bold text-red-600" id="statLowStock">0</p>
-                            <p class="text-xs text-gray-500 mt-1">Tổng hợp từ 4 module</p>
+                            <p class="text-xs text-gray-500 mt-1">Tổng hợp từ 4 kho: Phụ kiện, Kho nhôm, Kính, Vật tư
+                                phụ</p>
                         </div>
                         <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -575,7 +579,8 @@
                     </div>
                 </div>
 
-                <div class="kpi-card kpi-card-gradient bg-white rounded-xl shadow p-5 fade-in">
+                <div class="kpi-card kpi-card-gradient bg-white rounded-xl shadow p-5 fade-in cursor-pointer hover:shadow-lg transition-shadow"
+                    onclick="showValueBreakdown()">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-600 mb-1">Giá trị tồn kho</p>
@@ -3639,6 +3644,7 @@
             }
 
             let currentFilter = 'all';
+            let lastBreakdownData = null; // Lưu dữ liệu chi tiết mặt hàng
             let currentTransFilter = 'export'; // Chỉ hiển thị xuất kho
             let editingAccessoryId = null;
             let allAccessoriesData = [];
@@ -8919,12 +8925,12 @@
                         const totalItems = parseInt(stats.total_items || 0);
                         const lowStock = parseInt(stats.low_stock || 0);
                         const totalValue = parseFloat(stats.total_value || 0);
-
-                        console.log('Stats data:', { totalItems, lowStock, totalValue }); // Debug
+                        const totalScraps = parseInt(stats.total_scraps || 0);
 
                         // Kiểm tra elements tồn tại trước khi truy cập
                         const statLowStockEl = document.getElementById('statLowStock');
                         const statInventoryValueEl = document.getElementById('statInventoryValue');
+                        const statScrapsEl = document.getElementById('statScraps');
 
                         if (statTotalItemsEl) {
                             statTotalItemsEl.textContent = totalItems;
@@ -8932,10 +8938,18 @@
                         if (statLowStockEl) {
                             statLowStockEl.textContent = lowStock;
                         }
+                        if (statScrapsEl) {
+                            statScrapsEl.textContent = totalScraps;
+                        }
+
+                        // Lưu lại breakdown để hiển thị khi click
+                        lastBreakdownData = stats.breakdown || null;
 
                         // Format giá trị tồn kho
                         if (statInventoryValueEl) {
-                            if (totalValue >= 1000000) {
+                            if (totalValue >= 1000000000) {
+                                statInventoryValueEl.textContent = (totalValue / 1000000000).toFixed(1) + 'B';
+                            } else if (totalValue >= 1000000) {
                                 statInventoryValueEl.textContent = (totalValue / 1000000).toFixed(1) + 'M';
                             } else if (totalValue >= 1000) {
                                 statInventoryValueEl.textContent = (totalValue / 1000).toFixed(0) + 'K';
@@ -8950,6 +8964,153 @@
                     console.error('Lỗi load stats:', error);
                 }
             }
+
+            function showTotalItemsBreakdown() {
+                if (!lastBreakdownData) {
+                    console.warn('Chưa có dữ liệu breakdown');
+                    return;
+                }
+
+                const bk = lastBreakdownData;
+
+                // Cập nhật các con số
+                document.getElementById('bk-accessories').textContent = bk.accessories?.count || 0;
+                document.getElementById('bk-aluminum').textContent = bk.aluminum?.count || 0;
+                document.getElementById('bk-glass').textContent = bk.glass?.count || 0;
+                document.getElementById('bk-other').textContent = bk.other?.count || 0;
+
+                // Tính tổng từ các thành phần
+                const total = (parseInt(bk.accessories?.count) || 0) +
+                    (parseInt(bk.aluminum?.count) || 0) +
+                    (parseInt(bk.glass?.count) || 0) +
+                    (parseInt(bk.other?.count) || 0);
+
+                document.getElementById('bk-total').textContent = total;
+
+                // Hiển thị modal
+                const modal = document.getElementById('totalItemsBreakdownModal');
+                modal.classList.remove('hidden');
+
+                // Thêm animation nhẹ
+                const dialog = modal.querySelector('div');
+                dialog.classList.remove('scale-95');
+                dialog.classList.add('scale-100');
+            }
+
+            function closeTotalItemsBreakdown() {
+                const modal = document.getElementById('totalItemsBreakdownModal');
+                const dialog = modal.querySelector('div');
+
+                dialog.classList.remove('scale-100');
+                dialog.classList.add('scale-95');
+
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 150);
+            }
+
+            function showLowStockBreakdown() {
+                if (!lastBreakdownData) {
+                    console.warn('Chưa có dữ liệu breakdown');
+                    return;
+                }
+
+                const bk = lastBreakdownData;
+
+                // Cập nhật các con số
+                document.getElementById('bk-low-accessories').textContent = bk.accessories?.lowStock || 0;
+                document.getElementById('bk-low-aluminum').textContent = bk.aluminum?.lowStock || 0;
+                document.getElementById('bk-low-glass').textContent = bk.glass?.lowStock || 0;
+                document.getElementById('bk-low-other').textContent = bk.other?.lowStock || 0;
+
+                // Tính tổng từ các thành phần
+                const total = (parseInt(bk.accessories?.lowStock) || 0) +
+                    (parseInt(bk.aluminum?.lowStock) || 0) +
+                    (parseInt(bk.glass?.lowStock) || 0) +
+                    (parseInt(bk.other?.lowStock) || 0);
+
+                document.getElementById('bk-low-total').textContent = total;
+
+                // Hiển thị modal
+                const modal = document.getElementById('lowStockBreakdownModal');
+                modal.classList.remove('hidden');
+
+                // Thêm animation nhẹ
+                const dialog = modal.querySelector('div');
+                dialog.classList.remove('scale-95');
+                dialog.classList.add('scale-100');
+            }
+
+            function closeLowStockBreakdown() {
+                const modal = document.getElementById('lowStockBreakdownModal');
+                const dialog = modal.querySelector('div');
+
+                dialog.classList.remove('scale-100');
+                dialog.classList.add('scale-95');
+
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 150);
+            }
+
+            function showValueBreakdown() {
+                if (!lastBreakdownData) {
+                    console.warn('Chưa có dữ liệu breakdown');
+                    return;
+                }
+
+                const bk = lastBreakdownData;
+
+                // Cập nhật các con số (định dạng tiền tệ)
+                document.getElementById('bk-val-accessories').textContent = formatCurrency(bk.accessories?.value || 0);
+                document.getElementById('bk-val-aluminum').textContent = formatCurrency(bk.aluminum?.value || 0);
+                document.getElementById('bk-val-glass').textContent = formatCurrency(bk.glass?.value || 0);
+                document.getElementById('bk-val-other').textContent = formatCurrency(bk.other?.value || 0);
+
+                // Tính tổng từ các thành phần
+                const total = (parseFloat(bk.accessories?.value) || 0) +
+                    (parseFloat(bk.aluminum?.value) || 0) +
+                    (parseFloat(bk.glass?.value) || 0) +
+                    (parseFloat(bk.other?.value) || 0);
+
+                document.getElementById('bk-val-total').textContent = formatCurrency(total);
+
+                // Hiển thị modal
+                const modal = document.getElementById('valueBreakdownModal');
+                modal.classList.remove('hidden');
+
+                // Thêm animation nhẹ
+                const dialog = modal.querySelector('div');
+                dialog.classList.remove('scale-95');
+                dialog.classList.add('scale-100');
+            }
+
+            function closeValueBreakdown() {
+                const modal = document.getElementById('valueBreakdownModal');
+                const dialog = modal.querySelector('div');
+
+                dialog.classList.remove('scale-100');
+                dialog.classList.add('scale-95');
+
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 150);
+            }
+
+            // Đóng modal khi click ra ngoài
+            window.addEventListener('click', function (event) {
+                const totalModal = document.getElementById('totalItemsBreakdownModal');
+                const lowStockModal = document.getElementById('lowStockBreakdownModal');
+                const valueModal = document.getElementById('valueBreakdownModal');
+
+                if (event.target === totalModal) {
+                    closeTotalItemsBreakdown();
+                } else if (event.target === lowStockModal) {
+                    closeLowStockBreakdown();
+                } else if (event.target === valueModal) {
+                    closeValueBreakdown();
+                }
+            });
 
             async function viewLowStockItems() {
                 try {
@@ -10356,65 +10517,61 @@
 
                 // Hiển thị tồn kho hệ nhôm
                 displayAluminumStock(systems);
-            }
+                /* Cập nhật các summary cards cho kho nhôm */
+                function updateAluminumSummaryCards(totalWeight, totalValue, totalBars, systemStats) {
+                    // Cập nhật tổng số hệ
+                    const totalSystems = Object.keys(systemStats).length;
+                    const totalSystemsEl = document.getElementById('aluminumTotalSystems');
+                    if (totalSystemsEl) totalSystemsEl.textContent = totalSystems;
 
-            /**
-             * Cập nhật các summary cards cho kho nhôm
-             */
-            function updateAluminumSummaryCards(totalWeight, totalValue, totalBars, systemStats) {
-                // Cập nhật tổng số hệ
-                const totalSystems = Object.keys(systemStats).length;
-                const totalSystemsEl = document.getElementById('aluminumTotalSystems');
-                if (totalSystemsEl) totalSystemsEl.textContent = totalSystems;
-
-                // Cập nhật tổng khối lượng
-                const totalWeightEl = document.getElementById('aluminumTotalWeight');
-                if (totalWeightEl) {
-                    if (totalWeight >= 1000) {
-                        totalWeightEl.textContent = (totalWeight / 1000).toFixed(2) + ' tấn';
-                    } else {
-                        totalWeightEl.textContent = totalWeight.toFixed(2) + ' kg';
-                    }
-                }
-
-                // Cập nhật tổng số thanh
-                const totalBarsEl = document.getElementById('aluminumTotalBars');
-                if (totalBarsEl) totalBarsEl.textContent = totalBars.toLocaleString('vi-VN');
-
-                // Cập nhật tổng giá trị
-                const totalValueEl = document.getElementById('aluminumTotalValue');
-                if (totalValueEl) totalValueEl.textContent = formatCurrency(totalValue);
-
-                // Cập nhật thống kê theo hệ
-                const statsContainer = document.getElementById('aluminumSystemStats');
-                if (statsContainer) {
-                    if (totalSystems === 0) {
-                        statsContainer.innerHTML = '<div class="text-center text-gray-400 text-sm col-span-full py-4">Chưa có dữ liệu</div>';
-                        return;
+                    // Cập nhật tổng khối lượng
+                    const totalWeightEl = document.getElementById('aluminumTotalWeight');
+                    if (totalWeightEl) {
+                        if (totalWeight >= 1000) {
+                            totalWeightEl.textContent = (totalWeight / 1000).toFixed(2) + ' tấn';
+                        } else {
+                            totalWeightEl.textContent = totalWeight.toFixed(2) + ' kg';
+                        }
                     }
 
-                    // Màu sắc cho các hệ khác nhau
-                    const colors = [
-                        { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-200' },
-                        { bg: 'bg-teal-100', text: 'text-teal-700', border: 'border-teal-200' },
-                        { bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-200' },
-                        { bg: 'bg-orange-100', text: 'text-orange-700', border: 'border-orange-200' },
-                        { bg: 'bg-pink-100', text: 'text-pink-700', border: 'border-pink-200' },
-                        { bg: 'bg-indigo-100', text: 'text-indigo-700', border: 'border-indigo-200' },
-                        { bg: 'bg-cyan-100', text: 'text-cyan-700', border: 'border-cyan-200' },
-                        { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-200' }
-                    ];
+                    // Cập nhật tổng số thanh
+                    const totalBarsEl = document.getElementById('aluminumTotalBars');
+                    if (totalBarsEl) totalBarsEl.textContent = totalBars.toLocaleString('vi-VN');
 
-                    let colorIndex = 0;
-                    statsContainer.innerHTML = Object.entries(systemStats)
-                        .sort((a, b) => b[1].weight - a[1].weight) // Sắp xếp theo khối lượng giảm dần
-                        .map(([name, stats]) => {
-                            const color = colors[colorIndex % colors.length];
-                            colorIndex++;
-                            const weightDisplay = stats.weight >= 1000
-                                ? (stats.weight / 1000).toFixed(2) + ' tấn'
-                                : stats.weight.toFixed(2) + ' kg';
-                            return `
+                    // Cập nhật tổng giá trị
+                    const totalValueEl = document.getElementById('aluminumTotalValue');
+                    if (totalValueEl) totalValueEl.textContent = formatCurrency(totalValue);
+
+                    // Cập nhật thống kê theo hệ
+                    const statsContainer = document.getElementById('aluminumSystemStats');
+                    if (statsContainer) {
+                        if (totalSystems === 0) {
+                            statsContainer.innerHTML = '<div class="text-center text-gray-400 text-sm col-span-full py-4">Chưa có dữ liệu</div>';
+                            return;
+                        }
+
+                        // Màu sắc cho các hệ khác nhau
+                        const colors = [
+                            { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-200' },
+                            { bg: 'bg-teal-100', text: 'text-teal-700', border: 'border-teal-200' },
+                            { bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-200' },
+                            { bg: 'bg-orange-100', text: 'text-orange-700', border: 'border-orange-200' },
+                            { bg: 'bg-pink-100', text: 'text-pink-700', border: 'border-pink-200' },
+                            { bg: 'bg-indigo-100', text: 'text-indigo-700', border: 'border-indigo-200' },
+                            { bg: 'bg-cyan-100', text: 'text-cyan-700', border: 'border-cyan-200' },
+                            { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-200' }
+                        ];
+
+                        let colorIndex = 0;
+                        statsContainer.innerHTML = Object.entries(systemStats)
+                            .sort((a, b) => b[1].weight - a[1].weight) // Sắp xếp theo khối lượng giảm dần
+                            .map(([name, stats]) => {
+                                const color = colors[colorIndex % colors.length];
+                                colorIndex++;
+                                const weightDisplay = stats.weight >= 1000
+                                    ? (stats.weight / 1000).toFixed(2) + ' tấn'
+                                    : stats.weight.toFixed(2) + ' kg';
+                                return `
                                 <div class="${color.bg} ${color.border} border rounded-lg p-3 text-center">
                                     <div class="text-xs font-semibold ${color.text} mb-1 truncate" title="${name}">${name}</div>
                                     <div class="text-lg font-bold ${color.text}">${weightDisplay}</div>
@@ -10422,17 +10579,15 @@
                                     <div class="text-xs text-gray-400">${formatCurrency(stats.value)}</div>
                                 </div>
                             `;
-                        }).join('');
+                            }).join('');
+                    }
                 }
             }
-
 
             function displayAluminumStock(systems) {
                 const tbody = document.getElementById('aluminumStockTable');
                 if (!tbody) return;
-
                 tbody.innerHTML = '';
-
                 if (!systems || systems.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-8 text-center text-gray-500">Chưa có dữ liệu tồn kho</td></tr>';
                     return;
@@ -11048,11 +11203,8 @@
 
             async function loadGlassItems(search = '') {
                 try {
-                    // Gọi API /api/glass-items vì kính được lưu trong bảng glass_items, không phải inventory
                     const response = await fetch(`${API_BASE}/glass-items`);
                     const result = await response.json();
-
-                    console.log('Load glass items response:', result); // Debug
 
                     if (result.success) {
                         let items = result.data || [];
@@ -12311,6 +12463,256 @@
     <script src="js/success-notification.js"></script>
     <script src="js/aluminum-scrap-ui.js"></script>
     <script src="js/aluminum-export-ui.js"></script>
+    <!-- Total Items Breakdown Modal -->
+    <div id="totalItemsBreakdownModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all scale-100">
+            <div class="bg-gradient-to-r from-teal-500 to-green-500 p-4 flex justify-between items-center text-white">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                        stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                    </svg>
+                    Chi tiết mặt hàng
+                </h3>
+                <button onclick="closeTotalItemsBreakdown()"
+                    class="hover:bg-white/20 p-1 rounded-full transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <div class="space-y-4" id="breakdownList">
+                    <!-- Phụ kiện -->
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                                <i class="fas fa-tools"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Phụ kiện</span>
+                        </div>
+                        <span class="text-xl font-bold text-blue-600" id="bk-accessories">0</span>
+                    </div>
+                    <!-- Kho nhôm -->
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center text-teal-600">
+                                <i class="fas fa-layer-group"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Kho nhôm</span>
+                        </div>
+                        <span class="text-xl font-bold text-teal-600" id="bk-aluminum">0</span>
+                    </div>
+                    <!-- Kính -->
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
+                                <i class="fas fa-square"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Kính</span>
+                        </div>
+                        <span class="text-xl font-bold text-purple-600" id="bk-glass">0</span>
+                    </div>
+                    <!-- Vật tư phụ -->
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center text-orange-600">
+                                <i class="fas fa-box-open"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Vật tư phụ</span>
+                        </div>
+                        <span class="text-xl font-bold text-orange-600" id="bk-other">0</span>
+                    </div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-gray-100 flex justify-between items-center px-2">
+                    <span class="text-gray-500 font-medium">Tổng cộng</span>
+                    <span class="text-2xl font-black text-gray-800" id="bk-total">0</span>
+                </div>
+            </div>
+            <div class="p-4 bg-gray-50 text-center border-t border-gray-100">
+                <button onclick="closeTotalItemsBreakdown()"
+                    class="px-6 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-100 transition-colors shadow-sm">
+                    Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Low Stock Breakdown Modal -->
+    <div id="lowStockBreakdownModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all scale-100">
+            <div class="bg-gradient-to-r from-red-500 to-orange-500 p-4 flex justify-between items-center text-white">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                        stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    Chi tiết cảnh báo
+                </h3>
+                <button onclick="closeLowStockBreakdown()" class="hover:bg-white/20 p-1 rounded-full transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <div class="space-y-4">
+                    <!-- Phụ kiện -->
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                                <i class="fas fa-tools"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Phụ kiện</span>
+                        </div>
+                        <span class="text-xl font-bold text-red-600" id="bk-low-accessories">0</span>
+                    </div>
+                    <!-- Kho nhôm -->
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center text-teal-600">
+                                <i class="fas fa-layer-group"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Kho nhôm</span>
+                        </div>
+                        <span class="text-xl font-bold text-red-600" id="bk-low-aluminum">0</span>
+                    </div>
+                    <!-- Kính -->
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
+                                <i class="fas fa-square"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Kính</span>
+                        </div>
+                        <span class="text-xl font-bold text-red-600" id="bk-low-glass">0</span>
+                    </div>
+                    <!-- Vật tư phụ -->
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center text-orange-600">
+                                <i class="fas fa-box-open"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Vật tư phụ</span>
+                        </div>
+                        <span class="text-xl font-bold text-red-600" id="bk-low-other">0</span>
+                    </div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-gray-100 flex justify-between items-center px-2">
+                    <span class="text-gray-500 font-medium">Tổng cảnh báo</span>
+                    <span class="text-2xl font-black text-red-600" id="bk-low-total">0</span>
+                </div>
+            </div>
+            <div class="p-4 bg-gray-50 text-center border-t border-gray-100">
+                <button onclick="closeLowStockBreakdown()"
+                    class="px-6 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-100 transition-colors shadow-sm">
+                    Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory Value Breakdown Modal -->
+    <div id="valueBreakdownModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all scale-100">
+            <div
+                class="bg-gradient-to-r from-green-500 to-emerald-600 p-4 flex justify-between items-center text-white">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                        stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Chi tiết giá trị tồn kho
+                </h3>
+                <button onclick="closeValueBreakdown()" class="hover:bg-white/20 p-1 rounded-full transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <div class="space-y-4">
+                    <!-- Phụ kiện -->
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                                <i class="fas fa-tools"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Phụ kiện</span>
+                        </div>
+                        <span class="text-lg font-bold text-gray-800" id="bk-val-accessories">0 ₫</span>
+                    </div>
+                    <!-- Kho nhôm -->
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center text-teal-600">
+                                <i class="fas fa-layer-group"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Kho nhôm</span>
+                        </div>
+                        <span class="text-lg font-bold text-gray-800" id="bk-val-aluminum">0 ₫</span>
+                    </div>
+                    <!-- Kính -->
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
+                                <i class="fas fa-square"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Kính</span>
+                        </div>
+                        <span class="text-lg font-bold text-gray-800" id="bk-val-glass">0 ₫</span>
+                    </div>
+                    <!-- Vật tư phụ -->
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center text-orange-600">
+                                <i class="fas fa-box-open"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Vật tư phụ</span>
+                        </div>
+                        <span class="text-lg font-bold text-gray-800" id="bk-val-other">0 ₫</span>
+                    </div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-gray-100 flex justify-between items-center px-2">
+                    <span class="text-gray-500 font-medium">Tổng giá trị</span>
+                    <span class="text-2xl font-black text-green-600" id="bk-val-total">0 ₫</span>
+                </div>
+            </div>
+            <div class="p-4 bg-gray-50 text-center border-t border-gray-100">
+                <button onclick="closeValueBreakdown()"
+                    class="px-6 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-100 transition-colors shadow-sm">
+                    Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+
 </body>
 
 </html>

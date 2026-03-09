@@ -35,10 +35,11 @@ exports.getAggregatedStatistics = async () => {
         // Tính tồn kho nhôm: giá trị = quantity (số cây/thanh) * unit_price (giá mỗi cây/thanh)
         let aluminumStats;
         try {
+            // Count unique profiles, not total bars
             [aluminumStats] = await db.query(`
                 SELECT 
                     COUNT(*) as total_count,
-                    0 as low_stock_count, -- Sẽ tính sau dựa trên min_stock_level nếu có
+                    SUM(CASE WHEN COALESCE(quantity_m, 0) < 10 THEN 1 ELSE 0 END) as low_stock_count,
                     SUM(CASE WHEN COALESCE(quantity, 0) > 0 OR COALESCE(quantity_m, 0) > 0 THEN 1 ELSE 0 END) as items_in_stock,
                     COALESCE(SUM(
                         CASE 
@@ -51,25 +52,8 @@ exports.getAggregatedStatistics = async () => {
                 WHERE is_active = 1
             `);
         } catch (err) {
-            // Nếu có lỗi, log và trả về 0
             console.warn('Error calculating aluminum stats:', err.message);
             aluminumStats = [{ total_count: 0, low_stock_count: 0, items_in_stock: 0, total_value: 0 }];
-        }
-
-        // Tính cảnh báo cho nhôm (nếu có min_stock_level hoặc quantity_m < threshold)
-        // Tạm thời giả sử cảnh báo khi quantity_m < 10m hoặc không có quantity_m
-        let aluminumLowStock;
-        try {
-            [aluminumLowStock] = await db.query(`
-                SELECT COUNT(*) as count
-                FROM aluminum_systems
-                WHERE is_active = 1
-                AND (quantity_m IS NULL OR quantity_m < 10 OR quantity_m = 0)
-            `);
-        } catch (err) {
-            // Nếu cột quantity_m chưa tồn tại, bỏ qua
-            console.warn('Column quantity_m may not exist yet:', err.message);
-            aluminumLowStock = [{ count: 0 }];
         }
 
         // 3. KÍNH (glass)
@@ -97,7 +81,7 @@ exports.getAggregatedStatistics = async () => {
             glassStats = [{ total_count: 0, low_stock_count: 0, items_in_stock: 0, total_value: 0 }];
         }
 
-        // 4. KHÁC (inventory với item_type = 'other' hoặc không phải glass)
+        // 4. KHÁC (inventory với item_type = 'other' hoặc vật tư phụ)
         let otherStats;
         try {
             [otherStats] = await db.query(`
@@ -114,86 +98,101 @@ exports.getAggregatedStatistics = async () => {
                     ), 0) as total_value
                 FROM inventory
                 WHERE item_type NOT IN ('glass', 'aluminum') 
-                AND (item_type = 'other' OR item_type IS NULL OR item_type = '')
+                AND (item_type IN ('other', 'vatt') OR item_type IS NULL OR item_type = '')
             `);
         } catch (err) {
             console.error('Error querying other stats:', err);
             otherStats = [{ total_count: 0, low_stock_count: 0, items_in_stock: 0, total_value: 0 }];
         }
 
+        // 5. NHÔM ĐỒ C (aluminum_scraps) - NEW
+        let scrapStats;
+        try {
+            [scrapStats] = await db.query(`
+                SELECT COUNT(*) as available_scraps
+                FROM aluminum_scraps
+                WHERE status = 'available'
+            `);
+        } catch (err) {
+            console.warn('Error calculating scrap stats:', err.message);
+            scrapStats = [{ available_scraps: 0 }];
+        }
+
         // Tổng hợp kết quả
-        const accessories = accessoriesStats[0] || { total_count: 0, low_stock_count: 0, items_in_stock: 0, total_value: 0 };
-        const aluminum = aluminumStats[0] || { total_count: 0, low_stock_count: 0, items_in_stock: 0, total_value: 0 };
-        const glass = glassStats[0] || { total_count: 0, low_stock_count: 0, items_in_stock: 0, total_value: 0 };
-        const other = otherStats[0] || { total_count: 0, low_stock_count: 0, items_in_stock: 0, total_value: 0 };
-        const aluminumLow = aluminumLowStock[0] || { count: 0 };
+        const acc = accessoriesStats[0] || { total_count: 0, low_stock_count: 0, items_in_stock: 0, total_value: 0 };
+        const alum = aluminumStats[0] || { total_count: 0, low_stock_count: 0, items_in_stock: 0, total_value: 0 };
+        const gla = glassStats[0] || { total_count: 0, low_stock_count: 0, items_in_stock: 0, total_value: 0 };
+        const oth = otherStats[0] || { total_count: 0, low_stock_count: 0, items_in_stock: 0, total_value: 0 };
+        const availableScraps = scrapStats[0].available_scraps || 0;
 
         console.log('Aggregation results:', {
-            accessories: accessories,
-            aluminum: aluminum,
-            glass: glass,
-            other: other,
-            aluminumLow: aluminumLow
+            accessories: acc,
+            aluminum: alum,
+            glass: gla,
+            other: oth,
+            scraps: availableScraps
         });
 
         // Tính tổng
-        const totalItems = 
-            parseInt(accessories.total_count || 0) +
-            parseInt(aluminum.total_count || 0) +
-            parseInt(glass.total_count || 0) +
-            parseInt(other.total_count || 0);
+        const totalItems =
+            (parseInt(acc.total_count) || 0) +
+            (parseInt(alum.total_count) || 0) +
+            (parseInt(gla.total_count) || 0) +
+            (parseInt(oth.total_count) || 0);
 
-        const lowStockCount = 
-            parseInt(accessories.low_stock_count || 0) +
-            parseInt(aluminumLow.count || 0) +
-            parseInt(glass.low_stock_count || 0) +
-            parseInt(other.low_stock_count || 0);
+        const lowStockCount =
+            (parseInt(acc.low_stock_count) || 0) +
+            (parseInt(alum.low_stock_count) || 0) +
+            (parseInt(gla.low_stock_count) || 0) +
+            (parseInt(oth.low_stock_count) || 0);
 
         // Tính số vật tư trong kho (có stock > 0) - kể cả cảnh báo
-        const itemsInStock = 
-            parseInt(accessories.items_in_stock || 0) +
-            parseInt(aluminum.items_in_stock || 0) +
-            parseInt(glass.items_in_stock || 0) +
-            parseInt(other.items_in_stock || 0);
+        const itemsInStock =
+            (parseInt(acc.items_in_stock) || 0) +
+            (parseInt(alum.items_in_stock) || 0) +
+            (parseInt(gla.items_in_stock) || 0) +
+            (parseInt(oth.items_in_stock) || 0);
 
-        const totalValue = 
-            parseFloat(accessories.total_value || 0) +
-            parseFloat(aluminum.total_value || 0) +
-            parseFloat(glass.total_value || 0) +
-            parseFloat(other.total_value || 0);
+        const totalValue =
+            (parseFloat(acc.total_value) || 0) +
+            (parseFloat(alum.total_value) || 0) +
+            (parseFloat(gla.total_value) || 0) +
+            (parseFloat(oth.total_value) || 0);
 
-        console.log('Final stats:', { totalItems, lowStockCount, itemsInStock, totalValue });
+        console.log('Final stats:', { totalItems, lowStockCount, itemsInStock, totalValue, totalScraps: availableScraps });
 
         return {
             totalItems,
             lowStockCount,
             itemsInStock, // Số vật tư có stock > 0 (kể cả cảnh báo)
             totalValue,
+            totalScraps: availableScraps,
             breakdown: {
                 accessories: {
-                    count: parseInt(accessories.total_count || 0),
-                    lowStock: parseInt(accessories.low_stock_count || 0),
-                    itemsInStock: parseInt(accessories.items_in_stock || 0),
-                    value: parseFloat(accessories.total_value || 0)
+                    count: parseInt(acc.total_count || 0),
+                    lowStock: parseInt(acc.low_stock_count || 0),
+                    itemsInStock: parseInt(acc.items_in_stock || 0),
+                    value: parseFloat(acc.total_value || 0)
                 },
                 aluminum: {
-                    count: parseInt(aluminum.total_count || 0),
-                    lowStock: parseInt(aluminumLow.count || 0),
-                    itemsInStock: parseInt(aluminum.items_in_stock || 0),
-                    value: parseFloat(aluminum.total_value || 0)
+                    count: parseInt(alum.total_count || 0),
+                    lowStock: parseInt(alum.low_stock_count || 0),
+                    itemsInStock: parseInt(alum.items_in_stock || 0),
+                    value: parseFloat(alum.total_value || 0)
                 },
                 glass: {
-                    count: parseInt(glass.total_count || 0),
-                    lowStock: parseInt(glass.low_stock_count || 0),
-                    itemsInStock: parseInt(glass.items_in_stock || 0),
-                    value: parseFloat(glass.total_value || 0)
+                    count: parseInt(gla.total_count || 0),
+                    lowStock: parseInt(gla.low_stock_count || 0),
+                    itemsInStock: parseInt(gla.items_in_stock || 0),
+                    value: parseFloat(gla.total_value || 0)
                 },
                 other: {
-                    count: parseInt(other.total_count || 0),
-                    lowStock: parseInt(other.low_stock_count || 0),
-                    itemsInStock: parseInt(other.items_in_stock || 0),
-                    value: parseFloat(other.total_value || 0)
-                }
+                    count: parseInt(oth.total_count || 0),
+                    lowStock: parseInt(oth.low_stock_count || 0),
+                    itemsInStock: parseInt(oth.items_in_stock || 0),
+                    value: parseFloat(oth.total_value || 0)
+                },
+                scraps: availableScraps
             }
         };
     } catch (err) {

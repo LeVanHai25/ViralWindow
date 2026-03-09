@@ -537,6 +537,7 @@ exports.getStatistics = async (req, res) => {
                 low_stock: stats.lowStockCount,
                 items_in_stock: stats.itemsInStock, // Số vật tư có stock > 0
                 total_value: stats.totalValue,
+                total_scraps: stats.totalScraps,
                 breakdown: stats.breakdown
             }
         });
