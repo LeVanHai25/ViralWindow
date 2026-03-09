@@ -342,12 +342,13 @@ exports.getByProject = async (req, res) => {
                             stockStatus = 'not_found';
                             stockNote = 'Vui lÃ²ng nháº­p váº­t tÆ° nÃ y';
                         }
-                    } else if (materialType === 'other') {
-                        // Other tá»« báº£ng inventory
+                    } else if (materialType === 'other' || materialType === 'accessory') {
+                        // Váº­t tÆ° phá»¥ / Phá»¥ kiá»‡n: Thá»­ tÃ¬m trong cáº£ 2 báº£ng inventory vÃ  accessories
+                        // 1. Thá»­ trong inventory trÆ°á»›c (Æ°u tiÃªn hÃ ng kho)
                         const [invRows] = await db.query(
-                            `SELECT CAST(quantity AS DECIMAL(10,2)) as stock, unit_price as price 
-                             FROM inventory WHERE id = ?`,
-                            [materialId]
+                            `SELECT id, CAST(quantity AS DECIMAL(10,2)) as stock, unit_price as price 
+                             FROM inventory WHERE id = ? OR item_code = ?`,
+                            [materialId, materialCode]
                         );
                         if (invRows.length > 0) {
                             let stockValue = invRows[0].stock;
@@ -357,9 +358,23 @@ exports.getByProject = async (req, res) => {
                             availableStock = parseFloat(stockValue) || 0;
                             stockPrice = parseFloat(invRows[0].price) || 0;
                             foundInInventory = true;
+                            if (!materialId) materialId = invRows[0].id;
                         } else {
-                            stockStatus = 'not_found';
-                            stockNote = 'Vui lÃ²ng nháº­p váº­t tÆ° nÃ y';
+                            // 2. Thá»­ trong accessories
+                            const [accRows] = await db.query(
+                                `SELECT id, stock_quantity, COALESCE(sale_price, purchase_price, 0) as price 
+                                 FROM accessories WHERE id = ? OR code = ?`,
+                                [materialId, materialCode]
+                            );
+                            if (accRows.length > 0) {
+                                availableStock = parseFloat(accRows[0].stock_quantity) || 0;
+                                stockPrice = parseFloat(accRows[0].price) || 0;
+                                foundInInventory = true;
+                                if (!materialId) materialId = accRows[0].id;
+                            } else {
+                                stockStatus = 'not_found';
+                                stockNote = 'Vui lÃ²ng nháº­p váº­t tÆ° nÃ y';
+                            }
                         }
                     }
                 }
@@ -1459,32 +1474,49 @@ exports.confirmExport = async (req, res) => {
                 let stockColumn = '';
                 let foundMaterialId = null;
 
-                if (material_type === 'accessory') {
-                    // TÃ¬m trong accessories
-                    let accRows = [];
-                    if (material_id && material_id !== 0) {
-                        [accRows] = await connection.query(
-                            `SELECT id, stock_quantity FROM accessories WHERE id = ?`, [material_id]
-                        );
+                if (material_type === 'accessory' || material_type === 'other') {
+                    // Tìm trong cả accessories và inventory
+                    let found = false;
+
+                    // 1. Thử trong inventory (hàng kho mới)
+                    let invRows = [];
+                    if (material_id && material_id !== 0 && material_type === 'other') {
+                        [invRows] = await connection.query(`SELECT id, CAST(quantity AS DECIMAL(10,2)) as stock FROM inventory WHERE id = ?`, [material_id]);
                     } else if (material_code) {
-                        [accRows] = await connection.query(
-                            `SELECT id, stock_quantity FROM accessories WHERE code = ?`, [material_code]
-                        );
+                        [invRows] = await connection.query(`SELECT id, CAST(quantity AS DECIMAL(10,2)) as stock FROM inventory WHERE item_code = ?`, [material_code]);
                     }
-                    if (accRows.length === 0 && material_name) {
-                        [accRows] = await connection.query(
-                            `SELECT id, stock_quantity FROM accessories WHERE name = ? OR name LIKE ? LIMIT 1`,
-                            [material_name, `%${material_name}%`]
-                        );
+
+                    if (invRows.length > 0) {
+                        availableStock = parseFloat(invRows[0].stock) || 0;
+                        foundMaterialId = invRows[0].id;
+                        stockTable = 'inventory';
+                        stockColumn = 'quantity';
+                        found = true;
                     }
-                    if (accRows.length > 0) {
-                        availableStock = parseFloat(accRows[0].stock_quantity) || 0;
-                        foundMaterialId = accRows[0].id;
-                        stockTable = 'accessories';
-                        stockColumn = 'stock_quantity';
+
+                    // 2. Thử trong accessories (nếu chưa tìm thấy)
+                    if (!found) {
+                        let accRows = [];
+                        if (material_id && material_id !== 0 && material_type === 'accessory') {
+                            [accRows] = await connection.query(`SELECT id, stock_quantity FROM accessories WHERE id = ?`, [material_id]);
+                        } else if (material_code) {
+                            [accRows] = await connection.query(`SELECT id, stock_quantity FROM accessories WHERE code = ?`, [material_code]);
+                        }
+
+                        if (accRows.length === 0 && material_name) {
+                            [accRows] = await connection.query(`SELECT id, stock_quantity FROM accessories WHERE name = ? LIMIT 1`, [material_name]);
+                        }
+
+                        if (accRows.length > 0) {
+                            availableStock = parseFloat(accRows[0].stock_quantity) || 0;
+                            foundMaterialId = accRows[0].id;
+                            stockTable = 'accessories';
+                            stockColumn = 'stock_quantity';
+                            found = true;
+                        }
                     }
                 } else if (material_type === 'aluminum') {
-                    // TÃ¬m trong aluminum_systems
+                    // ... (rest remains same but slightly cleaned up for flow)
                     let alumRows = [];
                     if (material_id && material_id !== 0) {
                         [alumRows] = await connection.query(
@@ -1497,8 +1529,8 @@ exports.confirmExport = async (req, res) => {
                     }
                     if (alumRows.length === 0 && material_name) {
                         [alumRows] = await connection.query(
-                            `SELECT id, CASE WHEN quantity IS NOT NULL AND quantity > 0 THEN quantity ELSE COALESCE(quantity_m, 0) END as stock FROM aluminum_systems WHERE name = ? OR name LIKE ? LIMIT 1`,
-                            [material_name, `%${material_name}%`]
+                            `SELECT id, CASE WHEN quantity IS NOT NULL AND quantity > 0 THEN quantity ELSE COALESCE(quantity_m, 0) END as stock FROM aluminum_systems WHERE name = ? LIMIT 1`,
+                            [material_name]
                         );
                     }
                     if (alumRows.length > 0) {
@@ -1507,23 +1539,13 @@ exports.confirmExport = async (req, res) => {
                         stockTable = 'aluminum_systems';
                         stockColumn = 'quantity';
                     }
-                } else if (material_type === 'glass' || material_type === 'other') {
-                    // TÃ¬m trong inventory
+                } else if (material_type === 'glass') {
+                    // Tìm trong inventory cho kính
                     let invRows = [];
                     if (material_id && material_id !== 0) {
-                        [invRows] = await connection.query(
-                            `SELECT id, CAST(quantity AS DECIMAL(10,2)) as stock FROM inventory WHERE id = ?`, [material_id]
-                        );
+                        [invRows] = await connection.query(`SELECT id, CAST(quantity AS DECIMAL(10,2)) as stock FROM inventory WHERE id = ?`, [material_id]);
                     } else if (material_code) {
-                        [invRows] = await connection.query(
-                            `SELECT id, CAST(quantity AS DECIMAL(10,2)) as stock FROM inventory WHERE item_code = ?`, [material_code]
-                        );
-                    }
-                    if (invRows.length === 0 && material_name) {
-                        [invRows] = await connection.query(
-                            `SELECT id, CAST(quantity AS DECIMAL(10,2)) as stock FROM inventory WHERE item_name = ? OR item_name LIKE ? LIMIT 1`,
-                            [material_name, `%${material_name}%`]
-                        );
+                        [invRows] = await connection.query(`SELECT id, CAST(quantity AS DECIMAL(10,2)) as stock FROM inventory WHERE item_code = ?`, [material_code]);
                     }
                     if (invRows.length > 0) {
                         availableStock = parseFloat(invRows[0].stock) || 0;
@@ -1778,14 +1800,35 @@ exports.getInventoryByType = async (req, res) => {
                 break;
             case 'other':
             case 'consumable':
-                // Váº­t tÆ° phá»¥: Láº¥y cÃ¡c category thuá»™c nhÃ³m Váº­t tÆ° phá»¥ tá»« báº£ng accessories
-                query = `SELECT id, code, name, category, unit, 
-                         COALESCE(sale_price, purchase_price, 0) as price, 
-                         stock_quantity as stock, min_stock_level
-                         FROM accessories 
-                         WHERE is_active = 1 
-                         AND category IN ('Ke', 'GioÄƒng', 'Nhá»±a á»‘p', 'Keo', 'KhÃ¡c')
-                         ORDER BY category, name`;
+                // Vật tư phụ: Lấy từ cả 2 nguồn (accessories và inventory cho hàng mới import)
+                query = `
+                    (SELECT 
+                        id, 
+                        code, 
+                        name, 
+                        category, 
+                        unit, 
+                        COALESCE(sale_price, purchase_price, 0) as price, 
+                        stock_quantity as stock, 
+                        min_stock_level,
+                        'accessories' as source_table
+                    FROM accessories 
+                    WHERE is_active = 1 
+                    AND category IN ('Ke', 'Gioăng', 'Nhựa ốp', 'Keo', 'Khác'))
+                    UNION ALL
+                    (SELECT 
+                        id, 
+                        item_code as code, 
+                        item_name as name, 
+                        notes as category, 
+                        unit,
+                        unit_price as price, 
+                        quantity as stock, 
+                        min_stock_level,
+                        'inventory' as source_table
+                    FROM inventory
+                    WHERE item_type = 'other' OR item_type = 'vật tư')
+                    ORDER BY name ASC`;
                 break;
             default:
                 return res.status(400).json({
@@ -2207,7 +2250,7 @@ exports.saveBOMData = async (req, res) => {
                 await connection.query(
                     `INSERT INTO project_materials 
                     (project_id, material_type, material_id, material_code, material_name, quantity, unit, notes)
-                    VALUES (?, 'accessory', 0, ?, ?, ?, ?, ?)`,
+                    VALUES (?, 'other', 0, ?, ?, ?, ?, ?)`,
                     [
                         projectId,
                         item.code || item.item_code || null,

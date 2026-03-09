@@ -12548,72 +12548,31 @@
                     // Load Accessories + Inventory (Vật tư phụ: Keo, Gioang, Ke, etc.)
                     materialsCache.vattu = [];
 
-                    // Danh sách các category thuộc Vật tư phụ (KHÔNG phải phụ kiện thông thường)
-                    const vatTuPhuCategories = ['Ke', 'Gioăng', 'Nhựa ốp', 'Keo', 'Khác'];
-
-                    // 1. Load from accessories API - dùng query param để lấy CHỈ vật tư phụ từ server
+                    // 1. Load from Unified Supplementary Materials API (returns both accessories and inventory)
                     try {
-                        // Sử dụng API query parameter để filter server-side
-                        const categoriesParam = encodeURIComponent(vatTuPhuCategories.join(','));
-                        const vattuAuthToken = sessionStorage.getItem('token');
-                        const accessoriesRes = await fetch(`${API_BASE}/accessories?categories=${categoriesParam}`, {
-                            headers: vattuAuthToken ? { 'Authorization': `Bearer ${vattuAuthToken}` } : {}
-                        });
-                        const accessoriesData = await accessoriesRes.json();
-                        console.log('🔍 Accessories API response for vattu:', accessoriesData.count || 0, 'items');
-
-                        if (accessoriesData.success && accessoriesData.data) {
-                            const vattuFromAccessories = accessoriesData.data.map(item => ({
-                                id: item.id,
-                                sourceTable: 'accessories',
-                                code: item.code || item.item_code || '',
-                                name: item.name || item.item_name || `Vật tư #${item.id}`,
-                                category: item.category || 'Khác',
-                                unit: item.unit || 'cái',
-                                price: item.sale_price || item.purchase_price || item.price || 0,
-                                // accessories table uses stock_quantity field
-                                stock: parseFloat(item.stock_quantity || item.stock || item.quantity || 0)
-                            }));
-                            materialsCache.vattu.push(...vattuFromAccessories);
-                            console.log('✅ Loaded', vattuFromAccessories.length, 'vật tư phụ from accessories (Ke, Gioăng, Nhựa ốp, Keo, Khác)');
-
-                            // Debug: log categories actually loaded
-                            const loadedCategories = [...new Set(vattuFromAccessories.map(v => v.category))];
-                            console.log('📋 Categories loaded:', loadedCategories.join(', '));
-                        }
-                    } catch (err) {
-                        console.error('Error loading accessories for vattu:', err);
-                    }
-
-                    // 2. Load from vật tư phụ API (bảng riêng cho Keo, Gioang, Ke, Nhựa ốp, Khác)
-                    try {
+                        console.log('🔄 Fetching unified supplementary materials...');
                         const vatTuPhuRes = await fetch(`${API_BASE}/project-materials/inventory/other`);
                         const vatTuPhuData = await vatTuPhuRes.json();
-                        console.log('🔍 Project-materials/inventory/other response:', vatTuPhuData.data?.length || 0, 'items');
 
                         if (vatTuPhuData.success && vatTuPhuData.data) {
-                            const vattuItems = vatTuPhuData.data.map(item => ({
+                            console.log(`✅ Loaded ${vatTuPhuData.data.length} supplementary materials from unified API`);
+
+                            materialsCache.vattu = vatTuPhuData.data.map(item => ({
                                 id: item.id,
-                                sourceTable: 'project-materials',
-                                code: item.code || item.item_code || '',
-                                name: item.name || item.item_name || `Vật tư #${item.id}`,
+                                sourceTable: item.source_table || 'project-materials',
+                                code: item.code || '',
+                                name: item.name || `Vật tư #${item.id}`,
                                 category: item.category || 'Vật tư phụ',
                                 unit: item.unit || 'cái',
-                                price: item.unit_price || item.price || 0,
-                                stock: parseFloat(item.stock_quantity || item.stock || item.quantity || 0)
+                                price: item.price || 0,
+                                stock: parseFloat(item.stock || 0)
                             }));
-
-                            // Tránh trùng lặp - chỉ thêm nếu chưa có code tương tự
-                            const existingCodes = new Set(materialsCache.vattu.map(v => v.code.toLowerCase()));
-                            const newItems = vattuItems.filter(item => !existingCodes.has(item.code.toLowerCase()));
-                            materialsCache.vattu.push(...newItems);
-                            console.log('✅ Loaded', newItems.length, 'vật tư phụ from project-materials/inventory/other');
                         }
                     } catch (err) {
-                        console.error('Error loading vật tư phụ:', err);
+                        console.error('Error loading unified vật tư phụ:', err);
+                        // Fallback empty array if fails
+                        materialsCache.vattu = [];
                     }
-
-                    console.log('✅ Total vattu items:', materialsCache.vattu.length);
                     // Debug: log sample items
                     if (materialsCache.vattu.length > 0) {
                         console.log('📋 Sample vattu items:', materialsCache.vattu.slice(0, 5).map(v => ({
