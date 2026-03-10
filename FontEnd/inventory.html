@@ -11203,23 +11203,26 @@
 
             async function loadGlassItems(search = '') {
                 try {
-                    const response = await fetch(`${API_BASE}/glass-items`);
+                    // Lấy dữ liệu từ inventory API, lọc theo item_type = 'glass'
+                    const response = await fetch(`${API_BASE}/inventory?item_type=glass`, {
+                        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
+                    });
                     const result = await response.json();
 
                     if (result.success) {
                         let items = result.data || [];
 
-                        // Map dữ liệu từ glass_items sang format hiển thị
-                        // QUAN TRỌNG: code = mã kính, name = tên kính, structure = thông tin kích thước
+                        // Map dữ liệu từ inventory sang format hiển thị kính
+                        // Trong inventory: item_code là mã, item_name là tên, notes lưu structure (kích thước)
                         items = items.map(item => ({
                             id: item.id,
-                            item_code: item.code || ('K-' + item.id),  // Mã kính (J-3, K-1, ...)
-                            item_name: item.name,                      // Tên kính
-                            notes: item.structure || '',               // Thông tin kích thước (8mm - 2m x 1.5m)
-                            description: item.structure || '',
+                            item_code: item.item_code,
+                            item_name: item.item_name,
+                            notes: item.notes || '',
+                            description: item.notes || '',
                             quantity: parseFloat(item.quantity) || 0,
                             stock_quantity: parseFloat(item.quantity) || 0,
-                            unit_price: parseFloat(item.price) || 0,
+                            unit_price: parseFloat(item.unit_price) || 0,
                             supplier_id: item.supplier_id,
                             supplier_name: item.supplier_name || '',
                             image_url: item.image_url || ''
@@ -11318,7 +11321,7 @@
                         return;
                     }
 
-                    const response = await fetch(`${API_BASE}/glass-items/${id}`, {
+                    const response = await fetch(`${API_BASE}/inventory/${id}`, {
                         headers: {
                             'Authorization': `Bearer ${token}`
                         }
@@ -11538,7 +11541,7 @@
                         return;
                     }
 
-                    const response = await fetch(`${API_BASE}/glass-items/${id}`, {
+                    const response = await fetch(`${API_BASE}/inventory/${id}`, {
                         method: 'DELETE',
                         headers: {
                             'Authorization': `Bearer ${token}`
