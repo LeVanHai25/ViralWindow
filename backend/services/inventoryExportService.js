@@ -20,14 +20,14 @@ class InventoryExportService {
 
         // Map itemType to template file
         const templateMap = {
-            'accessory': 'accessory_report_template.xlsx',
-            'aluminum': 'accessory_report_template.xlsx', // Will be upgraded to dedicated templates later if needed
-            'glass': 'accessory_report_template.xlsx',
-            'other': 'accessory_report_template.xlsx',
-            'scraps': 'accessory_report_template.xlsx'
+            'accessory': 'warehouse_inventory_template.xlsx',
+            'aluminum': 'warehouse_inventory_template.xlsx',
+            'glass': 'warehouse_inventory_template.xlsx',
+            'other': 'warehouse_inventory_template.xlsx',
+            'scraps': 'warehouse_inventory_template.xlsx'
         };
 
-        const templateName = templateMap[itemType] || 'accessory_report_template.xlsx';
+        const templateName = templateMap[itemType] || 'warehouse_inventory_template.xlsx';
         const templatePath = path.join(__dirname, '../templates', templateName);
 
         if (!fs.existsSync(templatePath)) {
@@ -38,6 +38,8 @@ class InventoryExportService {
         const worksheet = workbook.getWorksheet(1);
 
         // 1. Inject Professional Logo if possible
+        // [SENIOR ARCHITECT NOTE]: Removed Col 0, Row 0 logo to avoid overlapping with template headers and branding.
+        /*
         try {
             const logoPath = path.join(__dirname, '../assets/LogoViralWindow.png');
             if (fs.existsSync(logoPath)) {
@@ -53,16 +55,30 @@ class InventoryExportService {
         } catch (logoErr) {
             console.warn('Could not add logo to Excel:', logoErr.message);
         }
+        */
+
+        // [SENIOR ARCHITECT NOTE]: Clear legacy titles and data from template rows 5 to 500
+        // Doing this EARLY to avoid clearing our own injected metadata.
+        for (let i = 5; i <= 500; i++) {
+            const r = worksheet.getRow(i);
+            if (i < 10) {
+                r.eachCell((cell) => { cell.value = null; });
+            } else if (i > 10) {
+                r.values = [];
+            }
+        }
 
         // 2. Inject Header Metadata
+        // [SENIOR ARCHITECT NOTE]: Aligned with 'biểu mẫu format cho Bảng tồn kho khi xuất excel.xlsx'
         const titleRow = 7;
         if (options.title) {
-            const titleCell = worksheet.getCell(`A${titleRow}`);
+            const titleCell = worksheet.getCell(`C${titleRow}`);
+            // Format of title should be "BÁO CÁO TỒN KHO ......"
             titleCell.value = options.title.toUpperCase();
-            titleCell.font = { bold: true, size: 16, color: { argb: 'FF007B5E' } };
+            titleCell.font = { bold: true, size: 20 };
             titleCell.alignment = { horizontal: 'center' };
-            // Merge title cell across data columns
-            try { worksheet.mergeCells(`A${titleRow}:H${titleRow}`); } catch (e) { }
+            // Merge title cell across columns C to H as per template screenshot
+            try { worksheet.mergeCells(`C${titleRow}:H${titleRow}`); } catch (e) { }
         }
 
         // Date Info (Row 8-9)
@@ -75,37 +91,40 @@ class InventoryExportService {
         }
 
         const now = new Date();
-        const dateStr = now.toLocaleDateString('vi-VN') + ' ' + now.toLocaleTimeString('vi-VN');
-        const exportInfoCell = worksheet.getCell(`A${titleRow + 2}`);
-        exportInfoCell.value = `Ngày xuất: ${dateStr} | Người xuất: ${options.generatedBy || 'Admin'}`;
-        exportInfoCell.font = { italic: true, size: 10 };
-        exportInfoCell.alignment = { horizontal: 'center' };
-        try { worksheet.mergeCells(`A${titleRow + 2}:H${titleRow + 2}`); } catch (e) { }
+        const dateStr = now.toLocaleDateString('vi-VN');
+        const timeStr = now.toLocaleTimeString('vi-VN');
 
-        // 3. Inject Data (Starting from Row 11)
-        let currentRowIndex = 11;
+        // Rows 9, 10, 11 for Metadata as per template
+        worksheet.getCell('B9').value = `Ngày xuất: ${dateStr}`;
+        worksheet.getCell('B10').value = `Thời gian: ${timeStr}`;
+        worksheet.getCell('B11').value = `Người thực hiện: ${options.generatedBy || 'Admin'}`;
 
-        // Clear existing data rows in template (up to 500 rows) to avoid overlapping
-        for (let i = 11; i <= 500; i++) {
-            const r = worksheet.getRow(i);
-            r.values = [];
-        }
+        // 3. Inject Data (Starting from Row 15)
+        let currentRowIndex = 15;
 
-        // Prepare headers if they are somehow missing in template at Row 10
-        const headerRow = worksheet.getRow(10);
-        const headers = ['STT', 'Mã vật tư', 'Tên vật tư', 'Đơn vị', 'Tồn đầu', 'Nhập', 'Xuất', 'Tồn cuối'];
+        // Prepare headers at Row 14 as per professional template
+        const headerRow = worksheet.getRow(14);
+        const dynamicHeaders = {
+            'accessory': ['STT', 'Mã phụ kiện', 'Tên phụ kiện', 'Đơn vị', 'Tồn kho', 'Min', 'Max', 'Cần nhập', 'Giá trị', 'Tổng giá trị'],
+            'other': ['STT', 'Mã vật tư', 'Tên vật tư', 'Đơn vị', 'Tồn kho', 'Min', 'Max', 'Cần nhập', 'Giá trị', 'Tổng giá trị'],
+            'aluminum': ['STT', 'Mã nhôm', 'Tên nhôm', 'Đơn vị', 'Tồn kho', 'Min', 'Max', 'Cần nhập', 'Giá trị', 'Tổng giá trị'],
+            'glass': ['STT', 'Mã kính', 'Tên kính', 'Đơn vị', 'Tồn kho', 'Min', 'Max', 'Cần nhập', 'Giá trị', 'Tổng giá trị'],
+            'scraps': ['STT', 'Mã phế liệu', 'Tên phế liệu', 'Đơn vị', 'Tồn kho', 'Min', 'Max', 'Cần nhập', 'Giá trị', 'Tổng giá trị']
+        };
+        const headers = dynamicHeaders[itemType] || dynamicHeaders['other'];
+
         headers.forEach((h, i) => {
             const cell = headerRow.getCell(i + 1);
-            if (!cell.value) cell.value = h;
+            cell.value = h;
             cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
             cell.fill = {
                 type: 'pattern',
                 pattern: 'solid',
-                fgColor: { argb: 'FF007B5E' }
+                fgColor: { argb: 'FF2D70B3' } // Standard corporate blue from template
             };
             cell.alignment = { horizontal: 'center', vertical: 'middle' };
             cell.border = {
-                top: { style: 'thin' }, margin: { top: 5, bottom: 5 },
+                top: { style: 'thin' },
                 left: { style: 'thin' },
                 bottom: { style: 'thin' },
                 right: { style: 'thin' }
@@ -116,17 +135,19 @@ class InventoryExportService {
             const row = worksheet.getRow(currentRowIndex);
 
             row.getCell(1).value = index + 1; // STT
-            row.getCell(2).value = item.code || '';
-            row.getCell(3).value = item.name || '';
-            row.getCell(4).value = item.unit || '';
-            row.getCell(5).value = Number(item.opening) || 0;
-            row.getCell(6).value = Number(item.in) || 0;
-            row.getCell(7).value = Number(item.out) || 0;
-            row.getCell(8).value = Number(item.closing) || 0;
+            row.getCell(2).value = item.code || ''; // Mã
+            row.getCell(3).value = item.name || ''; // Tên
+            row.getCell(4).value = item.unit || ''; // Đơn vị
+            row.getCell(5).value = Number(item.stock) || 0; // Tồn kho
+            row.getCell(6).value = Number(item.min) || 0; // Min
+            row.getCell(7).value = Number(item.max) || 0; // Max
+            row.getCell(8).value = Number(item.restock) || 0; // Cần nhập
+            row.getCell(9).value = Number(item.price) || 0; // Giá trị (Đơn giá)
+            row.getCell(10).value = Number(item.totalValue) || 0; // Tổng giá trị
 
-            // Apply borders to mimic template style for new rows
+            // Apply borders and formatting
             row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
-                if (colNumber <= 8) {
+                if (colNumber <= 10) {
                     cell.border = {
                         top: { style: 'thin' },
                         left: { style: 'thin' },
@@ -137,9 +158,9 @@ class InventoryExportService {
                     if (colNumber === 1 || colNumber === 4) {
                         cell.alignment = { horizontal: 'center' };
                     }
-                    // Handle number formatting
+                    // Handle number formatting for stock, levels, prices
                     if (colNumber >= 5) {
-                        cell.numFmt = '#,##0.##';
+                        cell.numFmt = '#,##0';
                         cell.alignment = { horizontal: 'right' };
                     }
                 }
@@ -152,21 +173,13 @@ class InventoryExportService {
         const totalRow = worksheet.getRow(currentRowIndex);
         totalRow.getCell(3).value = 'TỔNG CỘNG:';
         totalRow.getCell(3).font = { bold: true };
+        totalRow.getCell(3).alignment = { horizontal: 'right' };
 
-        const totals = data.reduce((acc, curr) => ({
-            opening: acc.opening + (Number(curr.opening) || 0),
-            in: acc.in + (Number(curr.in) || 0),
-            out: acc.out + (Number(curr.out) || 0),
-            closing: acc.closing + (Number(curr.closing) || 0)
-        }), { opening: 0, in: 0, out: 0, closing: 0 });
-
-        totalRow.getCell(5).value = totals.opening;
-        totalRow.getCell(6).value = totals.in;
-        totalRow.getCell(7).value = totals.out;
-        totalRow.getCell(8).value = totals.closing;
+        const totalValueStock = data.reduce((acc, curr) => acc + (Number(curr.totalValue) || 0), 0);
+        totalRow.getCell(10).value = totalValueStock;
 
         totalRow.eachCell((cell, colNumber) => {
-            if (colNumber >= 3 && colNumber <= 8) {
+            if (colNumber >= 3 && colNumber <= 10) {
                 cell.font = { bold: true };
                 cell.fill = {
                     type: 'pattern',
@@ -179,6 +192,10 @@ class InventoryExportService {
                     left: { style: 'thin' },
                     right: { style: 'thin' }
                 };
+                if (colNumber === 10) {
+                    cell.numFmt = '#,##0';
+                    cell.alignment = { horizontal: 'right' };
+                }
             }
         });
 
@@ -199,7 +216,7 @@ class InventoryExportService {
             const cell = worksheet.getRow(currentRowIndex).getCell(f.col);
             cell.value = f.text;
             cell.font = { bold: true };
-            cell.alignment = { horizontal: 'center' };
+            cell.alignment = { horizontal: f.col === 7 ? 'right' : 'center' };
         });
 
         return await workbook.xlsx.writeBuffer();

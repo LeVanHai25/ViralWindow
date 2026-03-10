@@ -50,7 +50,10 @@ exports.exportInventory = async (req, res) => {
                         name,
                         category,
                         unit,
-                        stock_quantity AS stock
+                        stock_quantity AS stock,
+                        min_stock_level,
+                        max_stock_level,
+                        purchase_price AS unit_price
                     FROM accessories
                     WHERE 1=1
                 `;
@@ -72,7 +75,10 @@ exports.exportInventory = async (req, res) => {
                         name,
                         glass_type AS category,
                         'tấm' AS unit,
-                        quantity AS stock
+                        quantity AS stock,
+                        0 as min_stock_level,
+                        0 as max_stock_level,
+                        unit_price
                     FROM glass_items
                     WHERE 1=1
                 `;
@@ -90,7 +96,10 @@ exports.exportInventory = async (req, res) => {
                         name,
                         category,
                         unit,
-                        stock_quantity AS stock
+                        stock_quantity AS stock,
+                        min_stock_level,
+                        max_stock_level,
+                        purchase_price AS unit_price
                     FROM accessories
                     WHERE category IN ('Ke', 'Gioăng', 'Nhựa ốp', 'Keo', 'Khác')
                 `;
@@ -126,23 +135,32 @@ exports.exportInventory = async (req, res) => {
 
         const [rows] = await db.query(sql, params);
 
-        // Map data to service format
-        const exportData = rows.map(row => ({
-            code: row.code,
-            name: row.name,
-            unit: row.unit,
-            opening: 0,
-            in: 0,
-            out: 0,
-            closing: row.stock
-        }));
+        // Map data to service format (Advanced fields for professional reports)
+        const exportData = rows.map(row => {
+            const stock = parseFloat(row.stock) || 0;
+            const min = parseFloat(row.min_stock_level) || 0;
+            const max = parseFloat(row.max_stock_level) || 0;
+            const price = parseFloat(row.unit_price) || 0;
+
+            return {
+                code: row.code,
+                name: row.name,
+                unit: row.unit,
+                stock: stock,
+                min: min,
+                max: max,
+                restock: max > stock ? (max - stock) : 0,
+                price: price,
+                totalValue: stock * price
+            };
+        });
 
         const warehouseNames = {
-            aluminum: 'NHÔM',
-            accessory: 'PHỤ KIỆN',
-            glass: 'KÍNH',
-            other: 'VẬT TƯ PHỤ',
-            scraps: 'PHẾ LIỆU'
+            aluminum: 'Nhôm',
+            accessory: 'Phụ kiện',
+            glass: 'Kính',
+            other: 'Vật tư phụ',
+            scraps: 'Phế liệu'
         };
 
         const buffer = await inventoryExportService.exportToExcel(item_type, exportData, {
