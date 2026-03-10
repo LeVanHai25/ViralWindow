@@ -932,6 +932,25 @@ exports.getLowStockItems = async (req, res) => {
     }
 };
 
+// GET dashboard alerts summary
+exports.getDashboardAlertsSummary = async (req, res) => {
+    try {
+        const aggregationService = require("../services/inventoryAggregationService");
+        const summary = await aggregationService.getDashboardAlertsSummary();
+
+        res.json({
+            success: true,
+            data: summary
+        });
+    } catch (err) {
+        console.error('Error getting dashboard alerts summary:', err);
+        res.status(500).json({
+            success: false,
+            message: "Lỗi server: " + (err.message || 'Lỗi không xác định')
+        });
+    }
+};
+
 // GET next VRPK code for accessories and other items
 exports.getNextVRPKCode = async (req, res) => {
     try {

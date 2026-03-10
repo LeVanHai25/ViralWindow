@@ -531,3 +531,62 @@ exports.getAllItems = async () => {
     }
 };
 
+/**
+ * Lấy tóm tắt cảnh báo cho Dashboard (Kết hợp từ tất cả các module)
+ * @returns {Object} { outOfStockCount, lowStockCount, overdueProjects, pendingQuotations }
+ */
+exports.getDashboardAlertsSummary = async () => {
+    try {
+        // 1. Tính số lượng hết hàng (Out of Stock) từ tất cả kho
+        const queries = [
+            // Accessories
+            db.query("SELECT COUNT(*) as count FROM accessories WHERE is_active = 1 AND stock_quantity <= 0"),
+            // Aluminum
+            db.query("SELECT COUNT(*) as count FROM aluminum_systems WHERE is_active = 1 AND (quantity_m <= 0 OR quantity_m IS NULL)"),
+            // Glass
+            db.query("SELECT COUNT(*) as count FROM inventory WHERE item_type = 'glass' AND quantity <= 0"),
+            // Other
+            db.query("SELECT COUNT(*) as count FROM inventory WHERE (item_type NOT IN ('glass', 'aluminum') OR item_type IS NULL) AND quantity <= 0")
+        ];
+
+        const results = await Promise.all(queries);
+        const outOfStockCount = results.reduce((sum, res) => sum + (parseInt(res[0][0].count) || 0), 0);
+
+        // 2. Tính số lượng sắp hết hàng (Low Stock)
+        const lowStockQueries = [
+            db.query("SELECT COUNT(*) as count FROM accessories WHERE is_active = 1 AND stock_quantity > 0 AND stock_quantity <= min_stock_level"),
+            db.query("SELECT COUNT(*) as count FROM aluminum_systems WHERE is_active = 1 AND quantity_m > 0 AND quantity_m < 10"),
+            db.query("SELECT COUNT(*) as count FROM inventory WHERE item_type = 'glass' AND quantity > 0 AND quantity <= min_stock_level"),
+            db.query("SELECT COUNT(*) as count FROM inventory WHERE (item_type NOT IN ('glass', 'aluminum') OR item_type IS NULL) AND quantity > 0 AND quantity <= min_stock_level")
+        ];
+
+        const lowStockResults = await Promise.all(lowStockQueries);
+        const lowStockCount = lowStockResults.reduce((sum, res) => sum + (parseInt(res[0][0].count) || 0), 0);
+
+        // 3. Dự án quá hạn
+        const [overdueProjects] = await db.query(
+            "SELECT COUNT(*) as count FROM projects WHERE status NOT IN ('completed', 'cancelled', 'closed') AND deadline < NOW()"
+        );
+
+        // 4. Báo giá chờ duyệt / Sắp hết hạn
+        const [quotationStats] = await db.query(`
+            SELECT 
+                SUM(CASE WHEN status IN ('pending', 'draft') THEN 1 ELSE 0 END) as pending_count,
+                SUM(CASE WHEN status IN ('pending', 'draft') AND DATE_ADD(quotation_date, INTERVAL COALESCE(validity_days, 30) DAY) < DATE_ADD(NOW(), INTERVAL 7 DAY) AND DATE_ADD(quotation_date, INTERVAL COALESCE(validity_days, 30) DAY) >= NOW() THEN 1 ELSE 0 END) as expiring_soon,
+                SUM(CASE WHEN status IN ('pending', 'draft') AND DATE_ADD(quotation_date, INTERVAL COALESCE(validity_days, 30) DAY) < NOW() THEN 1 ELSE 0 END) as expired_count
+            FROM quotations
+        `);
+
+        return {
+            outOfStockCount,
+            lowStockCount,
+            overdueProjectsCount: overdueProjects[0].count || 0,
+            pendingQuotationsCount: quotationStats[0].pending_count || 0,
+            expiringQuotationsCount: quotationStats[0].expiring_soon || 0,
+            expiredQuotationsCount: quotationStats[0].expired_count || 0
+        };
+    } catch (err) {
+        console.error('Error in getDashboardAlertsSummary:', err);
+        throw err;
+    }
+};

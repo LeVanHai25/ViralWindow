@@ -1519,12 +1519,14 @@
                     : '';
                 const sourceBadge = getSourceBadge(item.source);
 
+                const isInventory = item.is_stock || item.source === 'inventory' || item.source === 'materials';
                 return `
-                    <div class="autocomplete-item" data-index="${index}" 
+                    <div class="autocomplete-item ${isInventory ? 'is-inventory' : ''}" data-index="${index}" 
                          onclick="selectMaterial('${type}', ${stt}, ${JSON.stringify(item).replace(/"/g, '&quot;')})">
                         <div class="autocomplete-item-name">
                             ${escapeHtml(item.name || '')}
                             ${sourceBadge}
+                            ${isInventory ? '<span class="inventory-hint">✔ TRONG KHO</span>' : ''}
                         </div>
                         <div class="autocomplete-item-code">Mã: ${escapeHtml(item.code || 'N/A')}</div>
                         ${stockInfo}
@@ -1550,6 +1552,7 @@
         function getSourceBadge(source) {
             const badges = {
                 'inventory': '<span class="source-badge inventory">Kho</span>',
+                'materials': '<span class="source-badge inventory">Kho</span>',
                 'aluminum_systems': '<span class="source-badge aluminum_systems">Hệ nhôm</span>',
                 'aluminum_profiles': '<span class="source-badge aluminum_profiles">Profile</span>',
                 'glass_items': '<span class="source-badge glass_items">Kính</span>',

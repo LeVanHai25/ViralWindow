@@ -87,25 +87,7 @@ exports.searchMaterials = async (req, res) => {
         }
 
         if (type === 'kinh' || type === 'all') {
-            // Tìm trong glass_items
-            const [glassRows] = await db.query(`
-                SELECT 
-                    id,
-                    code,
-                    name,
-                    'tấm' as unit,
-                    quantity as stock_quantity,
-                    price as unit_price,
-                    structure as description,
-                    'glass_items' as source,
-                    'kinh' as material_type
-                FROM glass_items 
-                WHERE (name LIKE ? OR code LIKE ? OR structure LIKE ?)
-                ORDER BY name ASC
-                LIMIT ?
-            `, [searchTerm, searchTerm, searchTerm, parseInt(limit)]);
-
-            // Tìm trong inventory có item_type = 'glass' hoặc 'kinh'
+            // 1. Tìm trong inventory có item_type = 'glass' hoặc 'kinh' (Warehouse)
             const [inventoryGlassRows] = await db.query(`
                 SELECT 
                     id,
@@ -124,7 +106,49 @@ exports.searchMaterials = async (req, res) => {
                 LIMIT ?
             `, [searchTerm, searchTerm, parseInt(limit)]);
 
-            results = results.concat(glassRows, inventoryGlassRows);
+            // 2. Tìm trong materials có type = 'glass' (Catalog bổ sung)
+            const [materialGlassRows] = await db.query(`
+                SELECT 
+                    id,
+                    code,
+                    name,
+                    unit,
+                    NULL as stock_quantity,
+                    price as unit_price,
+                    NULL as description,
+                    'materials' as source,
+                    'kinh' as material_type
+                FROM materials 
+                WHERE type = 'glass'
+                    AND (name LIKE ? OR code LIKE ?)
+                ORDER BY name ASC
+                LIMIT ?
+            `, [searchTerm, searchTerm, parseInt(limit)]);
+
+            // 3. Tìm trong glass_items (Catalog - thường có tồn kho = 0)
+            const [glassRows] = await db.query(`
+                SELECT 
+                    id,
+                    code,
+                    name,
+                    'tấm' as unit,
+                    quantity as stock_quantity,
+                    price as unit_price,
+                    structure as description,
+                    'glass_items' as source,
+                    'kinh' as material_type
+                FROM glass_items 
+                WHERE (name LIKE ? OR code LIKE ? OR structure LIKE ?)
+                ORDER BY name ASC
+                LIMIT ?
+            `, [searchTerm, searchTerm, searchTerm, parseInt(limit)]);
+
+            // Thứ tự ưu tiên: Inventory (Kho) -> Materials (Kho bổ sung) -> Glass Items (Catalog)
+            // Đánh dấu là stock để frontend dễ xử lý
+            const stockResults = [...inventoryGlassRows, ...materialGlassRows].map(item => ({ ...item, is_stock: true }));
+            const catalogResults = glassRows.map(item => ({ ...item, is_stock: false }));
+
+            results = results.concat(stockResults, catalogResults);
         }
 
         if (type === 'phukien' || type === 'all') {
@@ -136,7 +160,7 @@ exports.searchMaterials = async (req, res) => {
                     name,
                     unit,
                     stock_quantity,
-                    unit_price,
+                    purchase_price as unit_price,
                     description,
                     category,
                     'accessories' as source,
@@ -279,7 +303,7 @@ exports.getMaterialDetail = async (req, res) => {
                 [result] = await db.query(`
                     SELECT 
                         id, code, name, category, description,
-                        unit, stock_quantity, unit_price
+                        unit, stock_quantity, purchase_price as unit_price
                     FROM accessories WHERE id = ? AND is_active = 1
                 `, [id]);
                 break;

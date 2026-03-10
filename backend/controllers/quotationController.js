@@ -1294,13 +1294,49 @@ exports.signContract = async (req, res) => {
 
         const quotation = quotationRows[0];
 
-        if (!quotation.project_id) {
-            await connection.rollback();
-            connection.release();
-            return res.status(400).json({
-                success: false,
-                message: "Báo giá chưa gắn với dự án. Vui lòng gắn dự án trước khi chốt hợp đồng."
-            });
+        let projectId = quotation.project_id;
+        let projectCode = quotation.project_code;
+
+        if (!projectId) {
+            console.log(`[signContract] Quotation ${id} has no project_id. Creating one automatically...`);
+
+            // Get customer info to build project name and get agency_id
+            const [customerRows] = await connection.query("SELECT full_name, agency_id FROM customers WHERE id = ?", [quotation.customer_id]);
+            const customer = customerRows[0];
+            const customerName = customer?.full_name || 'Khách hàng';
+
+            projectCode = quotation.quotation_code; // Start with the BG code
+            const projectName = `Dự án ${customerName} - ${projectCode}`;
+
+            // Calculate default deadline (30 days from quotation date)
+            const qDate = new Date(quotation.quotation_date);
+            const deadline = new Date(qDate.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+            const [projectResult] = await connection.query(
+                `INSERT INTO projects 
+                 (project_code, project_name, customer_id, agency_id, status, start_date, deadline, notes) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    projectCode,
+                    projectName,
+                    quotation.customer_id,
+                    customer?.agency_id || null,
+                    'quotation_pending',
+                    quotation.quotation_date,
+                    deadline,
+                    `Tự động tạo từ Báo giá ${projectCode}`
+                ]
+            );
+
+            projectId = projectResult.insertId;
+
+            // Link project back to quotation
+            await connection.query("UPDATE quotations SET project_id = ? WHERE id = ?", [projectId, id]);
+            console.log(`[signContract] Created project ID ${projectId} and linked to quotation ${id}`);
+
+            // Update local quotation object for subsequent code logic
+            quotation.project_id = projectId;
+            quotation.project_code = projectCode;
         }
 
         // Check if quotation is approved
@@ -1324,7 +1360,6 @@ exports.signContract = async (req, res) => {
         }
 
         // Convert project code from VRBG*** to VR***
-        const projectCode = quotation.project_code;
         let newProjectCode = projectCode;
 
         if (projectCode && projectCode.startsWith('VRBG')) {
@@ -1356,8 +1391,8 @@ exports.signContract = async (req, res) => {
         // Update project status to 'designing' when contract is signed
         // Note: 'stage', 'contract_locked', 'design_date' columns don't exist in projects table
         await connection.query(
-            `UPDATE projects SET status = 'designing' WHERE id = ?`,
-            [quotation.project_id]
+            `UPDATE projects SET status = ? WHERE id = ?`,
+            ['designing', quotation.project_id]
         );
 
         await connection.commit();

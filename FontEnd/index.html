@@ -1876,91 +1876,88 @@
             const alertsEl = document.getElementById('alertsList');
             if (!alertsEl) return;
 
-            const alerts = [];
-            const now = new Date();
-            const sevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-
             try {
-                // Check low stock items
-                const invRes = await fetch(`${API_BASE}/inventory`);
-                const invResult = await invRes.json();
-                if (invResult.success && invResult.data) {
-                    const lowStock = invResult.data.filter(i => (i.quantity || 0) < 10 && (i.quantity || 0) > 0);
-                    const outOfStock = invResult.data.filter(i => (i.quantity || 0) <= 0);
-                    if (outOfStock.length > 0) {
-                        alerts.push({ type: 'danger', icon: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>', text: `${outOfStock.length} vật tư đã hết trong kho`, priority: 1 });
-                    }
-                    if (lowStock.length > 0) {
-                        alerts.push({ type: 'warning', icon: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>', text: `${lowStock.length} vật tư sắp hết (dưới 10)`, priority: 2 });
-                    }
+                const response = await fetch(`${API_BASE}/inventory/alerts-summary`);
+                const result = await response.json();
+
+                if (!result.success || !result.data) {
+                    throw new Error(result.message || 'Lỗi tải dữ liệu');
                 }
 
-                // Check quotations expiring soon
-                const quotRes = await fetch(`${API_BASE}/quotations`);
-                const quotResult = await quotRes.json();
-                if (quotResult.success && quotResult.data) {
-                    const pendingQuotations = quotResult.data.filter(q => q.status === 'pending' || q.status === 'draft');
-                    const expiringQuotations = quotResult.data.filter(q => {
-                        if (q.valid_until) {
-                            const expDate = new Date(q.valid_until);
-                            return expDate <= sevenDaysLater && expDate >= now;
-                        }
-                        return false;
-                    });
-                    const expiredQuotations = quotResult.data.filter(q => {
-                        if (q.valid_until && (q.status === 'pending' || q.status === 'draft')) {
-                            const expDate = new Date(q.valid_until);
-                            return expDate < now;
-                        }
-                        return false;
-                    });
+                const summary = result.data;
+                const alerts = [];
 
-                    if (expiredQuotations.length > 0) {
-                        alerts.push({ type: 'danger', icon: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>', text: `${expiredQuotations.length} báo giá đã quá hạn`, priority: 1 });
-                    }
-                    if (expiringQuotations.length > 0) {
-                        alerts.push({ type: 'warning', icon: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>', text: `${expiringQuotations.length} báo giá sắp hết hạn (7 ngày)`, priority: 2 });
-                    }
-                    if (pendingQuotations.length > 0) {
-                        alerts.push({ type: 'info', icon: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>', text: `${pendingQuotations.length} báo giá đang chờ duyệt`, priority: 3 });
-                    }
+                // 1. Hết hàng (Danger)
+                if (summary.outOfStockCount > 0) {
+                    alerts.push({
+                        type: 'danger',
+                        icon: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>',
+                        text: `${summary.outOfStockCount} vật tư đã hết trong kho`,
+                        priority: 1
+                    });
                 }
 
-                // Check projects with deadlines
-                const projRes = await fetch(`${API_BASE}/projects`);
-                const projResult = await projRes.json();
-                if (projResult.success && projResult.data) {
-                    const projectsNearDeadline = projResult.data.filter(p => {
-                        if (p.deadline || p.expected_completion_date) {
-                            const deadline = new Date(p.deadline || p.expected_completion_date);
-                            return deadline <= sevenDaysLater && deadline >= now && p.status !== 'completed';
-                        }
-                        return false;
+                // 2. Dự án quá hạn (Danger)
+                if (summary.overdueProjectsCount > 0) {
+                    alerts.push({
+                        type: 'danger',
+                        icon: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+                        text: `${summary.overdueProjectsCount} dự án đã quá hạn deadline`,
+                        priority: 1
                     });
-                    const overdueProjects = projResult.data.filter(p => {
-                        if (p.deadline || p.expected_completion_date) {
-                            const deadline = new Date(p.deadline || p.expected_completion_date);
-                            return deadline < now && p.status !== 'completed';
-                        }
-                        return false;
-                    });
-
-                    if (overdueProjects.length > 0) {
-                        alerts.push({ type: 'danger', icon: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>', text: `${overdueProjects.length} dự án đã quá hạn deadline`, priority: 1 });
-                    }
-                    if (projectsNearDeadline.length > 0) {
-                        alerts.push({ type: 'warning', icon: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>', text: `${projectsNearDeadline.length} dự án sắp đến hạn (7 ngày)`, priority: 2 });
-                    }
                 }
-            } catch (e) { console.log('Alerts load error:', e); }
 
-            // Sort by priority
-            alerts.sort((a, b) => (a.priority || 99) - (b.priority || 99));
+                // 3. Sắp hết hàng (Warning)
+                if (summary.lowStockCount > 0) {
+                    alerts.push({
+                        type: 'warning',
+                        icon: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>',
+                        text: `${summary.lowStockCount} vật tư sắp hết hàng`,
+                        priority: 2
+                    });
+                }
 
-            if (alerts.length === 0) {
-                alertsEl.innerHTML = '<div class="alert-item alert-info"><span class="alert-icon"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span><span>Hệ thống hoạt động bình thường</span></div>';
-            } else {
-                alertsEl.innerHTML = alerts.slice(0, 5).map(a => `<div class="alert-item alert-${a.type}"><span class="alert-icon">${a.icon}</span><span>${a.text}</span></div>`).join('');
+                // 4. Báo giá đã quá hạn (Danger)
+                if (summary.expiredQuotationsCount > 0) {
+                    alerts.push({
+                        type: 'danger',
+                        icon: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>',
+                        text: `${summary.expiredQuotationsCount} báo giá đã quá hạn`,
+                        priority: 1
+                    });
+                }
+
+                // 5. Báo giá sắp hết hạn (Warning)
+                if (summary.expiringQuotationsCount > 0) {
+                    alerts.push({
+                        type: 'warning',
+                        icon: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+                        text: `${summary.expiringQuotationsCount} báo giá sắp hết hạn (7 ngày)`,
+                        priority: 2
+                    });
+                }
+
+                // 6. Báo giá chờ duyệt (Info)
+                if (summary.pendingQuotationsCount > 0) {
+                    alerts.push({
+                        type: 'info',
+                        icon: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>',
+                        text: `${summary.pendingQuotationsCount} báo giá đang chờ duyệt`,
+                        priority: 3
+                    });
+                }
+
+                // Sort by priority
+                alerts.sort((a, b) => (a.priority || 99) - (b.priority || 99));
+
+                if (alerts.length === 0) {
+                    alertsEl.innerHTML = '<div class="alert-item alert-info"><span class="alert-icon"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span><span>Hệ thống hoạt động bình thường</span></div>';
+                } else {
+                    alertsEl.innerHTML = alerts.slice(0, 5).map(a => `<div class="alert-item alert-${a.type}"><span class="alert-icon">${a.icon}</span><span>${a.text}</span></div>`).join('');
+                }
+            } catch (e) {
+                console.error('Alerts load error:', e);
+                alertsEl.innerHTML = '<div class="alert-item alert-danger"><span>Không thể tải dữ liệu cảnh báo</span></div>';
             }
         }
 
