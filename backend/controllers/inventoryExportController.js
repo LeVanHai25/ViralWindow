@@ -27,12 +27,12 @@ exports.exportInventory = async (req, res) => {
                         code,
                         name,
                         color,
-                        density,
+                        COALESCE(density, weight_per_meter) AS density,
                         length_m,
                         quantity AS stock,
-                        min_stock_level AS min,
-                        max_stock_level AS max,
-                        unit_price AS price
+                        min_stock_level,
+                        max_stock_level,
+                        unit_price
                     FROM aluminum_systems
                     WHERE 1=1
                 `;
@@ -77,22 +77,23 @@ exports.exportInventory = async (req, res) => {
             case 'glass':
                 sql = `
                     SELECT 
-                        code,
-                        name,
-                        glass_type AS category,
-                        'tấm' AS unit,
-                        quantity AS stock,
-                        0 as min_stock_level,
-                        0 as max_stock_level,
-                        unit_price
-                    FROM glass_items
-                    WHERE 1=1
+                        i.item_code AS code,
+                        i.item_name AS name,
+                        s.name AS supplier_name,
+                        i.notes,
+                        i.quantity AS stock,
+                        i.min_stock_level,
+                        i.max_stock_level,
+                        i.unit_price
+                    FROM inventory i
+                    LEFT JOIN suppliers s ON i.supplier_id = s.id
+                    WHERE i.item_type = 'glass'
                 `;
                 if (search) {
-                    sql += ` AND (code LIKE ? OR name LIKE ?)`;
+                    sql += ` AND (i.item_code LIKE ? OR i.item_name LIKE ?)`;
                     params.push(`%${search}%`, `%${search}%`);
                 }
-                sql += ` ORDER BY glass_type, code`;
+                sql += ` ORDER BY i.created_at DESC`;
                 break;
 
             case 'other':
@@ -152,11 +153,18 @@ exports.exportInventory = async (req, res) => {
             const min = parseFloat(row.min_stock_level) || 0;
             const max = parseFloat(row.max_stock_level) || 0;
             const price = parseFloat(row.unit_price) || 0;
+            const density = parseFloat(row.density) || 0;
+            const length_m = parseFloat(row.length_m) || 0;
 
             return {
                 code: row.code,
                 name: row.name,
                 unit: row.unit,
+                color: row.color,
+                supplier_name: row.supplier_name,
+                notes: row.notes,
+                density: density,
+                length_m: length_m,
                 stock: stock,
                 min: min,
                 max: max,

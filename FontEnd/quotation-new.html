@@ -3355,7 +3355,7 @@
                     container.innerHTML = '<div class="text-center py-4"><span class="animate-spin inline-block w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full"></span> Đang tải vật tư...</div>';
 
                     const token = sessionStorage.getItem('token');
-                    const response = await fetch(`${API_BASE}/accessories`, {
+                    const response = await fetch(`${API_BASE}/catalog-materials`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     const result = await response.json();
@@ -3364,10 +3364,11 @@
                         cachedMaterialCatalog = (result.data || []).map(m => ({
                             id: m.id,
                             name: m.name,
-                            price: m.sale_price || m.price || 0
+                            code: m.code,
+                            price: m.sale_price || 0
                         }));
-                        // Sort by ID (STT) initially
-                        cachedMaterialCatalog.sort((a, b) => a.id - b.id);
+                        // Sort by code or ID
+                        cachedMaterialCatalog.sort((a, b) => a.code.localeCompare(b.code));
                         renderMaterialCatalog();
                     } else {
                         container.innerHTML = '<div class="text-center py-4 text-red-500">Không thể tải danh mục vật tư</div>';
@@ -3393,7 +3394,10 @@
                             <span class="w-8 h-8 flex items-center justify-center bg-gray-100 rounded text-xs font-bold text-gray-500">${index + 1}</span>
                             <div>
                                 <div class="font-bold text-gray-800">${material.name}</div>
-                                <div class="text-sm text-orange-600 font-semibold">${formatCurrency(material.price)}</div>
+                                <div class="flex gap-2 items-center">
+                                    <span class="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-bold">${material.code}</span>
+                                    <span class="text-sm text-orange-600 font-semibold">${formatCurrency(material.price)}</span>
+                                </div>
                             </div>
                         </div>
                         <div class="text-blue-600">
@@ -3427,7 +3431,7 @@
                     const row = {
                         id: itemCounter,
                         stt: items.length + 1,
-                        code: `VT${String(items.length + 1).padStart(2, '0')}`, // Mã tạm cho vật tư
+                        code: material.code || `VT${String(items.length + 1).padStart(2, '0')}`, // Sử dụng mã vật tư từ catalog
                         design: material.name,
                         spec: material.name,
                         glass: '',

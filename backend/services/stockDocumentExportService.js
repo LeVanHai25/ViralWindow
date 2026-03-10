@@ -67,8 +67,9 @@ class StockDocumentExportService {
         const titleCell = worksheet.getCell('A6');
         titleCell.value = docTypeLabels[doc.doc_type] || 'PHIẾU KHO';
         titleCell.font = { bold: true, size: 18, color: { argb: 'FF007B5E' } };
-        titleCell.alignment = { horizontal: 'center' };
         try { worksheet.mergeCells('A6:H6'); } catch (e) { }
+        titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+        worksheet.getRow(6).height = 30;
 
         // Date & Doc No (Row 7)
         const date = doc.created_at ? new Date(doc.created_at) : new Date();
@@ -76,8 +77,9 @@ class StockDocumentExportService {
         const docNoCell = worksheet.getCell('A7');
         docNoCell.value = `Số: ${doc.doc_no || '-'} | Ngày: ${dateStr}`;
         docNoCell.font = { italic: true };
-        docNoCell.alignment = { horizontal: 'center' };
         try { worksheet.mergeCells('A7:H7'); } catch (e) { }
+        docNoCell.alignment = { horizontal: 'center', vertical: 'middle' };
+        worksheet.getRow(7).height = 20;
 
         // Partner Info (Rows 8-9)
         let partnerText = '';
@@ -93,10 +95,14 @@ class StockDocumentExportService {
         partnerCell.value = partnerText;
         partnerCell.font = { bold: true };
         try { worksheet.mergeCells('A8:H8'); } catch (e) { }
+        partnerCell.alignment = { horizontal: 'center', vertical: 'middle' };
+        worksheet.getRow(8).height = 20;
 
         const noteCell = worksheet.getCell('A9');
         noteCell.value = `Ghi chú: ${doc.note || '-'}`;
         try { worksheet.mergeCells('A9:H9'); } catch (e) { }
+        noteCell.alignment = { horizontal: 'center', vertical: 'middle' };
+        worksheet.getRow(9).height = 20;
 
         // 5. Table Headers (Row 11)
         const isStocktake = doc.doc_type === 'stocktake';
@@ -141,7 +147,7 @@ class StockDocumentExportService {
                 if (colNumber <= 8) {
                     cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
                     if (colNumber >= 5 && colNumber <= 7) {
-                        cell.numFmt = '#,##0.##';
+                        cell.numFmt = '#,##0';
                         cell.alignment = { horizontal: 'right' };
                     }
                 }
