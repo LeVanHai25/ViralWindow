@@ -4977,7 +4977,7 @@
                     alert(' Đã tạo phiếu chi nháp thành công!');
 
                     // Ask to navigate to payments page
-                    if (confirm('Bạn có muốn chuyển sang trang Phiếu chi để xem không?')) {
+                    if (await confirm('Bạn có muốn chuyển sang trang Phiếu chi để xem không?')) {
                         window.location.href = 'finance-payments.html';
                     }
 
@@ -8011,7 +8011,7 @@
                     }
 
                     // Xác nhận với người dùng
-                    if (!confirm('Xác nhận xuất vật tư?\n\nHệ thống sẽ:\n• Tạo phiếu xuất kho cho vật tư có đủ kho\n• Trừ tồn kho tương ứng\n• Giữ lại vật tư thiếu kho để xuất sau')) {
+                    if (!await confirm('Xác nhận xuất vật tư?\n\nHệ thống sẽ:\n• Tạo phiếu xuất kho cho vật tư có đủ kho\n• Trừ tồn kho tương ứng\n• Giữ lại vật tư thiếu kho để xuất sau')) {
                         return;
                     }
 
@@ -9496,7 +9496,7 @@
             }
 
             async function deleteInventoryItem(id) {
-                if (!confirm('Bạn có chắc muốn xóa vật tư này?')) return;
+                if (!await confirm('Bạn có chắc muốn xóa vật tư này?')) return;
 
                 try {
                     const response = await fetch(`${API_BASE}/inventory/${id}`, {
@@ -11233,7 +11233,6 @@
                             );
                         }
 
-                        console.log('Processed items:', items); // Debug
                         displayGlassItems(items);
                     }
                 } catch (error) {
@@ -11530,7 +11529,7 @@
             }
 
             async function deleteGlass(id) {
-                if (!confirm('Bạn có chắc muốn xóa kính này trong kho?')) return;
+                if (!await confirm('Bạn có chắc muốn xóa kính này trong kho?')) return;
 
                 try {
                     const token = sessionStorage.getItem('token');
@@ -11539,7 +11538,7 @@
                         return;
                     }
 
-                    const response = await fetch(`${API_BASE}/inventory/${id}`, {
+                    const response = await fetch(`${API_BASE}/glass-items/${id}`, {
                         method: 'DELETE',
                         headers: {
                             'Authorization': `Bearer ${token}`
@@ -11664,8 +11663,6 @@
                         headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
                     });
                     const result = await response.json();
-
-                    console.log('Load other items response:', result); // Debug
 
                     if (result.success) {
                         let items = result.data || [];
@@ -12037,7 +12034,7 @@
             }
 
             async function deleteOther(id) {
-                if (!confirm('Bạn có chắc muốn xóa vật tư này trong kho?')) return;
+                if (!await confirm('Bạn có chắc muốn xóa vật tư này trong kho?')) return;
 
                 try {
                     const token = sessionStorage.getItem('token');
