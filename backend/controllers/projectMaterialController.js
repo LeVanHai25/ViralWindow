@@ -1751,24 +1751,32 @@ exports.getInventoryByType = async (req, res) => {
 
         switch (type) {
             case 'accessory':
-                // Phá»¥ kiá»‡n: Chá»‰ láº¥y cÃ¡c category thuá»™c nhÃ³m Phá»¥ kiá»‡n
+                // Phụ kiện: Lấy tất cả phụ kiện đang hoạt động (không lọc cứng danh mục để tránh bỏ sót)
                 query = `SELECT id, code, name, category, unit, 
                          COALESCE(sale_price, purchase_price, 0) as price, 
                          stock_quantity as stock, min_stock_level
                          FROM accessories 
                          WHERE is_active = 1 
-                         AND category IN ('KhÃ³a', 'Báº£n lá»', 'Tay náº¯m', 'Phá»¥ kiá»‡n lÃ¹a', 'Phá»¥ kiá»‡n khÃ¡c')
                          ORDER BY category, name`;
                 break;
+            case 'scrap':
+                // Nhôm đề c (scrap)
+                query = `SELECT id, scrap_code as code, profile_name as name, 'Scrap' as category, 'm' as unit,
+                         0 as price, (length_mm / 1000) as stock, 0 as min_stock_level,
+                         length_mm, source_doc_id
+                         FROM aluminum_scraps 
+                         WHERE status = 'available'
+                         ORDER BY created_at DESC`;
+                break;
             case 'aluminum':
-                // âœ… FIX: Use CASE WHEN to match frontend logic (quantity || quantity_m)
+                // ✅ FIX: Use CASE WHEN to match frontend logic (quantity || quantity_m)
                 // Frontend uses: system.quantity || system.quantity_m
                 // This means: if quantity > 0, use quantity; else use quantity_m
                 query = `SELECT id, 
                          COALESCE(code, name) as code, 
                          name, 
                          aluminum_system, 
-                         'cÃ¢y' as unit, 
+                         'cây' as unit, 
                          unit_price as price, 
                          CASE 
                              WHEN quantity IS NOT NULL AND quantity > 0 THEN quantity
@@ -1783,20 +1791,20 @@ exports.getInventoryByType = async (req, res) => {
                          ORDER BY aluminum_system, name`;
                 break;
             case 'glass':
-                // âœ… FIX: KÃ­nh Ä‘Æ°á»£c lÆ°u trong báº£ng glass_items, KHÃ”NG PHáº¢I inventory
-                // Äá»“ng bá»™ vá»›i inventory.html loadGlassItems() - line 10481
+                // ✅ FIX: Kính hiện tại được quản lý trong bảng inventory (item_type = 'glass')
+                // Thống nhất với loadGlassItems() trong frontend
                 query = `SELECT id, 
-                         COALESCE(code, CONCAT('K-', id)) as code, 
-                         name, 
+                         item_code as code, 
+                         item_name as name, 
                          'glass' as type, 
-                         'táº¥m' as unit, 
-                         COALESCE(price, 0) as price, 
+                         unit, 
+                         unit_price as price, 
                          COALESCE(quantity, 0) as stock,
-                         structure,
+                         notes as structure,
                          supplier_id
-                         FROM glass_items 
-                         WHERE 1=1
-                         ORDER BY name`;
+                         FROM inventory 
+                         WHERE item_type = 'glass'
+                         ORDER BY item_name`;
                 break;
             case 'other':
             case 'consumable':
@@ -1833,7 +1841,7 @@ exports.getInventoryByType = async (req, res) => {
             default:
                 return res.status(400).json({
                     success: false,
-                    message: "Loáº¡i váº­t tÆ° khÃ´ng há»£p lá»‡"
+                    message: "Loại vật tư không hợp lệ"
                 });
         }
 

@@ -4152,14 +4152,7 @@
                 dropdown.classList.remove('hidden');
 
                 try {
-                    let url = '';
-                    switch (itemType) {
-                        case 'accessory': url = `${API_BASE}/accessories`; break;
-                        case 'aluminum': url = `${API_BASE}/aluminum-systems`; break;
-                        case 'scrap': url = `${API_BASE}/inventory/scraps?status=available`; break;
-                        case 'glass': url = `${API_BASE}/glass-items`; break;
-                        case 'other': url = `${API_BASE}/accessories?categories=Ke,Gioăng,Nhựa ốp,Keo,Khác`; break;
-                    }
+                    url = `${API_BASE}/project-materials/inventory/${itemType}`;
 
                     const response = await fetch(url, {
                         headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
@@ -4180,24 +4173,19 @@
                         let length_cm = 0; // for scrap
 
                         if (itemType === 'aluminum') {
-                            price = parseFloat(item.unit_price) || parseFloat(item.price) || 0;
+                            price = parseFloat(item.price) || parseFloat(item.unit_price) || 0;
                             length_m = parseFloat(item.length_m) || 6;
-                            stock = parseInt(item.quantity) || 0;
+                            stock = parseFloat(item.stock) || parseInt(item.quantity) || 0;
                         } else if (itemType === 'scrap') {
                             // Scrap: length_cm là chiều dài còn lại
                             length_cm = parseInt(item.length_cm) || Math.round((parseInt(item.length_mm) || 0) / 10);
                             length_m = length_cm / 100; // Convert cm to m
-                            stock = 1; // Mỗi scrap là 1 đơn vị
-                            code = item.profile_name || `Scrap-${item.id}`;
-                            name = `${item.profile_name || 'Nhôm Đề C'} (${length_cm}cm)`;
-                        } else if (itemType === 'accessory' || itemType === 'other') {
-                            price = parseFloat(item.sale_price) || parseFloat(item.purchase_price) || 0;
-                            // ✅ FIX: Use correct database column name
-                            stock = parseInt(item.stock_quantity) || parseInt(item.quantity) || parseInt(item.stock) || 0;
+                            stock = parseFloat(item.stock) || 1; // Mỗi scrap là 1 đơn vị
+                            code = item.code || item.profile_name || `Scrap-${item.id}`;
+                            name = `${item.name || item.profile_name || 'Nhôm Đề C'} (${length_cm}cm)`;
                         } else {
-                            price = parseFloat(item.unit_price) || parseFloat(item.price) || 0;
-                            // ✅ FIX: Use correct database column name  
-                            stock = parseInt(item.stock_quantity) || parseInt(item.quantity) || parseInt(item.stock) || 0;
+                            price = parseFloat(item.price) || parseFloat(item.sale_price) || parseFloat(item.purchase_price) || parseFloat(item.unit_price) || 0;
+                            stock = parseFloat(item.stock) || parseInt(item.stock_quantity) || parseInt(item.quantity) || 0;
                         }
                         return { id: item.id, code, name, price, length_m, stock, length_cm, is_scrap: itemType === 'scrap' };
                     });
@@ -5813,13 +5801,7 @@
                 dropdown.innerHTML = '<div class="px-3 py-2 text-gray-500 text-sm">Đang tải...</div>';
 
                 try {
-                    let url = '';
-                    switch (itemType) {
-                        case 'accessory': url = `${API_BASE}/accessories`; break;
-                        case 'aluminum': url = `${API_BASE}/aluminum-systems`; break;
-                        case 'glass': url = `${API_BASE}/glass-items`; break;
-                        case 'other': url = `${API_BASE}/accessories?categories=Ke,Gioăng,Nhựa ốp,Keo,Khác`; break; // Vật tư phụ
-                    }
+                    url = `${API_BASE}/project-materials/inventory/${itemType}`;
 
                     const response = await fetch(url, {
                         headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
@@ -5835,18 +5817,14 @@
                     importItemsList = items.map(item => {
                         let code = item.code || item.product_code || item.item_code || '';
                         let name = item.name || item.product_name || item.item_name || '';
-                        let price = 0;
-
-                        // Get correct price based on item type
-                        if (itemType === 'accessory' || itemType === 'other') {
-                            // Phụ kiện và vật tư phụ: ưu tiên purchase_price (giá nhập)
-                            price = parseFloat(item.purchase_price) || parseFloat(item.sale_price) || 0;
-                        } else if (itemType === 'aluminum') {
-                            // Nhôm: dùng unit_price hoặc price
-                            price = parseFloat(item.unit_price) || parseFloat(item.price) || 0;
-                        } else if (itemType === 'glass') {
-                            // Kính: dùng unit_price
-                            price = parseFloat(item.unit_price) || parseFloat(item.price) || 0;
+                        // Use normalized 'price' from centralized API if available
+                        let price = parseFloat(item.price) || 0;
+                        if (!price) {
+                            if (itemType === 'accessory' || itemType === 'other') {
+                                price = parseFloat(item.purchase_price) || parseFloat(item.sale_price) || 0;
+                            } else {
+                                price = parseFloat(item.unit_price) || 0;
+                            }
                         }
 
                         return { id: item.id, code, name, price };
@@ -6208,13 +6186,7 @@
                 tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-6 text-center text-gray-400">Đang tải...</td></tr>';
 
                 try {
-                    let url = '';
-                    switch (itemType) {
-                        case 'accessory': url = `${API_BASE}/accessories`; break;
-                        case 'aluminum': url = `${API_BASE}/aluminum-systems`; break;
-                        case 'glass': url = `${API_BASE}/glass-items`; break;
-                        case 'other': url = `${API_BASE}/accessories?categories=Ke,Gioăng,Nhựa ốp,Keo,Khác`; break;
-                    }
+                    url = `${API_BASE}/project-materials/inventory/${itemType}`;
 
                     const response = await fetch(url, { headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` } });
                     const result = await response.json();
@@ -6226,13 +6198,16 @@
 
                     stocktakeItems = items.map(item => {
                         // Lấy đúng cột số lượng tồn kho theo loại vật tư
-                        let qtySystem = 0;
-                        if (itemType === 'accessory' || itemType === 'other') {
-                            qtySystem = parseFloat(item.stock_quantity) || 0;
-                        } else if (itemType === 'aluminum') {
-                            qtySystem = parseFloat(item.quantity) || parseFloat(item.total_length) || 0;
-                        } else if (itemType === 'glass') {
-                            qtySystem = parseFloat(item.quantity) || 0;
+                        // Use normalized 'stock' from centralized API
+                        let qtySystem = parseFloat(item.stock) || 0;
+                        if (!qtySystem) {
+                            if (itemType === 'accessory' || itemType === 'other') {
+                                qtySystem = parseFloat(item.stock_quantity) || 0;
+                            } else if (itemType === 'aluminum') {
+                                qtySystem = parseFloat(item.quantity) || parseFloat(item.total_length) || 0;
+                            } else if (itemType === 'glass') {
+                                qtySystem = parseFloat(item.quantity) || 0;
+                            }
                         }
 
                         // Lấy mã vật tư - glass_items có cột code trong database
