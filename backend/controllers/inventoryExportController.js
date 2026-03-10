@@ -26,15 +26,19 @@ exports.exportInventory = async (req, res) => {
                     SELECT 
                         code,
                         name,
-                        aluminum_system AS category,
-                        'cây' AS unit,
-                        quantity AS stock
+                        color,
+                        density,
+                        length_m,
+                        quantity AS stock,
+                        min_stock_level AS min,
+                        max_stock_level AS max,
+                        unit_price AS price
                     FROM aluminum_systems
                     WHERE 1=1
                 `;
                 if (search) {
-                    sql += ` AND (code LIKE ? OR name LIKE ?)`;
-                    params.push(`%${search}%`, `%${search}%`);
+                    sql += ` AND (code LIKE ? OR name LIKE ? OR aluminum_system LIKE ?)`;
+                    params.push(`%${search}%`, `%${search}%`, `%${search}%`);
                 }
                 if (system) {
                     sql += ` AND aluminum_system = ?`;
@@ -65,6 +69,8 @@ exports.exportInventory = async (req, res) => {
                     sql += ` AND category = ?`;
                     params.push(category);
                 }
+                // [SENIOR ARCHITECT NOTE]: Exclude "ghost" import items with no stock/min level
+                sql += ` AND (code NOT LIKE 'VT-IMPORT%' OR stock_quantity > 0 OR min_stock_level > 0)`;
                 sql += ` ORDER BY category, code`;
                 break;
 
@@ -92,26 +98,28 @@ exports.exportInventory = async (req, res) => {
             case 'other':
                 sql = `
                     SELECT 
-                        code,
-                        name,
-                        category,
+                        item_code AS code,
+                        item_name AS name,
+                        notes AS category,
                         unit,
-                        stock_quantity AS stock,
+                        quantity AS stock,
                         min_stock_level,
                         max_stock_level,
-                        purchase_price AS unit_price
-                    FROM accessories
-                    WHERE category IN ('Ke', 'Gioăng', 'Nhựa ốp', 'Keo', 'Khác')
+                        unit_price
+                    FROM inventory
+                    WHERE item_type = 'other'
                 `;
                 if (search) {
-                    sql += ` AND (code LIKE ? OR name LIKE ?)`;
+                    sql += ` AND (item_code LIKE ? OR item_name LIKE ?)`;
                     params.push(`%${search}%`, `%${search}%`);
                 }
                 if (category && category !== 'all') {
-                    sql += ` AND category = ?`;
+                    sql += ` AND notes = ?`;
                     params.push(category);
                 }
-                sql += ` ORDER BY category, code`;
+                // [SENIOR ARCHITECT NOTE]: Exclude "ghost" import items with no stock/min level
+                sql += ` AND (item_code NOT LIKE 'VT-IMPORT%' OR quantity > 0 OR min_stock_level > 0)`;
+                sql += ` ORDER BY notes, item_code`;
                 break;
 
             case 'scraps':
@@ -121,7 +129,10 @@ exports.exportInventory = async (req, res) => {
                         profile_name AS name,
                         'Phế liệu nhôm' AS category,
                         'đoạn' AS unit,
-                        length_mm / 1000 AS stock
+                        length_mm / 1000 AS stock,
+                        0 as min_stock_level,
+                        0 as max_stock_level,
+                        0 as unit_price
                     FROM aluminum_scraps
                     WHERE is_used = 0
                 `;
