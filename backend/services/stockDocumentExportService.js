@@ -55,7 +55,19 @@ class StockDocumentExportService {
             console.warn('Could not add logo to slip:', logoErr.message);
         }
 
-        // 3. Header Styling (Company info usually handled by template Rows 1-5)
+        // 3. Grid Definition - Professional Accounting Standards
+        // NOTE: We do NOT use 'header' property here to prevent exceljs from auto-inserting 
+        // a header row at Row 1, which displaces our branding template.
+        worksheet.columns = [
+            { key: 'stt', width: 6 },
+            { key: 'item_code', width: 15 },
+            { key: 'item_name', width: 35 },
+            { key: 'unit', width: 10 },
+            { key: 'qty', width: 12 },
+            { key: 'price', width: 15 },
+            { key: 'total', width: 18 },
+            { key: 'note', width: 20 }
+        ];
 
         // 4. Dynamic Title (Row 6)
         const docTypeLabels = {
@@ -64,24 +76,26 @@ class StockDocumentExportService {
             'stocktake': 'PHIẾU KIỂM KHO',
             'adjust': 'PHIẾU ĐIỀU CHỈNH'
         };
-        const titleCell = worksheet.getCell('A6');
+        const titleRow = worksheet.getRow(6);
+        const titleCell = titleRow.getCell(1);
         titleCell.value = docTypeLabels[doc.doc_type] || 'PHIẾU KHO';
-        titleCell.font = { bold: true, size: 18, color: { argb: 'FF007B5E' } };
+        titleCell.font = { bold: true, size: 20, color: { argb: 'FF007B5E' } };
         try { worksheet.mergeCells('A6:H6'); } catch (e) { }
         titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
-        worksheet.getRow(6).height = 30;
+        titleRow.height = 40;
 
         // Date & Doc No (Row 7)
         const date = doc.created_at ? new Date(doc.created_at) : new Date();
         const dateStr = date.toLocaleDateString('vi-VN');
-        const docNoCell = worksheet.getCell('A7');
+        const infoRow7 = worksheet.getRow(7);
+        const docNoCell = infoRow7.getCell(1);
         docNoCell.value = `Số: ${doc.doc_no || '-'} | Ngày: ${dateStr}`;
-        docNoCell.font = { italic: true };
+        docNoCell.font = { italic: true, size: 12 };
         try { worksheet.mergeCells('A7:H7'); } catch (e) { }
         docNoCell.alignment = { horizontal: 'center', vertical: 'middle' };
-        worksheet.getRow(7).height = 20;
+        infoRow7.height = 25;
 
-        // Partner Info (Rows 8-9)
+        // Partner Info & Notes (Rows 8-9) - Grid Centered
         let partnerText = '';
         if (doc.doc_type === 'import') {
             partnerText = `Nhà cung cấp: ${doc.supplier_name || doc.partner_name || '-'}`;
@@ -91,18 +105,21 @@ class StockDocumentExportService {
             partnerText = `Người thực hiện: ${doc.created_by_name || '-'}`;
         }
 
-        const partnerCell = worksheet.getCell('A8');
+        const infoRow8 = worksheet.getRow(8);
+        const partnerCell = infoRow8.getCell(1);
         partnerCell.value = partnerText;
-        partnerCell.font = { bold: true };
+        partnerCell.font = { bold: true, size: 12 };
         try { worksheet.mergeCells('A8:H8'); } catch (e) { }
         partnerCell.alignment = { horizontal: 'center', vertical: 'middle' };
-        worksheet.getRow(8).height = 20;
+        infoRow8.height = 25;
 
-        const noteCell = worksheet.getCell('A9');
+        const infoRow9 = worksheet.getRow(9);
+        const noteCell = infoRow9.getCell(1);
         noteCell.value = `Ghi chú: ${doc.note || '-'}`;
+        noteCell.font = { size: 11 };
         try { worksheet.mergeCells('A9:H9'); } catch (e) { }
         noteCell.alignment = { horizontal: 'center', vertical: 'middle' };
-        worksheet.getRow(9).height = 20;
+        infoRow9.height = 25;
 
         // 5. Table Headers (Row 11)
         const isStocktake = doc.doc_type === 'stocktake';
@@ -119,7 +136,7 @@ class StockDocumentExportService {
             cell.alignment = { horizontal: 'center', vertical: 'middle' };
             cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
         });
-        headerRow.height = 25;
+        headerRow.height = 30;
 
         // 6. Data Injection (Row 12+)
         let currentRowIndex = 12;
