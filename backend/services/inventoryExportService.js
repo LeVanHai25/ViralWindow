@@ -20,22 +20,29 @@ class InventoryExportService {
 
         // Map itemType to template file
         const templateMap = {
-            'accessory': 'accessory_inventory_template.xlsx',
+            'accessory': 'accessory_report_template.xlsx',
             'aluminum': 'aluminum_inventory_template.xlsx',
             'glass': 'glass_inventory_template.xlsx',
-            'other': 'other_inventory_template.xlsx',
+            'other': 'warehouse_inventory_template.xlsx',
             'scraps': 'warehouse_inventory_template.xlsx'
         };
 
         const templateName = templateMap[itemType] || 'warehouse_inventory_template.xlsx';
         const templatePath = path.join(__dirname, '../templates', templateName);
 
-        if (!fs.existsSync(templatePath)) {
-            throw new Error(`Template not found: ${templateName}`);
+        let worksheet;
+        if (fs.existsSync(templatePath)) {
+            try {
+                await workbook.xlsx.readFile(templatePath);
+                worksheet = workbook.getWorksheet(1);
+            } catch (err) {
+                console.error(`Error reading template ${templateName}:`, err.message);
+                worksheet = workbook.addWorksheet('Báo cáo');
+            }
+        } else {
+            console.warn(`Template not found: ${templateName}. Using blank workbook.`);
+            worksheet = workbook.addWorksheet('Báo cáo');
         }
-
-        await workbook.xlsx.readFile(templatePath);
-        const worksheet = workbook.getWorksheet(1);
 
         // [SENIOR ARCHITECT NOTE]: Clear legacy titles and data from template rows 5 to 500
         for (let i = 5; i <= 500; i++) {
@@ -48,28 +55,9 @@ class InventoryExportService {
         }
 
         // 2. Inject Header Metadata
-        const titleRow = 7;
-        if (options.title) {
-            const titleCell = worksheet.getCell(`C${titleRow}`);
-            titleCell.value = options.title.toUpperCase();
-            titleCell.font = { bold: true, size: 20 };
-            titleCell.alignment = { horizontal: 'center' };
-            try { worksheet.mergeCells(`C${titleRow}:H${titleRow}`); } catch (e) { }
-        }
+        const isMovementReport = data.length > 0 && data[0].opening !== undefined;
 
-        const now = new Date();
-        const dateStr = now.toLocaleDateString('vi-VN');
-        const timeStr = now.toLocaleTimeString('vi-VN');
-
-        worksheet.getCell('A9').value = `Ngày xuất: ${dateStr}`;
-        worksheet.getCell('A10').value = `Thời gian: ${timeStr}`;
-        worksheet.getCell('A11').value = `Người thực hiện: ${options.generatedBy || 'Admin'}`;
-
-        // 3. Inject Data (Starting from Row 15)
-        let currentRowIndex = 15;
-
-        // Prepare headers at Row 14
-        const headerRow = worksheet.getRow(14);
+        // Prepare headers at Row 14 (moved up for maxCols calculation)
         const dynamicHeaders = {
             'accessory': ['STT', 'Mã phụ kiện', 'Tên phụ kiện', 'Đơn vị', 'Tồn kho', 'Min', 'Max', 'Cần nhập', 'Giá trị', 'Tổng giá trị'],
             'other': ['STT', 'Mã vật tư', 'Tên vật tư', 'Đơn vị', 'Tồn kho', 'Min', 'Max', 'Cần nhập', 'Giá trị', 'Tổng giá trị'],
@@ -77,10 +65,63 @@ class InventoryExportService {
             'glass': ['STT', 'Mã kính', 'Tên kính', 'Nhà cung cấp', 'Độ dày(mm)', 'Kích thước(DxR)', 'Diện tích(m2)', 'Giá', 'Tồn kho', 'Tổng giá trị'],
             'scraps': ['STT', 'Mã phế liệu', 'Tên phế liệu', 'Đơn vị', 'Tồn kho', 'Min', 'Max', 'Cần nhập', 'Giá trị', 'Tổng giá trị']
         };
-        const headers = dynamicHeaders[itemType] || dynamicHeaders['other'];
-        const maxCols = headers.length;
+        const reportHeaders = isMovementReport
+            ? ['STT', 'Mã vật tư', 'Tên', 'Đơn vị tính', 'Tồn đầu', 'Nhập', 'Xuất', 'Tồn cuối', 'Giá', 'Tổng giá trị']
+            : (dynamicHeaders[itemType] || dynamicHeaders['other']);
+        const maxCols = reportHeaders.length;
 
-        headers.forEach((h, i) => {
+        if (options.title) {
+            const titleRow = 7;
+            const titleCell = worksheet.getCell(`A${titleRow}`);
+            titleCell.value = options.title.toUpperCase();
+            titleCell.font = { bold: true, size: 20 };
+            titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+            // Merge across all columns in use (A to J for movement, or dynamic for others)
+            const lastColChar = String.fromCharCode(64 + maxCols);
+            try { worksheet.mergeCells(`A${titleRow}:${lastColChar}${titleRow}`); } catch (e) { }
+            worksheet.getRow(titleRow).height = 40;
+        }
+
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('vi-VN');
+        const timeStr = now.toLocaleTimeString('vi-VN');
+
+        if (isMovementReport) {
+            // Specialized layout for Movement Report
+            worksheet.getCell('A9').value = `Ngày xuất: ${dateStr}`;
+
+            // Extract dates from range string "Từ ngày 10/03/2026 đến ngày 20/03/2026"
+            let fromDate = '-', toDate = '-';
+            if (options.dateRange) {
+                const parts = options.dateRange.split('đến ngày');
+                if (parts.length === 2) {
+                    fromDate = parts[0].replace('Từ ngày', '').trim();
+                    toDate = parts[1].trim();
+                } else {
+                    fromDate = options.dateRange;
+                }
+            }
+
+            worksheet.getCell('A10').value = `Từ ngày: ${fromDate}`;
+            worksheet.getCell('A11').value = `Đến ngày: ${toDate}`;
+            worksheet.getCell('A12').value = `Người thực hiện: ${options.generatedBy || 'Admin'}`;
+
+            // Ensure Row heights
+            [9, 10, 11, 12].forEach(r => { worksheet.getRow(r).height = 20; });
+        } else {
+            // Default layout for Stock Report
+            worksheet.getCell('A9').value = `Ngày xuất: ${dateStr}`;
+            worksheet.getCell('A10').value = `Thời gian: ${timeStr}`;
+            worksheet.getCell('A11').value = `Người thực hiện: ${options.generatedBy || 'Admin'}`;
+        }
+
+        // 3. Inject Data (Starting from Row 15)
+        let currentRowIndex = 15;
+
+        // Prepare headers at Row 14
+        const headerRow = worksheet.getRow(14);
+
+        reportHeaders.forEach((h, i) => {
             const cell = headerRow.getCell(i + 1);
             cell.value = h;
             cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
@@ -97,12 +138,39 @@ class InventoryExportService {
                 right: { style: 'thin' }
             };
         });
+        headerRow.height = 30;
+
+        // Set column widths for Movement Report
+        if (isMovementReport) {
+            worksheet.columns = [
+                { key: 'stt', width: 6 },
+                { key: 'code', width: 15 },
+                { key: 'name', width: 35 },
+                { key: 'unit', width: 12 },
+                { key: 'opening', width: 12 },
+                { key: 'in', width: 12 },
+                { key: 'out', width: 12 },
+                { key: 'closing', width: 12 },
+                { key: 'price', width: 15 },
+                { key: 'totalValue', width: 18 }
+            ];
+        }
 
         data.forEach((item, index) => {
             const row = worksheet.getRow(currentRowIndex);
             row.getCell(1).value = index + 1; // STT
 
-            if (itemType === 'aluminum') {
+            if (isMovementReport) {
+                row.getCell(2).value = item.code || '';
+                row.getCell(3).value = item.name || '';
+                row.getCell(4).value = item.unit || '';
+                row.getCell(5).value = Number(item.opening) || 0;
+                row.getCell(6).value = Number(item.in) || 0;
+                row.getCell(7).value = Number(item.out) || 0;
+                row.getCell(8).value = Number(item.closing) || 0;
+                row.getCell(9).value = Number(item.price) || 0;
+                row.getCell(10).value = Number(item.totalValue) || 0;
+            } else if (itemType === 'aluminum') {
                 const stock = Number(item.stock) || 0;
                 const lengthM = Number(item.length_m) || 0;
                 const density = Number(item.density) || 0;
@@ -205,7 +273,24 @@ class InventoryExportService {
         totalRow.getCell(3).font = { bold: true };
         totalRow.getCell(3).alignment = { horizontal: 'right' };
 
-        if (itemType === 'aluminum') {
+        if (isMovementReport) {
+            const sumCols = [5, 6, 7, 8, 10]; // Tồn đầu, Nhập, Xuất, Tồn cuối, Tổng giá trị
+            sumCols.forEach(col => {
+                let sum = 0;
+                data.forEach(item => {
+                    if (col === 5) sum += Number(item.opening) || 0;
+                    if (col === 6) sum += Number(item.in) || 0;
+                    if (col === 7) sum += Number(item.out) || 0;
+                    if (col === 8) sum += Number(item.closing) || 0;
+                    if (col === 10) sum += Number(item.totalValue) || 0;
+                });
+                const cell = totalRow.getCell(col);
+                cell.value = sum;
+                cell.font = { bold: true };
+                cell.numFmt = '#,##0.00';
+                cell.alignment = { horizontal: 'right' };
+            });
+        } else if (itemType === 'aluminum') {
             const sumCols = [7, 8, 9, 14]; // SL(thanh), Tổng số mét dài(m), Tổng khối lượng(Kg), Tổng giá trị
             sumCols.forEach(col => {
                 let sum = 0;
@@ -260,12 +345,13 @@ class InventoryExportService {
 
         // 5. Signatures
         currentRowIndex += 3;
-        const footerCols = {
+        const footerColsArr = {
+            'movement': [{ col: 2, text: 'NGƯỜI TẠO PHIẾU' }, { col: 5, text: 'KẾ TOÁN' }, { col: 9, text: 'CÔNG TY CỔ PHẦN VIRALWINDOW' }],
             'aluminum': [{ col: 4, text: 'NGƯỜI TẠO PHIẾU' }, { col: 8, text: 'KẾ TOÁN' }, { col: 13, text: 'CÔNG TY CỔ PHẦN VIRALWINDOW' }],
             'glass': [{ col: 3, text: 'NGƯỜI TẠO PHIẾU' }, { col: 6, text: 'KẾ TOÁN' }, { col: 9, text: 'CÔNG TY CỔ PHẦN VIRALWINDOW' }],
             'default': [{ col: 2, text: 'NGƯỜI TẠO PHIẾU' }, { col: 5, text: 'KẾ TOÁN' }, { col: 9, text: 'CÔNG TY CỔ PHẦN VIRALWINDOW' }]
         };
-        const activeFooter = footerCols[itemType] || footerCols['default'];
+        const activeFooter = isMovementReport ? footerColsArr.movement : (footerColsArr[itemType] || footerColsArr.default);
 
         activeFooter.forEach(f => {
             const cell = worksheet.getRow(currentRowIndex).getCell(f.col);

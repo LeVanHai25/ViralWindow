@@ -73,6 +73,23 @@ exports.exportWarehouseReport = async (req, res) => {
         const itemStats = [];
 
         for (const item of itemsWithTransactions) {
+            // [SENIOR ARCHITECT FIX]: Fetch current unit price from master table
+            let price = 0;
+            try {
+                if (item.item_type === 'aluminum') {
+                    const [pRows] = await db.query('SELECT unit_price FROM aluminum_systems WHERE id = ?', [item.item_id]);
+                    price = parseFloat(pRows[0]?.unit_price) || 0;
+                } else if (item.item_type === 'accessory') {
+                    const [pRows] = await db.query('SELECT purchase_price FROM accessories WHERE id = ?', [item.item_id]);
+                    price = parseFloat(pRows[0]?.purchase_price) || 0;
+                } else {
+                    const [pRows] = await db.query('SELECT unit_price FROM inventory WHERE id = ?', [item.item_id]);
+                    price = parseFloat(pRows[0]?.unit_price) || 0;
+                }
+            } catch (err) {
+                console.error(`Error fetching price for ${item.item_type} ${item.item_id}:`, err.message);
+            }
+
             // Get opening balance (last transaction before start date)
             const [openingRows] = await db.query(`
                 SELECT balance_after
@@ -107,7 +124,9 @@ exports.exportWarehouseReport = async (req, res) => {
                     opening: openingBalance,
                     in: qtyIn,
                     out: qtyOut,
-                    closing: closingBalance
+                    closing: closingBalance,
+                    price: price,
+                    totalValue: closingBalance * price
                 });
             }
         }
