@@ -1038,10 +1038,12 @@
                                     <tr>
                                         <th class="px-3 py-3 text-left font-medium">Mã kính</th>
                                         <th class="px-3 py-3 text-left font-medium">Loại kính</th>
+                                        <th class="px-3 py-3 text-center font-medium w-24">Độ dày</th>
                                         <th class="px-3 py-3 text-center font-medium">Rộng (mm)</th>
                                         <th class="px-3 py-3 text-center font-medium">Cao (mm)</th>
                                         <th class="px-3 py-3 text-center font-medium">ĐVT</th>
                                         <th class="px-3 py-3 text-center font-medium">SL</th>
+                                        <th class="px-3 py-3 text-center font-medium w-24">Tồn kho</th>
                                         <th class="px-3 py-3 text-left font-medium">Vị trí</th>
                                         <th class="px-3 py-3 text-center font-medium">DT (m²)</th>
                                         <th class="px-3 py-3 text-center font-medium">Thao tác</th>
@@ -5831,14 +5833,19 @@
                     console.error('Error loading aluminum data:', error);
                 }
 
-                // Fetch glass items from /api/glass-items (bảng riêng)
+                // Fetch glass items from unified inventory API
                 let glassData = [];
                 try {
-                    const glassResponse = await fetch(`${API_BASE}/glass-items`);
+                    const glassResponse = await fetch(`${API_BASE}/project-materials/inventory/glass`);
                     const glassResult = await glassResponse.json();
                     if (glassResult.success && glassResult.data) {
-                        glassData = glassResult.data;
-                        console.log('✅ Loaded glass data:', glassData.length, 'items');
+                        glassData = glassResult.data.map(item => ({
+                            id: item.id,
+                            item_code: item.code || item.item_code || ('K-' + item.id),
+                            item_name: item.name || item.item_name || `Kính #${item.id}`,
+                            quantity: parseFloat(item.stock || item.quantity || 0)
+                        }));
+                        console.log('✅ Loaded glass data from unified inventory:', glassData.length, 'items');
                     }
                 } catch (error) {
                     console.error('Error loading glass data:', error);
@@ -8858,8 +8865,8 @@
                         fetch(`${API_BASE}/accessories`, { headers: authHeaders }).catch(e => ({ ok: false, json: () => ({ success: false, data: [] }) })),
                         // ✅ FIX: Dùng cùng API với inventory.html để lấy đúng quantity
                         fetch(`${API_BASE}/aluminum-systems`, { headers: authHeaders }).catch(e => ({ ok: false, json: () => ({ success: false, data: [] }) })),
-                        // ✅ FIX: Dùng /glass-items thay vì /project-materials/inventory/glass
-                        fetch(`${API_BASE}/glass-items`, { headers: authHeaders }).catch(e => ({ ok: false, json: () => ({ success: false, data: [] }) })),
+                        // ✅ FIX: Dùng API tập trung để lấy đúng dữ liệu Kính từ bảng inventory
+                        fetch(`${API_BASE}/project-materials/inventory/glass`, { headers: authHeaders }).catch(e => ({ ok: false, json: () => ({ success: false, data: [] }) })),
                         fetch(`${API_BASE}/project-materials/inventory/other`, { headers: authHeaders }).catch(e => ({ ok: false, json: () => ({ success: false, data: [] }) })), // ✅ Bổ sung: Vật tư phụ (Ke, Gioăng, Nhựa ốp, Keo, Khác)
                         fetch(`${API_BASE}/inventory?item_type=all`, { headers: authHeaders }).catch(e => ({ ok: false, json: () => ({ success: false, data: [] }) }))
                     ]);
@@ -8923,18 +8930,18 @@
                         });
                     });
 
-                    // 3. Kính từ bảng glass_items - dùng cùng API với inventory.html
+                    // 3. Kính từ bảng inventory (thông qua API tập trung)
                     glassData.forEach(item => {
                         inventoryData.push({
-                            // ✅ FIX: Đồng bộ code format với inventory.html line 10481
-                            item_code: item.code || ('K-' + item.id),
+                            // ✅ Sync format: dùng code và name từ API
+                            item_code: item.code || item.item_code || ('K-' + item.id),
                             item_name: item.name || item.item_name,
                             item_type: 'glass',
-                            quantity: parseFloat(item.stock || item.quantity || 0), // Fixed: database uses 'stock' field
+                            quantity: parseFloat(item.stock || item.quantity || 0),
                             stock_quantity: parseFloat(item.stock || item.quantity || 0),
-                            unit: 'tấm',
-                            structure: item.structure || '',
-                            unit_price: parseFloat(item.price || 0)
+                            unit: item.unit || 'tấm',
+                            structure: item.structure || item.notes || '',
+                            unit_price: parseFloat(item.price || item.unit_price || 0)
                         });
                     });
 
@@ -12518,24 +12525,41 @@
                     }
 
                     // Load Glass
-                    const kinhRes = await fetch(`${API_BASE}/glass-items`);
+                    const kinhRes = await fetch(`${API_BASE}/project-materials/inventory/glass`);
                     const kinhData = await kinhRes.json();
                     console.log('🔍 Glass API response:', kinhData);
                     if (kinhData.success && kinhData.data && kinhData.data.length > 0) {
-                        materialsCache.kinh = kinhData.data.map(item => ({
-                            id: item.id,
-                            // Sync với inventory.html - dùng cùng fallback K-{id}
-                            code: item.code || ('K-' + item.id),
-                            name: item.name || item.structure || `Kính #${item.id}`,
-                            structure: item.structure || '',
-                            unit: 'tấm',
-                            price: item.price || 0,
-                            stock: parseFloat(item.stock || item.quantity || 0)
-                        }));
-                        console.log('✅ Loaded', materialsCache.kinh.length, 'glass items');
+                        materialsCache.kinh = kinhData.data.map(item => {
+                            const notes = item.structure || item.notes || '';
+                            const thicknessMatch = notes.match(/(\d+\.?\d*)mm/i);
+                            const thickness = thicknessMatch ? thicknessMatch[1] + 'mm' : '';
+
+                            const dimensionMatch = notes.match(/(\d+\.?\d*)\s*m\s*x\s*(\d+\.?\d*)\s*m/i) || notes.match(/(\d+\.?\d*)\s*x\s*(\d+\.?\d*)/i);
+                            let dimensions = '';
+                            let unitArea = 0;
+                            if (dimensionMatch) {
+                                dimensions = `${dimensionMatch[1]}m x ${dimensionMatch[2]}m`;
+                                unitArea = parseFloat(dimensionMatch[1]) * parseFloat(dimensionMatch[2]);
+                            }
+
+                            return {
+                                id: item.id,
+                                // Sync với inventory.html - dùng code và name từ API tập trung
+                                code: item.code || item.item_code || ('K-' + item.id),
+                                name: item.name || item.item_name || `Kính #${item.id}`,
+                                structure: notes,
+                                thickness: thickness,
+                                dimensions: dimensions,
+                                unitArea: unitArea,
+                                unit: 'tấm', // Buộc dùng 'tấm' cho kính theo yêu cầu của user
+                                price: item.price || item.unit_price || 0,
+                                stock: parseFloat(item.stock || item.quantity || 0)
+                            };
+                        });
+                        console.log('✅ Loaded', materialsCache.kinh.length, 'glass items from unified inventory');
                     } else {
                         // Sample data nếu API không có data
-                        console.log('⚠️ No glass data from API, using sample data');
+                        console.log('⚠️ No glass data from unified API, using sample data');
                         materialsCache.kinh = [
                             { id: 1, code: 'K-8.38', name: '8.38 mm Film Grey', unit: 'tấm', price: 850000 },
                             { id: 2, code: 'K-10.38', name: '10.38 mm Film Clear', unit: 'tấm', price: 950000 },
@@ -12867,31 +12891,50 @@
 
                 // Determine unit based on type
                 const getUnit = (type, item) => {
+                    if (type === 'kinh') return 'tấm'; // Ưu tiên 'tấm' cho kính
                     if (item.unit) return item.unit;
                     switch (type) {
                         case 'nhom': return 'cây';
-                        case 'kinh': return 'tấm';
                         case 'vattu': return 'cái';
                         case 'phukien': return 'cái';
                         default: return '';
                     }
                 };
 
-                dropdown.innerHTML = items.map((item, index) => `
+                dropdown.innerHTML = items.map((item, index) => {
+                    let detailHtml = '';
+                    if (type === 'kinh') {
+                        const thickness = item.thickness || '-';
+                        const dimensions = item.dimensions || '-';
+                        const area = typeof item.unitArea === 'number' ? item.unitArea.toFixed(4) : '-';
+                        detailHtml = `
+                            <div class="text-xs text-gray-500 mt-1 flex flex-wrap gap-x-3 gap-y-1">
+                                <span class="whitespace-nowrap">Độ dày: <b>${thickness}</b></span>
+                                <span class="whitespace-nowrap">KT: <b>${dimensions}</b></span>
+                                <span class="whitespace-nowrap">DT: <b>${area} m²</b></span>
+                            </div>
+                        `;
+                    }
+
+                    return `
                     <div class="px-4 py-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-0 flex justify-between items-center"
                          onclick="selectMaterial('${type}', ${index}, ${JSON.stringify(item).replace(/"/g, '&quot;')})">
                         <div class="flex-1">
-                            <span class="font-semibold ${colors.code}">${escapeHtml(item.code || '-')}</span>
-                            <span class="text-gray-400 mx-1">-</span>
-                            <span class="${colors.name}">${escapeHtml(item.name || 'Không có tên')}</span>
+                            <div>
+                                <span class="font-semibold ${colors.code}">${escapeHtml(item.code || '-')}</span>
+                                <span class="text-gray-400 mx-1">-</span>
+                                <span class="${colors.name}">${escapeHtml(item.name || 'Không có tên')}</span>
+                            </div>
+                            ${detailHtml}
                         </div>
                         <div class="${colors.stock} font-medium text-sm whitespace-nowrap ml-4">
                             ${(item.stock !== undefined && item.stock !== null) || (item.quantity !== undefined && item.quantity !== null)
-                        ? `${parseFloat(item.stock ?? item.quantity ?? 0)} ${getUnit(type, item)}`
-                        : '<span class="text-gray-400">-</span>'}
+                            ? `${parseFloat(item.stock ?? item.quantity ?? 0)} ${getUnit(type, item)}`
+                            : '<span class="text-gray-400">-</span>'}
                         </div>
                     </div>
-                `).join('');
+                `;
+                }).join('');
 
                 dropdown.classList.remove('hidden');
             }
@@ -13090,27 +13133,40 @@
                 let parsedDims = { width: 0, height: 0 };
 
                 if (selectedMaterial.kinh) {
-                    // Đã chọn từ dropdown - lấy dimensions từ structure
+                    // Đã chọn từ dropdown - lấy metadata từ cache
                     parsedDims = parseGlassDimensions(selectedMaterial.kinh.structure);
                     itemToAdd = {
                         code: selectedMaterial.kinh.code,
                         glass_type: selectedMaterial.kinh.name,
-                        unit: selectedMaterial.kinh.unit || 'tấm'
+                        name: selectedMaterial.kinh.name,
+                        unit: selectedMaterial.kinh.unit || 'tấm',
+                        thickness: selectedMaterial.kinh.thickness || '',
+                        dimensions: selectedMaterial.kinh.dimensions || '',
+                        unitArea: selectedMaterial.kinh.unitArea || 0,
+                        stock: selectedMaterial.kinh.stock || 0
                     };
-                    console.log('🔍 Glass dimensions parsed from structure:', selectedMaterial.kinh.structure, '→', parsedDims);
+                    console.log('🔍 Glass item added from cache:', itemToAdd);
                 } else if (inputText) {
                     // Nhập thủ công
                     itemToAdd = {
                         code: '',
                         glass_type: inputText,
-                        unit: 'tấm'
+                        unit: 'tấm',
+                        thickness: '',
+                        dimensions: '',
+                        unitArea: 0,
+                        stock: 0
                     };
                 } else {
                     // Thêm dòng trống
                     itemToAdd = {
                         code: '',
                         glass_type: '(Chưa nhập loại kính)',
-                        unit: 'tấm'
+                        unit: 'tấm',
+                        thickness: '',
+                        dimensions: '',
+                        unitArea: 0,
+                        stock: 0
                     };
                 }
 
@@ -13121,13 +13177,13 @@
                 // Tính diện tích nếu có cả width và height
                 const areaM2 = (parsedDims.width > 0 && parsedDims.height > 0)
                     ? parseFloat(((parsedDims.width * parsedDims.height) / 1000000).toFixed(4))
-                    : 0;
+                    : (itemToAdd.unitArea || 0);
 
                 bocTachData.kinh.push({
                     ...itemToAdd,
                     quantity: qty,
-                    width: parsedDims.width,
-                    height: parsedDims.height,
+                    width: parsedDims.width || 0,
+                    height: parsedDims.height || 0,
                     area: areaM2,
                     notes: ''
                 });
@@ -13412,7 +13468,7 @@
                 if (!bocTachData || !bocTachData.kinh || bocTachData.kinh.length === 0) {
                     tbody.innerHTML = `
                         <tr>
-                            <td colspan="9" class="px-4 py-8 text-center text-gray-500">
+                            <td colspan="12" class="px-4 py-8 text-center text-gray-500">
                                 <p>Chưa có dữ liệu kính</p>
                             </td>
                         </tr>
@@ -13432,14 +13488,19 @@
                     totalQty += qty;
                     totalArea += area * qty;
 
+                    const stock = parseFloat(item.stock || 0);
+                    const thickness = item.thickness || '-';
+
                     return `
                         <tr class="hover:bg-gray-50">
                             <td class="px-3 py-2">${escapeHtml(item.code || '-')}</td>
                             <td class="px-3 py-2">${escapeHtml(item.glass_type || item.name || '-')}</td>
+                            <td class="px-3 py-2 text-center text-xs">${thickness}</td>
                             <td class="px-3 py-2 text-center">${width || '-'}</td>
                             <td class="px-3 py-2 text-center">${height || '-'}</td>
                             <td class="px-3 py-2 text-center">${escapeHtml(item.unit || 'tấm')}</td>
                             <td class="px-3 py-2 text-center font-medium">${qty}</td>
+                            <td class="px-3 py-2 text-center text-xs text-gray-500">${stock} ${escapeHtml(item.unit || 'tấm')}</td>
                             <td class="px-3 py-2">${escapeHtml(item.location || '')}</td>
                             <td class="px-3 py-2 text-center text-cyan-600">${(area * qty).toFixed(4)}</td>
                             <td class="px-3 py-2 text-center">
@@ -13758,6 +13819,10 @@
                                class="w-full px-2 py-1 border border-blue-300 rounded text-sm focus:ring-2 focus:ring-blue-500" />
                     </td>
                     <td class="px-2 py-1">
+                        <input type="text" id="editKinhThickness_${index}" value="${escapeHtml(item.thickness || '')}" 
+                               class="w-full px-2 py-1 border border-gray-300 rounded text-sm text-center" placeholder="Dày..." />
+                    </td>
+                    <td class="px-2 py-1">
                         <input type="number" id="editKinhWidth_${index}" value="${item.width || 0}" 
                                class="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-center" />
                     </td>
@@ -13790,6 +13855,7 @@
             function saveKinhItem(index) {
                 const code = document.getElementById(`editKinhCode_${index}`)?.value || '';
                 const glassType = document.getElementById(`editKinhType_${index}`)?.value || '';
+                const thickness = document.getElementById(`editKinhThickness_${index}`)?.value || '';
                 const width = parseFloat(document.getElementById(`editKinhWidth_${index}`)?.value) || 0;
                 const height = parseFloat(document.getElementById(`editKinhHeight_${index}`)?.value) || 0;
                 const qty = parseInt(document.getElementById(`editKinhQty_${index}`)?.value) || 1;
@@ -13797,7 +13863,7 @@
 
                 bocTachData.kinh[index] = {
                     ...bocTachData.kinh[index],
-                    code, glass_type: glassType, name: glassType, width, height, quantity: qty, location
+                    code, glass_type: glassType, name: glassType, thickness, width, height, quantity: qty, location
                 };
 
                 currentEditingRow = { type: null, index: null };
