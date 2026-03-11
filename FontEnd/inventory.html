@@ -6425,12 +6425,17 @@
 
                     const data = result.data;
 
-                    // Chuẩn bị dữ liệu cho worksheet
+                    // Chuẩn bị dữ liệu cho worksheet (Professional Layout)
                     const wsData = [
-                        ['LỊCH SỬ GIAO DỊCH KHO'],
-                        [`Ngày xuất: ${new Date().toLocaleDateString('vi-VN')} | Tổng: ${data.length} bản ghi`],
+                        ['CÔNG TY CỔ PHẦN VIRALWINDOW'],
+                        ['KM 03, Đường Cienco5, KĐT Thanh Hà, Hà Đông, Hà Nội'],
+                        ['Hotline: 1800 282839 | Email: viralwindow.vn@gmail.com'],
                         [],
-                        ['STT', 'Ngày', 'Loại', 'Mã phiếu', 'Số dòng', 'Nhập', 'Xuất', 'Người thực hiện']
+                        ['BÁO CÁO LỊCH SỬ GIAO DỊCH KHO'],
+                        [`Ngày xuất: ${new Date().toLocaleDateString('vi-VN')} | Người thực hiện: ${sessionStorage.getItem('username') || 'Admin'}`],
+                        [`Bộ lọc: ${docType || 'Tất cả phiếu'} | ${itemType || 'Tất cả kho'}`],
+                        [],
+                        ['STT', 'Ngày giao dịch', 'Loại phiếu', 'Số chứng từ', 'Số dòng', 'Số lượng nhập', 'Số lượng xuất', 'Người thực hiện']
                     ];
 
                     data.forEach((log, i) => {
@@ -6440,8 +6445,8 @@
                             getDocTypeText(log.doc_type),
                             log.doc_no || '',
                             log.total_lines || '',
-                            log.qty_in > 0 ? '+' + log.qty_in : '',
-                            log.qty_out > 0 ? '-' + log.qty_out : '',
+                            log.qty_in > 0 ? log.qty_in : 0,
+                            log.qty_out > 0 ? log.qty_out : 0,
                             log.user_name || ''
                         ]);
                     });
@@ -6450,10 +6455,14 @@
                     const wb = XLSX.utils.book_new();
                     const ws = XLSX.utils.aoa_to_sheet(wsData);
 
-                    // Merge tiêu đề
+                    // Merge tiêu đề & header
                     ws['!merges'] = [
-                        { s: { r: 0, c: 0 }, e: { r: 0, c: 7 } },
-                        { s: { r: 1, c: 0 }, e: { r: 1, c: 7 } }
+                        { s: { r: 0, c: 0 }, e: { r: 0, c: 7 } }, // Company Name
+                        { s: { r: 1, c: 0 }, e: { r: 1, c: 7 } }, // Address
+                        { s: { r: 2, c: 0 }, e: { r: 2, c: 7 } }, // Contact
+                        { s: { r: 6, c: 0 }, e: { r: 6, c: 7 } }, // Title
+                        { s: { r: 7, c: 0 }, e: { r: 7, c: 7 } }, // Date
+                        { s: { r: 8, c: 0 }, e: { r: 8, c: 7 } }  // Filter
                     ];
 
                     // Độ rộng cột

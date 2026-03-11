@@ -1,5 +1,7 @@
 const db = require('../config/db');
 const stockDocumentExportService = require('../services/stockDocumentExportService');
+// Use the constructor/class directly for static methods if needed
+const StockDocumentExportService = stockDocumentExportService.constructor;
 
 /**
  * Export a single stock document to Excel
@@ -187,16 +189,19 @@ exports.exportMonthlySummary = async (req, res) => {
             if (itemStats.length > 0) {
                 const ws = workbook.addWorksheet(sheetNames[itemType]);
 
-                // Title
-                ws.mergeCells('A1:F1');
-                ws.getCell('A1').value = `BÁO CÁO NHẬP XUẤT - ${itemTypeLabels[itemType].toUpperCase()} - THÁNG ${monthNum}/${year}`;
-                ws.getCell('A1').font = { bold: true, size: 14, color: { argb: 'FF007B5E' } };
-                ws.getCell('A1').alignment = { horizontal: 'center' };
-                ws.getRow(1).height = 30;
+                // Add Professional Header
+                await StockDocumentExportService.addCompanyHeader(workbook, ws, 6);
 
-                // Headers
+                // Title
+                ws.getCell('A6').value = `BÁO CÁO NHẬP XUẤT - ${itemTypeLabels[itemType].toUpperCase()} - THÁNG ${monthNum}/${year}`;
+                ws.getCell('A6').font = { bold: true, size: 16, color: { argb: 'FF000000' }, name: 'Times New Roman' };
+                ws.getCell('A6').alignment = { horizontal: 'center' };
+                try { ws.mergeCells('A6:F6'); } catch (e) { }
+                ws.getRow(6).height = 35;
+
+                // Headers (Row 14 for consistency)
                 const headers = ['Mã vật tư', 'Tên vật tư', 'Tồn đầu kỳ', 'Nhập trong kỳ', 'Xuất trong kỳ', 'Tồn cuối kỳ'];
-                const headerRow = ws.getRow(3);
+                const headerRow = ws.getRow(14);
                 headerRow.values = headers;
                 headerRow.height = 25;
                 headerRow.eachCell(cell => {
@@ -206,10 +211,10 @@ exports.exportMonthlySummary = async (req, res) => {
                     cell.border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } };
                 });
 
-                ws.views = [{ state: 'frozen', ySplit: 3 }];
+                ws.views = [{ state: 'frozen', ySplit: 14 }];
 
-                // Data
-                let rowIndex = 4;
+                // Data (Starting Row 15)
+                let rowIndex = 15;
                 itemStats.forEach((stat, idx) => {
                     const row = ws.getRow(rowIndex);
                     row.values = [stat.code, stat.name, stat.opening, stat.in, stat.out, stat.closing];
@@ -244,19 +249,38 @@ exports.exportMonthlySummary = async (req, res) => {
                 ws.columns = [
                     { width: 15 }, { width: 40 }, { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }
                 ];
+
+                // Signatures
+                rowIndex += 3;
+                const footers = [
+                    { col: 1, text: 'NGƯỜI LẬP' },
+                    { col: 2, text: 'KẾ TOÁN' },
+                    { col: 4, text: 'THỦ KHO' },
+                    { col: 6, text: 'NGƯỜI NHẬN' }
+                ];
+                footers.forEach(f => {
+                    const cell = ws.getRow(rowIndex).getCell(f.col);
+                    cell.value = f.text;
+                    cell.font = { bold: true, size: 11, name: 'Times New Roman' };
+                    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                });
             }
         }
 
         // Create summary sheet (first)
         const summarySheet = workbook.addWorksheet('TongHop', { index: 0 });
-        summarySheet.mergeCells('A1:F1');
-        summarySheet.getCell('A1').value = `BÁO CÁO TỔNG HỢP NHẬP XUẤT KHO - THÁNG ${monthNum}/${year}`;
-        summarySheet.getCell('A1').font = { bold: true, size: 16, color: { argb: 'FF007B5E' } };
-        summarySheet.getCell('A1').alignment = { horizontal: 'center' };
-        summarySheet.getRow(1).height = 35;
+
+        // Add Professional Header
+        await StockDocumentExportService.addCompanyHeader(workbook, summarySheet, 6);
+
+        summarySheet.getCell('A6').value = `BÁO CÁO TỔNG HỢP NHẬP XUẤT KHO - THÁNG ${monthNum}/${year}`;
+        summarySheet.getCell('A6').font = { bold: true, size: 16, color: { argb: 'FF000000' }, name: 'Times New Roman' };
+        summarySheet.getCell('A6').alignment = { horizontal: 'center' };
+        try { summarySheet.mergeCells('A6:F6'); } catch (e) { }
+        summarySheet.getRow(6).height = 35;
 
         const summaryHeaders = ['Kho', 'Tồn đầu kỳ', 'Nhập trong kỳ', 'Xuất trong kỳ', 'Tồn cuối kỳ', 'Số mặt hàng'];
-        const summaryHeaderRow = summarySheet.getRow(3);
+        const summaryHeaderRow = summarySheet.getRow(14);
         summaryHeaderRow.values = summaryHeaders;
         summaryHeaderRow.height = 25;
         summaryHeaderRow.eachCell(cell => {
@@ -266,7 +290,7 @@ exports.exportMonthlySummary = async (req, res) => {
             cell.border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } };
         });
 
-        let summaryRowIndex = 4;
+        let summaryRowIndex = 15;
         summaryData.forEach((data, idx) => {
             const row = summarySheet.getRow(summaryRowIndex);
             row.values = [data.type, data.openingQty, data.inQty, data.outQty, data.closingQty, data.transactionCount];
@@ -288,6 +312,21 @@ exports.exportMonthlySummary = async (req, res) => {
         summarySheet.columns = [
             { width: 20 }, { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }
         ];
+
+        // Signatures for summary
+        summaryRowIndex += 3;
+        const summaryFooters = [
+            { col: 1, text: 'NGƯỜI LẬP' },
+            { col: 2, text: 'KẾ TOÁN' },
+            { col: 4, text: 'THỦ KHO' },
+            { col: 6, text: 'BAN GIÁM ĐỐC' }
+        ];
+        summaryFooters.forEach(f => {
+            const cell = summarySheet.getRow(summaryRowIndex).getCell(f.col);
+            cell.value = f.text;
+            cell.font = { bold: true, size: 11, name: 'Times New Roman' };
+            cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        });
 
         // Generate filename
         const filename = `BaoCaoKho_${month}.xlsx`;

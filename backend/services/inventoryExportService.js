@@ -1,6 +1,7 @@
 const ExcelJS = require('exceljs');
 const path = require('path');
 const fs = require('fs');
+const db = require('../config/db');
 
 /**
  * Inventory Export Service
@@ -44,15 +45,16 @@ class InventoryExportService {
             worksheet = workbook.addWorksheet('Báo cáo');
         }
 
-        // [SENIOR ARCHITECT NOTE]: Clear legacy titles and data from template rows 5 to 500
-        for (let i = 5; i <= 500; i++) {
+        // [SENIOR ARCHITECT NOTE]: Clear legacy contents to ensure professional layout
+        // We now use Row 1-4 for Company Header, Row 6 for Title, Rows 8-12 for Metadata
+        for (let i = 1; i <= 500; i++) {
             const r = worksheet.getRow(i);
-            if (i < 10) {
-                r.eachCell((cell) => { cell.value = null; });
-            } else if (i > 10) {
-                r.values = [];
-            }
+            r.eachCell((cell) => { cell.value = null; });
+            r.height = 20; // Default height
         }
+
+        // 1. Add Company Header (Rows 1-4)
+        await InventoryExportService.addCompanyHeader(workbook, worksheet, 10);
 
         // 2. Inject Header Metadata
         const isMovementReport = data.length > 0 && data[0].opening !== undefined;
@@ -71,15 +73,15 @@ class InventoryExportService {
         const maxCols = reportHeaders.length;
 
         if (options.title) {
-            const titleRow = 7;
+            const titleRow = 6;
             const titleCell = worksheet.getCell(`A${titleRow}`);
             titleCell.value = options.title.toUpperCase();
-            titleCell.font = { bold: true, size: 20 };
+            titleCell.font = { bold: true, size: 18, color: { argb: 'FF000000' }, name: 'Times New Roman' };
             titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
-            // Merge across all columns in use (A to J for movement, or dynamic for others)
+
             const lastColChar = String.fromCharCode(64 + maxCols);
             try { worksheet.mergeCells(`A${titleRow}:${lastColChar}${titleRow}`); } catch (e) { }
-            worksheet.getRow(titleRow).height = 40;
+            worksheet.getRow(titleRow).height = 35;
         }
 
         const now = new Date();
@@ -88,31 +90,27 @@ class InventoryExportService {
 
         if (isMovementReport) {
             // Specialized layout for Movement Report
-            worksheet.getCell('A9').value = `Ngày xuất: ${dateStr}`;
+            worksheet.getCell('A8').value = `Ngày xuất: ${dateStr}`;
+            worksheet.getCell('A9').value = `Từ ngày: ${fromDate}`;
+            worksheet.getCell('A10').value = `Đến ngày: ${toDate}`;
+            worksheet.getCell('A11').value = `Người thực hiện: ${options.generatedBy || 'Admin'}`;
 
-            // Extract dates from range string "Từ ngày 10/03/2026 đến ngày 20/03/2026"
-            let fromDate = '-', toDate = '-';
-            if (options.dateRange) {
-                const parts = options.dateRange.split('đến ngày');
-                if (parts.length === 2) {
-                    fromDate = parts[0].replace('Từ ngày', '').trim();
-                    toDate = parts[1].trim();
-                } else {
-                    fromDate = options.dateRange;
-                }
-            }
-
-            worksheet.getCell('A10').value = `Từ ngày: ${fromDate}`;
-            worksheet.getCell('A11').value = `Đến ngày: ${toDate}`;
-            worksheet.getCell('A12').value = `Người thực hiện: ${options.generatedBy || 'Admin'}`;
-
-            // Ensure Row heights
-            [9, 10, 11, 12].forEach(r => { worksheet.getRow(r).height = 20; });
+            [8, 9, 10, 11].forEach(r => {
+                const row = worksheet.getRow(r);
+                row.height = 18;
+                row.getCell(1).font = { italic: true, size: 10, name: 'Times New Roman' };
+            });
         } else {
             // Default layout for Stock Report
-            worksheet.getCell('A9').value = `Ngày xuất: ${dateStr}`;
-            worksheet.getCell('A10').value = `Thời gian: ${timeStr}`;
-            worksheet.getCell('A11').value = `Người thực hiện: ${options.generatedBy || 'Admin'}`;
+            worksheet.getCell('A8').value = `Ngày xuất: ${dateStr}`;
+            worksheet.getCell('A9').value = `Thời gian: ${timeStr}`;
+            worksheet.getCell('A10').value = `Người thực hiện: ${options.generatedBy || 'Admin'}`;
+
+            [8, 9, 10].forEach(r => {
+                const row = worksheet.getRow(r);
+                row.height = 18;
+                row.getCell(1).font = { italic: true, size: 10, name: 'Times New Roman' };
+            });
         }
 
         // 3. Inject Data (Starting from Row 15)
@@ -356,11 +354,64 @@ class InventoryExportService {
         activeFooter.forEach(f => {
             const cell = worksheet.getRow(currentRowIndex).getCell(f.col);
             cell.value = f.text;
-            cell.font = { bold: true };
-            cell.alignment = { horizontal: 'center' };
+            cell.font = { bold: true, size: 11, name: 'Times New Roman' };
+            cell.alignment = { horizontal: 'center', vertical: 'middle' };
         });
 
         return await workbook.xlsx.writeBuffer();
+    }
+
+    /**
+     * Thêm thông tin công ty vào đầu sheet (Rows 1-4)
+     */
+    static async addCompanyHeader(workbook, sheet, maxColumn) {
+        // Row 1: Tên công ty
+        const nameCell = sheet.getCell('A1');
+        nameCell.value = 'CÔNG TY CỔ PHẦN VIRALWINDOW';
+        nameCell.font = { bold: true, size: 12, color: { argb: 'FF0070C0' }, name: 'Times New Roman' };
+        nameCell.alignment = { horizontal: 'left', vertical: 'middle' };
+
+        // Row 2: Nhà máy
+        const factoryCell = sheet.getCell('A2');
+        factoryCell.value = 'Nhà máy: KM 03, Đường Cienco5, KĐT Thanh Hà, Hà Đông, Hà Nội';
+        factoryCell.font = { size: 10, name: 'Times New Roman' };
+        factoryCell.alignment = { horizontal: 'left', vertical: 'middle' };
+
+        // Row 3: Hotline
+        const hotlineCell = sheet.getCell('A3');
+        hotlineCell.value = 'Hotline: 1800 282839';
+        hotlineCell.font = { size: 10, name: 'Times New Roman' };
+        hotlineCell.alignment = { horizontal: 'left', vertical: 'middle' };
+
+        // Row 4: Email
+        const emailCell = sheet.getCell('A4');
+        emailCell.value = 'Email: viralwindow.vn@gmail.com';
+        emailCell.font = { size: 10, name: 'Times New Roman' };
+        emailCell.alignment = { horizontal: 'left', vertical: 'middle' };
+
+        // Thêm Logo từ database nếu có
+        try {
+            const [rows] = await db.query("SELECT logo_path FROM company_config ORDER BY id DESC LIMIT 1");
+            if (rows.length > 0 && rows[0].logo_path && rows[0].logo_path.startsWith('data:image')) {
+                const base64Data = rows[0].logo_path.split(',')[1];
+                let extension = 'png';
+                const match = rows[0].logo_path.match(/data:image\/([a-zA-Z+]+);base64/);
+                if (match) extension = match[1] === 'svg+xml' ? 'png' : match[1];
+
+                const imageId = workbook.addImage({
+                    base64: base64Data,
+                    extension: extension,
+                });
+
+                const logoCol = maxColumn > 6 ? maxColumn - 1 : maxColumn;
+                sheet.addImage(imageId, {
+                    tl: { col: logoCol - 1, row: 0 },
+                    ext: { width: 120, height: 60 }
+                });
+            }
+        } catch (err) {
+            console.warn('Không thể thêm logo vào Excel:', err.message);
+        }
     }
 }
 
