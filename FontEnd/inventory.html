@@ -718,6 +718,11 @@
                                 onclick="switchStockSubTab('scraps', this)">
                                 Nhôm Đề C
                             </button>
+                            <button
+                                class="stock-sub-tab px-4 py-3 text-sm text-gray-600 hover:text-teal-600 border-b-2 border-transparent"
+                                onclick="switchStockSubTab('aluminum-catalog', this)">
+                                Quản lý hệ nhôm
+                            </button>
                         </div>
                     </div>
 
@@ -1185,6 +1190,56 @@
                         </div>
                     </div>
 
+                    <!-- TAB: QUẢN LÝ HỆ NHÔM (Catalog) -->
+                    <div id="tab-aluminum-catalog" class="tab-content hidden p-6">
+                        <div class="bg-white rounded-xl shadow p-6">
+                            <div class="flex justify-between items-center mb-6">
+                                <h2 class="text-xl font-bold text-gray-800">Quản lý danh mục Hệ nhôm</h2>
+                                <div class="flex gap-4">
+                                    <input type="text" id="searchAluminumCatalog" placeholder="🔍︎ Tìm tên hệ nhôm..."
+                                        class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                        onkeyup="filterAluminumCatalog()">
+                                    <button
+                                        class="bg-teal-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-teal-600"
+                                        onclick="openAluminumCatalogModal()">
+                                        + Thêm hệ nhôm
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                ID</th>
+                                            <th
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                TÊN HỆ NHÔM</th>
+                                            <th
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                THỨ TỰ HIỂN THỊ</th>
+                                            <th
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                TRẠNG THÁI</th>
+                                            <th
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                THAO TÁC</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200" id="aluminumCatalogTable">
+                                        <!-- Data will be loaded here -->
+                                        <tr>
+                                            <td colspan="5" class="px-6 py-8 text-center text-gray-500">Đang tải dữ
+                                                liệu...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- TAB: XUẤT VẬT TƯ CHO DỰ ÁN -->
                     <div id="tab-transactions" class="tab-content p-6">
                         <!-- Chọn dự án -->
@@ -1262,18 +1317,6 @@
                                     <select id="exportSystemFilter" onchange="filterExportedMaterials()"
                                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
                                         <option value="">Tất cả hệ</option>
-                                        <option value="VRA – Hệ 55 mở quay">VRA – Hệ 55 mở quay</option>
-                                        <option value="VRA – Hệ 50">VRA – Hệ 50</option>
-                                        <option value="VRA – Hệ 64 (cửa sổ lùa)">VRA – Hệ 64 (cửa sổ lùa)</option>
-                                        <option value="VRE – Hệ 65 mở quay (Mạnh Quy)">VRE – Hệ 65 mở quay (Mạnh Quy)
-                                        </option>
-                                        <option value="VRE – Hệ 65 mở quay (Yangly)">VRE – Hệ 65 mở quay (Yangly)
-                                        </option>
-                                        <option value="VRE – Hệ xếp trượt 80">VRE – Hệ xếp trượt 80</option>
-                                        <option value="VRE – Hệ lùa 120 & 180">VRE – Hệ lùa 120 & 180</option>
-                                        <option value="Hệ lùa 94 mới">Hệ lùa 94 mới</option>
-                                        <option value="Thủy lực">Thủy lực</option>
-                                        <option value="Mặt dựng">Mặt dựng</option>
                                     </select>
                                 </div>
                                 <div id="exportTypeFilterContainer" style="min-width: 150px;">
@@ -2132,17 +2175,6 @@
                             <select id="aluminumSystem" required
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
                                 <option value="">-- Chọn hệ --</option>
-                                <option value="VRA – Hệ 55 mở quay">VRA – Hệ 55 mở quay</option>
-                                <option value="VRA – Hệ 50">VRA – Hệ 50</option>
-                                <option value="VRA – Hệ 64 (cửa sổ lùa)">VRA – Hệ 64 (cửa sổ lùa)</option>
-                                <option value="VRE – Hệ 65 mở quay (Mạnh Quy)">VRE – Hệ 65 mở quay (Mạnh Quy)
-                                </option>
-                                <option value="VRE – Hệ 65 mở quay (Yangly)">VRE – Hệ 65 mở quay (Yangly)</option>
-                                <option value="VRE – Hệ xếp trượt 80">VRE – Hệ xếp trượt 80</option>
-                                <option value="VRE – Hệ lùa 120 & 180">VRE – Hệ lùa 120 & 180</option>
-                                <option value="Hệ lùa 94 mới">Hệ lùa 94 mới</option>
-                                <option value="Thủy lực">Thủy lực</option>
-                                <option value="Mặt dựng">Mặt dựng</option>
                             </select>
                         </div>
                         <div class="col-span-2">
@@ -3733,7 +3765,7 @@
                 }
 
                 // Hide all stock sub-tab contents
-                const subTabs = ['tab-accessory', 'tab-aluminum', 'tab-glass', 'tab-other', 'tab-scraps'];
+                const subTabs = ['tab-accessory', 'tab-aluminum', 'tab-glass', 'tab-other', 'tab-scraps', 'tab-aluminum-catalog'];
                 subTabs.forEach(id => {
                     const el = document.getElementById(id);
                     if (el) {
@@ -3748,7 +3780,8 @@
                     'aluminum': 'tab-aluminum',
                     'glass': 'tab-glass',
                     'other': 'tab-other',
-                    'scraps': 'tab-scraps'
+                    'scraps': 'tab-scraps',
+                    'aluminum-catalog': 'tab-aluminum-catalog'
                 };
 
                 // Show selected sub-tab
@@ -3775,6 +3808,9 @@
                         break;
                     case 'scraps':
                         if (typeof loadScraps === 'function') loadScraps();
+                        break;
+                    case 'aluminum-catalog':
+                        if (typeof loadAluminumCatalog === 'function') loadAluminumCatalog();
                         break;
                 }
             }
@@ -10622,6 +10658,261 @@
                 }
             }
 
+            // --- QUẢN LÝ DANH MỤC HỆ NHÔM ---
+            let aluminumCatalogData = [];
+
+            async function loadAluminumCatalog() {
+                try {
+                    const token = sessionStorage.getItem('token');
+                    if (!token) {
+                        alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                        window.location.href = 'login.html';
+                        return;
+                    }
+
+                    const response = await fetch(`${API_BASE}/catalog/aluminum-systems`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.status === 401) {
+                        alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                        sessionStorage.removeItem('token');
+                        sessionStorage.removeItem('user');
+                        window.location.href = 'login.html';
+                        return;
+                    }
+
+                    const result = await response.json();
+                    if (result.success) {
+                        aluminumCatalogData = result.data;
+                        renderAluminumCatalogTable(aluminumCatalogData);
+                        loadAluminumSystemsForDropdown();
+                    } else {
+                        throw new Error(result.message);
+                    }
+                } catch (error) {
+                    console.error('Lỗi tải danh mục hệ nhôm:', error);
+                    const tbody = document.getElementById('aluminumCatalogTable');
+                    if (tbody) tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-red-500">Lỗi: ${error.message}</td></tr>`;
+                }
+            }
+
+            function renderAluminumCatalogTable(data) {
+                const tbody = document.getElementById('aluminumCatalogTable');
+                if (!tbody) return;
+                tbody.innerHTML = '';
+
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-500">Không tìm thấy hệ nhôm nào</td></tr>';
+                    return;
+                }
+
+                data.forEach(item => {
+                    const row = `
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#${item.id}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${item.system_name}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-600">${item.display_order}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 flex items-center gap-1 w-fit rounded-full text-xs font-semibold ${item.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}">
+                                    <span class="w-1.5 h-1.5 rounded-full ${item.is_active ? 'bg-green-500' : 'bg-gray-400'}"></span>
+                                    ${item.is_active ? 'Hoạt động' : 'Tạm dừng'}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                <button onclick="openAluminumCatalogModal(${item.id})" class="text-teal-600 hover:text-teal-900 transition-colors bg-teal-50 px-3 py-1 rounded">Sửa</button>
+                                <button onclick="deleteAluminumCatalog(${item.id})" class="text-red-600 hover:text-red-900 transition-colors bg-red-50 px-3 py-1 rounded">Xóa</button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            }
+
+            function filterAluminumCatalog() {
+                const search = document.getElementById('searchAluminumCatalog').value.toLowerCase();
+                const filtered = aluminumCatalogData.filter(item =>
+                    item.system_name.toLowerCase().includes(search)
+                );
+                renderAluminumCatalogTable(filtered);
+            }
+
+            function openAluminumCatalogModal(id = null) {
+                const title = document.getElementById('aluminumCatalogModalTitle');
+                const form = document.getElementById('aluminumCatalogForm');
+                const activeContainer = document.getElementById('aluminumCatalogActiveContainer');
+
+                form.reset();
+                document.getElementById('aluminumCatalogId').value = id || '';
+
+                if (id) {
+                    title.textContent = 'Chỉnh sửa Hệ Nhôm';
+                    activeContainer.classList.remove('hidden');
+                    const item = aluminumCatalogData.find(i => i.id == id);
+                    if (item) {
+                        document.getElementById('aluminumCatalogName').value = item.system_name;
+                        document.getElementById('aluminumCatalogOrder').value = item.display_order;
+                        document.getElementById('aluminumCatalogActive').checked = !!item.is_active;
+                    }
+                } else {
+                    title.textContent = 'Thêm Hệ Nhôm Mới';
+                    activeContainer.classList.add('hidden');
+                    document.getElementById('aluminumCatalogOrder').value = 0;
+                }
+
+                document.getElementById('aluminumCatalogModal').classList.remove('hidden');
+            }
+
+            function closeAluminumCatalogModal() {
+                document.getElementById('aluminumCatalogModal').classList.add('hidden');
+            }
+
+            async function saveAluminumCatalog(e) {
+                e.preventDefault();
+                const id = document.getElementById('aluminumCatalogId').value;
+                const data = {
+                    system_name: document.getElementById('aluminumCatalogName').value,
+                    display_order: parseInt(document.getElementById('aluminumCatalogOrder').value) || 0,
+                    is_active: document.getElementById('aluminumCatalogActive').checked ? 1 : 0
+                };
+
+                try {
+                    const token = sessionStorage.getItem('token');
+                    if (!token) {
+                        alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                        window.location.href = 'login.html';
+                        return;
+                    }
+
+                    const method = id ? 'PUT' : 'POST';
+                    const url = id ? `${API_BASE}/catalog/aluminum-systems/${id}` : `${API_BASE}/catalog/aluminum-systems`;
+
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (response.status === 401) {
+                        alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                        sessionStorage.removeItem('token');
+                        sessionStorage.removeItem('user');
+                        window.location.href = 'login.html';
+                        return;
+                    }
+
+                    const result = await response.json();
+                    if (result.success) {
+                        alert(result.message);
+                        closeAluminumCatalogModal();
+                        loadAluminumCatalog();
+                        // Quan trọng: Reload lại danh mục hệ nhôm trong các dropdown khác nếu có
+                        if (typeof loadAluminumSystemsForDropdown === 'function') {
+                            loadAluminumSystemsForDropdown();
+                        }
+                    } else {
+                        alert('Lỗi: ' + result.message);
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi lưu hệ nhôm:', error);
+                    alert('Lỗi kết nối server');
+                }
+            }
+
+            async function deleteAluminumCatalog(id) {
+                const confirmed = await VWModal.confirm('Xác nhận xóa', 'Bạn có chắc chắn muốn xóa hệ nhôm này?');
+                if (!confirmed) return;
+
+                try {
+                    const token = sessionStorage.getItem('token');
+                    if (!token) {
+                        alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                        window.location.href = 'login.html';
+                        return;
+                    }
+
+                    const response = await fetch(`${API_BASE}/catalog/aluminum-systems/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.status === 401) {
+                        alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                        sessionStorage.removeItem('token');
+                        sessionStorage.removeItem('user');
+                        window.location.href = 'login.html';
+                        return;
+                    }
+
+                    const result = await response.json();
+                    if (result.success) {
+                        alert(result.message);
+                        loadAluminumCatalog();
+                        if (typeof loadAluminumSystemsForDropdown === 'function') {
+                            loadAluminumSystemsForDropdown();
+                        }
+                    } else {
+                        alert('Lỗi: ' + result.message);
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi xóa hệ nhôm:', error);
+                    alert('Lỗi kết nối server');
+                }
+            }
+
+            async function loadAluminumSystemsForDropdown() {
+                try {
+                    const token = sessionStorage.getItem('token');
+                    if (!token) return;
+
+                    const response = await fetch(`${API_BASE}/catalog/aluminum-systems`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.status === 401) return;
+
+                    const result = await response.json();
+                    if (result.success) {
+                        const systems = result.data.filter(s => s.is_active);
+
+                        // Populate aluminumSystem select (Modal)
+                        const modalSelect = document.getElementById('aluminumSystem');
+                        if (modalSelect) {
+                            const currentValue = modalSelect.value;
+                            modalSelect.innerHTML = '<option value="">-- Chọn hệ --</option>';
+                            systems.forEach(s => {
+                                modalSelect.innerHTML += `<option value="${s.system_name}">${s.system_name}</option>`;
+                            });
+                            modalSelect.value = currentValue;
+                        }
+
+                        // Populate exportSystemFilter select (Transaction Tab)
+                        const filterSelect = document.getElementById('exportSystemFilter');
+                        if (filterSelect) {
+                            const currentValue = filterSelect.value;
+                            filterSelect.innerHTML = '<option value="">Tất cả hệ</option>';
+                            systems.forEach(s => {
+                                filterSelect.innerHTML += `<option value="${s.system_name}">${s.system_name}</option>`;
+                            });
+                            filterSelect.value = currentValue;
+                        }
+
+                        console.log('Đã cập nhật danh mục hệ nhôm cho các dropdown');
+                    }
+                } catch (error) {
+                    console.error('Lỗi tải danh mục hệ nhôm cho dropdown:', error);
+                }
+            }
+
             function openAluminumModal(id = null) {
                 editingAluminumId = id;
                 document.getElementById('aluminumModalTitle').textContent = id ? 'Chỉnh sửa kho nhôm' : 'Thêm kho nhôm mới';
@@ -12362,6 +12653,7 @@
                 // Load stats tổng hợp ngay khi trang load
                 loadStats();
                 loadAccessories();
+                loadAluminumSystemsForDropdown(); // Load danh mục hệ nhôm
                 loadProjectsForExport(); // Load dự án cho tab Xuất vật tư
 
                 // Check URL parameter for auto-switch to export tab
@@ -12694,6 +12986,51 @@
                     Đóng
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- Aluminum Catalog Modal -->
+    <div id="aluminumCatalogModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="bg-teal-500 p-4 flex justify-between items-center text-white">
+                <h3 id="aluminumCatalogModalTitle" class="font-bold text-lg">Thêm Hệ Nhôm</h3>
+                <button onclick="closeAluminumCatalogModal()" class="hover:bg-teal-600 p-1 rounded transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <form id="aluminumCatalogForm" onsubmit="saveAluminumCatalog(event)" class="p-6 space-y-4">
+                <input type="hidden" id="aluminumCatalogId">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tên hệ nhôm</label>
+                    <input type="text" id="aluminumCatalogName" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        placeholder="VD: Xingfa Hệ 55">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Thứ tự hiển thị</label>
+                    <input type="number" id="aluminumCatalogOrder" value="0"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                </div>
+                <div id="aluminumCatalogActiveContainer" class="hidden flex items-center gap-2">
+                    <input type="checkbox" id="aluminumCatalogActive" checked class="w-4 h-4 text-teal-600 rounded">
+                    <label class="text-sm font-medium text-gray-700">Đang hoạt động</label>
+                </div>
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" onclick="closeAluminumCatalogModal()"
+                        class="px-5 py-2 border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-100 transition-colors">
+                        Hủy
+                    </button>
+                    <button type="submit"
+                        class="px-5 py-2 bg-teal-500 text-white rounded-lg font-semibold hover:bg-teal-600 transition-colors shadow-lg">
+                        Lưu lại
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
