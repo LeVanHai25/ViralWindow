@@ -9,18 +9,13 @@ async function checkSchema() {
     });
 
     try {
-        console.log('--- Table: aluminum_systems ---');
         const [columns] = await connection.query('DESCRIBE aluminum_systems');
-        console.table(columns);
+        console.log('Columns in aluminum_systems:');
+        columns.forEach(c => console.log(`- ${c.Field} (${c.Type})`));
 
-        console.log('\n--- All Tables ---');
-        const [tables] = await connection.query('SHOW TABLES');
-        console.table(tables);
-
-        // Check for any categories table
-        const [catTables] = await connection.query("SHOW TABLES LIKE '%category%'");
-        console.log('\n--- Category Tables ---');
-        console.table(catTables);
+        const [configColumns] = await connection.query('DESCRIBE vw_aluminum_system_config');
+        console.log('\nColumns in vw_aluminum_system_config:');
+        configColumns.forEach(c => console.log(`- ${c.Field} (${c.Type})`));
 
     } catch (err) {
         console.error(err);

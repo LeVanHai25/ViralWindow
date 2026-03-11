@@ -145,7 +145,8 @@ exports.exportWarehouseReport = async (req, res) => {
 
         const buffer = await inventoryExportService.exportToExcel(item_type, itemStats, {
             title: `BÁO CÁO NHẬP XUẤT KHO ${warehouseLabel}`,
-            dateRange: `Từ ngày ${fromDateStr} đến ngày ${toDateStr}`,
+            fromDateStr: fromDateStr,
+            toDateStr: toDateStr,
             generatedBy: req.user?.full_name || req.user?.username || 'Admin'
         });
 

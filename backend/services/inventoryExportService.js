@@ -76,12 +76,12 @@ class InventoryExportService {
             const titleRow = 6;
             const titleCell = worksheet.getCell(`A${titleRow}`);
             titleCell.value = options.title.toUpperCase();
-            titleCell.font = { bold: true, size: 18, color: { argb: 'FF000000' }, name: 'Times New Roman' };
+            titleCell.font = { bold: true, size: 20, color: { argb: 'FF000000' }, name: 'Times New Roman' };
             titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
             const lastColChar = String.fromCharCode(64 + maxCols);
             try { worksheet.mergeCells(`A${titleRow}:${lastColChar}${titleRow}`); } catch (e) { }
-            worksheet.getRow(titleRow).height = 35;
+            worksheet.getRow(titleRow).height = 45; // Increased height for title
         }
 
         const now = new Date();
@@ -90,15 +90,16 @@ class InventoryExportService {
 
         if (isMovementReport) {
             // Specialized layout for Movement Report
+            const { fromDateStr, toDateStr } = options;
             worksheet.getCell('A8').value = `Ngày xuất: ${dateStr}`;
-            worksheet.getCell('A9').value = `Từ ngày: ${fromDate}`;
-            worksheet.getCell('A10').value = `Đến ngày: ${toDate}`;
+            worksheet.getCell('A9').value = `Từ ngày: ${fromDateStr || '-'}`;
+            worksheet.getCell('A10').value = `Đến ngày: ${toDateStr || '-'}`;
             worksheet.getCell('A11').value = `Người thực hiện: ${options.generatedBy || 'Admin'}`;
 
             [8, 9, 10, 11].forEach(r => {
                 const row = worksheet.getRow(r);
-                row.height = 18;
-                row.getCell(1).font = { italic: true, size: 10, name: 'Times New Roman' };
+                row.height = 20;
+                row.getCell(1).font = { italic: true, size: 11, name: 'Times New Roman' };
             });
         } else {
             // Default layout for Stock Report
@@ -108,8 +109,8 @@ class InventoryExportService {
 
             [8, 9, 10].forEach(r => {
                 const row = worksheet.getRow(r);
-                row.height = 18;
-                row.getCell(1).font = { italic: true, size: 10, name: 'Times New Roman' };
+                row.height = 20;
+                row.getCell(1).font = { italic: true, size: 11, name: 'Times New Roman' };
             });
         }
 
@@ -118,11 +119,12 @@ class InventoryExportService {
 
         // Prepare headers at Row 14
         const headerRow = worksheet.getRow(14);
+        headerRow.height = 35; // Professional height for headers
 
         reportHeaders.forEach((h, i) => {
             const cell = headerRow.getCell(i + 1);
             cell.value = h;
-            cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+            cell.font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' }, name: 'Times New Roman' };
             cell.fill = {
                 type: 'pattern',
                 pattern: 'solid',
@@ -130,13 +132,12 @@ class InventoryExportService {
             };
             cell.alignment = { horizontal: 'center', vertical: 'middle' };
             cell.border = {
-                top: { style: 'thin' },
+                top: { style: 'medium', color: { argb: 'FF000000' } },
                 left: { style: 'thin' },
-                bottom: { style: 'thin' },
+                bottom: { style: 'medium', color: { argb: 'FF000000' } },
                 right: { style: 'thin' }
             };
         });
-        headerRow.height = 30;
 
         // Set column widths for Movement Report
         if (isMovementReport) {
@@ -156,6 +157,7 @@ class InventoryExportService {
 
         data.forEach((item, index) => {
             const row = worksheet.getRow(currentRowIndex);
+            row.height = 25; // Professional row height for data
             row.getCell(1).value = index + 1; // STT
 
             if (isMovementReport) {
@@ -225,26 +227,38 @@ class InventoryExportService {
                 row.getCell(10).value = Number(item.totalValue) || 0;
             }
 
-            // Apply borders and formatting
+            // Apply borders, zebra striping, and formatting
+            const isOdd = index % 2 === 0;
             row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
                 if (colNumber <= maxCols) {
+                    cell.font = { size: 11, name: 'Times New Roman' };
                     cell.border = {
                         top: { style: 'thin' },
                         left: { style: 'thin' },
                         bottom: { style: 'thin' },
                         right: { style: 'thin' }
                     };
+
+                    // Zebra Striping
+                    if (!isOdd) {
+                        cell.fill = {
+                            type: 'pattern',
+                            pattern: 'solid',
+                            fgColor: { argb: 'FFF9FAFB' }
+                        };
+                    }
+
                     if (colNumber === 1 || (itemType !== 'aluminum' && colNumber === 4)) {
-                        cell.alignment = { horizontal: 'center' };
+                        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                    } else {
+                        cell.alignment = { vertical: 'middle' };
                     }
 
                     // Specific number formatting
                     if (itemType === 'aluminum') {
                         if (colNumber === 5 || colNumber === 6 || colNumber === 9 || colNumber >= 13) {
-                            // Density, Length, Weight, Price, Total Value: 2 decimals
                             cell.numFmt = '#,##0.00';
                         } else if (colNumber >= 7 && colNumber <= 12) {
-                            // SL, Total Meters, Min, Max, Cần nhập: Integers
                             cell.numFmt = '#,##0';
                         }
                     } else if (itemType === 'glass') {
@@ -258,11 +272,23 @@ class InventoryExportService {
                     }
 
                     if (colNumber >= 5 && (itemType !== 'glass' || (colNumber !== 6))) {
-                        cell.alignment = { horizontal: 'right' };
+                        cell.alignment = { horizontal: 'right', vertical: 'middle' };
                     }
                 }
             });
             currentRowIndex++;
+        });
+
+        // 3.5 Auto-fit Columns (Senior Architect Logic)
+        worksheet.columns.forEach((column, i) => {
+            let maxLength = 0;
+            column.eachCell({ includeEmpty: true }, (cell) => {
+                const columnLength = cell.value ? cell.value.toString().length : 10;
+                if (columnLength > maxLength) {
+                    maxLength = columnLength;
+                }
+            });
+            column.width = Math.min(Math.max(maxLength + 5, 12), 50); // Min 12, Max 50
         });
 
         // 4. Totals Row
@@ -338,8 +364,11 @@ class InventoryExportService {
             if (colNumber >= 3 && colNumber <= maxCols) {
                 cell.border = { top: { style: 'medium' }, bottom: { style: 'medium' }, left: { style: 'thin' }, right: { style: 'thin' } };
                 cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE8F5E9' } };
+                cell.font = { bold: true, size: 11, name: 'Times New Roman' };
+                cell.alignment = { vertical: 'middle' };
             }
         });
+        totalRow.height = 30; // Better focus on totals
 
         // 5. Signatures
         currentRowIndex += 3;
@@ -368,28 +397,32 @@ class InventoryExportService {
         // Row 1: Tên công ty
         const nameCell = sheet.getCell('A1');
         nameCell.value = 'CÔNG TY CỔ PHẦN VIRALWINDOW';
-        nameCell.font = { bold: true, size: 12, color: { argb: 'FF0070C0' }, name: 'Times New Roman' };
+        nameCell.font = { bold: true, size: 14, color: { argb: 'FF0070C0' }, name: 'Times New Roman' };
         nameCell.alignment = { horizontal: 'left', vertical: 'middle' };
 
         // Row 2: Nhà máy
         const factoryCell = sheet.getCell('A2');
         factoryCell.value = 'Nhà máy: KM 03, Đường Cienco5, KĐT Thanh Hà, Hà Đông, Hà Nội';
-        factoryCell.font = { size: 10, name: 'Times New Roman' };
+        factoryCell.font = { size: 11, name: 'Times New Roman' };
         factoryCell.alignment = { horizontal: 'left', vertical: 'middle' };
 
         // Row 3: Hotline
         const hotlineCell = sheet.getCell('A3');
         hotlineCell.value = 'Hotline: 1800 282839';
-        hotlineCell.font = { size: 10, name: 'Times New Roman' };
+        hotlineCell.font = { size: 11, name: 'Times New Roman' };
         hotlineCell.alignment = { horizontal: 'left', vertical: 'middle' };
 
         // Row 4: Email
         const emailCell = sheet.getCell('A4');
         emailCell.value = 'Email: viralwindow.vn@gmail.com';
-        emailCell.font = { size: 10, name: 'Times New Roman' };
+        emailCell.font = { size: 11, name: 'Times New Roman' };
         emailCell.alignment = { horizontal: 'left', vertical: 'middle' };
 
-        // Thêm Logo từ database nếu có
+        [1, 2, 3, 4].forEach(r => { sheet.getRow(r).height = 25; });
+
+        // [SENIOR ARCHITECT]: Logo is already in templates. 
+        // Commenting out auto-injection to avoid redundancy as requested by user.
+        /*
         try {
             const [rows] = await db.query("SELECT logo_path FROM company_config ORDER BY id DESC LIMIT 1");
             if (rows.length > 0 && rows[0].logo_path && rows[0].logo_path.startsWith('data:image')) {
@@ -412,6 +445,7 @@ class InventoryExportService {
         } catch (err) {
             console.warn('Không thể thêm logo vào Excel:', err.message);
         }
+        */
     }
 }
 

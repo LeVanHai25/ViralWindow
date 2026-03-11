@@ -94,12 +94,18 @@ const glassItemRoutes = require("./routes/glass-items");
 const orderTrackingRoutes = require("./routes/order-tracking");
 // NEW: Production Excel View (Phase 1.5 - API Contract)
 const productionExcelRoutes = require("./routes/production-excel");
+// Moved up
 
 // Use routes
 app.use("/api/auth", authRoutes);
 // ALIAS: /api/users để frontend có thể gọi /api/users/me
 app.use("/api/users", authRoutes);
 console.log('✅ Route /api/users đã được đăng ký (alias của auth - hỗ trợ /api/users/me)');
+
+// NEW: Aluminum Catalog Systems (Moved up for priority)
+const aluminumCatalogSystemRoutes = require("./routes/aluminumSystemRoutes");
+app.use("/api/catalog/aluminum-systems", aluminumCatalogSystemRoutes);
+console.log('✅ Route /api/catalog/aluminum-systems đã được đăng ký');
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/door-templates", doorTemplateRoutes);
 // MERGED - /full routes are now in door-templates.js
@@ -150,6 +156,7 @@ console.log('✅ Route /api/order-tracking đã được đăng ký');
 // NEW: Production Excel View (Phase 1.5 - API Contract)
 app.use("/api/production", productionExcelRoutes);
 console.log('✅ Route /api/production/excel-orders đã được đăng ký');
+// DEPRECATED: Aluminum Catalog Systems was here
 // Đăng ký routes handover
 const handoverRoutes = require("./routes/handover");
 app.use("/api/handover", handoverRoutes); // Quản lý bàn giao
@@ -288,6 +295,40 @@ app.use(errorHandler);
 // ============================================
 async function runStartupMigrations() {
     const db = require('./config/db');
+
+    // 1. Create aluminum_warehouse_catalog_systems if not exists
+    try {
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS aluminum_warehouse_catalog_systems (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                system_name VARCHAR(255) UNIQUE NOT NULL,
+                display_order INT DEFAULT 0,
+                is_active TINYINT DEFAULT 1,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        `);
+        console.log('✅ Migration: aluminum_warehouse_catalog_systems table created/verified');
+
+        // Check if table is empty to seed defaults
+        const [rows] = await db.query('SELECT COUNT(*) as count FROM aluminum_warehouse_catalog_systems');
+        if (rows[0].count === 0) {
+            console.log('🌱 Seeding default aluminum systems...');
+            const defaults = [
+                'VRA – Hệ 55 mở quay', 'VRA – Hệ 50', 'VRA – Hệ 64 (cửa sổ lùa)',
+                'VRE – Hệ 65 mở quay (Mạnh Quy)', 'VRE – Hệ 65 mở quay (Yangly)',
+                'VRE – Hệ xếp trượt 80', 'VRE – Hệ lùa 120 & 180',
+                'Hệ lùa 94 mới', 'Thủy lực', 'Mặt dựng'
+            ];
+            for (const name of defaults) {
+                await db.query('INSERT IGNORE INTO aluminum_warehouse_catalog_systems (system_name) VALUES (?)', [name]);
+            }
+            console.log('✅ Seeded default aluminum systems');
+        }
+    } catch (err) {
+        console.error('❌ Migration Error (Aluminum Catalog):', err.message);
+    }
+
     const migrations = [
         {
             name: 'user_sessions AUTO_INCREMENT',
