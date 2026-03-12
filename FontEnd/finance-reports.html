@@ -505,7 +505,7 @@
         }
 
         function exportReportExcel() {
-            const range = getSelectedDateRange();
+            const range = dateRangePicker ? dateRangePicker.getRange() : { startDate: null, endDate: null };
             const projectId = document.getElementById('reportProject').value;
             const agencyId = document.getElementById('reportAgency').value;
             
