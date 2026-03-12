@@ -94,7 +94,7 @@ const glassItemRoutes = require("./routes/glass-items");
 const orderTrackingRoutes = require("./routes/order-tracking");
 // NEW: Production Excel View (Phase 1.5 - API Contract)
 const productionExcelRoutes = require("./routes/production-excel");
-// Moved up
+const warehouseRoutes = require("./routes/warehouses");
 
 // Use routes
 app.use("/api/auth", authRoutes);
@@ -238,6 +238,9 @@ console.log('✅ Route /api/items đã được đăng ký (Tạo vật tư mớ
 const productCatalogRoutes = require("./routes/product-catalog");
 app.use("/api/product-catalog", productCatalogRoutes);
 console.log('✅ Route /api/product-catalog đã được đăng ký (Nhóm SP + Sản phẩm cửa)');
+
+app.use("/api/inventory-warehouses", warehouseRoutes);
+console.log('✅ Route /api/inventory-warehouses đã được đăng ký');
 
 
 

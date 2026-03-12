@@ -17,13 +17,38 @@ exports.getAllSystems = async (req, res) => {
 
         const [rows] = await db.query(query, params);
 
+        // Group stocks by aluminum_system_id
+        const stocksBySystem = {};
+
+        // Load stock per warehouse for each system - Wrap in try-catch for robustness
+        try {
+            const [stockRows] = await db.query(
+                `SELECT aws.*, iw.warehouse_name 
+                 FROM aluminum_warehouse_stock aws
+                 JOIN inventory_warehouses iw ON aws.warehouse_id = iw.id
+                 WHERE iw.inventory_type = 'aluminum'`
+            );
+
+            stockRows.forEach(s => {
+                if (!stocksBySystem[s.aluminum_system_id]) {
+                    stocksBySystem[s.aluminum_system_id] = {};
+                }
+                stocksBySystem[s.aluminum_system_id][s.warehouse_name] = s.quantity;
+                stocksBySystem[s.aluminum_system_id][`wh_id_${s.warehouse_id}`] = s.quantity;
+            });
+        } catch (stockTableErr) {
+            console.warn('⚠️ Aluminum warehouse tables missing or query failed. Stock data will be empty.', stockTableErr.message);
+            // Non-blocking error, we still want to return the system list
+        }
+
         // Đảm bảo cross_section_image, density và aluminum_system được map đúng
         const processedRows = rows.map(row => {
             return {
                 ...row,
                 cross_section_image: row.cross_section_image || null,
                 density: row.density || null,
-                aluminum_system: row.aluminum_system || null
+                aluminum_system: row.aluminum_system || null,
+                stocks: stocksBySystem[row.id] || {}
             };
         });
 
@@ -33,10 +58,10 @@ exports.getAllSystems = async (req, res) => {
             count: processedRows.length
         });
     } catch (err) {
-        console.error(err);
+        console.error('Error in getAllSystems:', err);
         res.status(500).json({
             success: false,
-            message: "Lỗi server"
+            message: "Lỗi server khi lấy dữ liệu kho nhôm"
         });
     }
 };

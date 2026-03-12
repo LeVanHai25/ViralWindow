@@ -76,7 +76,9 @@ const EXCLUDED_TABLES = [
     'design_pr_sequence',
     'v_stock_onhand',
     'project_door_library',
-    'activity_logs' // FIX: Tránh lỗi ER_DUP_ENTRY do bảng này đã có AUTO_INCREMENT
+    'activity_logs',
+    'inventory_warehouses',
+    'aluminum_warehouse_stock'
 ];
 
 /**

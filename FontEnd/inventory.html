@@ -798,6 +798,25 @@
 
                     <!-- TAB: HỆ NHÔM -->
                     <div id="tab-aluminum" class="tab-content p-6">
+                        <!-- Warehouse Sub-Tabs -->
+                        <div class="bg-white rounded-xl shadow mb-6 overflow-hidden">
+                            <div class="border-b border-gray-200 px-6 flex justify-between items-center">
+                                <div class="flex gap-4" id="aluminumWarehouseTabs">
+                                    <!-- Dynamic tabs will be loaded here -->
+                                    <button class="sub-tab-button px-4 py-3 flex items-center gap-2 text-gray-600 hover:text-teal-600 active border-b-2 border-teal-500 font-semibold" 
+                                            onclick="switchAluminumWarehouseTab('total', this)">
+                                        Tổng 2 kho
+                                    </button>
+                                </div>
+                                <button onclick="openWarehouseSettingsModal('aluminum')" class="p-2 text-gray-400 hover:text-teal-600 transition-colors" title="Cài đặt tên kho">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
                         <div class="bg-white rounded-xl shadow p-6">
                             <!-- SUMMARY CARDS -->
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -10445,8 +10464,22 @@
                 const systemStats = {}; // Group by aluminum_system
 
                 systems.forEach(system => {
-                    // ✅ FIX: Tách riêng quantity (thanh) và tính Số M
-                    const quantity = parseInt(system.quantity || 0);
+                    // ✅ Dynamic Quantity based on selected warehouse tab
+                    let quantity = 0;
+                    if (currentAluminumWarehouseId === 'total') {
+                        quantity = parseInt(system.quantity || 0); // Combined total
+                    } else {
+                        // Find quantity for specific warehouse from system.stocks object
+                        // Backend returns stocks: { "Warehouse Name": qty, ... }
+                        // Need to find warehouse name from ID
+                        const wh = aluminumWarehouses.find(w => w.id == currentAluminumWarehouseId);
+                        if (wh && system.stocks && system.stocks[wh.warehouse_name] !== undefined) {
+                            quantity = parseInt(system.stocks[wh.warehouse_name]);
+                        } else {
+                            quantity = 0;
+                        }
+                    }
+
                     const length = parseFloat(system.length_m) || 0;
                     const totalMeters = quantity * length; // Số M = DÀI (M) × SL (thanh)
                     const unitPrice = parseFloat(system.unit_price || 0);
@@ -10658,6 +10691,120 @@
                     }
                 } catch (error) {
                     console.error('Lỗi:', error);
+                }
+            }
+
+            // ========== DYNAMIC WAREHOUSE LOGIC ==========
+            let currentAluminumWarehouseId = 'total';
+            let aluminumWarehouses = [];
+
+            async function loadAluminumWarehouses() {
+                try {
+                    const token = sessionStorage.getItem('token');
+                    if (!token) return;
+
+                    const response = await fetch(`${API_BASE}/inventory-warehouses?type=aluminum`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        aluminumWarehouses = result.data;
+                        renderAluminumWarehouseTabs();
+                    }
+                } catch (error) {
+                    console.error('Error loading warehouses:', error);
+                }
+            }
+
+            function renderAluminumWarehouseTabs() {
+                const container = document.getElementById('aluminumWarehouseTabs');
+                if (!container) return;
+
+                // Keep "Total" tab
+                let html = `<button class="sub-tab-button px-4 py-3 flex items-center gap-2 text-gray-600 hover:text-teal-600 ${currentAluminumWarehouseId === 'total' ? 'active border-b-2 border-teal-500 font-semibold text-teal-600' : ''}" 
+                                onclick="switchAluminumWarehouseTab('total', this)">
+                            Tổng 2 kho nhôm
+                        </button>`;
+
+                aluminumWarehouses.forEach(wh => {
+                    const isActive = currentAluminumWarehouseId === wh.id;
+                    html += `<button class="sub-tab-button px-4 py-3 flex items-center gap-2 text-gray-600 hover:text-teal-600 ${isActive ? 'active border-b-2 border-teal-500 font-semibold text-teal-600' : ''}" 
+                                onclick="switchAluminumWarehouseTab(${wh.id}, this)">
+                            ${wh.warehouse_name}
+                        </button>`;
+                });
+
+                container.innerHTML = html;
+            }
+
+            function switchAluminumWarehouseTab(warehouseId, btn) {
+                currentAluminumWarehouseId = warehouseId;
+                
+                // Update UI active state
+                document.querySelectorAll('#aluminumWarehouseTabs .sub-tab-button').forEach(b => {
+                    b.classList.remove('active', 'border-b-2', 'border-teal-500', 'font-semibold', 'text-teal-600');
+                });
+                btn.classList.add('active', 'border-b-2', 'border-teal-500', 'font-semibold', 'text-teal-600');
+
+                // Reload data with current filters
+                const search = document.getElementById('searchAluminum').value;
+                loadAluminumSystems(search);
+            }
+
+            function openWarehouseSettingsModal(type) {
+                const container = document.getElementById('warehouseListContainer');
+                container.innerHTML = '<div class="text-center py-4 text-gray-400">Đang tải...</div>';
+                
+                let whList = aluminumWarehouses; // In future can filter by type
+                
+                let html = '';
+                whList.forEach(wh => {
+                    html += `
+                        <div class="flex items-center gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <div class="flex-1">
+                                <span class="block text-xs font-bold text-gray-500 uppercase mb-1">Mã: ${wh.warehouse_code}</span>
+                                <input type="text" id="wh_name_${wh.id}" value="${wh.warehouse_name}" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500">
+                            </div>
+                            <button onclick="saveWarehouseName(${wh.id})" class="mt-5 bg-teal-500 text-white px-4 py-2 rounded-lg hover:bg-teal-600 text-sm font-bold shadow-sm">
+                                Lưu
+                            </button>
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+                document.getElementById('warehouseSettingsModal').classList.remove('hidden');
+            }
+
+            function closeWarehouseSettingsModal() {
+                document.getElementById('warehouseSettingsModal').classList.add('hidden');
+            }
+
+            async function saveWarehouseName(id) {
+                const name = document.getElementById(`wh_name_${id}`).value;
+                if (!name.trim()) return alert('Tên kho không được trống');
+
+                try {
+                    const token = sessionStorage.getItem('token');
+                    const response = await fetch(`${API_BASE}/inventory-warehouses/${id}`, {
+                        method: 'PUT',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}` 
+                        },
+                        body: JSON.stringify({ warehouse_name: name })
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        showSuccessNotification('Cập nhật tên kho thành công!');
+                        await loadAluminumWarehouses();
+                    } else {
+                        alert(result.message);
+                    }
+                } catch (error) {
+                    console.error('Error saving warehouse name:', error);
                 }
             }
 
@@ -13037,6 +13184,53 @@
         </div>
     </div>
 
+    <!-- WAREHOUSE SETTINGS MODAL -->
+    <div id="warehouseSettingsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden border border-gray-200">
+            <div class="bg-teal-600 text-white px-6 py-4 flex justify-between items-center">
+                <h3 class="text-xl font-bold flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Cấu hình kho nhôm
+                </h3>
+                <button onclick="closeWarehouseSettingsModal()" class="text-white hover:text-gray-200 p-1 rounded-full hover:bg-white/10 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <p class="text-sm text-gray-500 mb-6 bg-blue-50 p-3 rounded-lg border border-blue-100 italic">
+                    <i class="fas fa-info-circle mr-2 text-blue-500"></i>
+                    Bạn có thể đổi tên các kho lưu trữ tại đây. Các tab hiển thị sẽ tự động cập nhật theo tên mới bạn đã lưu.
+                </p>
+                <div id="warehouseListContainer" class="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                    <div class="text-center py-8">
+                        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500"></div>
+                        <p class="mt-2 text-gray-500">Đang tải danh sách kho...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-6 py-4 flex justify-end gap-3 border-t">
+                <button onclick="closeWarehouseSettingsModal()" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 font-semibold transition-colors">
+                    Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                if (typeof loadAluminumWarehouses === 'function') {
+                    console.log('🔄 Initializing Aluminum Warehouses...');
+                    loadAluminumWarehouses();
+                }
+            }, 800);
+        });
+    </script>
 </body>
 
 </html>
