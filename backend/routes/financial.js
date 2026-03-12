@@ -67,6 +67,12 @@ router.get("/debt/export-excel", optionalAuth, financialExportCtrl.exportDebtRep
 // 3. Receipt Export
 router.get("/receipts/:id/export-excel", optionalAuth, financialExportCtrl.exportReceipt);
 
+// 4. Financial Reports Exports
+router.get("/export-cash-flow", optionalAuth, financialExportCtrl.exportCashFlowReport);
+router.get("/export-profit-loss", optionalAuth, financialExportCtrl.exportProfitLossReport);
+router.get("/export-material-cost", optionalAuth, financialExportCtrl.exportMaterialCostReport);
+router.get("/export-branch-report", optionalAuth, financialExportCtrl.exportBranchReport);
+
 module.exports = router;
 
 

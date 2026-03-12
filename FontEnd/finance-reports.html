@@ -505,11 +505,34 @@
         }
 
         function exportReportExcel() {
-            if (currentReportType === 'branch-project') {
-                showAlert('Chức năng xuất Excel báo cáo chi nhánh đang phát triển');
+            const range = getSelectedDateRange();
+            const projectId = document.getElementById('reportProject').value;
+            const agencyId = document.getElementById('reportAgency').value;
+            
+            let endpoint = '';
+            const params = new URLSearchParams();
+            
+            if (range.startDate) params.append('startDate', range.startDate);
+            if (range.endDate) params.append('endDate', range.endDate);
+            if (projectId) params.append('projectId', projectId);
+            if (agencyId) params.append('agencyId', agencyId);
+
+            if (currentReportType === 'income-expense') {
+                endpoint = '/financial/export-cash-flow';
+            } else if (currentReportType === 'debt') {
+                endpoint = '/financial/debt/export-excel?type=receivable'; // Default to receivable for this view
+            } else if (currentReportType === 'profit-loss') {
+                endpoint = '/financial/export-profit-loss';
+            } else if (currentReportType === 'material-cost') {
+                endpoint = '/financial/export-material-cost';
+            } else if (currentReportType === 'branch-project') {
+                endpoint = '/financial/export-branch-report';
             } else {
-                showAlert('Chức năng xuất Excel đang được phát triển');
+                showAlert('Không tìm thấy định dạng báo cáo để xuất!');
+                return;
             }
+
+            window.location.href = API_BASE + endpoint + (endpoint.includes('?') ? '&' : '?') + params.toString();
         }
 
         document.addEventListener('DOMContentLoaded', function() {
