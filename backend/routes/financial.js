@@ -48,15 +48,16 @@ router.get("/migrate-add-status", authenticateToken, requireAdmin, financialCtrl
 // Sync payable debts (BẮT BUỘC auth)
 router.post("/sync-payable-debts", authenticateToken, financialCtrl.syncPayableDebts);
 
-// ============================================
-// EXCEL EXPORT ROUTES
-// ============================================
+// --- EXCEL EXPORT ROUTES ---
 
-// Export receipt to Excel
-router.get("/receipts/:id/export-excel", optionalAuth, financialExportCtrl.exportReceipt);
+// 1. Single Debt Voucher (Specific route first)
+router.get("/debt/:id/export-excel", optionalAuth, financialExportCtrl.exportSingleDebt);
 
-// Export debt report to Excel
+// 2. Debt Report (General route)
 router.get("/debt/export-excel", optionalAuth, financialExportCtrl.exportDebtReport);
+
+// 3. Receipt Export
+router.get("/receipts/:id/export-excel", optionalAuth, financialExportCtrl.exportReceipt);
 
 module.exports = router;
 

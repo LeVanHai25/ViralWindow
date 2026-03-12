@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -732,6 +732,9 @@
                                 <button onclick="viewDebtDetail(${debt.id})" class="px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
                                     Xem
                                 </button>
+                                <button onclick="exportSingleDebtExcel(${debt.id})" class="px-3 py-1.5 text-xs font-medium text-green-600 bg-green-50 rounded-lg hover:bg-green-100 transition-colors" title="Xuất Excel">
+                                    Xuất Excel
+                                </button>
                                 ${status !== 'paid' ? `
                                     <button onclick="openPaymentModal(${debt.id}, ${remaining})" class="px-3 py-1.5 text-xs font-medium text-green-600 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
                                         Thanh toán
@@ -948,6 +951,12 @@
 
                 // Open download in new tab
                 const url = `${API_BASE}/financial/debt/export-excel?${params}`;
+                window.open(url, '_blank');
+            }
+
+            // Export single debt voucher to Excel
+            function exportSingleDebtExcel(id) {
+                const url = `${API_BASE}/financial/debt/${id}/export-excel`;
                 window.open(url, '_blank');
             }
 

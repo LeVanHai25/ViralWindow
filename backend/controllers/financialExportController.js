@@ -1,10 +1,11 @@
-﻿/**
+/**
  * Financial Export Controller
  * Handles Excel export for financial documents (payments, receipts, debt)
  */
 
 const ExcelJS = require('exceljs');
 const db = require('../config/db');
+const path = require('path');
 
 // Helper: Convert number to Vietnamese words
 function numberToVietnameseWords(num) {
@@ -67,18 +68,18 @@ async function getCompanyInfo() {
         });
 
         return {
-            name: info.company_name || 'CÔNG TY TNHH VIRALWINDOW',
-            address: info.company_address || 'Địa chỉ công ty',
-            phone: info.company_phone || '0123 456 789',
-            email: info.company_email || 'contact@viralwindow.com',
+            name: info.company_name || 'CÔNG TY CỔ PHẦN VIRALWINDOW',
+            address: info.company_address || 'Nhà máy: KM 03, Đường Cienco5, KĐT Thanh Hà, Hà Đông, Hà Nội',
+            phone: info.company_phone || 'Hotline: 1800 282839',
+            email: info.company_email || 'Email: viralwindow.vn@gmail.com',
             taxCode: info.company_tax_code || ''
         };
     } catch (error) {
         return {
-            name: 'CÔNG TY TNHH VIRALWINDOW',
-            address: 'Địa chỉ công ty',
-            phone: '0123 456 789',
-            email: 'contact@viralwindow.com',
+            name: 'CÔNG TY CỔ PHẦN VIRALWINDOW',
+            address: 'Nhà máy: KM 03, Đường Cienco5, KĐT Thanh Hà, Hà Đông, Hà Nội',
+            phone: 'Hotline: 1800 282839',
+            email: 'Email: viralwindow.vn@gmail.com',
             taxCode: ''
         };
     }
@@ -147,55 +148,71 @@ exports.exportPayment = async (req, res) => {
 
         const worksheet = workbook.addWorksheet(transaction.transaction_code || 'PhieuChi');
 
-        // === HEADER: Company Info ===
-        worksheet.mergeCells('A1:G1');
+        // === HEADER: Company Info + Logo ===
+        // Left side: Company Info
+        const leftCol = 'A';
+        worksheet.mergeCells('A1:D1');
         const companyCell = worksheet.getCell('A1');
         companyCell.value = company.name;
         companyCell.font = { bold: true, size: 14, color: { argb: 'FF1E40AF' } };
         companyCell.alignment = { horizontal: 'left', vertical: 'middle' };
-        worksheet.getRow(1).height = 25;
 
-        worksheet.mergeCells('A2:G2');
+        worksheet.mergeCells('A2:D2');
         const addressCell = worksheet.getCell('A2');
         addressCell.value = `Địa chỉ: ${company.address}`;
-        addressCell.font = { size: 10, color: { argb: 'FF666666' } };
+        addressCell.font = { size: 10, color: { argb: 'FF4B5563' } };
 
-        worksheet.mergeCells('A3:G3');
+        worksheet.mergeCells('A3:D3');
         const contactCell = worksheet.getCell('A3');
         contactCell.value = `ĐT: ${company.phone} | Email: ${company.email}`;
-        contactCell.font = { size: 10, color: { argb: 'FF666666' } };
+        contactCell.font = { size: 10, color: { argb: 'FF4B5563' } };
+
+        // Right side: Logo
+        try {
+            const logoPath = path.join(__dirname, '../assets/LogoViralWindow.png');
+            const logoImage = workbook.addImage({
+                filename: logoPath,
+                extension: 'png',
+            });
+            worksheet.addImage(logoImage, {
+                tl: { col: 5.5, row: 0 },
+                ext: { width: 120, height: 60 }
+            });
+        } catch (err) {
+            console.error('Error adding logo to Excel:', err);
+        }
 
         // === TITLE ===
-        worksheet.mergeCells('A5:G5');
-        const titleCell = worksheet.getCell('A5');
+        worksheet.mergeCells('A6:G6');
+        const titleCell = worksheet.getCell('A6');
         titleCell.value = docTitle;
-        titleCell.font = { bold: true, size: 20, color: { argb: themeColor } };
+        titleCell.font = { bold: true, size: 22, color: { argb: themeColor } };
         titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
-        worksheet.getRow(5).height = 35;
+        worksheet.getRow(6).height = 35;
 
         // Doc number and date
-        worksheet.mergeCells('A6:G6');
-        const docNoCell = worksheet.getCell('A6');
+        worksheet.mergeCells('A7:G7');
+        const docNoCell = worksheet.getCell('A7');
         docNoCell.value = `Số: ${transaction.transaction_code || 'N/A'}`;
-        docNoCell.font = { size: 12 };
+        docNoCell.font = { size: 12, bold: true };
         docNoCell.alignment = { horizontal: 'center' };
 
-        worksheet.mergeCells('A7:G7');
-        const dateCell = worksheet.getCell('A7');
+        worksheet.mergeCells('A8:G8');
+        const dateCell = worksheet.getCell('A8');
         const txDate = transaction.transaction_date ? new Date(transaction.transaction_date) : new Date();
-        dateCell.value = `Ngày ${txDate.getDate()} tháng ${txDate.getMonth() + 1} năm ${txDate.getFullYear()}`;
+        dateCell.value = `Ngày ${String(txDate.getDate()).padStart(2, '0')} tháng ${String(txDate.getMonth() + 1).padStart(2, '0')} năm ${txDate.getFullYear()}`;
         dateCell.font = { size: 11, italic: true };
         dateCell.alignment = { horizontal: 'center' };
 
         // === DOCUMENT INFO ===
-        let currentRow = 9;
+        let currentRow = 10;
 
-        // Info rows
+        // Info rows in a cleaner layout
         const infoData = [
             ['Đối tượng:', transaction.supplier || transaction.customer_name || '-'],
             ['Dự án:', transaction.project_name || '-'],
-            ['Hình thức:', transaction.payment_method === 'cash' ? 'Tiền mặt' : transaction.payment_method === 'bank' ? 'Chuyển khoản' : (transaction.payment_method || 'Tiền mặt')],
-            ['Loại chi:', transaction.expense_type || transaction.income_type || '-'],
+            ['Hình thức:', transaction.payment_method === 'cash' ? 'Tiền mặt' : (transaction.payment_method === 'bank' || transaction.payment_method === 'bank_transfer') ? 'Chuyển khoản' : (transaction.payment_method || 'Tiền mặt')],
+            ['Loại phiếu:', transaction.expense_type || transaction.income_type || '-'],
             ['Diễn giải:', transaction.description || '-']
         ];
 
@@ -206,122 +223,119 @@ exports.exportPayment = async (req, res) => {
             worksheet.mergeCells(currentRow, 2, currentRow, 7);
             row.getCell(2).value = value;
             row.getCell(2).font = { size: 11 };
+            row.height = 20;
             currentRow++;
         });
 
-        currentRow++; // Empty row
+        currentRow += 1; // Gap before table
 
         // === ITEMS TABLE ===
-        if (items && items.length > 0) {
-            // Table header
-            const headers = ['STT', 'Tên hàng hóa/Dịch vụ', 'Mã', 'ĐVT', 'SL', 'Đơn giá', 'Thành tiền'];
-            const headerRow = worksheet.getRow(currentRow);
-            headerRow.values = headers;
-            headerRow.height = 28;
-            headerRow.eachCell((cell, colNumber) => {
-                cell.fill = {
-                    type: 'pattern',
-                    pattern: 'solid',
-                    fgColor: { argb: themeColor }
-                };
-                cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
-                cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        // Note: Even if items is empty, we show a table based on user feedback
+        const displayItems = (items && items.length > 0) ? items : [{
+            item_name: transaction.category || (isExpense ? 'Khoản chi' : 'Khoản thu'),
+            item_code: '-',
+            unit: 'Lần',
+            quantity: 1,
+            unit_price: transaction.amount || 0,
+            amount: transaction.amount || 0
+        }];
+
+        // Table name
+        worksheet.mergeCells(currentRow, 1, currentRow, 7);
+        const tableNameCell = worksheet.getCell(currentRow, 1);
+        tableNameCell.value = isExpense ? 'CHI TIẾT CÁC KHOẢN CHI' : 'CHI TIẾT CÁC KHOẢN THU';
+        tableNameCell.font = { bold: true, size: 12, color: { argb: 'FF1F2937' } };
+        tableNameCell.alignment = { horizontal: 'left', vertical: 'middle' };
+        worksheet.getRow(currentRow).height = 25;
+        currentRow++;
+
+        // Table header
+        const headers = ['STT', 'Nội dung chi tiết', 'Mã số', 'ĐVT', 'Số lượng', 'Đơn giá', 'Thành tiền'];
+        const headerRow = worksheet.getRow(currentRow);
+        headerRow.values = headers;
+        headerRow.height = 28;
+        headerRow.eachCell((cell, colNumber) => {
+            cell.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: themeColor }
+            };
+            cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+            cell.alignment = { horizontal: 'center', vertical: 'middle' };
+            applyBorder(cell);
+        });
+        currentRow++;
+
+        // Data rows
+        let totalAmount = 0;
+        displayItems.forEach((item, index) => {
+            const qty = parseInt(item.quantity) || 0;
+            const unitPrice = parseFloat(item.unit_price) || 0;
+            const amount = parseFloat(item.amount) || (qty * unitPrice);
+            totalAmount += amount;
+
+            const dataRow = worksheet.getRow(currentRow);
+            dataRow.values = [
+                index + 1,
+                item.item_name || '-',
+                item.item_code || '-',
+                item.unit || 'Lần',
+                qty,
+                unitPrice,
+                amount
+            ];
+
+            dataRow.eachCell((cell, colNumber) => {
                 applyBorder(cell);
-            });
-            currentRow++;
+                cell.alignment = { vertical: 'middle' };
 
-            // Data rows
-            let totalAmount = 0;
-            items.forEach((item, index) => {
-                const qty = parseInt(item.quantity) || 0;
-                const unitPrice = parseFloat(item.unit_price) || 0;
-                const amount = parseFloat(item.amount) || (qty * unitPrice);
-                totalAmount += amount;
-
-                const dataRow = worksheet.getRow(currentRow);
-                dataRow.values = [
-                    index + 1,
-                    item.item_name || '-',
-                    item.item_code || '-',
-                    item.unit || 'cái',
-                    qty,
-                    unitPrice,
-                    amount
-                ];
-
-                dataRow.eachCell((cell, colNumber) => {
-                    applyBorder(cell);
-                    cell.alignment = { vertical: 'middle' };
-
-                    if (colNumber === 1) {
-                        cell.alignment = { horizontal: 'center', vertical: 'middle' };
-                    }
-                    if (colNumber >= 5) {
-                        cell.alignment = { horizontal: 'right', vertical: 'middle' };
-                    }
-                    if (colNumber === 6 || colNumber === 7) {
-                        cell.numFmt = '#,##0';
-                    }
-                });
-
-                // Alternate row color
-                if (index % 2 === 1) {
-                    dataRow.eachCell(cell => {
-                        cell.fill = {
-                            type: 'pattern',
-                            pattern: 'solid',
-                            fgColor: { argb: 'FFF5F5F5' }
-                        };
-                    });
+                if (colNumber === 1) {
+                    cell.alignment = { horizontal: 'center', vertical: 'middle' };
                 }
-
-                currentRow++;
+                if (colNumber >= 5) {
+                    cell.alignment = { horizontal: 'right', vertical: 'middle' };
+                }
+                if (colNumber === 6 || colNumber === 7) {
+                    cell.numFmt = '#,##0';
+                }
             });
 
-            // Total row
-            const totalRow = worksheet.getRow(currentRow);
-            worksheet.mergeCells(currentRow, 1, currentRow, 6);
-            totalRow.getCell(1).value = 'TỔNG CỘNG:';
-            totalRow.getCell(1).font = { bold: true, size: 12 };
-            totalRow.getCell(1).alignment = { horizontal: 'right', vertical: 'middle' };
-            totalRow.getCell(7).value = totalAmount;
-            totalRow.getCell(7).numFmt = '#,##0';
-            totalRow.getCell(7).font = { bold: true, size: 12, color: { argb: themeColor } };
-            totalRow.getCell(7).alignment = { horizontal: 'right', vertical: 'middle' };
-            totalRow.height = 28;
-            applyBorder(totalRow.getCell(1), 'medium');
-            applyBorder(totalRow.getCell(7), 'medium');
-            currentRow++;
-
-            // Amount in words
-            currentRow++;
-            const wordsRow = worksheet.getRow(currentRow);
-            worksheet.mergeCells(currentRow, 1, currentRow, 7);
-            wordsRow.getCell(1).value = `Bằng chữ: ${numberToVietnameseWords(totalAmount)}`;
-            wordsRow.getCell(1).font = { bold: true, italic: true, size: 11 };
-            currentRow++;
-        } else {
-            // No items - show total amount from transaction
-            const totalAmount = parseFloat(transaction.amount) || 0;
-            const amountRow = worksheet.getRow(currentRow);
-            worksheet.mergeCells(currentRow, 1, currentRow, 5);
-            amountRow.getCell(1).value = 'Số tiền:';
-            amountRow.getCell(1).font = { bold: true, size: 12 };
-            amountRow.getCell(1).alignment = { horizontal: 'right' };
-            worksheet.mergeCells(currentRow, 6, currentRow, 7);
-            amountRow.getCell(6).value = totalAmount;
-            amountRow.getCell(6).numFmt = '#,##0 "đ"';
-            amountRow.getCell(6).font = { bold: true, size: 14, color: { argb: themeColor } };
-            amountRow.getCell(6).alignment = { horizontal: 'right' };
-            currentRow++;
+            // Alternate row color
+            if (index % 2 === 1) {
+                dataRow.eachCell(cell => {
+                    cell.fill = {
+                        type: 'pattern',
+                        pattern: 'solid',
+                        fgColor: { argb: 'FFF5F5F5' }
+                    };
+                });
+            }
 
             currentRow++;
-            const wordsRow = worksheet.getRow(currentRow);
-            worksheet.mergeCells(currentRow, 1, currentRow, 7);
-            wordsRow.getCell(1).value = `Bằng chữ: ${numberToVietnameseWords(totalAmount)}`;
-            wordsRow.getCell(1).font = { bold: true, italic: true, size: 11 };
-            currentRow++;
-        }
+        });
+
+        // Total row
+        const totalRow = worksheet.getRow(currentRow);
+        worksheet.mergeCells(currentRow, 1, currentRow, 6);
+        totalRow.getCell(1).value = 'TỔNG CỘNG THANH TOÁN:';
+        totalRow.getCell(1).font = { bold: true, size: 12 };
+        totalRow.getCell(1).alignment = { horizontal: 'right', vertical: 'middle' };
+        totalRow.getCell(7).value = totalAmount;
+        totalRow.getCell(7).numFmt = '#,##0';
+        totalRow.getCell(7).font = { bold: true, size: 12, color: { argb: themeColor } };
+        totalRow.getCell(7).alignment = { horizontal: 'right', vertical: 'middle' };
+        totalRow.height = 28;
+        applyBorder(totalRow.getCell(1), 'medium');
+        applyBorder(totalRow.getCell(7), 'medium');
+        currentRow++;
+
+        // Amount in words
+        currentRow++;
+        const wordsRow = worksheet.getRow(currentRow);
+        worksheet.mergeCells(currentRow, 1, currentRow, 7);
+        wordsRow.getCell(1).value = `Bằng chữ: ${numberToVietnameseWords(totalAmount)}`;
+        wordsRow.getCell(1).font = { bold: true, italic: true, size: 11 };
+        currentRow++;
 
         // === NOTES ===
         if (transaction.note) {
@@ -435,53 +449,67 @@ exports.exportReceipt = async (req, res) => {
 
         const worksheet = workbook.addWorksheet(receipt.receipt_code || 'PhieuThu');
 
-        // === HEADER: Company Info ===
-        worksheet.mergeCells('A1:F1');
+        // === HEADER: Company Info + Logo ===
+        worksheet.mergeCells('A1:D1');
         const companyCell = worksheet.getCell('A1');
         companyCell.value = company.name;
         companyCell.font = { bold: true, size: 14, color: { argb: 'FF1E40AF' } };
         companyCell.alignment = { horizontal: 'left', vertical: 'middle' };
-        worksheet.getRow(1).height = 25;
 
-        worksheet.mergeCells('A2:F2');
+        worksheet.mergeCells('A2:D2');
         const addressCell = worksheet.getCell('A2');
         addressCell.value = `Địa chỉ: ${company.address}`;
-        addressCell.font = { size: 10, color: { argb: 'FF666666' } };
+        addressCell.font = { size: 10, color: { argb: 'FF4B5563' } };
 
-        worksheet.mergeCells('A3:F3');
+        worksheet.mergeCells('A3:D3');
         const contactCell = worksheet.getCell('A3');
         contactCell.value = `ĐT: ${company.phone} | Email: ${company.email}`;
-        contactCell.font = { size: 10, color: { argb: 'FF666666' } };
+        contactCell.font = { size: 10, color: { argb: 'FF4B5563' } };
+
+        // Right side: Logo
+        try {
+            const logoPath = path.join(__dirname, '../assets/LogoViralWindow.png');
+            const logoImage = workbook.addImage({
+                filename: logoPath,
+                extension: 'png',
+            });
+            worksheet.addImage(logoImage, {
+                tl: { col: 4.5, row: 0 },
+                ext: { width: 120, height: 60 }
+            });
+        } catch (err) {
+            console.error('Error adding logo to Excel:', err);
+        }
 
         // === TITLE ===
-        worksheet.mergeCells('A5:F5');
-        const titleCell = worksheet.getCell('A5');
+        worksheet.mergeCells('A6:F6');
+        const titleCell = worksheet.getCell('A6');
         titleCell.value = 'PHIẾU THU';
-        titleCell.font = { bold: true, size: 20, color: { argb: themeColor } };
+        titleCell.font = { bold: true, size: 22, color: { argb: themeColor } };
         titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
-        worksheet.getRow(5).height = 35;
+        worksheet.getRow(6).height = 35;
 
         // Doc number and date
-        worksheet.mergeCells('A6:F6');
-        const docNoCell = worksheet.getCell('A6');
+        worksheet.mergeCells('A7:F7');
+        const docNoCell = worksheet.getCell('A7');
         docNoCell.value = `Số: ${receipt.receipt_code || 'N/A'}`;
-        docNoCell.font = { size: 12 };
+        docNoCell.font = { size: 12, bold: true };
         docNoCell.alignment = { horizontal: 'center' };
 
-        worksheet.mergeCells('A7:F7');
-        const dateCell = worksheet.getCell('A7');
+        worksheet.mergeCells('A8:F8');
+        const dateCell = worksheet.getCell('A8');
         const txDate = receipt.receipt_date ? new Date(receipt.receipt_date) : new Date();
-        dateCell.value = `Ngày ${txDate.getDate()} tháng ${txDate.getMonth() + 1} năm ${txDate.getFullYear()}`;
+        dateCell.value = `Ngày ${String(txDate.getDate()).padStart(2, '0')} tháng ${String(txDate.getMonth() + 1).padStart(2, '0')} năm ${txDate.getFullYear()}`;
         dateCell.font = { size: 11, italic: true };
         dateCell.alignment = { horizontal: 'center' };
 
         // === DOCUMENT INFO ===
-        let currentRow = 9;
+        let currentRow = 10;
 
         const infoData = [
             ['Khách hàng:', receipt.customer_name_lookup || receipt.customer_name || '-'],
             ['Dự án:', receipt.project_name || '-'],
-            ['Hình thức:', receipt.payment_method === 'cash' ? 'Tiền mặt' : receipt.payment_method === 'bank' ? 'Chuyển khoản' : (receipt.payment_method || 'Tiền mặt')],
+            ['Hình thức:', receipt.payment_method === 'cash' ? 'Tiền mặt' : (receipt.payment_method === 'bank' || receipt.payment_method === 'bank_transfer') ? 'Chuyển khoản' : (receipt.payment_method || 'Tiền mặt')],
             ['Loại thu:', receipt.income_type || '-'],
             ['Diễn giải:', receipt.description || '-']
         ];
@@ -493,31 +521,116 @@ exports.exportReceipt = async (req, res) => {
             worksheet.mergeCells(currentRow, 2, currentRow, 6);
             row.getCell(2).value = value;
             row.getCell(2).font = { size: 11 };
+            row.height = 20;
             currentRow++;
         });
 
+        currentRow += 1;
+
+        // === ITEMS TABLE ===
+        // Note: For receipts, we always show at least one row if items are missing
+        const receiptItems = (receipt.items && receipt.items.length > 0) ? receipt.items : [{
+            item_name: receipt.category || 'Khoản thu',
+            item_code: '-',
+            unit: 'Lần',
+            quantity: 1,
+            unit_price: receipt.amount || 0,
+            amount: receipt.amount || 0
+        }];
+
+        // Table name
+        worksheet.mergeCells(currentRow, 1, currentRow, 6);
+        const tableNameCell = worksheet.getCell(currentRow, 1);
+        tableNameCell.value = 'CHI TIẾT CÁC KHOẢN THU';
+        tableNameCell.font = { bold: true, size: 12, color: { argb: 'FF1F2937' } };
+        tableNameCell.alignment = { horizontal: 'left', vertical: 'middle' };
+        worksheet.getRow(currentRow).height = 25;
         currentRow++;
 
-        // === AMOUNT ===
-        const totalAmount = parseFloat(receipt.amount) || 0;
-
-        const amountLabelRow = worksheet.getRow(currentRow);
-        worksheet.mergeCells(currentRow, 1, currentRow, 3);
-        amountLabelRow.getCell(1).value = 'Số tiền thu:';
-        amountLabelRow.getCell(1).font = { bold: true, size: 14 };
-        amountLabelRow.getCell(1).alignment = { horizontal: 'right', vertical: 'middle' };
-        worksheet.mergeCells(currentRow, 4, currentRow, 6);
-        amountLabelRow.getCell(4).value = totalAmount;
-        amountLabelRow.getCell(4).numFmt = '#,##0 "đ"';
-        amountLabelRow.getCell(4).font = { bold: true, size: 16, color: { argb: themeColor } };
-        amountLabelRow.getCell(4).alignment = { horizontal: 'right', vertical: 'middle' };
-        worksheet.getRow(currentRow).height = 30;
+        // Table header
+        const headers = ['STT', 'Nội dung chi tiết', 'Mã số', 'ĐVT', 'Số lượng', 'Đơn giá', 'Thành tiền'];
+        const headerRow = worksheet.getRow(currentRow);
+        headerRow.values = headers;
+        headerRow.height = 28;
+        headerRow.eachCell((cell, colNumber) => {
+            cell.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: themeColor }
+            };
+            cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+            cell.alignment = { horizontal: 'center', vertical: 'middle' };
+            applyBorder(cell);
+        });
         currentRow++;
 
+        // Data rows
+        let currentTotal = 0;
+        receiptItems.forEach((item, index) => {
+            const qty = parseInt(item.quantity) || 0;
+            const unitPrice = parseFloat(item.unit_price) || 0;
+            const amount = parseFloat(item.amount) || (qty * unitPrice);
+            currentTotal += amount;
+
+            const dataRow = worksheet.getRow(currentRow);
+            dataRow.values = [
+                index + 1,
+                item.item_name || item.name || '-',
+                item.item_code || item.code || '-',
+                item.unit || 'Lần',
+                qty,
+                unitPrice,
+                amount
+            ];
+
+            dataRow.eachCell((cell, colNumber) => {
+                applyBorder(cell);
+                cell.alignment = { vertical: 'middle' };
+
+                if (colNumber === 1) {
+                    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                }
+                if (colNumber >= 5) {
+                    cell.alignment = { horizontal: 'right', vertical: 'middle' };
+                }
+                if (colNumber === 6 || colNumber === 7) {
+                    cell.numFmt = '#,##0';
+                }
+            });
+
+            if (index % 2 === 1) {
+                dataRow.eachCell(cell => {
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5F5F5' } };
+                });
+            }
+
+            currentRow++;
+        });
+
+        // Total row
+        const totalRow = worksheet.getRow(currentRow);
+        worksheet.mergeCells(currentRow, 1, currentRow, 6);
+        totalRow.getCell(1).value = 'TỔNG CỘNG THANH TOÁN:';
+        totalRow.getCell(1).font = { bold: true, size: 12 };
+        totalRow.getCell(1).alignment = { horizontal: 'right', vertical: 'middle' };
+        totalRow.getCell(7) ? (totalRow.getCell(7).value = currentTotal) : (totalRow.getCell(6).value = currentTotal); // Handle F or G
+        
+        // Re-merging column F for total display matches standard
+        worksheet.mergeCells(currentRow, 1, currentRow, 5);
+        totalRow.getCell(6).value = currentTotal;
+        totalRow.getCell(6).numFmt = '#,##0';
+        totalRow.getCell(6).font = { bold: true, size: 12, color: { argb: themeColor } };
+        totalRow.getCell(6).alignment = { horizontal: 'right', vertical: 'middle' };
+        totalRow.height = 28;
+        applyBorder(totalRow.getCell(1), 'medium');
+        applyBorder(totalRow.getCell(6), 'medium');
+        currentRow++;
+
+        // Amount in words
         currentRow++;
         const wordsRow = worksheet.getRow(currentRow);
         worksheet.mergeCells(currentRow, 1, currentRow, 6);
-        wordsRow.getCell(1).value = `Bằng chữ: ${numberToVietnameseWords(totalAmount)}`;
+        wordsRow.getCell(1).value = `Bằng chữ: ${numberToVietnameseWords(currentTotal)}`;
         wordsRow.getCell(1).font = { bold: true, italic: true, size: 11 };
         currentRow++;
 
@@ -622,7 +735,7 @@ exports.exportDebtReport = async (req, res) => {
             SELECT 
                 d.debt_type,
                 COUNT(*) as total_count,
-                COALESCE(SUM(d.original_amount), 0) as total_original,
+                COALESCE(SUM(d.total_amount), 0) as total_original,
                 COALESCE(SUM(d.paid_amount), 0) as total_paid,
                 COALESCE(SUM(d.remaining_amount), 0) as total_remaining,
                 SUM(CASE WHEN d.status = 'paid' THEN 1 ELSE 0 END) as paid_count,
@@ -646,27 +759,42 @@ exports.exportDebtReport = async (req, res) => {
 
         // ===== SHEET 1: TỔNG HỢP =====
         const ws1 = workbook.addWorksheet('Tong hop cong no', { properties: { tabColor: { argb: themeArgb } } });
-        ws1.columns = [{ width: 28 }, { width: 20 }, { width: 20 }, { width: 20 }, { width: 18 }];
+        ws1.columns = [{ width: 28 }, { width: 22 }, { width: 22 }, { width: 22 }, { width: 20 }];
 
-        // Header công ty
-        ws1.mergeCells('A1:E1');
+        // Header công ty + Logo
+        ws1.mergeCells('A1:D1');
         ws1.getCell('A1').value = company.name;
-        ws1.getCell('A1').font = { bold: true, size: 13, color: { argb: 'FF1E40AF' } };
+        ws1.getCell('A1').font = { bold: true, size: 14, color: { argb: 'FF1E40AF' } };
 
-        ws1.mergeCells('A2:E2');
+        ws1.mergeCells('A2:D2');
         ws1.getCell('A2').value = `ĐT: ${company.phone} | ${company.email}`;
-        ws1.getCell('A2').font = { size: 9, color: { argb: 'FF666666' } };
+        ws1.getCell('A2').font = { size: 10, color: { argb: 'FF4B5563' } };
+
+        // Right side: Logo
+        try {
+            const logoPath = path.join(__dirname, '../assets/LogoViralWindow.png');
+            const logoImage = workbook.addImage({
+                filename: logoPath,
+                extension: 'png',
+            });
+            ws1.addImage(logoImage, {
+                tl: { col: 4, row: 0 },
+                ext: { width: 100, height: 50 }
+            });
+        } catch (err) {
+            console.error('Error adding logo to Excel:', err);
+        }
 
         // Tiêu đề báo cáo
         ws1.mergeCells('A4:E4');
         ws1.getCell('A4').value = reportTitle;
-        ws1.getCell('A4').font = { bold: true, size: 16, color: { argb: themeArgb } };
+        ws1.getCell('A4').font = { bold: true, size: 20, color: { argb: themeArgb } };
         ws1.getCell('A4').alignment = { horizontal: 'center', vertical: 'middle' };
-        ws1.getRow(4).height = 34;
+        ws1.getRow(4).height = 40;
 
         ws1.mergeCells('A5:E5');
-        ws1.getCell('A5').value = `Ngày xuất: ${new Date().toLocaleDateString('vi-VN')}`;
-        ws1.getCell('A5').font = { italic: true, size: 10, color: { argb: 'FF666666' } };
+        ws1.getCell('A5').value = `Ngày xuất báo cáo: ${new Date().toLocaleDateString('vi-VN')}`;
+        ws1.getCell('A5').font = { italic: true, size: 11, color: { argb: 'FF6B7280' } };
         ws1.getCell('A5').alignment = { horizontal: 'center' };
 
         ws1.addRow([]);
@@ -683,8 +811,8 @@ exports.exportDebtReport = async (req, res) => {
         });
         ws1.getRow(7).height = 24;
 
-        const [recSum] = await db.query(`SELECT COALESCE(SUM(original_amount),0) as orig, COALESCE(SUM(paid_amount),0) as paid, COALESCE(SUM(remaining_amount),0) as remain, COUNT(*) as cnt, SUM(CASE WHEN status!='paid' AND due_date<CURDATE() THEN 1 ELSE 0 END) as overdue FROM debts WHERE debt_type='receivable'`);
-        const [paySum] = await db.query(`SELECT COALESCE(SUM(original_amount),0) as orig, COALESCE(SUM(paid_amount),0) as paid, COALESCE(SUM(remaining_amount),0) as remain, COUNT(*) as cnt, SUM(CASE WHEN status!='paid' AND due_date<CURDATE() THEN 1 ELSE 0 END) as overdue FROM debts WHERE debt_type='payable'`);
+        const [recSum] = await db.query(`SELECT COALESCE(SUM(total_amount),0) as orig, COALESCE(SUM(paid_amount),0) as paid, COALESCE(SUM(remaining_amount),0) as remain, COUNT(*) as cnt, SUM(CASE WHEN status!='paid' AND due_date<CURDATE() THEN 1 ELSE 0 END) as overdue FROM debts WHERE debt_type='receivable'`);
+        const [paySum] = await db.query(`SELECT COALESCE(SUM(total_amount),0) as orig, COALESCE(SUM(paid_amount),0) as paid, COALESCE(SUM(remaining_amount),0) as remain, COUNT(*) as cnt, SUM(CASE WHEN status!='paid' AND due_date<CURDATE() THEN 1 ELSE 0 END) as overdue FROM debts WHERE debt_type='payable'`);
         const rs = recSum[0] || {}, ps = paySum[0] || {};
 
         const sumData = [
@@ -712,31 +840,54 @@ exports.exportDebtReport = async (req, res) => {
         const ws2 = workbook.addWorksheet('Chi tiet cong no', { properties: { tabColor: { argb: 'FF0EA5E9' } } });
         ws2.columns = [
             { width: 6 },   // STT
-            { width: 22 },  // Khách hàng/Nhà CC
+            { width: 25 },  // Khách hàng/Nhà CC
             { width: 12 },  // Loại
-            { width: 18 },  // Dự án
-            { width: 16 },  // Số tiền gốc
-            { width: 16 },  // Đã thanh toán
-            { width: 16 },  // Còn lại
-            { width: 14 },  // Ngày hạn
-            { width: 18 },  // Trạng thái
+            { width: 22 },  // Dự án
+            { width: 18 },  // Số tiền gốc
+            { width: 18 },  // Đã thanh toán
+            { width: 18 },  // Còn lại
+            { width: 15 },  // Ngày hạn
+            { width: 20 },  // Trạng thái
         ];
 
-        // Header
-        ws2.mergeCells('A1:I1');
-        ws2.getCell('A1').value = reportTitle + ' - Chi tiết';
-        ws2.getCell('A1').font = { bold: true, size: 14, color: { argb: 'FFFFFFFF' } };
-        ws2.getCell('A1').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: themeArgb } };
-        ws2.getCell('A1').alignment = { horizontal: 'center', vertical: 'middle' };
-        ws2.getRow(1).height = 30;
+        // Header công ty + Logo
+        ws2.mergeCells('A1:F1');
+        ws2.getCell('A1').value = company.name;
+        ws2.getCell('A1').font = { bold: true, size: 12, color: { argb: 'FF1E40AF' } };
 
-        ws2.mergeCells('A2:I2');
-        ws2.getCell('A2').value = `Ngày xuất: ${new Date().toLocaleDateString('vi-VN')} | Tổng: ${debts.length} bản ghi`;
-        ws2.getCell('A2').font = { italic: true, size: 10, color: { argb: 'FF666666' } };
-        ws2.getCell('A2').alignment = { horizontal: 'center' };
+        ws2.mergeCells('A2:F2');
+        ws2.getCell('A2').value = `ĐT: ${company.phone} | ${company.email}`;
+        ws2.getCell('A2').font = { size: 9, color: { argb: 'FF4B5563' } };
 
-        const headerRow = ws2.getRow(3);
-        headerRow.values = ['#', 'Khách hàng/NCC', 'Loại', 'Dự án', 'Số tiền gốc', 'Đã thanh toán', 'Còn lại', 'Ngày hạn', 'Trạng thái'];
+        // Right side: Logo
+        try {
+            const logoPath = path.join(__dirname, '../assets/LogoViralWindow.png');
+            const logoImage = workbook.addImage({
+                filename: logoPath,
+                extension: 'png',
+            });
+            ws2.addImage(logoImage, {
+                tl: { col: 7.5, row: 0 },
+                ext: { width: 90, height: 45 }
+            });
+        } catch (err) {
+            console.error('Error adding logo to Excel:', err);
+        }
+
+        // Title
+        ws2.mergeCells('A4:I4');
+        ws2.getCell('A4').value = reportTitle + ' - CHI TIẾT';
+        ws2.getCell('A4').font = { bold: true, size: 16, color: { argb: themeArgb } };
+        ws2.getCell('A4').alignment = { horizontal: 'center', vertical: 'middle' };
+        ws2.getRow(4).height = 30;
+
+        ws2.mergeCells('A5:I5');
+        ws2.getCell('A5').value = `Ngày xuất báo cáo: ${new Date().toLocaleDateString('vi-VN')} | Tổng số: ${debts.length} mục`;
+        ws2.getCell('A5').font = { italic: true, size: 10, color: { argb: 'FF6B7280' } };
+        ws2.getCell('A5').alignment = { horizontal: 'center' };
+
+        const headerRow = ws2.getRow(7);
+        headerRow.values = ['STT', 'Tên Khách hàng/NCC', 'Loại nợ', 'Thông tin Dự án', 'Số nợ ban đầu', 'Đã thanh toán', 'Dư nợ còn lại', 'Ngày đáo hạn', 'Trạng thái'];
         headerRow.eachCell(cell => {
             cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: themeArgb } };
             cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
@@ -748,7 +899,7 @@ exports.exportDebtReport = async (req, res) => {
         let totalOrig = 0, totalPaid2 = 0, totalRemain = 0;
 
         debts.forEach((debt, i) => {
-            const orig = parseFloat(debt.original_amount || debt.amount || 0);
+            const orig = parseFloat(debt.total_amount || debt.amount || 0);
             const paid = parseFloat(debt.paid_amount || 0);
             const remain = parseFloat(debt.remaining_amount || (orig - paid));
             totalOrig += orig;
@@ -828,3 +979,238 @@ exports.exportDebtReport = async (req, res) => {
     }
 };
 
+/**
+ * Export Single Debt Voucher to Excel
+ * GET /api/financial/debt/:id/export-excel
+ */
+exports.exportSingleDebt = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Get debt details with customer and project info
+        const [debts] = await db.query(`
+            SELECT d.*, 
+                   c.full_name AS customer_name_join,
+                   p.project_name,
+                   p.project_code
+            FROM debts d
+            LEFT JOIN customers c ON d.customer_id = c.id
+            LEFT JOIN projects p ON d.project_id = p.id
+            WHERE d.id = ?
+        `, [id]);
+
+        if (!debts || debts.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy thông tin công nợ'
+            });
+        }
+
+        const debt = debts[0];
+        const isReceivable = debt.debt_type === 'receivable';
+        const docTitle = isReceivable ? 'PHIẾU XÁC NHẬN CÔNG NỢ PHẢI THU' : 'PHIẾU XÁC NHẬN CÔNG NỢ PHẢI TRẢ';
+        const themeColor = isReceivable ? 'FF7C3AED' : 'FFDC2626'; // Purple for receivable, Red for payable
+
+        // Get company info
+        const company = await getCompanyInfo();
+
+        // Create workbook
+        const workbook = new ExcelJS.Workbook();
+        workbook.creator = 'ViralWindow';
+        workbook.created = new Date();
+
+        const worksheet = workbook.addWorksheet(isReceivable ? 'PhieuCongNoThu' : 'PhieuCongNoTra');
+
+        // === HEADER: Company Info + Logo ===
+        worksheet.mergeCells('A1:D1');
+        const companyCell = worksheet.getCell('A1');
+        companyCell.value = company.name;
+        companyCell.font = { bold: true, size: 14, color: { argb: 'FF1E40AF' } };
+        companyCell.alignment = { horizontal: 'left', vertical: 'middle' };
+
+        worksheet.mergeCells('A2:D2');
+        const addressCell = worksheet.getCell('A2');
+        addressCell.value = `Địa chỉ: ${company.address}`;
+        addressCell.font = { size: 10, color: { argb: 'FF4B5563' } };
+
+        worksheet.mergeCells('A3:D3');
+        const contactCell = worksheet.getCell('A3');
+        contactCell.value = `ĐT: ${company.phone} | Email: ${company.email}`;
+        contactCell.font = { size: 10, color: { argb: 'FF4B5563' } };
+
+        // Right side: Logo
+        try {
+            const logoPath = path.join(__dirname, '../assets/LogoViralWindow.png');
+            const logoImage = workbook.addImage({
+                filename: logoPath,
+                extension: 'png',
+            });
+            worksheet.addImage(logoImage, {
+                tl: { col: 4.5, row: 0 },
+                ext: { width: 120, height: 60 }
+            });
+        } catch (err) {
+            console.error('Error adding logo to Excel:', err);
+        }
+
+        // === TITLE ===
+        worksheet.mergeCells('A6:F6');
+        const titleCell = worksheet.getCell('A6');
+        titleCell.value = docTitle;
+        titleCell.font = { bold: true, size: 20, color: { argb: themeColor } };
+        titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+        worksheet.getRow(6).height = 35;
+
+        worksheet.mergeCells('A7:F7');
+        const dateCell = worksheet.getCell('A7');
+        dateCell.value = `Ngày ${new Date().getDate()} tháng ${new Date().getMonth() + 1} năm ${new Date().getFullYear()}`;
+        dateCell.font = { size: 11, italic: true };
+        dateCell.alignment = { horizontal: 'center' };
+
+        // === DOCUMENT INFO ===
+        let currentRow = 9;
+        const infoData = [
+            [isReceivable ? 'Khách hàng:' : 'Nhà cung cấp:', debt.customer_name_join || debt.supplier || '-'],
+            ['Dự án:', debt.project_name || '-'],
+            ['Mã dự án:', debt.project_code || '-'],
+            ['Hạn thanh toán:', debt.due_date ? new Date(debt.due_date).toLocaleDateString('vi-VN') : '-'],
+            ['Trạng thái:', debt.status === 'paid' ? 'Đã thanh toán' : (debt.status === 'partial' ? 'Thanh toán một phần' : 'Chưa thanh toán')]
+        ];
+
+        infoData.forEach(([label, value]) => {
+            const row = worksheet.getRow(currentRow);
+            row.getCell(1).value = label;
+            row.getCell(1).font = { bold: true, size: 11 };
+            worksheet.mergeCells(currentRow, 2, currentRow, 6);
+            row.getCell(2).value = value;
+            row.getCell(2).font = { size: 11 };
+            row.height = 20;
+            currentRow++;
+        });
+
+        currentRow += 1;
+
+        // === TABLE ===
+        worksheet.mergeCells(currentRow, 1, currentRow, 6);
+        const tableNameCell = worksheet.getCell(currentRow, 1);
+        tableNameCell.value = 'CHI TIẾT CÔNG NỢ';
+        tableNameCell.font = { bold: true, size: 12, color: { argb: 'FF1F2937' } };
+        tableNameCell.alignment = { horizontal: 'left', vertical: 'middle' };
+        worksheet.getRow(currentRow).height = 25;
+        currentRow++;
+
+        const headers = ['STT', 'Nội dung chi tiết', 'Tổng nợ gốc', 'Đã trả/thu', 'Còn lại', 'Ghi chú'];
+        const headerRow = worksheet.getRow(currentRow);
+        headerRow.values = headers;
+        headerRow.height = 28;
+        headerRow.eachCell((cell) => {
+            cell.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: themeColor }
+            };
+            cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+            cell.alignment = { horizontal: 'center', vertical: 'middle' };
+            applyBorder(cell);
+        });
+        currentRow++;
+
+        // Data Row (Since it's a single debt voucher, we show one main row)
+        const dataRow = worksheet.getRow(currentRow);
+        const original = parseFloat(debt.total_amount) || 0;
+        const paid = parseFloat(debt.paid_amount) || 0;
+        const remaining = parseFloat(debt.remaining_amount) || (original - paid);
+
+        dataRow.values = [
+            1,
+            `Công nợ phát sinh ngày ${debt.created_at ? new Date(debt.created_at).toLocaleDateString('vi-VN') : '-'}`,
+            original,
+            paid,
+            remaining,
+            debt.note || ''
+        ];
+
+        dataRow.eachCell((cell, colNumber) => {
+            applyBorder(cell);
+            cell.alignment = { vertical: 'middle' };
+            if (colNumber === 1) cell.alignment = { horizontal: 'center', vertical: 'middle' };
+            if (colNumber >= 3 && colNumber <= 5) {
+                cell.numFmt = '#,##0';
+                cell.alignment = { horizontal: 'right', vertical: 'middle' };
+            }
+        });
+        currentRow++;
+
+        // Total Row
+        const totalRow = worksheet.getRow(currentRow);
+        worksheet.mergeCells(currentRow, 1, currentRow, 4);
+        totalRow.getCell(1).value = 'TỔNG CỘNG CÒN LẠI:';
+        totalRow.getCell(1).font = { bold: true, size: 12 };
+        totalRow.getCell(1).alignment = { horizontal: 'right', vertical: 'middle' };
+        totalRow.getCell(5).value = remaining;
+        totalRow.getCell(5).numFmt = '#,##0';
+        totalRow.getCell(5).font = { bold: true, size: 12, color: { argb: themeColor } };
+        totalRow.getCell(5).alignment = { horizontal: 'right', vertical: 'middle' };
+        applyBorder(totalRow.getCell(1), 'medium');
+        applyBorder(totalRow.getCell(5), 'medium');
+        applyBorder(totalRow.getCell(6), 'medium'); // Border for the last empty cell in total row
+        totalRow.height = 28;
+        currentRow++;
+
+        // Words
+        currentRow++;
+        const wordsRow = worksheet.getRow(currentRow);
+        worksheet.mergeCells(currentRow, 1, currentRow, 6);
+        wordsRow.getCell(1).value = `Bằng chữ: ${numberToVietnameseWords(remaining)}`;
+        wordsRow.getCell(1).font = { bold: true, italic: true, size: 11 };
+        currentRow++;
+
+        // === SIGNATURES ===
+        currentRow += 2;
+        const signatureRow = worksheet.getRow(currentRow);
+        signatureRow.getCell(1).value = isReceivable ? 'KHÁCH HÀNG' : 'NHÀ CUNG CẤP';
+        signatureRow.getCell(3).value = 'KẾ TOÁN';
+        signatureRow.getCell(5).value = 'GIÁM ĐỐC';
+        signatureRow.eachCell(cell => {
+            cell.font = { bold: true, size: 11 };
+            cell.alignment = { horizontal: 'center' };
+        });
+        currentRow++;
+
+        const signatureHintRow = worksheet.getRow(currentRow);
+        signatureHintRow.getCell(1).value = '(Ký, ghi rõ họ tên)';
+        signatureHintRow.getCell(3).value = '(Ký, ghi rõ họ tên)';
+        signatureHintRow.getCell(5).value = '(Ký, đóng dấu)';
+        signatureHintRow.eachCell(cell => {
+            cell.font = { size: 10, italic: true, color: { argb: 'FF999999' } };
+            cell.alignment = { horizontal: 'center' };
+        });
+
+        // Set column widths
+        worksheet.columns = [
+            { width: 6 },   // STT
+            { width: 35 },  // Nội dung
+            { width: 18 },  // Tổng nợ
+            { width: 18 },  // Đã trả
+            { width: 18 },  // Còn lại
+            { width: 25 }   // Ghi chú
+        ];
+
+        // Generate filename
+        const filename = `${isReceivable ? 'PhieuCongNoThu' : 'PhieuCongNoTra'}_${id}.xlsx`;
+
+        // Set response headers
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+        await workbook.xlsx.write(res);
+        res.end();
+
+    } catch (error) {
+        console.error('Error exporting single debt:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi xuất Excel: ' + error.message
+        });
+    }
+};
