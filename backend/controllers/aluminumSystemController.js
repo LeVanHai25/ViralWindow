@@ -52,22 +52,47 @@ const aluminumSystemController = {
      * Update an existing system
      */
     updateSystem: async (req, res) => {
+        const connection = await db.getConnection();
         try {
             const { id } = req.params;
             const { system_name, display_order, is_active } = req.body;
 
-            const [result] = await db.query(
+            await connection.beginTransaction();
+
+            // 1. Get old name first to update related records if name changed
+            const [oldSystem] = await connection.query(
+                'SELECT system_name FROM aluminum_warehouse_catalog_systems WHERE id = ?',
+                [id]
+            );
+
+            // 2. Update the catalog entry
+            const [result] = await connection.query(
                 'UPDATE aluminum_warehouse_catalog_systems SET system_name = ?, display_order = ?, is_active = ? WHERE id = ?',
                 [system_name, display_order, is_active !== undefined ? is_active : 1, id]
             );
 
             if (result.affectedRows === 0) {
+                await connection.rollback();
                 return res.status(404).json({ success: false, message: 'Không tìm thấy hệ nhôm' });
             }
 
-            res.json({ success: true, message: 'Cập nhật hệ nhôm thành công' });
+            // 3. If name changed, update all aluminum_systems records using the old name
+            if (oldSystem.length > 0 && oldSystem[0].system_name !== system_name) {
+                console.log(`Cascading name update: "${oldSystem[0].system_name}" -> "${system_name}"`);
+                await connection.query(
+                    'UPDATE aluminum_systems SET aluminum_system = ? WHERE aluminum_system = ?',
+                    [system_name, oldSystem[0].system_name]
+                );
+            }
+
+            await connection.commit();
+            res.json({ success: true, message: 'Cập nhật hệ nhôm và đồng bộ dữ liệu thành công' });
         } catch (error) {
+            await connection.rollback();
+            console.error('Error updating aluminum system:', error);
             res.status(500).json({ success: false, message: 'Lỗi cập nhật hệ nhôm: ' + error.message });
+        } finally {
+            connection.release();
         }
     },
 

@@ -43,12 +43,25 @@ exports.getAllSystems = async (req, res) => {
 
         // Đảm bảo cross_section_image, density và aluminum_system được map đúng
         const processedRows = rows.map(row => {
+            const systemStocks = stocksBySystem[row.id] || {};
+            
+            // Calculate total quantity across ALL warehouses
+            let total_quantity = 0;
+            Object.keys(systemStocks).forEach(key => {
+                if (key.startsWith('wh_id_')) {
+                    total_quantity += parseFloat(systemStocks[key]) || 0;
+                }
+            });
+
             return {
                 ...row,
                 cross_section_image: row.cross_section_image || null,
                 density: row.density || null,
                 aluminum_system: row.aluminum_system || null,
-                stocks: stocksBySystem[row.id] || {}
+                stocks: systemStocks,
+                total_quantity: total_quantity,
+                // Overwrite legacy quantity for backward compatibility in "Total" view
+                quantity: total_quantity 
             };
         });
 

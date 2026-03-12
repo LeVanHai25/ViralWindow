@@ -10467,11 +10467,9 @@
                     // ✅ Dynamic Quantity based on selected warehouse tab
                     let quantity = 0;
                     if (currentAluminumWarehouseId === 'total') {
-                        quantity = parseInt(system.quantity || 0); // Combined total
+                        quantity = parseInt(system.total_quantity || system.quantity || 0); // Use aggregated total
                     } else {
-                        // Find quantity for specific warehouse from system.stocks object
-                        // Backend returns stocks: { "Warehouse Name": qty, ... }
-                        // Need to find warehouse name from ID
+                        // Find quantity for specific warehouse
                         const wh = aluminumWarehouses.find(w => w.id == currentAluminumWarehouseId);
                         if (wh && system.stocks && system.stocks[wh.warehouse_name] !== undefined) {
                             quantity = parseInt(system.stocks[wh.warehouse_name]);
@@ -10961,6 +10959,7 @@
                         alert(result.message);
                         closeAluminumCatalogModal();
                         loadAluminumCatalog();
+                        loadAluminumSystems(); // Đồng bộ lại thống kê khi hệ nhôm thay đổi
                         // Quan trọng: Reload lại danh mục hệ nhôm trong các dropdown khác nếu có
                         if (typeof loadAluminumSystemsForDropdown === 'function') {
                             loadAluminumSystemsForDropdown();
@@ -11005,6 +11004,7 @@
                     if (result.success) {
                         alert(result.message);
                         loadAluminumCatalog();
+                        loadAluminumSystems(); // Đồng bộ lại thống kê khi hệ nhôm bị xóa
                         if (typeof loadAluminumSystemsForDropdown === 'function') {
                             loadAluminumSystemsForDropdown();
                         }
