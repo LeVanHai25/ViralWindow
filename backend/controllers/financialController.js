@@ -1586,3 +1586,438 @@ exports.syncPayableDebts = async (req, res) => {
         });
     }
 };
+
+/**
+ * GET Branch Project Report
+ * Báo cáo tổng hợp công trình theo chi nhánh
+ */
+exports.getBranchProjectReport = async (req, res) => {
+    try {
+        const { agency_id, startDate, endDate } = req.query;
+
+        // Build WHERE clause
+        let whereClause = 'WHERE 1=1';
+        let params = [];
+
+        if (agency_id) {
+            whereClause += ' AND p.agency_id = ?';
+            params.push(agency_id);
+        }
+
+        if (startDate) {
+            whereClause += ' AND p.created_at >= ?';
+            params.push(startDate);
+        }
+
+        if (endDate) {
+            whereClause += ' AND p.created_at <= ?';
+            params.push(endDate + ' 23:59:59');
+        }
+
+        // Query all projects with agency and customer info
+        const [projects] = await db.query(`
+            SELECT 
+                p.id as project_id,
+                p.project_code,
+                p.project_name,
+                p.total_value,
+                p.status,
+                p.created_at,
+                p.agency_id,
+                a.code as agency_code,
+                a.name as agency_name,
+                a.address as agency_address,
+                a.phone as agency_phone,
+                a.region as agency_region,
+                a.manager_name as agency_manager,
+                p.customer_id,
+                c.full_name as customer_name,
+                c.phone as customer_phone,
+                c.email as customer_email
+            FROM projects p
+            LEFT JOIN agencies a ON p.agency_id = a.id
+            LEFT JOIN customers c ON p.customer_id = c.id
+            ${whereClause}
+            ORDER BY a.name ASC, c.full_name ASC, p.created_at DESC
+        `, params);
+
+        // Group data hierarchically: Agency → Customer → Projects
+        const agencyMap = new Map();
+        let grandTotalValue = 0;
+        let grandTotalProjects = 0;
+        const uniqueCustomers = new Set();
+
+        for (const row of projects) {
+            const agencyId = row.agency_id || 0;
+            const agencyKey = agencyId;
+            
+            if (!agencyMap.has(agencyKey)) {
+                agencyMap.set(agencyKey, {
+                    id: agencyId,
+                    code: row.agency_code || 'N/A',
+                    name: row.agency_name || 'Chưa gán chi nhánh',
+                    address: row.agency_address || '',
+                    phone: row.agency_phone || '',
+                    region: row.agency_region || '',
+                    manager: row.agency_manager || '',
+                    total_customers: 0,
+                    total_projects: 0,
+                    total_value: 0,
+                    customers: new Map()
+                });
+            }
+
+            const agency = agencyMap.get(agencyKey);
+            const customerId = row.customer_id || 0;
+            const customerKey = customerId;
+
+            if (!agency.customers.has(customerKey)) {
+                agency.customers.set(customerKey, {
+                    id: customerId,
+                    name: row.customer_name || 'Khách lẻ',
+                    phone: row.customer_phone || '',
+                    email: row.customer_email || '',
+                    total_projects: 0,
+                    total_value: 0,
+                    projects: []
+                });
+            }
+
+            const customer = agency.customers.get(customerKey);
+            const projectValue = parseFloat(row.total_value) || 0;
+            
+            customer.projects.push({
+                id: row.project_id,
+                code: row.project_code,
+                name: row.project_name,
+                value: projectValue,
+                status: row.status,
+                created_at: row.created_at
+            });
+
+            customer.total_projects++;
+            customer.total_value += projectValue;
+            agency.total_projects++;
+            agency.total_value += projectValue;
+            grandTotalProjects++;
+            grandTotalValue += projectValue;
+            uniqueCustomers.add(`${agencyId}_${customerId}`);
+        }
+
+        // Convert Maps to arrays and count customers per agency
+        const agencies = [];
+        for (const [, agency] of agencyMap) {
+            const customersList = [];
+            for (const [, customer] of agency.customers) {
+                customersList.push(customer);
+            }
+            agency.total_customers = customersList.length;
+            agencies.push({
+                ...agency,
+                customers: customersList
+            });
+        }
+
+        // Load all agencies for dropdown filter
+        const [allAgencies] = await db.query('SELECT id, code, name FROM agencies WHERE status = "active" ORDER BY name');
+
+        res.json({
+            success: true,
+            data: {
+                agencies: agencies,
+                all_agencies: allAgencies,
+                grand_total: {
+                    agencies: agencyMap.size,
+                    customers: uniqueCustomers.size,
+                    projects: grandTotalProjects,
+                    value: grandTotalValue
+                }
+            }
+        });
+
+    } catch (err) {
+        console.error('Error generating branch project report:', err);
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi server: ' + err.message
+        });
+    }
+};
+
+/**
+ * GET Profit/Loss Report
+ * Báo cáo Lãi/Lỗ theo dự án
+ */
+exports.getProfitLossReport = async (req, res) => {
+    try {
+        const { startDate, endDate, projectId } = req.query;
+
+        // Build filters
+        let whereClause = "WHERE p.status != 'cancelled'";
+        let params = [];
+
+        if (projectId) {
+            whereClause += " AND p.id = ?";
+            params.push(projectId);
+        }
+
+        if (startDate) {
+            whereClause += " AND p.created_at >= ?";
+            params.push(startDate);
+        }
+
+        if (endDate) {
+            whereClause += " AND p.created_at <= ?";
+            params.push(endDate + ' 23:59:59');
+        }
+
+        // Main query: Projects with summed revenue and expenses
+        const [rows] = await db.query(`
+            SELECT 
+                p.id as project_id,
+                p.project_code,
+                p.project_name,
+                c.full_name as customer_name,
+                p.total_value as contract_value,
+                p.status as project_status,
+                p.created_at,
+                (SELECT COALESCE(SUM(amount), 0) FROM financial_transactions 
+                 WHERE project_id = p.id AND transaction_type = 'revenue' AND status = 'posted') as total_revenue,
+                (SELECT COALESCE(SUM(amount), 0) FROM financial_transactions 
+                 WHERE project_id = p.id AND transaction_type = 'expense' AND status = 'posted') as total_expense
+            FROM projects p
+            LEFT JOIN customers c ON p.customer_id = c.id
+            ${whereClause}
+            ORDER BY p.created_at DESC
+        `, params);
+
+        // Process results to add profit and margin
+        const projects = rows.map(p => {
+            const revenue = parseFloat(p.total_revenue) || 0;
+            const expense = parseFloat(p.total_expense) || 0;
+            const profit = revenue - expense;
+            const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
+            
+            return {
+                ...p,
+                total_revenue: revenue,
+                total_expense: expense,
+                profit: profit,
+                margin_percent: margin.toFixed(2)
+            };
+        });
+
+        // Totals
+        const summary = projects.reduce((acc, p) => {
+            acc.total_contract += parseFloat(p.contract_value) || 0;
+            acc.total_revenue += p.total_revenue;
+            acc.total_expense += p.total_expense;
+            acc.total_profit += p.profit;
+            return acc;
+        }, { total_contract: 0, total_revenue: 0, total_expense: 0, total_profit: 0 });
+
+        res.json({
+            success: true,
+            data: {
+                projects,
+                summary
+            }
+        });
+    } catch (err) {
+        console.error('Error getting profit loss report:', err);
+        res.status(500).json({ success: false, message: "Lỗi server: " + err.message });
+    }
+};
+
+/**
+ * GET Material Cost Report
+ * Báo cáo chi phí vật tư theo dự án
+ */
+exports.getMaterialCostReport = async (req, res) => {
+    try {
+        const { startDate, endDate, projectId } = req.query;
+
+        let whereClause = "WHERE 1=1";
+        let params = [];
+
+        if (projectId) {
+            whereClause += " AND p.id = ?";
+            params.push(projectId);
+        }
+
+        if (startDate) {
+            whereClause += " AND pm.created_at >= ?";
+            params.push(startDate);
+        }
+
+        if (endDate) {
+            whereClause += " AND pm.created_at <= ?";
+            params.push(endDate + ' 23:59:59');
+        }
+
+        // Query material details joined with projects
+        const [rows] = await db.query(`
+            SELECT 
+                p.id as project_id,
+                p.project_code,
+                p.project_name,
+                c.full_name as customer_name,
+                pm.material_type,
+                pm.material_name,
+                pm.material_code,
+                pm.quantity,
+                pm.unit,
+                pm.unit_price,
+                pm.total_cost,
+                pm.created_at as export_date
+            FROM project_materials pm
+            INNER JOIN projects p ON pm.project_id = p.id
+            LEFT JOIN customers c ON p.customer_id = c.id
+            ${whereClause}
+            ORDER BY p.id DESC, pm.created_at DESC
+        `, params);
+
+        // Group by project
+        const projectMap = new Map();
+        let grandTotal = 0;
+
+        rows.forEach(row => {
+            if (!projectMap.has(row.project_id)) {
+                projectMap.set(row.project_id, {
+                    project_id: row.project_id,
+                    project_code: row.project_code,
+                    project_name: row.project_name,
+                    customer_name: row.customer_name,
+                    total_material_cost: 0,
+                    items: []
+                });
+            }
+
+            const project = projectMap.get(row.project_id);
+            const cost = parseFloat(row.total_cost) || 0;
+            
+            project.items.push({
+                type: row.material_type,
+                name: row.material_name,
+                code: row.material_code,
+                quantity: row.quantity,
+                unit: row.unit,
+                unit_price: row.unit_price,
+                total_cost: cost,
+                date: row.export_date
+            });
+
+            project.total_material_cost += cost;
+            grandTotal += cost;
+        });
+
+        res.json({
+            success: true,
+            data: {
+                projects: Array.from(projectMap.values()),
+                grand_total_cost: grandTotal
+            }
+        });
+    } catch (err) {
+        console.error('Error getting material cost report:', err);
+        res.status(500).json({ success: false, message: "Lỗi server: " + err.message });
+    }
+};
+
+/**
+ * GET Advanced Cash Flow Report
+ * Báo cáo Thu Chi nâng cao (đa chiều, Dashboard)
+ */
+exports.getAdvancedCashFlowReport = async (req, res) => {
+    try {
+        const { startDate, endDate, projectId } = req.query;
+
+        let dateFilter = "WHERE status = 'posted'";
+        let params = [];
+
+        if (startDate && endDate) {
+            dateFilter += " AND transaction_date >= ? AND transaction_date <= ?";
+            params = [startDate, endDate + ' 23:59:59'];
+        }
+
+        if (projectId) {
+            dateFilter += " AND project_id = ?";
+            params.push(projectId);
+        }
+
+        // 1. KPI Summary
+        const [kpiRows] = await db.query(`
+            SELECT 
+                transaction_type, 
+                SUM(amount) as total
+            FROM financial_transactions
+            ${dateFilter}
+            GROUP BY transaction_type
+        `, params);
+
+        let totalIn = 0, totalOut = 0;
+        kpiRows.forEach(row => {
+            if (row.transaction_type === 'revenue') totalIn = parseFloat(row.total) || 0;
+            else totalOut = parseFloat(row.total) || 0;
+        });
+
+        // 2. By Category (Revenue)
+        const [revByCategory] = await db.query(`
+            SELECT category, SUM(amount) as total
+            FROM financial_transactions
+            ${dateFilter} AND transaction_type = 'revenue'
+            GROUP BY category
+            ORDER BY total DESC
+        `, params);
+
+        // 3. By Expense Type (Expense)
+        const [expByType] = await db.query(`
+            SELECT expense_type, SUM(amount) as total
+            FROM financial_transactions
+            ${dateFilter} AND transaction_type = 'expense'
+            GROUP BY expense_type
+            ORDER BY total DESC
+        `, params);
+
+        // 4. By Payment Method
+        const [byPaymentMethod] = await db.query(`
+            SELECT payment_method, transaction_type, SUM(amount) as total
+            FROM financial_transactions
+            ${dateFilter}
+            GROUP BY payment_method, transaction_type
+        `, params);
+
+        // 5. Daily Trend
+        const [dailyTrend] = await db.query(`
+            SELECT 
+                DATE(transaction_date) as date,
+                SUM(CASE WHEN transaction_type = 'revenue' THEN amount ELSE 0 END) as income,
+                SUM(CASE WHEN transaction_type = 'expense' THEN amount ELSE 0 END) as expense
+            FROM financial_transactions
+            ${dateFilter}
+            GROUP BY DATE(transaction_date)
+            ORDER BY date ASC
+        `, params);
+
+        res.json({
+            success: true,
+            data: {
+                summary: {
+                    total_revenue: totalIn,
+                    total_expense: totalOut,
+                    net_cash_flow: totalIn - totalOut,
+                    expense_ratio: totalIn > 0 ? (totalOut / totalIn * 100).toFixed(2) : 0
+                },
+                categories: {
+                    revenue: revByCategory,
+                    expense: expByType
+                },
+                payment_methods: byPaymentMethod,
+                trend: dailyTrend
+            }
+        });
+    } catch (err) {
+        console.error('Error getting advanced cash flow report:', err);
+        res.status(500).json({ success: false, message: "Lỗi server: " + err.message });
+    }
+};

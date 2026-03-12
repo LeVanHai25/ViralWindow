@@ -256,6 +256,13 @@ const FINANCE_SIDEBAR_HTML = `
                 </svg>
                 <span>Công nợ</span>
             </a>
+            <a href="finance-reports.html" class="submenu-item" data-page="finance-reports">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>Báo cáo</span>
+            </a>
         </div>
 
         <!-- QUẢN TRỊ -->
@@ -441,8 +448,8 @@ async function loadSidebarCompanyInfo() {
             const companyLogo = document.getElementById('companyLogo');
             const companyLogoIcon = document.getElementById('companyLogoIcon');
 
-            if (data.data.logo_url && companyLogo && companyLogoIcon) {
-                companyLogo.src = data.data.logo_url;
+            if (data.data.logo_path && companyLogo && companyLogoIcon) {
+                companyLogo.src = data.data.logo_path;
                 companyLogo.classList.remove('hidden');
                 companyLogoIcon.classList.add('hidden');
             }

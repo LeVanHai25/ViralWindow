@@ -48,6 +48,14 @@ router.get("/migrate-add-status", authenticateToken, requireAdmin, financialCtrl
 // Sync payable debts (BẮT BUỘC auth)
 router.post("/sync-payable-debts", authenticateToken, financialCtrl.syncPayableDebts);
 
+// Branch Project Report (Báo cáo tổng hợp chi nhánh)
+router.get("/branch-report", optionalAuth, financialCtrl.getBranchProjectReport);
+
+// Báo cáo chuyên nghiệp mới
+router.get("/profit-loss-report", optionalAuth, financialCtrl.getProfitLossReport);
+router.get("/material-cost-report", optionalAuth, financialCtrl.getMaterialCostReport);
+router.get("/advanced-cash-flow-report", optionalAuth, financialCtrl.getAdvancedCashFlowReport);
+
 // --- EXCEL EXPORT ROUTES ---
 
 // 1. Single Debt Voucher (Specific route first)
