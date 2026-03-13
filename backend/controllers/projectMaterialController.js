@@ -1778,7 +1778,7 @@ exports.getInventoryByType = async (req, res) => {
                          'cây' as unit, 
                          s.unit_price as price, 
                          COALESCE(
-                            (SELECT SUM(ws.quantity) FROM aluminum_warehouse_stocks ws WHERE ws.system_id = s.id),
+                            (SELECT SUM(ws.quantity) FROM aluminum_warehouse_stock ws WHERE ws.aluminum_system_id = s.id),
                             s.quantity, 
                             0
                          ) as stock,

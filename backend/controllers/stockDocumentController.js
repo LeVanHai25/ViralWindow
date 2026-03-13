@@ -245,19 +245,19 @@ async function processAluminumExport(line, doc, connection, userId) {
     `, [warehouseId, system.id]);
 
     [updateResult] = await connection.query(`
-        UPDATE aluminum_warehouse_stocks 
-        SET quantity = GREATEST(0, quantity - ?) 
-        WHERE warehouse_id = ? AND system_id = ? AND quantity >= ?
+        UPDATE aluminum_warehouse_stock
+        SET quantity = GREATEST(0, quantity - ?)
+        WHERE warehouse_id = ? AND aluminum_system_id = ? AND quantity >= ?
     `, [qtyBars, warehouseId, system.id, qtyBars]);
 
     if (updateResult.affectedRows === 0) {
         // Check if there's any stock at all in this warehouse
         const [wsRows] = await connection.query(
-            'SELECT quantity FROM aluminum_warehouse_stocks WHERE warehouse_id = ? AND system_id = ?',
+            'SELECT quantity FROM aluminum_warehouse_stock WHERE warehouse_id = ? AND aluminum_system_id = ?',
             [warehouseId, system.id]
         );
         const wsQty = wsRows.length > 0 ? wsRows[0].quantity : 0;
-        
+
         throw new Error(
             `Không đủ tồn kho nhôm tại kho được chọn. ${system.code || system.name}: ` +
             `cần ${qtyBars} cây nhưng kho chỉ còn ${wsQty} cây`
@@ -266,8 +266,8 @@ async function processAluminumExport(line, doc, connection, userId) {
 
     // sync legacy quantity in aluminum_systems
     await connection.query(`
-        UPDATE aluminum_systems 
-        SET quantity = (SELECT SUM(quantity) FROM aluminum_warehouse_stocks WHERE system_id = ?) 
+        UPDATE aluminum_systems
+        SET quantity = (SELECT SUM(quantity) FROM aluminum_warehouse_stock WHERE aluminum_system_id = ?)
         WHERE id = ?
     `, [system.id, system.id]);
 
@@ -288,7 +288,7 @@ async function processAluminumExport(line, doc, connection, userId) {
 
     // Update line with calculation results
     await connection.query(`
-        UPDATE stock_document_lines 
+        UPDATE stock_document_lines
         SET meters_used = ?, length_per_bar_m = ?, meters_leftover = ?, system_id = ?
         WHERE id = ?
     `, [metersUsed, lengthPerBarM, metersLeftover, system.id, line.id]);
@@ -316,7 +316,7 @@ async function processAluminumImport(line, doc, connection, userId) {
 
     // ATOMIC UPDATE: Add bars to specific warehouse stock
     await connection.query(`
-        INSERT INTO aluminum_warehouse_stocks (warehouse_id, system_id, quantity)
+        INSERT INTO aluminum_warehouse_stock (warehouse_id, aluminum_system_id, quantity)
         VALUES (?, ?, ?)
         ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity)
     `, [warehouseId, systemId, barsToAdd]);
@@ -885,7 +885,7 @@ exports.post = async (req, res) => {
 
                     // Get current stock in this warehouse for diff calculation
                     const [wsRows] = await connection.query(
-                        'SELECT quantity FROM aluminum_warehouse_stocks WHERE warehouse_id = ? AND system_id = ?',
+                        'SELECT quantity FROM aluminum_warehouse_stock WHERE warehouse_id = ? AND aluminum_system_id = ?',
                         [warehouseId, line.system_id || line.item_id]
                     );
                     const currentBars = wsRows.length > 0 ? parseInt(wsRows[0].quantity) : 0;
@@ -899,7 +899,7 @@ exports.post = async (req, res) => {
 
                     // Update specific warehouse stock
                     await connection.query(`
-                        INSERT INTO aluminum_warehouse_stocks (warehouse_id, system_id, quantity)
+                        INSERT INTO aluminum_warehouse_stock (warehouse_id, aluminum_system_id, quantity)
                         VALUES (?, ?, ?)
                         ON DUPLICATE KEY UPDATE quantity = VALUES(quantity)
                     `, [warehouseId, line.system_id || line.item_id, qtyActual]);
@@ -907,7 +907,7 @@ exports.post = async (req, res) => {
                     // Sync legacy quantity
                     await connection.query(`
                         UPDATE aluminum_systems 
-                        SET quantity = (SELECT SUM(quantity) FROM aluminum_warehouse_stocks WHERE system_id = ?) 
+                        SET quantity = (SELECT SUM(quantity) FROM aluminum_warehouse_stock WHERE aluminum_system_id = ?) 
                         WHERE id = ?
                     `, [line.system_id || line.item_id, line.system_id || line.item_id]);
 
