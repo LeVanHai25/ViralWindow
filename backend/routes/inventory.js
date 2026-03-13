@@ -5,6 +5,7 @@ const path = require("path");
 const fs = require("fs");
 const inventoryCtrl = require("../controllers/inventoryController");
 const inventoryExportCtrl = require("../controllers/inventoryExportController");
+const otherCategoryCtrl = require("../controllers/otherItemCategoryController");
 const { authenticateToken: auth } = require("../middleware/auth");
 
 // Ensure upload directory exists
@@ -49,6 +50,12 @@ router.get("/stats", inventoryCtrl.getStatistics);
 router.get("/aggregated", inventoryCtrl.getAggregatedItems);
 router.get("/low-stock", inventoryCtrl.getLowStockItems);
 router.get("/alerts-summary", inventoryCtrl.getDashboardAlertsSummary);
+
+// Other Item Category management - MUST be before any generic :id routes
+router.get("/other-categories", auth, otherCategoryCtrl.getCategories);
+router.post("/other-categories", auth, otherCategoryCtrl.createCategory);
+router.put("/other-categories/:id", auth, otherCategoryCtrl.updateCategory);
+router.delete("/other-categories/:id", auth, otherCategoryCtrl.deleteCategory);
 
 // VRPK code generation - MUST be before /:id
 router.get("/next-vrpk-code", inventoryCtrl.getNextVRPKCode);

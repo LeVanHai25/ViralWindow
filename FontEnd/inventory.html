@@ -1096,36 +1096,23 @@
                         <!-- Sub-tabs for Vật tư phụ -->
                         <div class="bg-white rounded-xl shadow mb-6">
                             <div class="border-b border-gray-200 px-6">
-                                <div class="flex gap-4">
-                                    <button
-                                        class="sub-tab-button px-4 py-3 flex items-center gap-2 text-gray-600 hover:text-teal-600 active"
-                                        onclick="switchSubTab('all', this)">
-                                        Tất cả
-                                    </button>
-                                    <button
-                                        class="sub-tab-button px-4 py-3 flex items-center gap-2 text-gray-600 hover:text-teal-600"
-                                        onclick="switchSubTab('ke', this)">
-                                        Ke
-                                    </button>
-                                    <button
-                                        class="sub-tab-button px-4 py-3 flex items-center gap-2 text-gray-600 hover:text-teal-600"
-                                        onclick="switchSubTab('gioang', this)">
-                                        Gioăng
-                                    </button>
-                                    <button
-                                        class="sub-tab-button px-4 py-3 flex items-center gap-2 text-gray-600 hover:text-teal-600"
-                                        onclick="switchSubTab('nhua-op', this)">
-                                        Nhựa ốp
-                                    </button>
-                                    <button
-                                        class="sub-tab-button px-4 py-3 flex items-center gap-2 text-gray-600 hover:text-teal-600"
-                                        onclick="switchSubTab('keo', this)">
-                                        Keo
-                                    </button>
-                                    <button
-                                        class="sub-tab-button px-4 py-3 flex items-center gap-2 text-gray-600 hover:text-teal-600"
-                                        onclick="switchSubTab('khac', this)">
-                                        Khác
+                                <div class="flex items-center justify-between">
+                                    <div class="flex gap-4 overflow-x-auto" id="otherSubTabsContainer">
+                                        <button
+                                            class="sub-tab-button px-4 py-3 flex items-center gap-2 text-gray-600 hover:text-teal-600 active"
+                                            onclick="switchSubTab('all', this)">
+                                            Tất cả
+                                        </button>
+                                        <!-- Dynamic categories will be loaded here -->
+                                        <div id="subTabsLoading" class="px-4 py-3 text-gray-400 text-sm italic">
+                                            Đang tải danh mục...
+                                        </div>
+                                    </div>
+                                    <button onclick="openOtherCategoryManagementModal()" class="p-2 text-gray-400 hover:text-teal-600 transition-colors" title="Quản lý danh mục">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 011.45.12l.773.774a1.125 1.125 0 01.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.894.15c.542.09.94.56.94 1.109v1.094c0 .55-.398 1.02-.94 1.11l-.894.149c-.424.07-.764.383-.929.78-.164.398-.142.854.108 1.204l.527.738a1.125 1.125 0 01-.12 1.45l-.774.773a1.125 1.125 0 01-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.397.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.108l-.738.527a1.125 1.125 0 01-1.45-.12l-.773-.774a1.125 1.125 0 01-.12-1.45l.527-.737c.25-.35.273-.806.108-1.204-.165-.397-.505-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.107-1.204l-.527-.738a1.125 1.125 0 01.12-1.45l.773-.773a1.125 1.125 0 011.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.15-.894z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
                                     </button>
                                 </div>
                             </div>
@@ -2558,6 +2545,50 @@
                     </div>
                     <input type="hidden" id="otherId">
                 </form>
+            </div>
+        </div>
+
+        <!-- MODAL: Category Management for Other Items -->
+        <div id="otherCategoryModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[10001] flex items-center justify-center">
+            <div class="bg-white rounded-xl p-6 w-full max-w-md">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold">Quản lý danh mục Vật tư phụ</h2>
+                    <button onclick="closeOtherCategoryManagementModal()" class="text-gray-500 hover:text-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Add Form -->
+                <div class="mb-6 p-4 bg-teal-50 rounded-lg border border-teal-100">
+                    <h3 class="text-sm font-semibold text-teal-800 mb-3" id="catFormTitle">Thêm danh mục mới</h3>
+                    <div class="flex gap-2">
+                        <input type="text" id="catNameInput" class="flex-1 px-3 py-2 border border-teal-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm" placeholder="Tên danh mục...">
+                        <input type="hidden" id="catIdInput">
+                        <button onclick="saveOtherCategory()" class="bg-teal-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-teal-600 transition-colors" id="btnSaveCat">Thêm</button>
+                        <button onclick="resetCatForm()" class="hidden px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-100" id="btnCancelCat">Hủy</button>
+                    </div>
+                </div>
+
+                <!-- List -->
+                <div class="max-h-60 overflow-y-auto border border-gray-100 rounded-lg">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50 text-gray-600">
+                            <tr>
+                                <th class="px-3 py-2 text-left font-semibold">Tên danh mục</th>
+                                <th class="px-3 py-2 text-right font-semibold">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="otherCategoryListTable" class="divide-y divide-gray-100">
+                            <!-- Items will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <button onclick="closeOtherCategoryManagementModal()" class="px-6 py-2 border border-gray-300 rounded-lg font-medium hover:bg-gray-50">Đóng</button>
+                </div>
             </div>
         </div>
 
@@ -8467,7 +8498,7 @@
 
             // Xóa vật tư
             async function deleteProjectMaterial(id, name) {
-                if (!confirm(`Bạn có chắc muốn xóa "${name}" khỏi dự án?\nSố lượng sẽ được hoàn lại vào kho.`)) {
+                if (!await confirm(`Bạn có chắc muốn xóa "${name}" khỏi dự án?\nSố lượng sẽ được hoàn lại vào kho.`)) {
                     return;
                 }
 
@@ -8768,6 +8799,198 @@
                 return date.toLocaleDateString('vi-VN');
             }
 
+            // Categories for Other Items (Vật tư phụ)
+            let otherCategories = [];
+            let currentOtherSubTab = 'all';
+            let currentSubTab = 'ke'; // Global for other sections if needed
+
+            // Load Other Item Categories
+            async function loadOtherCategories() {
+                try {
+                    const response = await fetch(`${API_BASE}/inventory/other-categories`, {
+                        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        otherCategories = result.data || [];
+                        renderOtherSubTabs();
+                        updateCategoryDropdowns();
+                    }
+                } catch (error) {
+                    console.error('Lỗi load danh mục vật tư phụ:', error);
+                }
+            }
+
+            function renderOtherSubTabs() {
+                const container = document.getElementById('otherSubTabsContainer');
+                if (!container) return;
+
+                const loading = document.getElementById('subTabsLoading');
+                if (loading) loading.remove();
+
+                // Keep "Tất cả" tab
+                let html = `
+                    <button class="sub-tab-button px-4 py-3 flex items-center gap-2 text-gray-600 hover:text-teal-600 ${currentOtherSubTab === 'all' ? 'active' : ''}"
+                        onclick="switchSubTab('all', this)">
+                        Tất cả
+                    </button>
+                `;
+
+                // Add dynamic categories
+                otherCategories.forEach(cat => {
+                    html += `
+                        <button class="sub-tab-button px-4 py-3 flex items-center gap-2 text-gray-600 hover:text-teal-600 ${currentOtherSubTab === cat.name ? 'active' : ''}"
+                            onclick="switchSubTab('${cat.name}', this)">
+                            ${cat.name}
+                        </button>
+                    `;
+                });
+
+                container.innerHTML = html;
+            }
+
+            function updateCategoryDropdowns() {
+                const select = document.getElementById('otherSubCategory');
+                if (!select) return;
+
+                let html = '';
+                otherCategories.forEach(cat => {
+                    html += `<option value="${cat.name}">${cat.name}</option>`;
+                });
+                select.innerHTML = html;
+            }
+
+            // Category Management Modal Functions
+            function openOtherCategoryManagementModal() {
+                document.getElementById('otherCategoryModal').classList.remove('hidden');
+                loadOtherCategoryList();
+            }
+
+            function closeOtherCategoryManagementModal() {
+                document.getElementById('otherCategoryModal').classList.add('hidden');
+                resetCatForm();
+                // Refresh categories in case they changed
+                loadOtherCategories();
+            }
+
+            async function loadOtherCategoryList() {
+                const tbody = document.getElementById('otherCategoryListTable');
+                if (!tbody) return;
+
+                tbody.innerHTML = '<tr><td colspan="2" class="px-3 py-4 text-center text-gray-400">Đang tải...</td></tr>';
+
+                try {
+                    const response = await fetch(`${API_BASE}/inventory/other-categories`, {
+                        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
+                    });
+                    const result = await response.json();
+                    
+                    if (result.success && result.data) {
+                        if (result.data.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="2" class="px-3 py-4 text-center text-gray-400">Chưa có danh mục nào.</td></tr>';
+                            return;
+                        }
+
+                        tbody.innerHTML = result.data.map(cat => `
+                            <tr>
+                                <td class="px-3 py-2 text-gray-800 font-medium">${cat.name}</td>
+                                <td class="px-3 py-2 text-right">
+                                    <div class="flex justify-end gap-2">
+                                        <button onclick="editOtherCategory(${cat.id}, '${cat.name}')" class="text-blue-500 hover:text-blue-700" title="Sửa">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                            </svg>
+                                        </button>
+                                        <button onclick="deleteOtherCategory(${cat.id})" class="text-red-500 hover:text-red-700" title="Xóa">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('');
+                    }
+                } catch (error) {
+                    console.error('Lỗi load danh mục:', error);
+                }
+            }
+
+            function editOtherCategory(id, name) {
+                document.getElementById('catIdInput').value = id;
+                document.getElementById('catNameInput').value = name;
+                document.getElementById('catFormTitle').textContent = 'Chỉnh sửa danh mục';
+                document.getElementById('btnSaveCat').textContent = 'Cập nhật';
+                document.getElementById('btnCancelCat').classList.remove('hidden');
+            }
+
+            function resetCatForm() {
+                document.getElementById('catIdInput').value = '';
+                document.getElementById('catNameInput').value = '';
+                document.getElementById('catFormTitle').textContent = 'Thêm danh mục mới';
+                document.getElementById('btnSaveCat').textContent = 'Thêm';
+                document.getElementById('btnCancelCat').classList.add('hidden');
+            }
+
+            async function saveOtherCategory() {
+                const id = document.getElementById('catIdInput').value;
+                const name = document.getElementById('catNameInput').value.trim();
+
+                if (!name) {
+                    alert('Vui lòng nhập tên danh mục');
+                    return;
+                }
+
+                try {
+                    const method = id ? 'PUT' : 'POST';
+                    const url = id ? `${API_BASE}/inventory/other-categories/${id}` : `${API_BASE}/inventory/other-categories`;
+
+                    const response = await fetch(url, {
+                        method,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+                        },
+                        body: JSON.stringify({ name })
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        showSuccessNotification(id ? 'Cập nhật thành công!' : 'Thêm thành công!');
+                        resetCatForm();
+                        loadOtherCategoryList();
+                        loadOtherCategories(); // Reload global list
+                    } else {
+                        alert(result.message || 'Có lỗi xảy ra');
+                    }
+                } catch (error) {
+                    console.error('Lỗi lưu danh mục:', error);
+                    alert('Lỗi kết nối server');
+                }
+            }
+
+            async function deleteOtherCategory(id) {
+                if (!await confirm('Bạn có chắc muốn xóa danh mục này? Hệ thống sẽ không xóa nếu danh mục đang có vật tư.')) return;
+
+                try {
+                    const response = await fetch(`${API_BASE}/inventory/other-categories/${id}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        showSuccessNotification('Xóa thành công!');
+                        loadOtherCategoryList();
+                        loadOtherCategories();
+                    } else {
+                        alert(result.message || 'Không thể xóa danh mục này');
+                    }
+                } catch (error) {
+                    console.error('Lỗi xóa danh mục:', error);
+                }
+            }
+
             // Close dropdowns when clicking outside
             document.addEventListener('click', function (event) {
                 const notificationsDropdown = document.getElementById('notificationsDropdown');
@@ -8861,7 +9084,7 @@
 
             // Sub-tab switching for Vật tư phụ
             function switchSubTab(subTabName, buttonElement) {
-                currentSubTab = subTabName;
+                currentOtherSubTab = subTabName;
 
                 // Update sub-tab buttons
                 document.querySelectorAll('.sub-tab-button').forEach(btn => {
@@ -8872,17 +9095,13 @@
                 }
 
                 // Update title
-                const titles = {
-                    'all': 'Danh sách tất cả vật tư phụ',
-                    'ke': 'Danh sách vật tư phụ - Ke',
-                    'gioang': 'Danh sách vật tư phụ - Gioăng',
-                    'nhua-op': 'Danh sách vật tư phụ - Nhựa ốp',
-                    'keo': 'Danh sách vật tư phụ - Keo',
-                    'khac': 'Danh sách vật tư phụ - Khác'
-                };
                 const titleEl = document.getElementById('otherSubTabTitle');
                 if (titleEl) {
-                    titleEl.textContent = titles[subTabName] || 'Danh sách vật tư phụ';
+                    if (subTabName === 'all') {
+                        titleEl.textContent = 'Danh sách tất cả vật tư phụ';
+                    } else {
+                        titleEl.textContent = `Danh sách vật tư phụ - ${subTabName}`;
+                    }
                 }
 
                 // Reload items with sub-category filter
@@ -8893,7 +9112,7 @@
             let allInventoryData = []; // Lưu tất cả dữ liệu để tính KPI
 
             // Sub-tab cho Vật tư phụ
-            let currentSubTab = 'ke'; // Mặc định là 'ke'
+            // currentOtherSubTab is declared globally above
 
             function displayInventory(items) {
                 // Map module_type từ API tổng hợp
@@ -12368,28 +12587,11 @@
                     if (result.success) {
                         let items = result.data || [];
 
-                        // Danh sách các category thuộc Vật tư phụ (lưu trong notes của inventory item)
-                        const vatTuPhuCategories = ['Ke', 'Gioăng', 'Nhựa ốp', 'Keo', 'Khác'];
-
-                        // Lọc chỉ giữ các items thuộc category Vật tư phụ (dựa vào notes)
-                        items = items.filter(item => vatTuPhuCategories.includes(item.notes));
-
-                        // Map category sang sub-tab
-                        const subCategoryMap = {
-                            'all': 'Tất cả',
-                            'ke': 'Ke',
-                            'gioang': 'Gioăng',
-                            'nhua-op': 'Nhựa ốp',
-                            'keo': 'Keo',
-                            'khac': 'Khác'
-                        };
-                        const subCategoryName = subCategoryMap[currentSubTab] || 'Ke';
-
                         // Lọc theo sub-tab hiện tại (dựa trên notes)
-                        if (currentSubTab !== 'all') {
+                        if (currentOtherSubTab !== 'all') {
                             items = items.filter(item => {
                                 const itemCategory = (item.notes || '').trim().toLowerCase();
-                                const currentTabCategory = subCategoryName.toLowerCase();
+                                const currentTabCategory = currentOtherSubTab.toLowerCase();
                                 return itemCategory === currentTabCategory;
                             });
                         }
@@ -12419,7 +12621,7 @@
                             );
                         }
 
-                        console.log(`[loadOtherItems] Filtered from ${result.data.length} down to ${items.length} items for tab: ${currentSubTab}`); // Debug display
+                        console.log(`[loadOtherItems] Filtered from ${result.data.length} down to ${items.length} items for tab: ${currentOtherSubTab}`); // Debug display
                         
                         // QUAN TRỌNG: Lưu vào cache để dùng cho việc SAP XEP client-side
                         allOtherData = items;
@@ -12554,12 +12756,8 @@
                         const category = item.notes || '';
                         const subCategoryEl = document.getElementById('otherSubCategory');
 
-                        // Check if category matches sub-category
-                        const subCategories = ['Ke', 'Gioăng', 'Nhựa ốp', 'Keo', 'Khác'];
-                        let foundSubCategory = subCategories.includes(category) ? category : 'Ke';
-
                         if (subCategoryEl) {
-                            subCategoryEl.value = foundSubCategory;
+                            subCategoryEl.value = category;
                         }
 
                         // Inventory uses 'item_name'
@@ -12698,24 +12896,17 @@
 
                             // Tự động chuyển tab sang loại vừa lưu để người dùng thấy kết quả
                             if (!id && subCategory) {
-                                const revSubCategoryMap = {
-                                    'Ke': 'ke',
-                                    'Gioăng': 'gioang',
-                                    'Nhựa ốp': 'nhua-op',
-                                    'Keo': 'keo',
-                                    'Khác': 'khac'
-                                };
-                                const targetSubTab = revSubCategoryMap[subCategory];
-                                if (targetSubTab) {
-                                    // Tìm button tương ứng để cập nhật UI
-                                    const buttons = document.querySelectorAll('.sub-tab-button');
-                                    let targetBtn = null;
-                                    buttons.forEach(btn => {
-                                        if (btn.getAttribute('onclick')?.includes(`'${targetSubTab}'`)) {
-                                            targetBtn = btn;
-                                        }
-                                    });
-                                    switchSubTab(targetSubTab, targetBtn);
+                                // Find if this category exists in our buttons
+                                const buttons = document.querySelectorAll('.sub-tab-button');
+                                let targetBtn = null;
+                                buttons.forEach(btn => {
+                                    if (btn.textContent.trim() === subCategory) {
+                                        targetBtn = btn;
+                                    }
+                                });
+
+                                if (targetBtn) {
+                                    switchSubTab(subCategory, targetBtn);
                                 } else {
                                     loadOtherItems(searchTerm);
                                 }
@@ -13500,6 +13691,9 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Load Other Categories first
+            loadOtherCategories();
+
             setTimeout(() => {
                 if (typeof loadAluminumWarehouses === 'function') {
                     console.log('🔄 Initializing Aluminum Warehouses...');
