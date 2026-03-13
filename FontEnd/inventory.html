@@ -113,6 +113,7 @@
     <script src="js/permission-guard.js"></script>
     <script src="js/config.js"></script>
     <script src="js/vw-modal.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
 <body>
@@ -10703,16 +10704,16 @@
                             ${unitPrice > 0 ? formatCurrency(unitPrice) : '-'}
                         </td>
                         <td class="px-4 py-3 text-sm font-semibold">${formatCurrency(itemValue)}</td>
-                        <td class="px-4 py-3 text-sm text-right">
-                             <div class="flex justify-end gap-1">
-                                <button class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" onclick="editAluminum(${system.id})">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" onclick="deleteAluminum(${system.id})">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
+                         <td class="px-4 py-3 text-sm text-right">
+                              <div class="flex justify-end gap-2">
+                                 <button class="bg-blue-500 text-white px-3 py-1 rounded-lg text-xs font-medium hover:bg-blue-600 shadow-sm transition-colors" onclick="editAluminum(${system.id})">
+                                     Sửa
+                                 </button>
+                                 <button class="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-medium hover:bg-red-600 shadow-sm transition-colors" onclick="deleteAluminum(${system.id})">
+                                     Xóa
+                                 </button>
+                             </div>
+                         </td>
                     </tr>
                 `;
                 });
@@ -11825,20 +11826,34 @@
                     // Backend trả về notes as description, nên dùng description hoặc notes
                     const notes = item.notes || item.description || '';
                     const dimensions = getGlassDimensions(item);
-                    const stockQty = parseFloat(item.quantity || 0);
+                    const stockQty = parseFloat(item.quantity || item.stock || 0);
                     const minStock = parseFloat(item.min_stock_level || 5);
-                    const unitPrice = parseFloat(item.unit_price || 0);
+                    const unitPrice = parseFloat(item.unit_price || item.price || 0);
                     const totalValue = stockQty * unitPrice;
 
                     const isLowStock = stockQty <= minStock;
 
+                    const supplierName = item.supplier_name || '-';
+                    const thickness = item.thickness || '-';
+                    const area = item.area || '-';
+                    const imageUrl = getImageUrl(item.image_path);
+
                     return `
                     <tr class="${isLowStock ? 'bg-orange-50' : 'hover:bg-gray-50'} transition">
-                        <td class="px-4 py-3 text-sm font-medium text-gray-900">${item.item_code}</td>
-                        <td class="px-4 py-3 text-sm text-gray-700">${item.item_name}</td>
+                        <td class="px-4 py-3 text-sm font-medium text-gray-900">${item.item_code || item.code || '-'}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">${item.item_name || item.name || '-'}</td>
                         <td class="px-4 py-3 text-sm">
-                            <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-medium">${dimensions}</span>
+                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">${supplierName}</span>
                         </td>
+                        <td class="px-4 py-3 text-sm text-gray-600">${thickness}</td>
+                        <td class="px-4 py-3 text-sm">
+                            <span class="bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-medium">${dimensions}</span>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-600">${area}</td>
+                        <td class="px-4 py-3 text-sm">
+                            ${imageUrl ? `<img src="${imageUrl}" class="w-10 h-10 object-contain rounded border" onclick="showImageModal('${imageUrl}')">` : '-'}
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-700 font-medium">${formatCurrency(unitPrice)}</td>
                         <td class="px-4 py-3 text-sm font-semibold">
                             <div class="flex flex-col">
                                 <span class="px-2 py-1 rounded-full text-[10px] font-bold uppercase w-max mb-1 ${isLowStock ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">
@@ -11847,16 +11862,14 @@
                                 <span class="text-base ${isLowStock ? 'text-red-600' : 'text-gray-900'}">${stockQty.toLocaleString('vi-VN')} tấm</span>
                             </div>
                         </td>
-                        <td class="px-4 py-3 text-sm text-gray-500">${minStock}</td>
-                        <td class="px-4 py-3 text-sm text-gray-700">${formatCurrency(unitPrice)}</td>
                         <td class="px-4 py-3 text-sm font-bold text-blue-600">${formatCurrency(totalValue)}</td>
                         <td class="px-4 py-3 text-sm text-right">
-                             <div class="flex justify-end gap-1">
-                                <button onclick="editGlass(${item.id})" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                                    <i class="fas fa-edit"></i>
+                             <div class="flex justify-end gap-2">
+                                <button onclick="editGlass(${item.id})" class="bg-blue-500 text-white px-3 py-1 rounded-lg text-xs font-medium hover:bg-blue-600 shadow-sm transition-colors">
+                                    Sửa
                                 </button>
-                                <button onclick="deleteGlass(${item.id})" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                                    <i class="fas fa-trash"></i>
+                                <button onclick="deleteGlass(${item.id})" class="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-medium hover:bg-red-600 shadow-sm transition-colors">
+                                    Xóa
                                 </button>
                             </div>
                         </td>
@@ -11866,7 +11879,14 @@
                 tbody.innerHTML = rows.join('');
 
                 // Hiển thị tồn kho kính
-                displayGlassStock(items);
+                if (typeof displayGlassStock === 'function') {
+                    displayGlassStock(items);
+                }
+            }
+
+            function displayGlassStock(items) {
+                // Placeholder for updating glass summary cards if added in future
+                console.log('Displaying glass stock summary...');
             }
 
             function filterGlass() {
@@ -12323,12 +12343,12 @@
                         </td>
                         <td class="px-4 py-3 text-sm font-bold text-blue-600">${formatCurrency(totalValue)}</td>
                         <td class="px-4 py-3 text-sm text-right">
-                             <div class="flex justify-end gap-1">
-                                <button onclick="editOther(${item.id})" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Sửa">
-                                    <i class="fas fa-edit"></i>
+                             <div class="flex justify-end gap-2">
+                                <button onclick="editOther(${item.id})" class="bg-blue-500 text-white px-3 py-1 rounded-lg text-xs font-medium hover:bg-blue-600 shadow-sm transition-colors" title="Sửa">
+                                    Sửa
                                 </button>
-                                <button onclick="deleteOther(${item.id})" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Xóa">
-                                    <i class="fas fa-trash"></i>
+                                <button onclick="deleteOther(${item.id})" class="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-medium hover:bg-red-600 shadow-sm transition-colors" title="Xóa">
+                                    Xóa
                                 </button>
                             </div>
                         </td>
