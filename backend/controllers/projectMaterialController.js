@@ -781,28 +781,28 @@ exports.getByProject = async (req, res) => {
                         stockNote = 'Váº­t tÆ° cÃ²n Ä‘á»§ dÃ¹ng';
                     } else if (availableStock > 0) {
                         stockStatus = 'partial';
-                        stockNote = `Thiáº¿u ${shortage.toFixed(2)} ${unit} - Cáº§n bá»• sung`;
+                        stockNote = `Thiếu ${shortage.toFixed(2)} ${unit} - Cần bổ sung`;
                     } else {
                         stockStatus = 'shortage';
-                        stockNote = 'Kho Ä‘Ã£ háº¿t hÃ£y cung cáº¥p';
+                        stockNote = 'Kho đã hết hãy cung cấp';
                     }
                 }
             } catch (err) {
                 console.error(`Error getting stock for insufficient material ${materialName}:`, err);
                 stockStatus = 'error';
-                stockNote = 'Lá»—i kiá»ƒm tra kho';
+                stockNote = 'Lỗi kiểm tra kho';
             }
 
             return {
-                id: null, // ChÆ°a cÃ³ trong project_materials
+                id: null, // Chưa có trong project_materials
                 project_id: projectId,
                 project_code: project.project_code,
                 project_name: project.project_name,
-                material_code: materialCode, // MÃ£ váº­t tÆ° tá»« BOM
+                material_code: materialCode, // Mã vật tư từ BOM
                 material_name: materialName,
                 material_type: materialType,
                 material_id: materialId,
-                quantity: 0, // ChÆ°a xuáº¥t
+                quantity: 0, // Chưa xuất
                 unit: unit,
                 total_required: totalRequiredQty,
                 total_exported: totalExportedQty,
@@ -849,14 +849,14 @@ exports.getByProject = async (req, res) => {
             updated_at: item.updated_at
         }));
 
-        // Gá»™p láº¡i: váº­t tÆ° tá»« BOM chÆ°a xuáº¥t/chÆ°a Ä‘á»§ + váº­t tÆ° Ä‘Ã£ xuáº¥t nhÆ°ng chÆ°a Ä‘á»§
+        // Gộp lại: vật tư từ BOM chưa xuất/chưa đủ + vật tư đã xuất nhưng chưa đủ
         const allInsufficientMaterials = [...filteredInsufficientFromBOM, ...insufficientFromPartiallyExported];
 
-        // TÃ­nh tá»•ng chi phÃ­ cho Táº¤T Cáº¢ váº­t tÆ° Ä‘Ã£ xuáº¥t (khÃ´ng chá»‰ fully exported)
+        // Tính tổng chi phí cho TẤT CẢ vật tư đã xuất (không chỉ fully exported)
         const totalCost = exportedMaterials.reduce((sum, item) => sum + parseFloat(item.total_cost || 0), 0);
 
-        // Cáº¬P NHáº¬T GIÃ VÃ€O DATABASE Ä‘á»ƒ Ä‘á»“ng bá»™ vá»›i API danh sÃ¡ch
-        // Chá»‰ cáº­p nháº­t náº¿u cÃ³ sá»± thay Ä‘á»•i vá» giÃ¡
+        // CẬP NHẬT GIÁ VÀO DATABASE để đồng bộ với API danh sách
+        // Chỉ cập nhật nếu có sự thay đổi về giá
         try {
             for (const mat of exportedMaterials) {
                 if (mat.id && (mat.unit_price > 0 || mat.total_cost > 0)) {
@@ -1743,11 +1743,13 @@ exports.checkExportRequirement = async (req, res) => {
     }
 };
 
-// GET /api/project-materials/inventory/:type - Láº¥y váº­t tÆ° kho theo loáº¡i
+// GET /api/project-materials/inventory/:type - Lấy vật tư kho theo loại
 exports.getInventoryByType = async (req, res) => {
     try {
         const { type } = req.params;
+        const { warehouse_id } = req.query; // Nhận thêm ID kho để lọc
         let query = '';
+        let params = [];
 
         switch (type) {
             case 'accessory':
@@ -1769,26 +1771,51 @@ exports.getInventoryByType = async (req, res) => {
                          ORDER BY created_at DESC`;
                 break;
             case 'aluminum':
-                // ✅ FIX: Aggregate stock from all warehouses using aluminum_warehouse_stocks
-                // Fallback to aluminum_systems.quantity if no warehouse entries exist
-                query = `SELECT s.id, 
-                         COALESCE(s.code, s.name) as code, 
-                         s.name, 
-                         s.aluminum_system, 
-                         'cây' as unit, 
-                         s.unit_price as price, 
-                         COALESCE(
-                            (SELECT SUM(ws.quantity) FROM aluminum_warehouse_stock ws WHERE ws.aluminum_system_id = s.id),
-                            s.quantity, 
-                            0
-                         ) as stock,
-                         s.quantity as qty_cay,
-                         s.quantity_m as qty_m,
-                         s.length_m,
-                         s.density
-                         FROM aluminum_systems s
-                         WHERE s.is_active = 1 
-                         ORDER BY s.aluminum_system, s.name`;
+                // ✅ FIX: Hỗ trợ lọc theo kho cụ thể nếu có warehouse_id
+                if (warehouse_id && warehouse_id !== 'all' && warehouse_id !== 'total') {
+                    query = `SELECT s.id, 
+                             COALESCE(s.code, s.name) as code, 
+                             s.name, 
+                             s.aluminum_system, 
+                             'cây' as unit, 
+                             s.unit_price as price, 
+                             COALESCE(ws.quantity, 0) as stock,
+                             COALESCE(ws.quantity, 0) as quantity,
+                             s.quantity as total_stock_cay,
+                             s.quantity_m as total_stock_m,
+                             s.length_m,
+                             s.density
+                             FROM aluminum_systems s
+                             LEFT JOIN aluminum_warehouse_stock ws ON ws.aluminum_system_id = s.id AND ws.warehouse_id = ?
+                             WHERE s.is_active = 1 
+                             ORDER BY s.aluminum_system, s.name`;
+                    params.push(warehouse_id);
+                } else {
+                    // Mặc định (hoặc chọn 'tổng'): Tính tổng từ tất cả các kho
+                    query = `SELECT s.id, 
+                             COALESCE(s.code, s.name) as code, 
+                             s.name, 
+                             s.aluminum_system, 
+                             'cây' as unit, 
+                             s.unit_price as price, 
+                             COALESCE(
+                                (SELECT SUM(ws2.quantity) FROM aluminum_warehouse_stock ws2 WHERE ws2.aluminum_system_id = s.id),
+                                s.quantity, 
+                                0
+                             ) as stock,
+                             COALESCE(
+                                (SELECT SUM(ws2.quantity) FROM aluminum_warehouse_stock ws2 WHERE ws2.aluminum_system_id = s.id),
+                                s.quantity, 
+                                0
+                             ) as quantity,
+                             s.quantity as total_stock_cay,
+                             s.quantity_m as total_stock_m,
+                             s.length_m,
+                             s.density
+                             FROM aluminum_systems s
+                             WHERE s.is_active = 1 
+                             ORDER BY s.aluminum_system, s.name`;
+                }
                 break;
             case 'glass':
                 // ✅ FIX: Kính hiện tại được quản lý trong bảng inventory (item_type = 'glass')
@@ -1848,7 +1875,7 @@ exports.getInventoryByType = async (req, res) => {
         console.log(`ðŸ“¦ Getting inventory for type: ${type}`);
         console.log(`ðŸ“ Query: ${query.substring(0, 100)}...`);
 
-        const [rows] = await db.query(query);
+        const [rows] = await db.query(query, params);
 
         console.log(`âœ… Found ${rows.length} items for type: ${type}`);
         if (rows.length > 0) {
