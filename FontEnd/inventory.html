@@ -3717,6 +3717,8 @@
             let editingAccessoryId = null;
             let allAccessoriesData = [];
             let showUsedScraps = false;
+            let selectedAluminumSystem = null; // Quản lý hệ nhôm đang được chọn để lọc
+            let lastAluminumData = [];         // Lưu dữ liệu hệ nhôm mới nhất để lọc client-side
 
             // ==================== BIẾN CHO XUẤT VẬT TƯ ====================
             let selectedProjectId = null;        // ID dự án đang chọn để xuất vật tư
@@ -10477,13 +10479,49 @@
                 const tbody = document.getElementById('aluminumTable');
                 tbody.innerHTML = '';
 
-                // Thống kê tổng hợp
+                // Thống kê tổng hợp (để tính toán lại theo filter)
                 let totalWeight = 0;
                 let totalValue = 0;
                 let totalBars = 0;
-                const systemStats = {}; // Group by aluminum_system
+                const systemStats = {}; // Group by aluminum_system (luôn tính trên toàn bộ để vẽ card)
 
+                // Lọc dữ liệu table nếu có hệ được chọn
+                let filteredSystems = systems;
+                if (selectedAluminumSystem) {
+                    filteredSystems = systems.filter(s => (s.aluminum_system || s.system_type || 'Khác') === selectedAluminumSystem);
+                }
+
+                // Luôn duyệt qua TẤT CẢ systems để cập nhật systemStats (vẽ các card thống kê)
                 systems.forEach(system => {
+                    const sysName = system.aluminum_system || system.system_type || 'Khác';
+                    if (!systemStats[sysName]) {
+                        systemStats[sysName] = { weight: 0, value: 0, count: 0, bars: 0 };
+                    }
+
+                    let quantity = 0;
+                    if (currentAluminumWarehouseId === 'total') {
+                        quantity = parseInt(system.total_quantity || system.quantity || 0);
+                    } else {
+                        const wh = aluminumWarehouses.find(w => w.id == currentAluminumWarehouseId);
+                        if (wh && system.stocks && system.stocks[wh.warehouse_name] !== undefined) {
+                            quantity = parseInt(system.stocks[wh.warehouse_name]);
+                        }
+                    }
+
+                    const length = parseFloat(system.length_m) || 0;
+                    const unitPrice = parseFloat(system.unit_price || 0);
+                    const density = parseFloat(system.density) || 0;
+                    const weight = density * length * quantity;
+                    const itemValue = quantity * unitPrice;
+
+                    systemStats[sysName].weight += weight;
+                    systemStats[sysName].value += itemValue;
+                    systemStats[sysName].count += 1;
+                    systemStats[sysName].bars += quantity;
+                });
+
+                filteredSystems.forEach(system => {
+                    const systemName = system.aluminum_system || system.system_type || 'Khác';
                     // ✅ Dynamic Quantity based on selected warehouse tab
                     let quantity = 0;
                     if (currentAluminumWarehouseId === 'total') {
@@ -10505,22 +10543,11 @@
                     const density = parseFloat(system.density) || 0;
                     const weight = density * length * quantity;
 
-                    // Tính tổng
+                    // Tính tổng cho table
                     totalWeight += weight;
                     totalValue += itemValue;
                     totalBars += quantity;
 
-                    // Group by aluminum_system
-                    const systemName = system.aluminum_system || system.system_type || 'Khác';
-                    if (!systemStats[systemName]) {
-                        systemStats[systemName] = { weight: 0, value: 0, count: 0, bars: 0 };
-                    }
-                    systemStats[systemName].weight += weight;
-                    systemStats[systemName].value += itemValue;
-                    systemStats[systemName].count += 1;
-                    systemStats[systemName].bars += quantity;
-
-                    // Stock status for aluminum
                     const minStock = parseInt(system.min_stock_level || 5);
                     const maxStock = parseInt(system.max_stock_level || 50);
                     let alStatusColor = 'bg-green-100 text-green-700';
@@ -10589,8 +10616,8 @@
                 // Cập nhật summary cards
                 updateAluminumSummaryCards(totalWeight, totalValue, totalBars, systemStats);
 
-                // Hiển thị tồn kho hệ nhôm
-                displayAluminumStock(systems);
+                // Hiển thị tồn kho hệ nhôm (cấp độ table)
+                displayAluminumStock(filteredSystems);
                 /* Cập nhật các summary cards cho kho nhôm */
                 function updateAluminumSummaryCards(totalWeight, totalValue, totalBars, systemStats) {
                     // Cập nhật tổng số hệ
@@ -10645,8 +10672,18 @@
                                 const weightDisplay = stats.weight >= 1000
                                     ? (stats.weight / 1000).toFixed(2) + ' tấn'
                                     : stats.weight.toFixed(2) + ' kg';
+                                
+                                // Logic highlight/dim
+                                const isSelected = selectedAluminumSystem === name;
+                                const hasSelection = selectedAluminumSystem !== null;
+                                const cardClass = isSelected 
+                                    ? 'scale-105 shadow-xl border-2 ring-2 ring-teal-500 z-10' 
+                                    : (hasSelection ? 'opacity-40 grayscale-[30%] blur-[0.2px]' : '');
+
                                 return `
-                                <div class="${color.bg} ${color.border} border rounded-lg p-3 text-center">
+                                <div class="${color.bg} ${color.border} border rounded-lg p-3 text-center cursor-pointer transform transition-all duration-300 hover:shadow-lg ${cardClass}" 
+                                     onclick="toggleAluminumSystemFilter('${name}')"
+                                     ondblclick="resetAluminumSystemFilter()">
                                     <div class="text-xs font-semibold ${color.text} mb-1 truncate" title="${name}">${name}</div>
                                     <div class="text-lg font-bold ${color.text}">${weightDisplay}</div>
                                     <div class="text-xs text-gray-500 mt-1">${stats.bars.toLocaleString('vi-VN')} thanh</div>
@@ -10705,10 +10742,36 @@
                     const result = await response.json();
 
                     if (result.success) {
-                        displayAluminumSystems(result.data);
+                        lastAluminumData = result.data || [];
+                        displayAluminumSystems(lastAluminumData);
                     }
                 } catch (error) {
                     console.error('Lỗi:', error);
+                }
+            }
+
+            // ========== ALUMINUM INTERACTIVE FILTERING ==========
+            function toggleAluminumSystemFilter(systemName) {
+                if (selectedAluminumSystem === systemName) {
+                    selectedAluminumSystem = null; // Tắt lọc
+                } else {
+                    selectedAluminumSystem = systemName; // Bật lọc
+                }
+                
+                // Re-render table and cards with current cached data
+                if (lastAluminumData.length > 0) {
+                    displayAluminumSystems(lastAluminumData);
+                } else {
+                    loadAluminumSystems();
+                }
+            }
+
+            function resetAluminumSystemFilter() {
+                selectedAluminumSystem = null;
+                if (lastAluminumData.length > 0) {
+                    displayAluminumSystems(lastAluminumData);
+                } else {
+                    loadAluminumSystems();
                 }
             }
 
