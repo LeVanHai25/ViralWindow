@@ -50,11 +50,11 @@ pool.on('connection', function (connection) {
 // Test connection
 pool.getConnection()
     .then(connection => {
-        console.log("✅ Kết nối database thành công!");
+        console.log(`[${new Date().toISOString()}] ✅ Kết nối database thành công!`);
         connection.release();
     })
     .catch(err => {
-        console.error("❌ Lỗi kết nối database:", err.message);
+        console.error(`[${new Date().toISOString()}] ❌ Lỗi kết nối database:`, err.message);
     });
 
 /**

@@ -12,6 +12,21 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' })); // Tăng limit để hỗ trợ base64 images
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+// ============================================
+// HEALTH CHECK (TOP PRIORITY FOR DEPLOYMENT)
+// Phải đăng ký ngay lập tức để Render health check không bị timeout
+// ============================================
+app.get("/api/health", (req, res) => {
+    res.json({
+        success: true,
+        message: "ViralWindow API Server",
+        version: "1.0.0",
+        uptime: process.uptime(),
+        timestamp: new Date().toISOString()
+    });
+});
+console.log(`[${new Date().toISOString()}] 🚀 Health Check /api/health đã sẵn sàng`);
+
 // Auth Middlewares
 const { optionalAuth } = require('./middleware/auth');
 
@@ -32,7 +47,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Serve frontend static files
 app.use(express.static(path.join(__dirname, '..', 'FontEnd')));
 
-// Import routes
+// Import routes (Benchmarked)
+const startupStart = Date.now();
 const aluminumRoutes = require("./routes/aluminum");
 const catalogMaterialsRoutes = require('./routes/catalog-materials');
 const projectRoutes = require("./routes/projects");
@@ -272,15 +288,11 @@ const debugRoutes = require("./routes/debug");
 app.use("/api/debug", debugRoutes);
 console.log('🔧 Route /api/debug đã được đăng ký (Debug APIs)');
 
+const startupEnd = Date.now();
+console.log(`[${new Date().toISOString()}] ⏱️ Thời gian load toàn bộ routes: ${startupEnd - startupStart}ms`);
 
-// Health check - API endpoint
-app.get("/api/health", (req, res) => {
-    res.json({
-        success: true,
-        message: "ViralWindow API Server",
-        version: "1.0.0"
-    });
-});
+
+// Health check - API endpoint (Moved to top)
 
 // ============================================
 // ERROR HANDLING (Centralized)
@@ -356,14 +368,17 @@ async function runStartupMigrations() {
     }
 }
 
-// Run migrations on startup
-runStartupMigrations().catch(err => console.error('Migration error:', err));
+// Run migrations on startup (Async, non-blocking)
+console.log(`[${new Date().toISOString()}] 🛠️ Đang khởi chạy migrations...`);
+runStartupMigrations()
+    .then(() => console.log(`[${new Date().toISOString()}] ✅ Hoàn tất migrations`))
+    .catch(err => console.error(`[${new Date().toISOString()}] ❌ Migration error:`, err));
 
 const PORT = process.env.PORT || 3001;
 
 // Handle port already in use error
 const server = app.listen(PORT, () => {
-    console.log("🔥 API Server đang chạy tại http://localhost:" + PORT);
+    console.log(`[${new Date().toISOString()}] 🔥 API Server đang chạy tại port ${PORT}`);
     console.log("📡 Các endpoints:");
     console.log("   GET  /api/aluminum-systems");
     console.log("   GET  /api/projects");
