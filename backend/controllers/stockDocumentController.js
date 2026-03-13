@@ -232,25 +232,44 @@ async function processAluminumExport(line, doc, connection, userId) {
     const metersLeftover = maxMeters - (metersUsed || maxMeters);
 
     // =====================================================
-    // ATOMIC UPDATE: Deduct bars from stock
+    // ATOMIC UPDATE: Deduct bars from specific warehouse stock
     // =====================================================
-    // Try quantity first, then quantity_in_stock
-    let updateResult;
+    const warehouseId = doc.warehouse_id || 1;
+
+    // First, update the warehouse-specific stock
+    // We use INSERT ... ON DUPLICATE KEY UPDATE to ensure a record exists
+    await connection.query(`
+        INSERT INTO aluminum_warehouse_stocks (warehouse_id, system_id, quantity)
+        VALUES (?, ?, 0)
+        ON DUPLICATE KEY UPDATE quantity = quantity
+    `, [warehouseId, system.id]);
 
     [updateResult] = await connection.query(`
-        UPDATE aluminum_systems 
-        SET quantity = GREATEST(0, COALESCE(quantity, 0) - ?) 
-        WHERE id = ? AND COALESCE(quantity, 0) >= ?
-    `, [qtyBars, system.id, qtyBars]);
-
-    // No fallback needed - quantity column is the correct one
+        UPDATE aluminum_warehouse_stocks 
+        SET quantity = GREATEST(0, quantity - ?) 
+        WHERE warehouse_id = ? AND system_id = ? AND quantity >= ?
+    `, [qtyBars, warehouseId, system.id, qtyBars]);
 
     if (updateResult.affectedRows === 0) {
+        // Check if there's any stock at all in this warehouse
+        const [wsRows] = await connection.query(
+            'SELECT quantity FROM aluminum_warehouse_stocks WHERE warehouse_id = ? AND system_id = ?',
+            [warehouseId, system.id]
+        );
+        const wsQty = wsRows.length > 0 ? wsRows[0].quantity : 0;
+        
         throw new Error(
-            `Không thể trừ kho nhôm. ${system.code || system.name}: ` +
-            `cần ${qtyBars} cây nhưng không đủ tồn (${currentBars})`
+            `Không đủ tồn kho nhôm tại kho được chọn. ${system.code || system.name}: ` +
+            `cần ${qtyBars} cây nhưng kho chỉ còn ${wsQty} cây`
         );
     }
+
+    // sync legacy quantity in aluminum_systems
+    await connection.query(`
+        UPDATE aluminum_systems 
+        SET quantity = (SELECT SUM(quantity) FROM aluminum_warehouse_stocks WHERE system_id = ?) 
+        WHERE id = ?
+    `, [system.id, system.id]);
 
     result.bars_deducted = qtyBars;
     result.meters_used = metersUsed;
@@ -293,12 +312,21 @@ async function processAluminumImport(line, doc, connection, userId) {
         throw new Error('Số lượng nhôm nhập phải > 0');
     }
 
-    // ATOMIC UPDATE: Add bars to stock
+    const warehouseId = doc.warehouse_id || 1;
+
+    // ATOMIC UPDATE: Add bars to specific warehouse stock
+    await connection.query(`
+        INSERT INTO aluminum_warehouse_stocks (warehouse_id, system_id, quantity)
+        VALUES (?, ?, ?)
+        ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity)
+    `, [warehouseId, systemId, barsToAdd]);
+
+    // sync legacy quantity in aluminum_systems
     await connection.query(`
         UPDATE aluminum_systems 
-        SET quantity = COALESCE(quantity, 0) + ? 
+        SET quantity = (SELECT SUM(quantity) FROM aluminum_warehouse_stocks WHERE system_id = ?) 
         WHERE id = ?
-    `, [barsToAdd, systemId]);
+    `, [systemId, systemId]);
 
     return {
         bars_added: barsToAdd,
@@ -851,13 +879,16 @@ exports.post = async (req, res) => {
                     newBalance = sysRows.length > 0 ? sysRows[0].quantity : 0;
 
                 } else if (doc.doc_type === 'stocktake') {
-                    // Kiểm kho nhôm: set tồn = thực tế (theo cây)
-                    const qtyActual = parseInt(line.qty) || 0;
-                    const [sysRows] = await connection.query(
-                        'SELECT quantity FROM aluminum_systems WHERE id = ?',
-                        [line.system_id || line.item_id]
+                    // Kiểm kho nhôm: set tồn = thực tế (theo cây) cho kho cụ thể
+                    const qtyActual = parseInt(line.qty_actual !== undefined ? line.qty_actual : line.qty) || 0;
+                    const warehouseId = doc.warehouse_id || 1;
+
+                    // Get current stock in this warehouse for diff calculation
+                    const [wsRows] = await connection.query(
+                        'SELECT quantity FROM aluminum_warehouse_stocks WHERE warehouse_id = ? AND system_id = ?',
+                        [warehouseId, line.system_id || line.item_id]
                     );
-                    const currentBars = sysRows.length > 0 ? parseInt(sysRows[0].quantity) : 0;
+                    const currentBars = wsRows.length > 0 ? parseInt(wsRows[0].quantity) : 0;
                     const diff = qtyActual - currentBars;
 
                     if (diff > 0) {
@@ -866,12 +897,21 @@ exports.post = async (req, res) => {
                         qtyOut = Math.abs(diff);
                     }
 
-                    // Update stock to actual
-                    await connection.query(
-                        'UPDATE aluminum_systems SET quantity = ? WHERE id = ?',
-                        [qtyActual, line.system_id || line.item_id]
-                    );
-                    newBalance = qtyActual;
+                    // Update specific warehouse stock
+                    await connection.query(`
+                        INSERT INTO aluminum_warehouse_stocks (warehouse_id, system_id, quantity)
+                        VALUES (?, ?, ?)
+                        ON DUPLICATE KEY UPDATE quantity = VALUES(quantity)
+                    `, [warehouseId, line.system_id || line.item_id, qtyActual]);
+
+                    // Sync legacy quantity
+                    await connection.query(`
+                        UPDATE aluminum_systems 
+                        SET quantity = (SELECT SUM(quantity) FROM aluminum_warehouse_stocks WHERE system_id = ?) 
+                        WHERE id = ?
+                    `, [line.system_id || line.item_id, line.system_id || line.item_id]);
+
+                    newBalance = qtyActual; // Current balance for this warehouse
 
                     metaJson = { type: 'aluminum_stocktake', actual: qtyActual, diff };
 

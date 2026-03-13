@@ -1,4 +1,4 @@
-﻿const db = require("../config/db");
+const db = require("../config/db");
 
 /**
  * Controller quáº£n lÃ½ váº­t tÆ° xuáº¥t cho dá»± Ã¡n
@@ -1769,26 +1769,26 @@ exports.getInventoryByType = async (req, res) => {
                          ORDER BY created_at DESC`;
                 break;
             case 'aluminum':
-                // ✅ FIX: Use CASE WHEN to match frontend logic (quantity || quantity_m)
-                // Frontend uses: system.quantity || system.quantity_m
-                // This means: if quantity > 0, use quantity; else use quantity_m
-                query = `SELECT id, 
-                         COALESCE(code, name) as code, 
-                         name, 
-                         aluminum_system, 
+                // ✅ FIX: Aggregate stock from all warehouses using aluminum_warehouse_stocks
+                // Fallback to aluminum_systems.quantity if no warehouse entries exist
+                query = `SELECT s.id, 
+                         COALESCE(s.code, s.name) as code, 
+                         s.name, 
+                         s.aluminum_system, 
                          'cây' as unit, 
-                         unit_price as price, 
-                         CASE 
-                             WHEN quantity IS NOT NULL AND quantity > 0 THEN quantity
-                             ELSE COALESCE(quantity_m, 0)
-                         END as stock,
-                         quantity as qty_cay,
-                         quantity_m as qty_m,
-                         length_m,
-                         density
-                         FROM aluminum_systems 
-                         WHERE is_active = 1 
-                         ORDER BY aluminum_system, name`;
+                         s.unit_price as price, 
+                         COALESCE(
+                            (SELECT SUM(ws.quantity) FROM aluminum_warehouse_stocks ws WHERE ws.system_id = s.id),
+                            s.quantity, 
+                            0
+                         ) as stock,
+                         s.quantity as qty_cay,
+                         s.quantity_m as qty_m,
+                         s.length_m,
+                         s.density
+                         FROM aluminum_systems s
+                         WHERE s.is_active = 1 
+                         ORDER BY s.aluminum_system, s.name`;
                 break;
             case 'glass':
                 // ✅ FIX: Kính hiện tại được quản lý trong bảng inventory (item_type = 'glass')
