@@ -199,7 +199,7 @@ exports.update = async (req, res) => {
 
         // Handle both JSON and FormData
         // Hỗ trợ cả brand/thickness_mm (cũ) và density/cross_section_image (mới)
-        let name, brand, thickness_mm, density, weight_per_meter, length_m, quantity, quantity_m, color, description, image_url, cross_section_image;
+        let code, name, brand, thickness_mm, density, weight_per_meter, length_m, quantity, quantity_m, color, description, image_url, cross_section_image;
         let unit_price, door_type, profiles, matching_rules, aluminum_system;
 
         // Lấy cross_section_image hiện tại từ database trước khi update
@@ -211,6 +211,7 @@ exports.update = async (req, res) => {
 
         if (req.file) {
             // FormData with file upload
+            code = req.body.code;
             name = req.body.name;
             aluminum_system = req.body.aluminum_system || null;
             brand = req.body.brand || null;
@@ -232,7 +233,7 @@ exports.update = async (req, res) => {
         } else {
             // JSON request
             ({
-                name, brand, thickness_mm, density, weight_per_meter, length_m, quantity, quantity_m, color, description, image_url, cross_section_image,
+                code, name, brand, thickness_mm, density, weight_per_meter, length_m, quantity, quantity_m, color, description, image_url, cross_section_image,
                 unit_price, door_type, profiles, matching_rules, aluminum_system
             } = req.body);
 
@@ -257,7 +258,8 @@ exports.update = async (req, res) => {
         // Build update query dynamically
         const updateFields = [];
         const updateValues = [];
-
+        
+        if (code !== undefined) { updateFields.push('code = ?'); updateValues.push(code); }
         if (name !== undefined) { updateFields.push('name = ?'); updateValues.push(name); }
         if (aluminum_system !== undefined) { updateFields.push('aluminum_system = ?'); updateValues.push(aluminum_system); }
         if (brand !== undefined) { updateFields.push('brand = ?'); updateValues.push(brand); }
