@@ -731,7 +731,20 @@
 
                         <div class="bg-white rounded-xl shadow p-6 mb-6">
                             <div class="flex justify-between items-center mb-6">
-                                <div class="flex-1">
+                                <div class="flex-1 flex gap-2">
+                                    <select onchange="handleSortChange('accessory', this.value)" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm bg-white font-medium text-gray-700 shadow-sm">
+                                        <option value="name_asc">🔤 Tên A → Z</option>
+                                        <option value="name_desc">🔤 Tên Z → A</option>
+                                        <option value="code_asc">🔢 Mã tăng dần</option>
+                                        <option value="code_desc">🔢 Mã giảm dần</option>
+                                        <option value="stock_asc">📦 Tồn kho thấp → cao</option>
+                                        <option value="stock_desc">📦 Tồn kho cao → thấp</option>
+                                        <option value="status">⚠️ Theo trạng thái</option>
+                                        <option value="price_asc">💰 Giá thấp → cao</option>
+                                        <option value="price_desc">💰 Giá cao → thấp</option>
+                                        <option value="value_asc">📊 Giá trị thấp → cao</option>
+                                        <option value="value_desc">📊 Giá trị cao → thấp</option>
+                                    </select>
                                     <input type="text" id="searchAccessory" placeholder=" 🔍︎ Tìm kiếm phụ kiện..."
                                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                                         onkeyup="filterAccessory()">
@@ -916,6 +929,19 @@
                             <div class="flex justify-between items-center mb-6">
                                 <h2 class="text-xl font-bold">Danh sách kho nhôm</h2>
                                 <div class="flex gap-4">
+                                    <select onchange="handleSortChange('aluminum', this.value)" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm bg-white font-medium text-gray-700 shadow-sm">
+                                        <option value="name_asc">🔤 Tên A → Z</option>
+                                        <option value="name_desc">🔤 Tên Z → A</option>
+                                        <option value="code_asc">🔢 Mã tăng dần</option>
+                                        <option value="code_desc">🔢 Mã giảm dần</option>
+                                        <option value="stock_asc">📦 Tồn kho thấp → cao</option>
+                                        <option value="stock_desc">📦 Tồn kho cao → thấp</option>
+                                        <option value="status" selected>⚠️ Theo trạng thái</option>
+                                        <option value="price_asc">💰 Giá thấp → cao</option>
+                                        <option value="price_desc">💰 Giá cao → thấp</option>
+                                        <option value="value_asc">📊 Giá trị thấp → cao</option>
+                                        <option value="value_desc">📊 Giá trị cao → thấp</option>
+                                    </select>
                                     <input type="text" id="searchAluminum"
                                         placeholder=" 🔍︎ Tìm kiếm theo mã, tên hoặc hãng..."
                                         class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
@@ -984,6 +1010,18 @@
                             <div class="flex justify-between items-center mb-6">
                                 <h2 class="text-xl font-bold">Danh sách kính</h2>
                                 <div class="flex gap-4">
+                                    <select onchange="handleSortChange('glass', this.value)" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm bg-white font-medium text-gray-700 shadow-sm">
+                                        <option value="name_asc">🔤 Tên A → Z</option>
+                                        <option value="name_desc">🔤 Tên Z → A</option>
+                                        <option value="code_asc">🔢 Mã tăng dần</option>
+                                        <option value="code_desc">🔢 Mã giảm dần</option>
+                                        <option value="stock_asc">📦 Tồn kho thấp → cao</option>
+                                        <option value="stock_desc">📦 Tồn kho cao → thấp</option>
+                                        <option value="price_asc">💰 Giá thấp → cao</option>
+                                        <option value="price_desc">💰 Giá cao → thấp</option>
+                                        <option value="value_asc">📊 Giá trị thấp → cao</option>
+                                        <option value="value_desc">📊 Giá trị cao → thấp</option>
+                                    </select>
                                     <input type="text" id="searchGlass" placeholder="🔍︎ Tìm kiếm theo mã, tên..."
                                         class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                                         onkeyup="filterGlass()">
@@ -1096,6 +1134,19 @@
                             <div class="flex justify-between items-center mb-6">
                                 <h2 class="text-xl font-bold" id="otherSubTabTitle">Danh sách vật tư phụ - Ke</h2>
                                 <div class="flex gap-4">
+                                    <select onchange="handleSortChange('other', this.value)" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm bg-white font-medium text-gray-700 shadow-sm">
+                                        <option value="name_asc">🔤 Tên A → Z</option>
+                                        <option value="name_desc">🔤 Tên Z → A</option>
+                                        <option value="code_asc">🔢 Mã tăng dần</option>
+                                        <option value="code_desc">🔢 Mã giảm dần</option>
+                                        <option value="stock_asc">📦 Tồn kho thấp → cao</option>
+                                        <option value="stock_desc">📦 Tồn kho cao → thấp</option>
+                                        <option value="status">⚠️ Theo trạng thái</option>
+                                        <option value="price_asc">💰 Giá thấp → cao</option>
+                                        <option value="price_desc">💰 Giá cao → thấp</option>
+                                        <option value="value_asc">📊 Giá trị thấp → cao</option>
+                                        <option value="value_desc">📊 Giá trị cao → thấp</option>
+                                    </select>
                                     <input type="text" id="searchOther" placeholder=" 🔍︎ Tìm kiếm theo mã, tên..."
                                         class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                                         onkeyup="filterOther()">
@@ -1155,6 +1206,14 @@
                             <div class="flex justify-between items-center mb-6">
                                 <h2 class="text-xl font-bold">Danh sách Nhôm Đề C</h2>
                                 <div class="flex gap-4">
+                                    <select onchange="handleSortChange('scraps', this.value)" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm bg-white font-medium text-gray-700 shadow-sm">
+                                        <option value="date_desc">📅 Mới nhất</option>
+                                        <option value="date_asc">📅 Cũ nhất</option>
+                                        <option value="length_desc">📏 Dài nhất</option>
+                                        <option value="length_asc">📏 Ngắn nhất</option>
+                                        <option value="name_asc">🔤 Tên A → Z</option>
+                                        <option value="code_asc">🔢 Mã tăng dần</option>
+                                    </select>
                                     <input type="text" id="searchScraps" placeholder="🔍︎ Tìm kiếm theo mã, tên..."
                                         class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                                         onkeyup="filterScraps()">
@@ -3716,9 +3775,19 @@
             let currentTransFilter = 'export'; // Chỉ hiển thị xuất kho
             let editingAccessoryId = null;
             let allAccessoriesData = [];
+            let allScrapsData = [];
+            let allGlassData = [];
+            let allOtherData = [];
             let showUsedScraps = false;
             let selectedAluminumSystem = null; // Quản lý hệ nhôm đang được chọn để lọc
             let lastAluminumData = [];         // Lưu dữ liệu hệ nhôm mới nhất để lọc client-side
+            let currentSorts = {
+                accessory: 'name_asc',
+                aluminum: 'name_asc',
+                glass: 'name_asc',
+                other: 'name_asc',
+                scraps: 'date_desc'
+            };
 
             // ==================== BIẾN CHO XUẤT VẬT TƯ ====================
             let selectedProjectId = null;        // ID dự án đang chọn để xuất vật tư
@@ -9317,7 +9386,8 @@
                     const result = await response.json();
 
                     if (result.success) {
-                        displayScraps(result.data || []);
+                        allScrapsData = result.data || [];
+                        displayScraps(allScrapsData);
                     }
                 } catch (error) {
                     console.error('Lỗi:', error);
@@ -9328,9 +9398,18 @@
                 const container = document.getElementById('scrapsList');
                 container.innerHTML = '';
 
-                const filtered = showUsedScraps
+                // Lọc theo tìm kiếm
+                const searchTerm = document.getElementById('searchScraps')?.value.toLowerCase() || '';
+                let filtered = showUsedScraps
                     ? scraps
                     : scraps.filter(s => !s.is_used);
+                
+                if (searchTerm) {
+                    filtered = filtered.filter(s => 
+                        (s.profile_name && s.profile_name.toLowerCase().includes(searchTerm)) ||
+                        (s.profile_code && s.profile_code.toLowerCase().includes(searchTerm))
+                    );
+                }
 
                 document.getElementById('scrapsCount').textContent = `Tổng: ${filtered.length} đoạn nhôm thừa`;
 
@@ -9340,34 +9419,48 @@
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-16 h-16 mb-4">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z" />
                         </svg>
-                        <p>Chưa có nhôm thừa ${showUsedScraps ? 'đã sử dụng' : 'chưa sử dụng'}</p>
+                        <p>Chưa tìm thấy nhôm thừa phù hợp</p>
                     </div>
                 `;
                     return;
                 }
 
-                filtered.forEach(scrap => {
-                    const card = `
-                    <div class="bg-white border border-gray-200 rounded-lg p-4 flex justify-between items-center">
+                const sorted = getSortedData(filtered, 'scraps', currentSorts.scraps);
+
+                const cards = sorted.map(scrap => {
+                    return `
+                    <div class="bg-white border border-gray-200 rounded-lg p-4 flex justify-between items-center hover:shadow-md transition">
                         <div>
-                            <h4 class="font-semibold">${scrap.profile_name || 'Nhôm thừa'}</h4>
-                            <p class="text-sm text-gray-600">Chiều dài: ${scrap.length_cm} cm</p>
-                            <p class="text-xs text-gray-500">Ngày tạo: ${formatDate(scrap.created_at)}</p>
+                            <h4 class="font-semibold text-gray-900">${scrap.profile_name || 'Nhôm thừa'}</h4>
+                            <div class="flex items-center gap-3 mt-1">
+                                <span class="text-sm text-gray-600 bg-gray-100 px-2 py-0.5 rounded">Mã: ${scrap.profile_code || '-'}</span>
+                                <span class="text-sm font-bold text-teal-600">${scrap.length_cm} cm</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2"><i class="far fa-calendar-alt mr-1"></i> Ngày tạo: ${formatDate(scrap.created_at)}</p>
                         </div>
                         <div class="flex gap-2">
                             ${!scrap.is_used ? `
-                                <button onclick="markScrapUsed(${scrap.id})" class="px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600">
-                                    Đánh dấu đã dùng
+                                <button onclick="markScrapUsed(${scrap.id})" class="px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition-colors">
+                                    <i class="fas fa-check mr-1"></i> Đã dùng
                                 </button>
-                            ` : ''}
-                            <button onclick="deleteScrap(${scrap.id})" class="px-4 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600">
-                                Xóa
+                            ` : `
+                                <span class="px-4 py-2 bg-gray-100 text-gray-400 rounded-lg text-sm font-medium cursor-not-allowed">
+                                    Đã sử dụng
+                                </span>
+                            `}
+                            <button onclick="deleteScrap(${scrap.id})" class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Xóa">
+                                <i class="fas fa-trash"></i>
                             </button>
                         </div>
                     </div>
                 `;
-                    container.innerHTML += card;
                 });
+
+                container.innerHTML = cards.join('');
+            }
+
+            function filterScraps() {
+                displayScraps(allScrapsData);
             }
 
             function toggleUsedScraps() {
@@ -9974,13 +10067,16 @@
                     );
                 }
 
-                if (filteredAccessories.length === 0) {
+                // Sắp xếp
+                const sorted = getSortedData(filteredAccessories, 'accessory', currentSorts.accessory);
+
+                if (sorted.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="12" class="px-4 py-8 text-center text-gray-500">Chưa có phụ kiện nào</td></tr>';
                     updateAccessoryStats(accessories);
                     return;
                 }
 
-                filteredAccessories.forEach(accessory => {
+                sorted.forEach(accessory => {
                     const stockQty = parseFloat(accessory.stock_quantity || 0);
                     const minStock = parseFloat(accessory.min_stock_level || 10);
                     const maxStock = parseFloat(accessory.max_stock_level || 100);
@@ -10067,14 +10163,14 @@
                     return;
                 }
 
-                accessories.forEach(accessory => {
+                const rows = accessories.map(accessory => {
                     const stockQty = parseFloat(accessory.stock_quantity) || 0;
                     const minStock = parseFloat(accessory.min_stock_level) || 10;
                     const isLowStock = stockQty < minStock;
                     const unitPrice = parseFloat(accessory.sale_price || accessory.purchase_price) || 0;
                     const value = stockQty * unitPrice;
 
-                    const row = `
+                    return `
                     <tr class="hover:bg-gray-50">
                         <td class="px-4 py-3 text-sm font-medium">${accessory.name}</td>
                         <td class="px-4 py-3 text-sm">
@@ -10094,8 +10190,8 @@
                         </td>
                     </tr>
                 `;
-                    tbody.innerHTML += row;
                 });
+                tbody.innerHTML = rows.join('');
             }
 
             function updateAccessoryStats(accessories) {
@@ -10479,19 +10575,17 @@
                 const tbody = document.getElementById('aluminumTable');
                 tbody.innerHTML = '';
 
-                // Thống kê tổng hợp (để tính toán lại theo filter)
-                let totalWeight = 0;
-                let totalValue = 0;
-                let totalBars = 0;
-                const systemStats = {}; // Group by aluminum_system (luôn tính trên toàn bộ để vẽ card)
-
-                // Lọc dữ liệu table nếu có hệ được chọn
+                // Áp dụng bộ lọc hệ nhôm TRƯỚC khi sắp xếp
                 let filteredSystems = systems;
                 if (selectedAluminumSystem) {
                     filteredSystems = systems.filter(s => (s.aluminum_system || s.system_type || 'Khác') === selectedAluminumSystem);
                 }
 
-                // Luôn duyệt qua TẤT CẢ systems để cập nhật systemStats (vẽ các card thống kê)
+                // Áp dụng Sắp xếp trên dữ liệu đã lọc
+                const sortedSystems = getSortedData(filteredSystems, 'aluminum', currentSorts.aluminum);
+
+                // Thống kê tổng hợp (luôn tính trên toàn bộ để vẽ card)
+                const systemStats = {};
                 systems.forEach(system => {
                     const sysName = system.aluminum_system || system.system_type || 'Khác';
                     if (!systemStats[sysName]) {
@@ -10520,30 +10614,29 @@
                     systemStats[sysName].bars += quantity;
                 });
 
-                filteredSystems.forEach(system => {
+                let totalWeight = 0;
+                let totalValue = 0;
+                let totalBars = 0;
+
+                const rows = sortedSystems.map(system => {
                     const systemName = system.aluminum_system || system.system_type || 'Khác';
-                    // ✅ Dynamic Quantity based on selected warehouse tab
                     let quantity = 0;
                     if (currentAluminumWarehouseId === 'total') {
-                        quantity = parseInt(system.total_quantity || system.quantity || 0); // Use aggregated total
+                        quantity = parseInt(system.total_quantity || system.quantity || 0);
                     } else {
-                        // Find quantity for specific warehouse
                         const wh = aluminumWarehouses.find(w => w.id == currentAluminumWarehouseId);
                         if (wh && system.stocks && system.stocks[wh.warehouse_name] !== undefined) {
                             quantity = parseInt(system.stocks[wh.warehouse_name]);
-                        } else {
-                            quantity = 0;
                         }
                     }
 
                     const length = parseFloat(system.length_m) || 0;
-                    const totalMeters = quantity * length; // Số M = DÀI (M) × SL (thanh)
+                    const totalMeters = quantity * length;
                     const unitPrice = parseFloat(system.unit_price || 0);
                     const itemValue = quantity * unitPrice;
                     const density = parseFloat(system.density) || 0;
                     const weight = density * length * quantity;
 
-                    // Tính tổng cho table
                     totalWeight += weight;
                     totalValue += itemValue;
                     totalBars += quantity;
@@ -10568,7 +10661,7 @@
                     }
                     const alRestockQty = maxStock > quantity ? Math.ceil(maxStock - quantity) : 0;
 
-                    const row = `
+                    return `
                     <tr class="${alRowBg} hover:bg-gray-100 transition">
                         <td class="px-4 py-3 text-sm font-medium">${system.code}</td>
                         <td class="px-4 py-3 text-sm">
@@ -10578,7 +10671,6 @@
                         <td class="px-4 py-3 text-sm">
                             ${system.cross_section_image ?
                             (() => {
-                                // Use getImageUrl helper for consistent URL handling
                                 const imageUrl = getImageUrl(system.cross_section_image);
                                 return `<img src="${imageUrl}" alt="Mặt cắt" class="w-16 h-16 object-contain border border-gray-300 rounded cursor-pointer" onclick="showImageModal('${imageUrl}')">`;
                             })() :
@@ -10604,19 +10696,22 @@
                             ${unitPrice > 0 ? formatCurrency(unitPrice) : '-'}
                         </td>
                         <td class="px-4 py-3 text-sm font-semibold">${formatCurrency(itemValue)}</td>
-                        <td class="px-4 py-3 text-sm">
-                            <button class="bg-blue-500 text-white px-3 py-1 rounded-lg text-xs font-medium hover:bg-blue-600 mr-1" onclick="editAluminum(${system.id})">Sửa</button>
-                            <button class="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-medium hover:bg-red-600" onclick="deleteAluminum(${system.id})">Xóa</button>
+                        <td class="px-4 py-3 text-sm text-right">
+                             <div class="flex justify-end gap-1">
+                                <button class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" onclick="editAluminum(${system.id})">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" onclick="deleteAluminum(${system.id})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 `;
-                    tbody.innerHTML += row;
                 });
 
-                // Cập nhật summary cards
+                tbody.innerHTML = rows.join('');
                 updateAluminumSummaryCards(totalWeight, totalValue, totalBars, systemStats);
-
-                // Hiển thị tồn kho hệ nhôm (cấp độ table)
                 displayAluminumStock(filteredSystems);
                 /* Cập nhật các summary cards cho kho nhôm */
                 function updateAluminumSummaryCards(totalWeight, totalValue, totalBars, systemStats) {
@@ -10704,30 +10799,41 @@
                     return;
                 }
 
-                systems.forEach(system => {
-                    const stockQty = 0; // Kho nhôm không có tracking tồn kho
-                    const minStock = 0;
-                    const isLowStock = false;
-                    const unitPrice = parseFloat(system.unit_price) || 0;
-                    const value = stockQty * unitPrice;
+                const rows = systems.map(system => {
+                    let quantity = 0;
+                    if (currentAluminumWarehouseId === 'total') {
+                        quantity = parseInt(system.total_quantity || 0);
+                    } else {
+                        const wh = aluminumWarehouses.find(w => w.id == currentAluminumWarehouseId);
+                        if (wh && system.stocks && system.stocks[wh.warehouse_name] !== undefined) {
+                            quantity = parseInt(system.stocks[wh.warehouse_name]);
+                        }
+                    }
 
-                    const row = `
+                    const minStock = parseFloat(system.min_stock_level || 5);
+                    const isLowStock = quantity <= minStock;
+                    const unitPrice = parseFloat(system.unit_price) || 0;
+                    const value = quantity * unitPrice;
+
+                    return `
                     <tr class="hover:bg-gray-50">
                         <td class="px-4 py-3 text-sm font-medium">${system.name}</td>
                         <td class="px-4 py-3 text-sm">
-                            <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs">Kho nhôm</span>
+                            <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs">${system.aluminum_system || 'Nhôm'}</span>
                         </td>
-                        <td class="px-4 py-3 text-sm">${stockQty.toLocaleString('vi-VN')} Mét</td>
-                        <td class="px-4 py-3 text-sm">${minStock} Mét</td>
+                        <td class="px-4 py-3 text-sm ${isLowStock ? 'text-red-600 font-semibold' : 'text-gray-700'}">${quantity.toLocaleString('vi-VN')} Thanh</td>
+                        <td class="px-4 py-3 text-sm">${minStock} Thanh</td>
                         <td class="px-4 py-3 text-sm">${formatCurrency(unitPrice)}</td>
                         <td class="px-4 py-3 text-sm font-semibold">${formatCurrency(value)}</td>
                         <td class="px-4 py-3 text-sm">
-                            <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">Bình thường</span>
+                            <span class="px-2 py-1 rounded-full text-xs ${isLowStock ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">
+                                ${isLowStock ? 'Cảnh báo' : 'Bình thường'}
+                            </span>
                         </td>
                     </tr>
                 `;
-                    tbody.innerHTML += row;
                 });
+                tbody.innerHTML = rows.join('');
             }
 
             function filterAluminum() {
@@ -10847,6 +10953,98 @@
                 // Reload data with current filters
                 const search = document.getElementById('searchAluminum').value;
                 loadAluminumSystems(search);
+            }
+
+            /**
+             * CORE SORTING ENGINE - ERP STYLE
+             */
+            function getSortedData(data, type, criteria) {
+                if (!data || !Array.isArray(data)) return [];
+                const sorted = [...data];
+
+                sorted.sort((a, b) => {
+                    let valA, valB;
+
+                    switch (criteria) {
+                        case 'name_asc':
+                        case 'name_desc':
+                            valA = (a.name || a.product_name || a.item_name || a.system_name || a.profile_name || '').toLowerCase();
+                            valB = (b.name || b.product_name || b.item_name || b.system_name || b.profile_name || '').toLowerCase();
+                            return criteria === 'name_asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+
+                        case 'code_asc':
+                        case 'code_desc':
+                            valA = (a.code || a.product_code || a.item_code || a.profile_code || a.system_code || '').toLowerCase();
+                            valB = (b.code || b.product_code || b.item_code || b.profile_code || b.system_code || '').toLowerCase();
+                            return criteria === 'code_asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+
+                        case 'stock_asc':
+                        case 'stock_desc':
+                            valA = parseFloat(a.stock_quantity || a.total_quantity || a.quantity || a.stock || a.length_cm || 0);
+                            valB = parseFloat(b.stock_quantity || b.total_quantity || b.quantity || b.stock || b.length_cm || 0);
+                            return criteria === 'stock_asc' ? valA - valB : valB - valA;
+
+                        case 'price_asc':
+                        case 'price_desc':
+                            valA = parseFloat(a.sale_price || a.purchase_price || a.unit_price || a.price || 0);
+                            valB = parseFloat(b.sale_price || b.purchase_price || b.unit_price || b.price || 0);
+                            return criteria === 'price_asc' ? valA - valB : valB - valA;
+
+                        case 'value_asc':
+                        case 'value_desc':
+                            const getVal = (item) => {
+                                const q = parseFloat(item.stock_quantity || item.total_quantity || item.quantity || item.stock || item.length_cm || 0);
+                                const p = parseFloat(item.sale_price || item.purchase_price || item.unit_price || item.price || 0);
+                                return q * p;
+                            };
+                            valA = getVal(a);
+                            valB = getVal(b);
+                            return criteria === 'value_asc' ? valA - valB : valB - valA;
+
+                        case 'status':
+                            // Priority: Hết -> Sắp hết -> Normal -> Dư
+                            const getStatusPriority = (item) => {
+                                const q = parseFloat(item.stock_quantity || item.total_quantity || item.quantity || item.stock || 0);
+                                const min = parseFloat(item.min_stock_level || item.min_stock || 5);
+                                const max = parseFloat(item.max_stock_level || item.max_stock || 100);
+                                if (q === 0) return 0;
+                                if (q <= min) return 1;
+                                if (q > max) return 3;
+                                return 2;
+                            };
+                            return getStatusPriority(a) - getStatusPriority(b);
+
+                        case 'date_desc':
+                        case 'date_asc':
+                            valA = new Date(a.updated_at || a.created_at || a.date_created || 0).getTime();
+                            valB = new Date(b.updated_at || b.created_at || b.date_created || 0).getTime();
+                            return criteria === 'date_desc' ? valB - valA : valA - valB;
+
+                        case 'length_desc':
+                        case 'length_asc':
+                            valA = parseFloat(a.length_cm || a.length_mm || 0);
+                            valB = parseFloat(b.length_cm || b.length_mm || 0);
+                            return criteria === 'length_desc' ? valB - valA : valA - valB;
+
+                        default:
+                            return 0;
+                    }
+                });
+
+                return sorted;
+            }
+
+            function handleSortChange(type, criteria) {
+                currentSorts[type] = criteria;
+                console.log(`Sorting ${type} by ${criteria}`);
+                
+                switch (type) {
+                    case 'accessory': filterAccessory(); break;
+                    case 'aluminum': displayAluminumSystems(lastAluminumData); break;
+                    case 'glass': filterGlass(); break;
+                    case 'other': filterOther(); break;
+                    case 'scraps': filterScraps(); break;
+                }
             }
 
             function openWarehouseSettingsModal(type) {
@@ -11602,130 +11800,73 @@
                 const tbody = document.getElementById('glassTable');
                 tbody.innerHTML = '';
 
-                if (items.length === 0) {
+                // Lọc theo tìm kiếm
+                const searchTerm = document.getElementById('searchGlass')?.value.toLowerCase() || '';
+                const filtered = items.filter(item =>
+                    (item.item_code && item.item_code.toLowerCase().includes(searchTerm)) ||
+                    (item.item_name && item.item_name.toLowerCase().includes(searchTerm))
+                );
+
+                if (filtered.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="10" class="px-4 py-8 text-center text-gray-500">Chưa có dữ liệu</td></tr>';
                     return;
                 }
 
-                items.forEach(item => {
+                // Sắp xếp
+                const sorted = getSortedData(filtered, 'glass', currentSorts.glass);
+                const rows = sorted.map(item => {
                     // Backend trả về notes as description, nên dùng description hoặc notes
                     const notes = item.notes || item.description || '';
-                    const thicknessMatch = notes.match(/(\d+\.?\d*)mm/i);
-                    const thickness = thicknessMatch ? thicknessMatch[1] + 'mm' : '-';
-
-                    // Hiển thị nhà cung cấp thay vì loại kính
-                    const supplierName = item.supplier_name || '-';
-
-                    // Parse chiều dài x chiều rộng và tính diện tích
                     const dimensions = getGlassDimensions(item);
-                    const dimensionMatch = notes.match(/(\d+\.?\d*)\s*m\s*x\s*(\d+\.?\d*)\s*m/i);
-                    let area = 0;
-                    if (dimensionMatch) {
-                        const length = parseFloat(dimensionMatch[1]);
-                        const width = parseFloat(dimensionMatch[2]);
-                        area = length * width;
-                    } else if (item.stock || item.stock_quantity) {
-                        area = parseFloat(item.stock || item.stock_quantity) || 0;
-                    }
-
-                    // TỒN KHO: Ưu tiên stock (primary DB field), sau đó stock_quantity, cuối cùng quantity
-                    const stock = parseFloat(item.stock || item.stock_quantity || item.quantity || 0);
-                    // GIÁ: PHẢI là number
+                    const stockQty = parseFloat(item.quantity || 0);
+                    const minStock = parseFloat(item.min_stock_level || 5);
                     const unitPrice = parseFloat(item.unit_price || 0);
-                    // TỔNG GIÁ TRỊ = TỒN KHO * GIÁ (không phải diện tích * giá)
-                    const totalValue = stock * unitPrice;
-                    const imageUrl = getImageUrl(item.image_url);
+                    const totalValue = stockQty * unitPrice;
 
-                    const row = `
-                    <tr>
-                        <td class="px-4 py-3 text-sm font-medium">${item.item_code || '-'}</td>
-                        <td class="px-4 py-3 text-sm">${item.item_name || '-'}</td>
+                    const isLowStock = stockQty <= minStock;
+
+                    return `
+                    <tr class="${isLowStock ? 'bg-orange-50' : 'hover:bg-gray-50'} transition">
+                        <td class="px-4 py-3 text-sm font-medium text-gray-900">${item.item_code}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">${item.item_name}</td>
                         <td class="px-4 py-3 text-sm">
-                            <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs">${supplierName}</span>
+                            <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-medium">${dimensions}</span>
                         </td>
-                        <td class="px-4 py-3 text-sm">${thickness}</td>
-                        <td class="px-4 py-3 text-sm">${dimensions}</td>
-                        <td class="px-4 py-3 text-sm">${area.toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m²</td>
-                        <td class="px-4 py-3 text-sm">
-                            ${imageUrl ?
-                            `<img src="${imageUrl}" alt="${item.item_name}" class="w-12 h-12 object-cover rounded-lg border cursor-pointer hover:opacity-75" onclick="viewImage('${imageUrl}', '${item.item_name}')" onerror="this.onerror=null;this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%23e5e7eb%22><rect width=%2224%22 height=%2224%22/><text x=%2212%22 y=%2214%22 text-anchor=%22middle%22 fill=%22%239ca3af%22 font-size=%226%22>No img</text></svg>';" />`
-                            : `<div class="w-12 h-12 bg-gray-100 rounded-lg border flex items-center justify-center text-gray-400">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                </div>`
-                        }
+                        <td class="px-4 py-3 text-sm font-semibold">
+                            <div class="flex flex-col">
+                                <span class="px-2 py-1 rounded-full text-[10px] font-bold uppercase w-max mb-1 ${isLowStock ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">
+                                    ${isLowStock ? 'Cảnh báo' : 'Bình thường'}
+                                </span>
+                                <span class="text-base ${isLowStock ? 'text-red-600' : 'text-gray-900'}">${stockQty.toLocaleString('vi-VN')} tấm</span>
+                            </div>
                         </td>
-                        <td class="px-4 py-3 text-sm font-medium">
-                            ${unitPrice > 0 ? formatCurrency(unitPrice) : '-'}
-                        </td>
-                        <td class="px-4 py-3 text-sm">${Math.round(stock).toLocaleString('vi-VN')} tấm</td>
-                        <td class="px-4 py-3 text-sm font-semibold">${formatCurrency(totalValue)}</td>
-                        <td class="px-4 py-3 text-sm">
-                            <button class="bg-blue-500 text-white px-3 py-1 rounded-lg text-xs font-medium hover:bg-blue-600 mr-1" onclick="editGlass(${item.id})">Sửa</button>
-                            <button class="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-medium hover:bg-red-600" onclick="deleteGlass(${item.id})">Xóa</button>
+                        <td class="px-4 py-3 text-sm text-gray-500">${minStock}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">${formatCurrency(unitPrice)}</td>
+                        <td class="px-4 py-3 text-sm font-bold text-blue-600">${formatCurrency(totalValue)}</td>
+                        <td class="px-4 py-3 text-sm text-right">
+                             <div class="flex justify-end gap-1">
+                                <button onclick="editGlass(${item.id})" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteGlass(${item.id})" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 `;
-                    tbody.innerHTML += row;
                 });
+                tbody.innerHTML = rows.join('');
 
                 // Hiển thị tồn kho kính
                 displayGlassStock(items);
             }
 
-            function displayGlassStock(items) {
-                const tbody = document.getElementById('glassStockTable');
-                if (!tbody) return;
-
-                tbody.innerHTML = '';
-
-                if (!items || items.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-8 text-center text-gray-500">Chưa có dữ liệu tồn kho</td></tr>';
-                    return;
-                }
-
-                items.forEach(item => {
-                    const notes = item.notes || item.description || '';
-                    const typeMatch = notes.match(/^([^-]+)/);
-                    const glassType = typeMatch ? typeMatch[1].trim() : (item.description || '-');
-
-                    const stockQty = parseFloat(item.stock_quantity || item.quantity) || 0;
-                    const minStock = parseFloat(item.min_stock_level) || 10;
-                    const isLowStock = stockQty < minStock;
-                    const unitPrice = parseFloat(item.unit_price) || 0;
-                    const value = stockQty * unitPrice;
-
-                    const row = `
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-3 text-sm font-medium">${item.item_name || '-'}</td>
-                        <td class="px-4 py-3 text-sm">
-                            <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs">${glassType}</span>
-                        </td>
-                        <td class="px-4 py-3 text-sm ${isLowStock ? 'text-red-600 font-semibold' : 'text-gray-700'}">
-                            ${stockQty.toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} tấm
-                            ${isLowStock ? '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 inline ml-1 text-red-600"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>' : ''}
-                        </td>
-                        <td class="px-4 py-3 text-sm">${Math.round(minStock)} tấm</td>
-                        <td class="px-4 py-3 text-sm">${formatCurrency(unitPrice)}</td>
-                        <td class="px-4 py-3 text-sm font-semibold">${formatCurrency(value)}</td>
-                        <td class="px-4 py-3 text-sm">
-                            <span class="px-2 py-1 rounded-full text-xs ${isLowStock ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">
-                                ${isLowStock ? 'Cảnh báo' : 'Bình thường'}
-                            </span>
-                        </td>
-                    </tr>
-                `;
-                    tbody.innerHTML += row;
-                });
-            }
-
             function filterGlass() {
-                const searchTerm = document.getElementById('searchGlass').value.toLowerCase();
-                loadGlassItems(searchTerm);
+                displayGlassItems(allGlassData);
             }
 
-            async function loadGlassItems(search = '') {
+            async function loadGlassItems() {
                 try {
                     // Lấy dữ liệu từ inventory API, lọc theo item_type = 'glass'
                     const response = await fetch(`${API_BASE}/inventory?item_type=glass`, {
@@ -11734,11 +11875,9 @@
                     const result = await response.json();
 
                     if (result.success) {
-                        let items = result.data || [];
-
                         // Map dữ liệu từ inventory sang format hiển thị kính
                         // Trong inventory: item_code là mã, item_name là tên, notes lưu structure (kích thước)
-                        items = items.map(item => ({
+                        allGlassData = (result.data || []).map(item => ({
                             id: item.id,
                             item_code: item.item_code,
                             item_name: item.item_name,
@@ -11749,18 +11888,12 @@
                             unit_price: parseFloat(item.unit_price) || 0,
                             supplier_id: item.supplier_id,
                             supplier_name: item.supplier_name || '',
-                            image_url: item.image_url || ''
+                            image_url: item.image_url || '',
+                            min_stock_level: item.min_stock_level || 5, // Ensure min_stock_level is passed
+                            max_stock_level: item.max_stock_level || 50 // Ensure max_stock_level is passed
                         }));
 
-                        if (search) {
-                            const searchLower = search.toLowerCase();
-                            items = items.filter(item =>
-                                (item.item_code && item.item_code.toLowerCase().includes(searchLower)) ||
-                                (item.item_name && item.item_name.toLowerCase().includes(searchLower))
-                            );
-                        }
-
-                        displayGlassItems(items);
+                        displayGlassItems(allGlassData);
                     }
                 } catch (error) {
                     console.error('Lỗi:', error);
@@ -11867,10 +12000,10 @@
                         // code = mã kính (J-3), name = tên kính, structure = thông tin kích thước (8mm - 2m x 1.5m)
 
                         // Mã kính - sử dụng field code
-                        document.getElementById('glassCode').value = item.code || '';
+                        document.getElementById('glassCode').value = item.item_code || ''; // Changed from item.code to item.item_code
 
                         // structure chứa thông tin kích thước, ví dụ: "8mm - 2.0m x 1.5m"
-                        const structure = item.structure || '';
+                        const structure = item.notes || ''; // Changed from item.structure to item.notes
 
                         // Set supplier dropdown
                         if (item.supplier_id) {
@@ -11878,7 +12011,7 @@
                         }
 
                         // Tên kính
-                        document.getElementById('glassName').value = item.name || '';
+                        document.getElementById('glassName').value = item.item_name || ''; // Changed from item.name to item.item_name
 
                         // Parse độ dày từ structure (tìm pattern "Xmm")
                         const thicknessMatch = structure.match(/(\d+\.?\d*)mm/i);
@@ -11902,7 +12035,7 @@
                         calculateGlassArea();
 
                         // Giá - API glass-items trả về price (không phải unit_price)
-                        document.getElementById('glassPrice').value = item.price || item.unit_price || '';
+                        document.getElementById('glassPrice').value = item.unit_price || ''; // Changed from item.price || item.unit_price to item.unit_price
                         // Tồn kho - API glass-items trả về quantity
                         const stockValue = item.stock || item.stock_quantity || item.quantity || 0;
                         document.getElementById('glassStock').value = stockValue;
@@ -12038,8 +12171,7 @@
                         closeGlassModal();
                         // Reload với search term hiện tại - đợi một chút để đảm bảo DB đã cập nhật
                         setTimeout(() => {
-                            const searchTerm = document.getElementById('searchGlass').value || '';
-                            loadGlassItems(searchTerm);
+                            loadGlassItems();
                             loadStats(); // Cập nhật stats tổng hợp
                         }, 100);
                     } else {
@@ -12102,15 +12234,26 @@
 
             function displayOtherItems(items) {
                 const tbody = document.getElementById('otherTable');
+                if (!tbody) return;
                 tbody.innerHTML = '';
 
-                if (items.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="9" class="px-4 py-8 text-center text-gray-500">Chưa có dữ liệu</td></tr>';
+                // Lọc theo tìm kiếm
+                const searchTerm = document.getElementById('searchOther')?.value.toLowerCase() || '';
+                const filtered = items.filter(item => 
+                    (item.item_code && item.item_code.toLowerCase().includes(searchTerm)) ||
+                    (item.item_name && item.item_name.toLowerCase().includes(searchTerm))
+                );
+
+                if (filtered.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="12" class="px-4 py-8 text-center text-gray-500">Chưa có dữ liệu</td></tr>';
                     return;
                 }
 
-                items.forEach(item => {
-                    const stockQty = parseFloat(item.quantity || 0); // Use item.quantity from inventory API
+                // Sắp xếp
+                const sorted = getSortedData(filtered, 'other', currentSorts.other);
+                
+                const rows = sorted.map(item => {
+                    const stockQty = parseFloat(item.quantity || 0);
                     const unitPrice = parseFloat(item.unit_price || 0);
                     const totalValue = stockQty * unitPrice;
                     const minStock = parseFloat(item.min_stock_level || 10);
@@ -12137,50 +12280,59 @@
 
                     const imageUrl = getImageUrl(item.image_path);
 
-                    const row = `
-                    <tr class="${rowBg} hover:bg-gray-100 transition">
-                        <td class="px-4 py-3 text-sm font-medium">${item.item_code || '-'}</td>
-                        <td class="px-4 py-3 text-sm">${item.item_name || '-'}</td>
+                    return `
+                    <tr class="${rowBg} hover:bg-gray-100 transition border-b border-gray-100">
+                        <td class="px-4 py-3 text-sm font-medium text-gray-900">${item.item_code || '-'}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">${item.item_name || '-'}</td>
                         <td class="px-4 py-3 text-sm">
-                            <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">${item.notes || '-'}</span>
+                            <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs font-medium">${item.notes || '-'}</span>
                         </td>
-                        <td class="px-4 py-3 text-sm">${item.unit || '-'}</td>
+                        <td class="px-4 py-3 text-sm text-center text-gray-600">${item.unit || '-'}</td>
                         <td class="px-4 py-3 text-sm">
                             ${imageUrl ?
-                            `<img src="${imageUrl}" alt="${item.item_name}" class="w-12 h-12 object-cover rounded-lg border cursor-pointer hover:opacity-75" onclick="viewImage('${imageUrl}', '${item.item_name}')" onerror="this.onerror=null;this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%23e5e7eb%22><rect width=%2224%22 height=%2224%22/><text x=%2212%22 y=%2214%22 text-anchor=%22middle%22 fill=%22%239ca3af%22 font-size=%226%22>No img</text></svg>';\" />`
-                            : `<div class="w-12 h-12 bg-gray-100 rounded-lg border flex items-center justify-center text-gray-400">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
+                            `<img src="${imageUrl}" alt="${item.item_name}" class="w-10 h-10 object-contain rounded border shadow-sm cursor-pointer" onclick="showImageModal('${imageUrl}')" onerror="this.onerror=null;this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%23e5e7eb%22><rect width=%2224%22 height=%2224%22/><text x=%2212%22 y=%2214%22 text-anchor=%22middle%22 fill=%22%239ca3af%22 font-size=%226%22>No img</text></svg>';\" />`
+                            : `<div class="w-10 h-10 bg-gray-50 rounded border border-dashed flex items-center justify-center text-gray-300">
+                                    <i class="fas fa-image"></i>
                                 </div>`
-                        }
+                            }
                         </td>
-                        <td class="px-4 py-3 text-sm font-medium">
+                        <td class="px-4 py-3 text-sm font-medium text-gray-900">
                             ${unitPrice > 0 ? formatCurrency(unitPrice) : '-'}
                         </td>
-                        <td class="px-4 py-3 text-sm">
-                            <span class="px-2 py-1 rounded-full text-xs ${statusColor}">${statusLabel}</span>
-                            <div class="mt-1 font-bold">${stockQty.toLocaleString('vi-VN')} ${item.unit || ''}</div>
+                        <td class="px-4 py-3 text-sm font-semibold">
+                            <div class="flex flex-col">
+                                <span class="px-2 py-1 rounded-full text-[10px] font-bold uppercase w-max mb-1 ${statusColor}">
+                                    ${statusLabel}
+                                </span>
+                                <span class="text-base ${stockQty === 0 ? 'text-red-600' : stockQty <= minStock ? 'text-orange-600' : 'text-gray-900'}">
+                                    ${stockQty.toLocaleString('vi-VN')}
+                                </span>
+                            </div>
                         </td>
                         <td class="px-4 py-3 text-sm text-gray-500">${Math.round(minStock)}</td>
                         <td class="px-4 py-3 text-sm text-gray-500">${Math.round(maxStock)}</td>
-                        <td class="px-4 py-3 text-sm">
-                            ${restockQty > 0 ? `<span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-semibold">⬆ ${restockQty}</span>` : '<span class="text-green-500 text-xs">✔ Đủ</span>'}
+                        <td class="px-4 py-3 text-sm text-center">
+                            ${restockQty > 0 ? `<span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-semibold">⬆ ${restockQty}</span>` : '<span class="text-green-500 text-xs text-center block">✔ Đủ</span>'}
                         </td>
-                        <td class="px-4 py-3 text-sm font-semibold">${formatCurrency(totalValue)}</td>
-                        <td class="px-4 py-3 text-sm">
-                            <button class="bg-blue-500 text-white px-3 py-1 rounded-lg text-xs font-medium hover:bg-blue-600 mr-1" onclick="editOther(${item.id})">Sửa</button>
-                            <button class="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-medium hover:bg-red-600" onclick="deleteOther(${item.id})">Xóa</button>
+                        <td class="px-4 py-3 text-sm font-bold text-blue-600">${formatCurrency(totalValue)}</td>
+                        <td class="px-4 py-3 text-sm text-right">
+                             <div class="flex justify-end gap-1">
+                                <button onclick="editOther(${item.id})" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Sửa">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteOther(${item.id})" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Xóa">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 `;
-                    tbody.innerHTML += row;
                 });
+                tbody.innerHTML = rows.join('');
             }
 
             function filterOther() {
-                const searchTerm = document.getElementById('searchOther')?.value.toLowerCase() || '';
-                loadOtherItems(searchTerm);
+                displayOtherItems(allOtherData);
             }
 
             async function loadOtherItems(search = '') {
@@ -12246,6 +12398,10 @@
                         }
 
                         console.log(`[loadOtherItems] Filtered from ${result.data.length} down to ${items.length} items for tab: ${currentSubTab}`); // Debug display
+                        
+                        // QUAN TRỌNG: Lưu vào cache để dùng cho việc SAP XEP client-side
+                        allOtherData = items;
+                        
                         displayOtherItems(items);
                     }
                 } catch (error) {
