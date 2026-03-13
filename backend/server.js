@@ -7,6 +7,21 @@ process.env.TZ = "Asia/Ho_Chi_Minh";
 
 const app = express();
 
+// ============================================
+// DIAGNOSTICS (Render Deployment Debug)
+// ============================================
+const PORT = process.env.PORT || 3001;
+console.log(`[${new Date().toISOString()}] 🔍 Diagnostic: Detected PORT = ${PORT}`);
+console.log(`[${new Date().toISOString()}] 🔍 Diagnostic: NODE_ENV = ${process.env.NODE_ENV}`);
+
+const fs = require('fs');
+const path = require("path");
+const staticPath = path.join(__dirname, '..', 'FontEnd');
+const loginFile = path.join(staticPath, 'login.html');
+
+console.log(`[${new Date().toISOString()}] 📂 Static Path: ${staticPath}`);
+console.log(`[${new Date().toISOString()}] 📂 login.html exists: ${fs.existsSync(loginFile)}`);
+
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: '50mb' })); // Tăng limit để hỗ trợ base64 images
@@ -374,11 +389,10 @@ runStartupMigrations()
     .then(() => console.log(`[${new Date().toISOString()}] ✅ Hoàn tất migrations`))
     .catch(err => console.error(`[${new Date().toISOString()}] ❌ Migration error:`, err));
 
-const PORT = process.env.PORT || 3001;
 
 // Handle port already in use error
-const server = app.listen(PORT, () => {
-    console.log(`[${new Date().toISOString()}] 🔥 API Server đang chạy tại port ${PORT}`);
+const server = app.listen(PORT, '0.0.0.0', () => {
+    console.log(`[${new Date().toISOString()}] 🔥 API Server đang chạy tại port ${PORT} (Binding: 0.0.0.0)`);
     console.log("📡 Các endpoints:");
     console.log("   GET  /api/aluminum-systems");
     console.log("   GET  /api/projects");
