@@ -40,22 +40,37 @@ class StockDocumentExportService {
         }
 
         // 2. Add Professional Branding (Company Info & Logo from DB)
-        await StockDocumentExportService.addCompanyHeader(workbook, worksheet, 8);
+        const isStocktake = doc.doc_type === 'stocktake';
+        const maxCol = isStocktake ? 8 : 10;
+        await StockDocumentExportService.addCompanyHeader(workbook, worksheet, maxCol);
 
 
         // 3. Grid Definition - Professional Accounting Standards
-        // NOTE: We do NOT use 'header' property here to prevent exceljs from auto-inserting 
-        // a header row at Row 1, which displaces our branding template.
-        worksheet.columns = [
-            { key: 'stt', width: 6 },
-            { key: 'item_code', width: 15 },
-            { key: 'item_name', width: 35 },
-            { key: 'unit', width: 10 },
-            { key: 'qty', width: 12 },
-            { key: 'price', width: 15 },
-            { key: 'total', width: 18 },
-            { key: 'note', width: 20 }
-        ];
+        if (isStocktake) {
+            worksheet.columns = [
+                { key: 'stt', width: 6 },
+                { key: 'item_code', width: 15 },
+                { key: 'item_name', width: 35 },
+                { key: 'unit', width: 10 },
+                { key: 'qty_system', width: 12 },
+                { key: 'qty_actual', width: 12 },
+                { key: 'diff', width: 12 },
+                { key: 'note', width: 20 }
+            ];
+        } else {
+            worksheet.columns = [
+                { key: 'stt', width: 6 },
+                { key: 'item_code', width: 15 },
+                { key: 'item_name', width: 35 },
+                { key: 'unit', width: 10 },
+                { key: 'bal_before', width: 12 },
+                { key: 'qty', width: 12 },
+                { key: 'bal_after', width: 12 },
+                { key: 'price', width: 15 },
+                { key: 'total', width: 18 },
+                { key: 'note', width: 20 }
+            ];
+        }
 
         // 4. Dynamic Title (Row 6)
         const docTypeLabels = {
@@ -68,7 +83,9 @@ class StockDocumentExportService {
         const titleCell = titleRow.getCell(1);
         titleCell.value = docTypeLabels[doc.doc_type] || 'PHIẾU KHO';
         titleCell.font = { bold: true, size: 18, color: { argb: 'FF000000' }, name: 'Times New Roman' };
-        try { worksheet.mergeCells('A6:H6'); } catch (e) { }
+        
+        const mergeRange = isStocktake ? 'A6:H6' : 'A6:J6';
+        try { worksheet.mergeCells(mergeRange); } catch (e) { }
         titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
         titleRow.height = 35;
 
@@ -96,13 +113,12 @@ class StockDocumentExportService {
             row.getCell(1).font = { italic: true, size: 10, name: 'Times New Roman' };
         });
 
-        // 5. Table Headers (Row 11)
-        const isStocktake = doc.doc_type === 'stocktake';
+        // 5. Table Headers (Row 11) - WE USE ROW 12 FOR DATA, ROW 11 FOR HEADERS
         const headers = isStocktake
             ? ['STT', 'Mã vật tư', 'Tên vật tư', 'ĐVT', 'Tồn sổ sách', 'Thực tế', 'Chênh lệch', 'Ghi chú']
-            : ['STT', 'Mã vật tư', 'Tên vật tư', 'ĐVT', 'Số lượng', 'Đơn giá', 'Thành tiền', 'Ghi chú'];
+            : ['STT', 'Mã vật tư', 'Tên vật tư', 'ĐVT', 'Tồn trước', 'Số lượng', 'Tồn sau', 'Đơn giá', 'Thành tiền', 'Ghi chú'];
 
-        const headerRow = worksheet.getRow(11);
+        const headerRow = worksheet.getRow(12);
         headers.forEach((h, i) => {
             const cell = headerRow.getCell(i + 1);
             cell.value = h;
@@ -113,8 +129,8 @@ class StockDocumentExportService {
         });
         headerRow.height = 30;
 
-        // 6. Data Injection (Row 12+)
-        let currentRowIndex = 12;
+        // 6. Data Injection (Row 13+)
+        let currentRowIndex = 13;
         lines.forEach((line, index) => {
             const row = worksheet.getRow(currentRowIndex);
 
@@ -129,17 +145,19 @@ class StockDocumentExportService {
                 row.getCell(7).value = (parseFloat(line.qty) || 0) - (parseFloat(line.qty_system) || 0);
                 row.getCell(8).value = line.note || '';
             } else {
-                row.getCell(5).value = parseFloat(line.qty) || 0;
-                row.getCell(6).value = parseFloat(line.unit_price) || 0;
-                row.getCell(7).value = (parseFloat(line.qty) || 0) * (parseFloat(line.unit_price) || 0);
-                row.getCell(8).value = line.note || '';
+                row.getCell(5).value = line.balance_before !== null ? parseFloat(line.balance_before) : 0;
+                row.getCell(6).value = parseFloat(line.qty) || 0;
+                row.getCell(7).value = line.balance_after !== null ? parseFloat(line.balance_after) : 0;
+                row.getCell(8).value = parseFloat(line.unit_price) || 0;
+                row.getCell(9).value = (parseFloat(line.qty) || 0) * (parseFloat(line.unit_price) || 0);
+                row.getCell(10).value = line.note || '';
             }
 
             row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
-                if (colNumber <= 8) {
+                if (colNumber <= maxCol) {
                     cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
-                    if (colNumber >= 5 && colNumber <= 7) {
-                        cell.numFmt = '#,##0';
+                    if (colNumber >= 5 && colNumber <= (isStocktake ? 7 : 9)) {
+                        cell.numFmt = '#,##0.##';
                         cell.alignment = { horizontal: 'right' };
                     }
                 }
@@ -153,16 +171,16 @@ class StockDocumentExportService {
         totalRow.getCell(3).font = { bold: true };
 
         if (isStocktake) {
-            // Just count or specific totals if needed
+            // No total needed for stocktake in this format
         } else {
             const totalQty = lines.reduce((sum, l) => sum + (parseFloat(l.qty) || 0), 0);
             const totalVal = lines.reduce((sum, l) => sum + ((parseFloat(l.qty) || 0) * (parseFloat(l.unit_price) || 0)), 0);
-            totalRow.getCell(5).value = totalQty;
-            totalRow.getCell(7).value = totalVal;
+            totalRow.getCell(6).value = totalQty;
+            totalRow.getCell(9).value = totalVal;
         }
 
         totalRow.eachCell((cell, col) => {
-            if (col >= 3 && col <= 7) {
+            if (col >= 3 && col <= maxCol) {
                 cell.font = { bold: true };
                 cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE8F5E9' } };
                 cell.border = { top: { style: 'medium' }, bottom: { style: 'medium' } };
@@ -172,32 +190,53 @@ class StockDocumentExportService {
         // 8. Signatures
         currentRowIndex += 2;
         const footerDate = `Hà Nội, ngày ${date.getDate()} tháng ${date.getMonth() + 1} năm ${date.getFullYear()}`;
-        const dateFootCell = worksheet.getCell(`E${currentRowIndex}`);
+        const dateFootCol = isStocktake ? 'E' : 'G';
+        const dateFootCell = worksheet.getCell(`${dateFootCol}${currentRowIndex}`);
         dateFootCell.value = footerDate;
         dateFootCell.font = { italic: true };
         dateFootCell.alignment = { horizontal: 'center' };
-        try { worksheet.mergeCells(`E${currentRowIndex}:H${currentRowIndex}`); } catch (e) { }
+        try { 
+            const endCol = isStocktake ? 'H' : 'J';
+            worksheet.mergeCells(`${dateFootCol}${currentRowIndex}:${endCol}${currentRowIndex}`); 
+        } catch (e) { }
 
         currentRowIndex++;
-        const footers = [
-            { col: 1, text: 'NGƯỜI LẬP' },
-            { col: 3, text: 'KẾ TOÁN' },
-            { col: 5, text: 'THỦ KHO' },
-            { col: 7, text: 'NGƯỜI NHẬN' }
-        ];
+        const footers = isStocktake
+            ? [
+                { col: 1, text: 'NGƯỜI LẬP' },
+                { col: 3, text: 'KẾ TOÁN' },
+                { col: 5, text: 'THỦ KHO' },
+                { col: 7, text: 'BAN GIÁM ĐỐC' }
+            ]
+            : [
+                { col: 1, text: 'NGƯỜI LẬP' },
+                { col: 4, text: 'KẾ TOÁN' },
+                { col: 6, text: 'THỦ KHO' },
+                { col: 8, text: 'NGƯỜI NHẬN' }
+            ];
+
         footers.forEach(f => {
             const cell = worksheet.getRow(currentRowIndex).getCell(f.col);
             cell.value = f.text;
             cell.font = { bold: true, size: 11, name: 'Times New Roman' };
             cell.alignment = { horizontal: 'center', vertical: 'middle' };
+            
+            // Add Name under "NGƯỜI LẬP"
+            if (f.text === 'NGƯỜI LẬP') {
+                const nameCell = worksheet.getRow(currentRowIndex + 4).getCell(f.col);
+                nameCell.value = doc.created_by_name || '';
+                nameCell.font = { bold: true, name: 'Times New Roman' };
+                nameCell.alignment = { horizontal: 'center' };
+            }
         });
 
         // Add company footer text if needed at the end
-        const companyRow = currentRowIndex + 3;
+        const companyRow = currentRowIndex + 6;
         const companyCell = worksheet.getCell(`A${companyRow}`);
         companyCell.value = 'CÔNG TY CỔ PHẦN VIRALWINDOW';
         companyCell.font = { bold: true, size: 11, name: 'Times New Roman' };
-        try { worksheet.mergeCells(`A${companyRow}:H${companyRow}`); } catch (e) { }
+        const companyMergeRange = isStocktake ? `A${companyRow}:H${companyRow}` : `A${companyRow}:J${companyRow}`;
+        try { worksheet.mergeCells(companyMergeRange); } catch (e) { }
         companyCell.alignment = { horizontal: 'right' };
 
         return await workbook.xlsx.writeBuffer();

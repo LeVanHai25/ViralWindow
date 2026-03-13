@@ -165,6 +165,8 @@ async function processAluminumExport(line, doc, connection, userId) {
         meters_used: 0,
         meters_leftover: 0,
         length_per_bar_m: 0,
+        balance_before: 0,
+        balance_after: 0,
         meta_json: {}
     };
 
@@ -232,20 +234,27 @@ async function processAluminumExport(line, doc, connection, userId) {
     // Calculate leftover (for display only, user manually creates Nhôm Đề C)
     const metersLeftover = maxMeters - (metersUsed || maxMeters);
 
-    // =====================================================
     // ATOMIC UPDATE: Deduct bars from specific warehouse stock
     // =====================================================
     const warehouseId = doc.warehouse_id || 1;
 
+    // Get BEFORE balance for record keeping
+    const [wsBeforeRows] = await connection.query(
+        'SELECT quantity FROM aluminum_warehouse_stock WHERE warehouse_id = ? AND aluminum_system_id = ?',
+        [warehouseId, system.id]
+    );
+    const balanceBefore = wsBeforeRows.length > 0 ? Number(wsBeforeRows[0].quantity) : 0;
+    result.balance_before = balanceBefore;
+
     // First, update the warehouse-specific stock
     // We use INSERT ... ON DUPLICATE KEY UPDATE to ensure a record exists
     await connection.query(`
-        INSERT INTO aluminum_warehouse_stocks (warehouse_id, system_id, quantity)
+        INSERT INTO aluminum_warehouse_stock (warehouse_id, aluminum_system_id, quantity)
         VALUES (?, ?, 0)
         ON DUPLICATE KEY UPDATE quantity = quantity
     `, [warehouseId, system.id]);
 
-    [updateResult] = await connection.query(`
+    const [updateResult] = await connection.query(`
         UPDATE aluminum_warehouse_stock
         SET quantity = GREATEST(0, quantity - ?)
         WHERE warehouse_id = ? AND aluminum_system_id = ? AND quantity >= ?
@@ -276,6 +285,7 @@ async function processAluminumExport(line, doc, connection, userId) {
     result.meters_used = metersUsed;
     result.meters_leftover = metersLeftover;
     result.length_per_bar_m = lengthPerBarM;
+    result.balance_after = balanceBefore - qtyBars;
 
     // Build meta_json for ledger
     result.meta_json = {
@@ -287,12 +297,13 @@ async function processAluminumExport(line, doc, connection, userId) {
         note: metersLeftover > 0 ? `Thừa ${metersLeftover.toFixed(2)}m, nhập thủ công vào Nhôm Đề C nếu cần` : null
     };
 
-    // Update line with calculation results
+    // Update line with calculation results AND balances
     await connection.query(`
         UPDATE stock_document_lines
-        SET meters_used = ?, length_per_bar_m = ?, meters_leftover = ?, system_id = ?
+        SET meters_used = ?, length_per_bar_m = ?, meters_leftover = ?, system_id = ?,
+            balance_before = ?, balance_after = ?
         WHERE id = ?
-    `, [metersUsed, lengthPerBarM, metersLeftover, system.id, line.id]);
+    `, [metersUsed, lengthPerBarM, metersLeftover, system.id, result.balance_before, result.balance_after, line.id]);
 
     console.log(`[Aluminum Export] ${system.code || system.name}: ${qtyBars} bars × ${lengthPerBarM}m = ${maxMeters}m total, used ${metersUsed}m, leftover ${metersLeftover}m`);
 
@@ -315,6 +326,13 @@ async function processAluminumImport(line, doc, connection, userId) {
 
     const warehouseId = doc.warehouse_id || 1;
 
+    // Get BEFORE balance
+    const [wsBeforeRows] = await connection.query(
+        'SELECT quantity FROM aluminum_warehouse_stock WHERE warehouse_id = ? AND aluminum_system_id = ?',
+        [warehouseId, systemId]
+    );
+    const balanceBefore = wsBeforeRows.length > 0 ? Number(wsBeforeRows[0].quantity) : 0;
+
     // ATOMIC UPDATE: Add bars to specific warehouse stock
     await connection.query(`
         INSERT INTO aluminum_warehouse_stock (warehouse_id, aluminum_system_id, quantity)
@@ -325,12 +343,23 @@ async function processAluminumImport(line, doc, connection, userId) {
     // sync legacy quantity in aluminum_systems
     await connection.query(`
         UPDATE aluminum_systems 
-        SET quantity = (SELECT SUM(quantity) FROM aluminum_warehouse_stocks WHERE system_id = ?) 
+        SET quantity = (SELECT SUM(quantity) FROM aluminum_warehouse_stock WHERE aluminum_system_id = ?) 
         WHERE id = ?
     `, [systemId, systemId]);
 
+    const balanceAfter = balanceBefore + barsToAdd;
+
+    // Update line balances
+    await connection.query(`
+        UPDATE stock_document_lines
+        SET balance_before = ?, balance_after = ?
+        WHERE id = ?
+    `, [balanceBefore, balanceAfter, line.id]);
+
     return {
         bars_added: barsToAdd,
+        balance_before: balanceBefore,
+        balance_after: balanceAfter,
         meta_json: {
             type: 'aluminum_import',
             bars_added: barsToAdd
@@ -1103,6 +1132,13 @@ exports.post = async (req, res) => {
                     WHERE id = ?
                 `, [qtyActual, diff, line.id]);
             }
+
+            // Update line with balances
+            await connection.query(`
+                UPDATE stock_document_lines 
+                SET balance_before = ?, balance_after = ?
+                WHERE id = ?
+            `, [currentStock, newBalance, line.id]);
 
             // Ghi ledger
             await connection.query(`

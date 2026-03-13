@@ -4929,7 +4929,7 @@
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tên vật tư</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Loại</th>
                             <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase w-24">SL Tồn kho</th>
-                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase w-24">SL Sau kiểm</th>
+                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase w-24">SL Thực tế</th>
                             <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase w-24">Chênh lệch</th>
                         `;
                     } else {
@@ -4937,14 +4937,15 @@
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-12">#</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Mã</th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tên vật tư</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Loại</th>
-                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase w-20">SL</th>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-48">Thông tin</th>
+                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase w-24">Tồn trước</th>
+                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase w-20">SL ${doc.doc_type === 'import' ? 'Nhập' : 'Xuất'}</th>
+                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase w-24">Tồn sau</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Thông tin</th>
                         `;
                     }
 
                     if (lines.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-6 text-center text-gray-400">Không có dữ liệu</td></tr>';
+                        tbody.innerHTML = `<tr><td colspan="${isStocktake ? 7 : 7}" class="px-4 py-6 text-center text-gray-400">Không có dữ liệu</td></tr>`;
                         document.getElementById('viewDocTotalQty').textContent = '0';
                         const infoEl = document.getElementById('viewDocTotalInfo');
                         if (infoEl) infoEl.textContent = '';
@@ -4954,13 +4955,13 @@
                         let totalDiff = 0;
 
                         tbody.innerHTML = lines.map((line, idx) => {
-                            const qty = parseInt(line.qty) || 0;
+                            const qty = parseFloat(line.qty) || 0;
                             totalQty += qty;
 
                             if (isStocktake) {
                                 // Stocktake specific rendering
-                                const qtySystem = parseInt(line.qty_system) || 0;
-                                const qtyActual = parseInt(line.qty) || 0; // qty is the actual count for stocktake
+                                const qtySystem = parseFloat(line.qty_system) || 0;
+                                const qtyActual = parseFloat(line.qty) || 0; 
                                 const diff = qtyActual - qtySystem;
                                 totalDiff += diff;
 
@@ -4980,7 +4981,10 @@
                                 `;
                             } else {
                                 // Non-stocktake rendering (import, export, adjust)
-                                // Build Thông tin column based on item type
+                                const balBefore = line.balance_before !== null ? parseFloat(line.balance_before) : null;
+                                const balAfter = line.balance_after !== null ? parseFloat(line.balance_after) : null;
+                                
+                                // Build Thông tin column
                                 let infoHtml = '-';
                                 if (line.item_type === 'aluminum') {
                                     const metersUsed = parseFloat(line.meters_used) || 0;
@@ -4989,7 +4993,7 @@
                                     totalMetersUsed += metersUsed;
 
                                     infoHtml = metersUsed > 0
-                                        ? `<span class="text-teal-600 font-medium">SD: ${metersUsed}m</span>${metersLeftover > 0 ? `<span class="text-orange-500 ml-2">Thừa: ${metersLeftover.toFixed(1)}m</span>` : ''}<span class="text-gray-400 text-xs ml-1">(${lengthPerBar}m/cây)</span>`
+                                        ? `<span class="text-teal-600 font-medium">SD: ${metersUsed}m</span>${metersLeftover > 0 ? `<span class="text-orange-500 ml-2">Thừa: ${metersLeftover.toFixed(1)}m</span>` : ''}`
                                         : `<span class="text-gray-400">${lengthPerBar}m/cây</span>`;
                                 }
 
@@ -4998,15 +5002,16 @@
                                         <td class="px-3 py-2 text-sm">${idx + 1}</td>
                                         <td class="px-3 py-2 text-sm font-medium ${line.item_type === 'aluminum' ? 'text-teal-700' : ''}">${line.item_code || '-'}</td>
                                         <td class="px-3 py-2 text-sm">${line.item_name || '-'}</td>
-                                        <td class="px-3 py-2 text-sm">${getItemTypeLabel(line.item_type)}</td>
-                                        <td class="px-3 py-2 text-center text-sm font-medium">${qty}${line.item_type === 'aluminum' ? ' cây' : ''}</td>
+                                        <td class="px-3 py-2 text-center text-sm text-gray-500">${balBefore !== null ? balBefore.toLocaleString('vi-VN') : '-'}</td>
+                                        <td class="px-3 py-2 text-center text-sm font-bold text-blue-600">${qty.toLocaleString('vi-VN')}${line.item_type === 'aluminum' ? ' cây' : ''}</td>
+                                        <td class="px-3 py-2 text-center text-sm text-gray-500">${balAfter !== null ? balAfter.toLocaleString('vi-VN') : '-'}</td>
                                         <td class="px-3 py-2 text-sm">${infoHtml}</td>
                                     </tr>
                                 `;
                             }
                         }).join('');
 
-                        document.getElementById('viewDocTotalQty').textContent = isStocktake ? `${lines.length} dòng` : totalQty;
+                        document.getElementById('viewDocTotalQty').textContent = isStocktake ? `${lines.length} dòng` : totalQty.toLocaleString('vi-VN');
                         const infoEl = document.getElementById('viewDocTotalInfo');
                         if (infoEl) {
                             if (isStocktake) {
@@ -5019,7 +5024,7 @@
                     }
 
                     // Footer info and actions
-                    document.getElementById('viewDocFooterInfo').textContent = `Người tạo: ${doc.created_by || '-'} | Cập nhật: ${doc.updated_at ? new Date(doc.updated_at).toLocaleString('vi-VN') : '-'}`;
+                    document.getElementById('viewDocFooterInfo').textContent = `Người tạo: ${doc.created_by_name || doc.created_by || '-'} | Cập nhật: ${doc.updated_at ? new Date(doc.updated_at).toLocaleString('vi-VN') : '-'}`;
 
                     // Show/hide action buttons based on status
                     const actionsDiv = document.getElementById('viewDocActions');
