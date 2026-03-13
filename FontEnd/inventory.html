@@ -729,10 +729,35 @@
 
                     <!-- TAB: PHỤ KIỆN -->
                     <div id="tab-accessory" class="tab-content active p-6">
+                        <!-- Sub-tabs for Phụ kiện -->
+                        <div class="bg-white rounded-xl shadow mb-6">
+                            <div class="border-b border-gray-200 px-6">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex gap-4 overflow-x-auto" id="accessorySubTabsContainer">
+                                        <button
+                                            class="sub-tab-button px-4 py-3 flex items-center gap-2 text-gray-600 hover:text-teal-600 active"
+                                            onclick="switchAccessorySubTabUI('all', this)">
+                                            Tất cả
+                                        </button>
+                                        <!-- Dynamic categories will be loaded here -->
+                                        <div id="accSubTabsLoading" class="px-4 py-3 text-gray-400 text-sm italic">
+                                            Đang tải danh mục...
+                                        </div>
+                                    </div>
+                                    <button onclick="openAccessoryCategoryManagementModal()" class="p-2 text-gray-400 hover:text-teal-600 transition-colors" title="Quản lý danh mục">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 011.45.12l.773.774a1.125 1.125 0 01.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.894.15c.542.09.94.56.94 1.109v1.094c0 .55-.398 1.02-.94 1.11l-.894.149c-.424.07-.764.383-.929.78-.164.398-.142.854.108 1.204l.527.738a1.125 1.125 0 01-.12 1.45l-.774.773a1.125 1.125 0 01-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.397.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.108l-.738.527a1.125 1.125 0 01-1.45-.12l-.773-.774a1.125 1.125 0 01-.12-1.45l.527-.737c.25-.35.273-.806.108-1.204-.165-.397-.505-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.107-1.204l-.527-.738a1.125 1.125 0 01.12-1.45l.773-.773a1.125 1.125 0 011.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.15-.894z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
 
-                        <div class="bg-white rounded-xl shadow p-6 mb-6">
+                        <div class="bg-white rounded-xl shadow p-6">
                             <div class="flex justify-between items-center mb-6">
-                                <div class="flex-1 flex gap-2">
+                                <h2 class="text-xl font-bold" id="accessorySubTabTitle">Danh sách phụ kiện - Tất cả</h2>
+                                <div class="flex gap-4">
                                     <select onchange="handleSortChange('accessory', this.value)" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm bg-white font-medium text-gray-700 shadow-sm">
                                         <option value="name_asc"> Tên A → Z</option>
                                         <option value="name_desc"> Tên Z → A</option>
@@ -747,59 +772,36 @@
                                         <option value="value_desc"> Giá trị cao → thấp</option>
                                     </select>
                                     <input type="text" id="searchAccessory" placeholder=" 🔍︎ Tìm kiếm phụ kiện..."
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                        class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
                                         onkeyup="filterAccessory()">
+                                    <button onclick="exportWarehouseExcel('accessory')"
+                                        class="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600">
+                                        Xuất Excel
+                                    </button>
+                                    <button
+                                        class="bg-teal-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-teal-600"
+                                        onclick="openAccessoryModal()">
+                                        + Thêm phụ kiện
+                                    </button>
                                 </div>
-                                <select id="accessoryCategoryFilter"
-                                    class="mx-4 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                    onchange="filterAccessory()">
-                                    <option value="all">Tất cả danh mục</option>
-                                    <option value="Khóa">Khóa</option>
-                                    <option value="Bản lề">Bản lề</option>
-                                    <option value="Tay nắm">Tay nắm</option>
-                                    <option value="Phụ kiện lùa">Phụ kiện lùa</option>
-                                    <option value="Phụ kiện khác">Phụ kiện khác</option>
-                                </select>
-                                <button onclick="exportWarehouseExcel('accessory')"
-                                    class="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600">
-                                    Xuất Excel
-                                </button>
-                                <button
-                                    class="bg-teal-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-teal-600"
-                                    onclick="openAccessoryModal()">
-                                    + Thêm phụ kiện
-                                </button>
                             </div>
 
-                            <!-- Accessories Table -->
                             <div class="overflow-x-auto">
                                 <table class="w-full">
                                     <thead class="bg-gray-50">
                                         <tr>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                MÃ</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                TÊN PHỤ KIỆN</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                DANH MỤC</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                ĐƠN VỊ</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                HÌNH ẢNH</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                GIÁ</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                TỒN KHO</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                MIN</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                MAX</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                CẦN NHẬP</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                TỔNG GIÁ TRỊ</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                THAO TÁC</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">MÃ</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">TÊN PHỤ KIỆN</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">DANH MỤC</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ĐƠN VỊ</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">HÌNH ẢNH</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">GIÁ</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">TỒN KHO</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">MIN</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">MAX</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">CẦN NHẬP</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">TỔNG GIÁ TRỊ</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">THAO TÁC</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-200" id="accessoryTable">
@@ -2588,6 +2590,52 @@
 
                 <div class="mt-6 flex justify-end">
                     <button onclick="closeOtherCategoryManagementModal()" class="px-6 py-2 border border-gray-300 rounded-lg font-medium hover:bg-gray-50">Đóng</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: Accessory Category Management (NEW) -->
+        <div id="accessoryCategoryModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[10001] flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                    <h2 class="text-xl font-bold text-gray-800">Quản lý danh mục Phụ kiện</h2>
+                    <button onclick="closeAccessoryCategoryManagementModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="p-6">
+                    <!-- Add Form -->
+                    <div class="mb-6 p-4 bg-teal-50 rounded-lg border border-teal-100">
+                        <h3 class="text-sm font-semibold text-teal-800 mb-3" id="accCatFormTitle">Thêm danh mục mới</h3>
+                        <div class="flex gap-2">
+                            <input type="text" id="accCatNameInput" class="flex-1 px-3 py-2 border border-teal-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm" placeholder="Tên danh mục...">
+                            <input type="hidden" id="accCatIdInput">
+                            <button onclick="saveAccessoryCategory()" class="bg-teal-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-teal-600 transition-colors" id="btnSaveAccCat">Thêm</button>
+                            <button onclick="resetAccCatForm()" class="hidden px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-100" id="btnCancelAccCat">Hủy</button>
+                        </div>
+                    </div>
+
+                    <!-- List -->
+                    <div class="max-h-60 overflow-y-auto border border-gray-100 rounded-lg">
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-50 text-gray-600 sticky top-0">
+                                <tr>
+                                    <th class="px-3 py-2 text-left font-semibold">Tên danh mục</th>
+                                    <th class="px-3 py-2 text-right font-semibold">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="accessoryCategoryListTable" class="divide-y divide-gray-100 text-gray-600">
+                                <!-- Items will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-6 flex justify-end">
+                        <button onclick="closeAccessoryCategoryManagementModal()" class="px-6 py-2 border border-gray-300 rounded-lg font-medium hover:bg-gray-50">Đóng</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -8849,6 +8897,220 @@
                 container.innerHTML = html;
             }
 
+            let accessoryCategories = [];
+            let currentAccessorySubTab = 'all';
+
+            async function loadAccessoryCategories() {
+                try {
+                    const response = await fetch(`${API_BASE}/accessories/categories`, {
+                        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        accessoryCategories = result.data;
+                        renderAccessorySubTabs();
+                        updateAccessoryCategoryDropdowns();
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi tải danh mục phụ kiện:', error);
+                    const container = document.getElementById('accessorySubTabsContainer');
+                    if (container) {
+                        const loading = document.getElementById('accSubTabsLoading');
+                        if (loading) loading.innerText = 'Lỗi khi tải danh mục';
+                    }
+                }
+            }
+
+            function renderAccessorySubTabs() {
+                const container = document.getElementById('accessorySubTabsContainer');
+                if (!container) return;
+
+                let html = `
+                    <button class="sub-tab-button px-4 py-3 flex items-center gap-2 text-gray-600 hover:text-teal-600 ${currentAccessorySubTab === 'all' ? 'active' : ''}"
+                        onclick="switchAccessorySubTabUI('all', this)">
+                        Tất cả
+                    </button>
+                `;
+
+                accessoryCategories.forEach(cat => {
+                    html += `
+                        <button class="sub-tab-button px-4 py-3 flex items-center gap-2 text-gray-600 hover:text-teal-600 ${currentAccessorySubTab === cat.name ? 'active' : ''}"
+                            onclick="switchAccessorySubTabUI('${cat.name}', this)">
+                            ${cat.name}
+                        </button>
+                    `;
+                });
+
+                container.innerHTML = html;
+            }
+
+            function switchAccessorySubTabUI(category, btn) {
+                currentAccessorySubTab = category;
+                
+                // Update UI active state
+                document.querySelectorAll('#accessorySubTabsContainer .sub-tab-button').forEach(b => {
+                    b.classList.remove('active');
+                });
+                if (btn) btn.classList.add('active');
+
+                // Update title
+                const title = document.getElementById('accessorySubTabTitle');
+                if (title) {
+                    title.innerText = `Danh sách phụ kiện - ${category === 'all' ? 'Tất cả' : category}`;
+                }
+
+                // Filter table if data exists
+                if (allAccessoriesData) {
+                    displayAccessories(allAccessoriesData);
+                }
+            }
+
+            function updateAccessoryCategoryDropdowns() {
+                const select = document.getElementById('accessoryCategory');
+                if (!select) return;
+
+                let html = '<option value="">-- Chọn danh mục --</option>';
+                accessoryCategories.forEach(cat => {
+                    html += `<option value="${cat.name}">${cat.name}</option>`;
+                });
+                select.innerHTML = html;
+            }
+
+            // Accessory Category Management Functions
+            function openAccessoryCategoryManagementModal() {
+                const modal = document.getElementById('accessoryCategoryModal');
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    loadAccessoryCategoryList();
+                }
+            }
+
+            function closeAccessoryCategoryManagementModal() {
+                const modal = document.getElementById('accessoryCategoryModal');
+                if (modal) {
+                    modal.classList.add('hidden');
+                    resetAccCatForm();
+                    loadAccessoryCategories(); // Refresh for sub-tabs
+                }
+            }
+
+            async function loadAccessoryCategoryList() {
+                const tbody = document.getElementById('accessoryCategoryListTable');
+                if (!tbody) return;
+
+                tbody.innerHTML = '<tr><td colspan="2" class="px-3 py-4 text-center text-gray-400 italic">Đang tải...</td></tr>';
+
+                try {
+                    const response = await fetch(`${API_BASE}/accessories/categories`, {
+                        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
+                    });
+                    const result = await response.json();
+
+                    if (result.success && result.data.length > 0) {
+                        tbody.innerHTML = result.data.map(cat => `
+                            <tr>
+                                <td class="px-3 py-3 font-medium text-gray-800">${cat.name}</td>
+                                <td class="px-3 py-3 text-right">
+                                    <div class="flex justify-end gap-2">
+                                        <button onclick="editAccCat(${cat.id}, '${cat.name}')" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors" title="Sửa">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+                                            </svg>
+                                        </button>
+                                        <button onclick="deleteAccCat(${cat.id}, '${cat.name}')" class="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors" title="Xóa">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="2" class="px-3 py-4 text-center text-gray-400">Chưa có danh mục nào</td></tr>';
+                    }
+                } catch (error) {
+                    console.error('Lỗi khi tải danh sách danh mục:', error);
+                    tbody.innerHTML = '<tr><td colspan="2" class="px-3 py-4 text-center text-red-500">Lỗi khi tải dữ liệu</td></tr>';
+                }
+            }
+
+            function editAccCat(id, name) {
+                document.getElementById('accCatIdInput').value = id;
+                document.getElementById('accCatNameInput').value = name;
+                document.getElementById('accCatFormTitle').innerText = 'Cập nhật danh mục';
+                document.getElementById('btnSaveAccCat').innerText = 'Lưu';
+                document.getElementById('btnCancelAccCat').classList.remove('hidden');
+                document.getElementById('accCatNameInput').focus();
+            }
+
+            function resetAccCatForm() {
+                document.getElementById('accCatIdInput').value = '';
+                document.getElementById('accCatNameInput').value = '';
+                document.getElementById('accCatFormTitle').innerText = 'Thêm danh mục mới';
+                document.getElementById('btnSaveAccCat').innerText = 'Thêm';
+                document.getElementById('btnCancelAccCat').classList.add('hidden');
+            }
+
+            async function saveAccessoryCategory() {
+                const id = document.getElementById('accCatIdInput').value;
+                const name = document.getElementById('accCatNameInput').value.trim();
+
+                if (!name) {
+                    VWModal.alert('Vui lòng nhập tên danh mục');
+                    return;
+                }
+
+                try {
+                    const method = id ? 'PUT' : 'POST';
+                    const url = id ? `${API_BASE}/accessories/categories/${id}` : `${API_BASE}/accessories/categories`;
+
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: {
+                            'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ name })
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        showSuccessNotification(result.message || 'Thành công');
+                        resetAccCatForm();
+                        loadAccessoryCategoryList();
+                        loadAccessoryCategories(); // Update components
+                    } else {
+                        VWModal.alert(result.message || 'Có lỗi xảy ra');
+                    }
+                } catch (error) {
+                    console.error('Lỗi:', error);
+                    VWModal.alert('Lỗi server khi lưu danh mục');
+                }
+            }
+
+            async function deleteAccCat(id, name) {
+                if (await confirm(`Bạn có chắc chắn muốn xóa danh mục "${name}"? Thao tác này không thể hoàn tác.`)) {
+                    try {
+                        const response = await fetch(`${API_BASE}/accessories/categories/${id}`, {
+                            method: 'DELETE',
+                            headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            showSuccessNotification('Xóa danh mục thành công');
+                            loadAccessoryCategoryList();
+                            loadAccessoryCategories();
+                        } else {
+                            VWModal.alert(result.message || 'Không thể xóa danh mục');
+                        }
+                    } catch (error) {
+                        console.error('Lỗi khi xóa danh mục:', error);
+                        VWModal.alert('Lỗi server khi xóa danh mục');
+                    }
+                }
+            }
+
             function updateCategoryDropdowns() {
                 const select = document.getElementById('otherSubCategory');
                 if (!select) return;
@@ -10282,10 +10544,10 @@
                 tbody.innerHTML = '';
 
                 // Lọc phụ kiện theo danh mục nếu có
-                const categoryFilter = document.getElementById('accessoryCategoryFilter');
+                const categoryFilter = currentAccessorySubTab || 'all';
                 let filteredAccessories = accessories;
-                if (categoryFilter && categoryFilter.value && categoryFilter.value !== 'all') {
-                    filteredAccessories = accessories.filter(acc => acc.category === categoryFilter.value);
+                if (categoryFilter !== 'all') {
+                    filteredAccessories = accessories.filter(acc => acc.category === categoryFilter);
                 }
 
                 // Lọc theo tìm kiếm nếu có
@@ -10485,6 +10747,7 @@
             }
 
             async function openAccessoryModal(id = null) {
+                updateAccessoryCategoryDropdowns(); // Refresh category list
                 editingAccessoryId = id;
                 const modalTitle = document.getElementById('accessoryModalTitle');
                 if (modalTitle) {
@@ -13270,6 +13533,7 @@
 
                 // Load stats tổng hợp ngay khi trang load
                 loadStats();
+                loadAccessoryCategories(); // NEW: Load accessory categories
                 loadAccessories();
                 loadAluminumSystemsForDropdown(); // Load danh mục hệ nhôm
                 loadProjectsForExport(); // Load dự án cho tab Xuất vật tư
@@ -13691,8 +13955,12 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Load Other Categories first
-            loadOtherCategories();
+            // Load Categories
+            if (typeof loadOtherCategories === 'function') loadOtherCategories();
+            if (typeof loadAccessoryCategories === 'function') loadAccessoryCategories();
+
+            // Load initial data for active tab (Phụ kiện)
+            if (typeof loadAccessories === 'function') loadAccessories();
 
             setTimeout(() => {
                 if (typeof loadAluminumWarehouses === 'function') {

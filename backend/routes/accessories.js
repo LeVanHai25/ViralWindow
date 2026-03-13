@@ -4,6 +4,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const accessoriesCtrl = require("../controllers/accessoriesController");
+const categoryCtrl = require("../controllers/accessoryCategoryController");
 const { authenticateToken } = require("../middleware/auth");
 
 // Ensure upload directory exists
@@ -43,6 +44,10 @@ const upload = multer({
 // CRUD routes - ✅ PROTECTED with authentication
 router.get("/", authenticateToken, accessoriesCtrl.getAllAccessories);
 router.get("/stats", authenticateToken, accessoriesCtrl.getStatistics);
+router.get("/categories", authenticateToken, categoryCtrl.getCategories);
+router.post("/categories", authenticateToken, categoryCtrl.createCategory);
+router.put("/categories/:id", authenticateToken, categoryCtrl.updateCategory);
+router.delete("/categories/:id", authenticateToken, categoryCtrl.deleteCategory);
 router.get("/:id", authenticateToken, accessoriesCtrl.getById);
 router.post("/", authenticateToken, upload.single("image"), accessoriesCtrl.create);
 router.put("/:id", authenticateToken, upload.single("image"), accessoriesCtrl.update);
