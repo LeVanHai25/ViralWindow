@@ -318,10 +318,10 @@ async function runStartupMigrations() {
         if (rows[0].count === 0) {
             console.log('🌱 Seeding default aluminum systems...');
             const defaults = [
-                'VRA – Hệ 55 mở quay', 'VRA – Hệ 50', 'VRA – Hệ 64 (cửa sổ lùa)',
-                'VRE – Hệ 65 mở quay (Mạnh Quy)', 'VRE – Hệ 65 mở quay (Yangly)',
-                'VRE – Hệ xếp trượt 80', 'VRE – Hệ lùa 120 & 180',
-                'Hệ lùa 94 mới', 'Thủy lực', 'Mặt dựng'
+                'VRA-Hệ 55 Mở quay', 'VRA-Hệ 50', 'VRA-Hệ 64 Cửa sổ lùa',
+                'VRE -Hệ 65 Mở quay( Mạnh Quy)', 'VRE -Hệ 65 Mở quay(Yangly)',
+                'VRE- Hệ Xếp trượt 80', 'VRE- Hệ Lùa 120 & 180',
+                'HỆ LÙA 94 MỚI', 'THỦY LỰC', 'MẶT DỰNG', 'HỆ LÙA 94 KOSO'
             ];
             for (const name of defaults) {
                 await db.query('INSERT IGNORE INTO aluminum_warehouse_catalog_systems (system_name) VALUES (?)', [name]);
