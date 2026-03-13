@@ -388,7 +388,7 @@ exports.create = async (req, res) => {
 
 
         for (const line of lines) {
-            const { item_type, item_id, qty, unit_price = 0, note: lineNote, meters_used } = line;
+            const { item_type, item_id, qty, unit_price = 0, note: lineNote, meters_used, qty_actual, qty_diff } = line;
 
             if (!item_type || !item_id || !qty || qty <= 0) {
                 continue; // Skip invalid lines
@@ -488,21 +488,34 @@ exports.create = async (req, res) => {
             // Line total
             const lineTotal = qty * finalUnitPrice;
 
-            // For stocktake, get current system qty
+            // For stocktake, calculate system qty if not provided, or prioritize provided actual/diff
+            let finalQtyActual = qty_actual !== undefined ? parseFloat(qty_actual) : null;
+            let finalQtyDiff = qty_diff !== undefined ? parseFloat(qty_diff) : null;
             let qtySystem = null;
+
             if (doc_type === 'stocktake') {
                 qtySystem = await getCurrentStock(item_type, item_id, warehouse_id, connection);
+                
+                // If Frontend sends qty as actual stock (per new plan), align it
+                if (finalQtyActual === null && qty !== undefined) {
+                    finalQtyActual = parseFloat(qty);
+                }
+                
+                // Calculate diff if not provided
+                if (finalQtyDiff === null && finalQtyActual !== null) {
+                    finalQtyDiff = finalQtyActual - qtySystem;
+                }
             }
 
             // Get project_id from document for export lines
             const lineProjectId = doc_type === 'export' ? project_id : null;
 
-            // Insert line with meters columns for aluminum
+            // Insert line with meters columns for aluminum and stocktake columns
             await connection.query(`
                 INSERT INTO stock_document_lines 
-                (document_id, item_type, item_id, item_code, item_name, qty, unit_price, line_total, qty_system, note, project_id, meters_used, length_per_bar_m, meters_leftover)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `, [docId, item_type, item_id, itemCode, itemName, qty, finalUnitPrice, lineTotal, qtySystem, lineNote, lineProjectId, metersUsed, lengthPerBarM, metersLeftover]);
+                (document_id, item_type, item_id, item_code, item_name, qty, unit_price, line_total, qty_system, qty_actual, qty_diff, note, project_id, meters_used, length_per_bar_m, meters_leftover)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `, [docId, item_type, item_id, itemCode, itemName, qty, finalUnitPrice, lineTotal, qtySystem, finalQtyActual, finalQtyDiff, lineNote, lineProjectId, metersUsed, lengthPerBarM, metersLeftover]);
 
             totalQty += qty;
             totalValue += lineTotal;
@@ -571,7 +584,7 @@ exports.addLines = async (req, res) => {
         let totalValue = doc.total_value || 0;
 
         for (const line of lines) {
-            const { item_type, item_id, qty, unit_price = 0, note: lineNote } = line;
+            const { item_type, item_id, qty, unit_price = 0, note: lineNote, qty_actual, qty_diff } = line;
 
             if (!item_type || !item_id || !qty || qty <= 0) {
                 continue;
@@ -605,14 +618,19 @@ exports.addLines = async (req, res) => {
                 // Update existing
                 await connection.query(`
                     UPDATE stock_document_lines 
-                    SET qty = ?, unit_price = ?, line_total = ?, note = ?
+                    SET qty = ?, unit_price = ?, line_total = ?, note = ?, qty_actual = ?, qty_diff = ?
                     WHERE id = ?
-                `, [qty, unit_price, lineTotal, lineNote, existing[0].id]);
+                `, [qty, unit_price, lineTotal, lineNote, qty_actual || null, qty_diff || null, existing[0].id]);
             } else {
                 // Insert new
                 let qtySystem = null;
+                let finalQtyActual = qty_actual !== undefined ? parseFloat(qty_actual) : null;
+                let finalQtyDiff = qty_diff !== undefined ? parseFloat(qty_diff) : null;
+
                 if (doc.doc_type === 'stocktake') {
                     qtySystem = await getCurrentStock(item_type, item_id, doc.warehouse_id, connection);
+                    if (finalQtyActual === null) finalQtyActual = qty;
+                    if (finalQtyDiff === null && finalQtyActual !== null) finalQtyDiff = finalQtyActual - qtySystem;
                 }
 
                 // Get project_id from document for export lines
@@ -620,9 +638,9 @@ exports.addLines = async (req, res) => {
 
                 await connection.query(`
                     INSERT INTO stock_document_lines 
-                    (document_id, item_type, item_id, item_code, item_name, qty, unit_price, line_total, qty_system, note, project_id)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                `, [id, item_type, item_id, itemCode, itemName, qty, unit_price, lineTotal, qtySystem, lineNote, lineProjectId]);
+                    (document_id, item_type, item_id, item_code, item_name, qty, unit_price, line_total, qty_system, qty_actual, qty_diff, note, project_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                `, [id, item_type, item_id, itemCode, itemName, qty, unit_price, lineTotal, qtySystem, finalQtyActual, finalQtyDiff, lineNote, lineProjectId]);
 
                 totalQty += qty;
                 totalValue += lineTotal;
@@ -721,7 +739,7 @@ exports.update = async (req, res) => {
             let totalValue = 0;
 
             for (const line of lines) {
-                const { item_type, item_id, qty, unit_price = 0, note: lineNote } = line;
+                const { item_type, item_id, qty, unit_price = 0, note: lineNote, qty_actual, qty_diff, meters_used } = line;
 
                 if (!item_type || !item_id || !qty || qty <= 0) {
                     continue;
@@ -764,11 +782,22 @@ exports.update = async (req, res) => {
 
                 const lineTotal = qty * finalUnitPrice;
 
+                // For stocktake, get current system qty
+                let qtySystem = null;
+                let finalQtyActual = qty_actual !== undefined ? parseFloat(qty_actual) : null;
+                let finalQtyDiff = qty_diff !== undefined ? parseFloat(qty_diff) : null;
+
+                if (doc.doc_type === 'stocktake') {
+                    qtySystem = await getCurrentStock(item_type, item_id, doc.warehouse_id, connection);
+                    if (finalQtyActual === null) finalQtyActual = qty;
+                    if (finalQtyDiff === null && finalQtyActual !== null) finalQtyDiff = finalQtyActual - qtySystem;
+                }
+
                 await connection.query(`
                     INSERT INTO stock_document_lines 
-                    (document_id, item_type, item_id, item_code, item_name, qty, unit_price, line_total, note)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                `, [id, item_type, item_id, itemCode, itemName, qty, finalUnitPrice, lineTotal, lineNote || '']);
+                    (document_id, item_type, item_id, item_code, item_name, qty, unit_price, line_total, qty_system, qty_actual, qty_diff, note)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                `, [id, item_type, item_id, itemCode, itemName, qty, finalUnitPrice, lineTotal, qtySystem, finalQtyActual, finalQtyDiff, lineNote || '']);
 
                 totalQty += qty;
                 totalValue += lineTotal;
@@ -831,6 +860,8 @@ exports.post = async (req, res) => {
             throw new Error('Phiếu đã bị hủy');
         }
 
+        console.log(`[DEBUG] POSTing document ID: ${id}, type: ${doc.doc_type}`);
+
         // Get lines
         const [lines] = await connection.query(
             'SELECT * FROM stock_document_lines WHERE document_id = ?',
@@ -841,12 +872,16 @@ exports.post = async (req, res) => {
             throw new Error('Phiếu không có dòng vật tư nào');
         }
 
+        console.log(`[DEBUG] Found ${lines.length} lines to process`);
+
         // Process each line
         for (const line of lines) {
             let qtyIn = 0;
             let qtyOut = 0;
             let newBalance = 0;
             let metaJson = null;
+
+            const itemIdForQuery = line.system_id || line.item_id;
 
             // =====================================================
             // ALUMINUM SPECIAL HANDLING (Phase 2: Bar-based)
@@ -861,9 +896,9 @@ exports.post = async (req, res) => {
                     // Get new balance after atomic update
                     const [sysRows] = await connection.query(
                         'SELECT quantity FROM aluminum_systems WHERE id = ?',
-                        [line.system_id || line.item_id]
+                        [itemIdForQuery]
                     );
-                    newBalance = sysRows.length > 0 ? sysRows[0].quantity : 0;
+                    newBalance = sysRows.length > 0 ? Number(sysRows[0].quantity) : 0;
 
                 } else if (doc.doc_type === 'import' || doc.doc_type === 'adjust') {
                     // Nhập nhôm: cộng cây
@@ -874,21 +909,21 @@ exports.post = async (req, res) => {
                     // Get new balance after update
                     const [sysRows] = await connection.query(
                         'SELECT quantity FROM aluminum_systems WHERE id = ?',
-                        [line.system_id || line.item_id]
+                        [itemIdForQuery]
                     );
-                    newBalance = sysRows.length > 0 ? sysRows[0].quantity : 0;
+                    newBalance = sysRows.length > 0 ? Number(sysRows[0].quantity) : 0;
 
                 } else if (doc.doc_type === 'stocktake') {
                     // Kiểm kho nhôm: set tồn = thực tế (theo cây) cho kho cụ thể
-                    const qtyActual = parseInt(line.qty_actual !== undefined ? line.qty_actual : line.qty) || 0;
+                    const qtyActual = (line.qty_actual !== null && line.qty_actual !== undefined) ? Number(line.qty_actual) : Number(line.qty);
                     const warehouseId = doc.warehouse_id || 1;
 
                     // Get current stock in this warehouse for diff calculation
                     const [wsRows] = await connection.query(
                         'SELECT quantity FROM aluminum_warehouse_stock WHERE warehouse_id = ? AND aluminum_system_id = ?',
-                        [warehouseId, line.system_id || line.item_id]
+                        [warehouseId, itemIdForQuery]
                     );
-                    const currentBars = wsRows.length > 0 ? parseInt(wsRows[0].quantity) : 0;
+                    const currentBars = wsRows.length > 0 ? Number(wsRows[0].quantity) : 0;
                     const diff = qtyActual - currentBars;
 
                     if (diff > 0) {
@@ -902,16 +937,22 @@ exports.post = async (req, res) => {
                         INSERT INTO aluminum_warehouse_stock (warehouse_id, aluminum_system_id, quantity)
                         VALUES (?, ?, ?)
                         ON DUPLICATE KEY UPDATE quantity = VALUES(quantity)
-                    `, [warehouseId, line.system_id || line.item_id, qtyActual]);
+                    `, [warehouseId, itemIdForQuery, qtyActual]);
+
+                    // NEW: Calculate total balance across ALL warehouses for aluminum_systems.quantity
+                    const [totalRows] = await connection.query(`
+                        SELECT COALESCE(SUM(quantity), 0) as total_qty 
+                        FROM aluminum_warehouse_stock 
+                        WHERE aluminum_system_id = ?
+                    `, [itemIdForQuery]);
+                    newBalance = Number(totalRows[0].total_qty);
 
                     // Sync legacy quantity
                     await connection.query(`
                         UPDATE aluminum_systems 
-                        SET quantity = (SELECT SUM(quantity) FROM aluminum_warehouse_stock WHERE aluminum_system_id = ?) 
+                        SET quantity = ?
                         WHERE id = ?
-                    `, [line.system_id || line.item_id, line.system_id || line.item_id]);
-
-                    newBalance = qtyActual; // Current balance for this warehouse
+                    `, [newBalance, itemIdForQuery]);
 
                     metaJson = { type: 'aluminum_stocktake', actual: qtyActual, diff };
 
@@ -1043,7 +1084,8 @@ exports.post = async (req, res) => {
 
             } else if (doc.doc_type === 'stocktake') {
                 // Kiểm kho: set tồn = thực tế
-                const qtyActual = lineQty; // qty trong stocktake = số thực tế
+                // Prioritize qty_actual if saved in draft, OR treat line.qty as actual (aligned with Frontend change)
+                const qtyActual = (line.qty_actual !== null && line.qty_actual !== undefined) ? Number(line.qty_actual) : Number(line.qty);
                 const diff = qtyActual - currentStock;
 
                 if (diff > 0) {
