@@ -24,10 +24,11 @@ function getItemTable(itemType) {
     const tables = {
         'accessory': 'accessories',
         'aluminum': 'aluminum_systems',
-        'glass': 'glass_items',  // Fixed: was glass_inventory
-        'other': 'accessories',   // Vật tư phụ cũng từ accessories
-        'scrap': 'aluminum_scraps' // Nhôm Đề C
+        'glass': 'inventory',         // Kính hiện tại dùng bảng inventory
+        'other': 'inventory',         // Vật tư phụ cũng chuyển dần sang inventory
+        'scrap': 'aluminum_scraps'    // Nhôm Đề C
     };
+    // Default to inventory if not specified
     return tables[itemType] || 'inventory';
 }
 
@@ -56,11 +57,11 @@ async function getCurrentStock(itemType, itemId, warehouseId = 1, connection = n
 
     // Các bảng khác nhau dùng tên cột khác nhau
     if (itemType === 'aluminum') {
-        qtyColumn = 'quantity'; // Nhôm dùng quantity (không phải total_length)
+        qtyColumn = 'quantity';
+    } else if (table === 'inventory') {
+        qtyColumn = 'quantity'; // Bảng inventory dùng quantity cho tất cả (kính, vật tư phụ)
     } else if (itemType === 'accessory' || itemType === 'other') {
-        qtyColumn = 'stock_quantity'; // Phụ kiện dùng stock_quantity
-    } else if (itemType === 'glass') {
-        qtyColumn = 'quantity'; // Kính dùng quantity
+        qtyColumn = 'stock_quantity'; // Bảng accessories cũ dùng stock_quantity
     }
 
     const [rows] = await conn.query(`SELECT ${qtyColumn} as qty FROM ${table} WHERE id = ?`, [itemId]);
@@ -76,11 +77,11 @@ async function updateItemStock(itemType, itemId, newQty, connection) {
 
     // Các bảng khác nhau dùng tên cột khác nhau
     if (itemType === 'aluminum') {
-        qtyColumn = 'quantity'; // Nhôm dùng quantity (không phải total_length)
+        qtyColumn = 'quantity';
+    } else if (table === 'inventory') {
+        qtyColumn = 'quantity';
     } else if (itemType === 'accessory' || itemType === 'other') {
-        qtyColumn = 'stock_quantity'; // Phụ kiện dùng stock_quantity
-    } else if (itemType === 'glass') {
-        qtyColumn = 'quantity'; // Kính dùng quantity
+        qtyColumn = 'stock_quantity';
     }
 
     await connection.query(`UPDATE ${table} SET ${qtyColumn} = ? WHERE id = ?`, [newQty, itemId]);
@@ -399,7 +400,7 @@ exports.create = async (req, res) => {
             // =====================================================
             let finalUnitPrice = parseFloat(unit_price) || 0;
 
-            // Get item info for snapshot - glass_items không có cột code
+            // Get item info for snapshot
             const table = getItemTable(item_type);
             let itemCode = '';
             let itemName = '';
@@ -407,19 +408,18 @@ exports.create = async (req, res) => {
             let metersUsed = null;
             let metersLeftover = null;
 
-            if (item_type === 'glass') {
-                // Glass items: dùng name làm code vì không có cột code, structure là 3+3, 4+4 không phù hợp
-                // Use SELECT * for safety as glass_items only has 'price', not 'unit_price'
+            if (table === 'inventory') {
+                // Bảng inventory (Kính, Vật tư phụ sau khi di chuyển)
                 const [items] = await connection.query(
-                    `SELECT * FROM ${table} WHERE id = ? LIMIT 1`,
+                    `SELECT id, item_code, item_name, unit_price, quantity, notes FROM inventory WHERE id = ? LIMIT 1`,
                     [item_id]
                 );
-                itemCode = items[0]?.name || ('Kính-' + item_id);
-                itemName = items[0]?.structure ? (items[0].name + ' (' + items[0].structure + ')') : items[0]?.name || '';
-
-                // ✅ Fetch price from DB if not provided
-                if (finalUnitPrice === 0 && items.length > 0) {
-                    finalUnitPrice = parseFloat(items[0].unit_price || items[0].price) || 0;
+                const item = items[0];
+                itemCode = item?.item_code || (item_type === 'glass' ? 'K-' : 'VT-') + item_id;
+                itemName = item?.item_name || '';
+                
+                if (finalUnitPrice === 0 && item) {
+                    finalUnitPrice = parseFloat(item.unit_price) || 0;
                 }
             } else if (item_type === 'aluminum' && doc_type === 'export') {
                 // =====================================================
@@ -751,14 +751,14 @@ exports.update = async (req, res) => {
                 let itemCode = '';
                 let itemName = '';
 
-                if (item_type === 'glass') {
+                if (table === 'inventory') {
                     const [items] = await connection.query(
-                        `SELECT * FROM ${table} WHERE id = ? LIMIT 1`, [item_id]
+                        `SELECT item_code, item_name, unit_price FROM inventory WHERE id = ? LIMIT 1`, [item_id]
                     );
-                    itemCode = items[0]?.name || ('Kính-' + item_id);
-                    itemName = items[0]?.structure ? (items[0].name + ' (' + items[0].structure + ')') : items[0]?.name || '';
+                    itemCode = items[0]?.item_code || '';
+                    itemName = items[0]?.item_name || '';
                     if (finalUnitPrice === 0 && items.length > 0) {
-                        finalUnitPrice = parseFloat(items[0].unit_price || items[0].price) || 0;
+                        finalUnitPrice = parseFloat(items[0].unit_price) || 0;
                     }
                 } else if (item_type === 'accessory' || item_type === 'other') {
                     const [items] = await connection.query(
@@ -769,7 +769,7 @@ exports.update = async (req, res) => {
                     if (finalUnitPrice === 0 && items.length > 0) {
                         finalUnitPrice = parseFloat(items[0].sale_price || items[0].purchase_price) || 0;
                     }
-                } else {
+                } else if (item_type === 'aluminum') {
                     const [items] = await connection.query(
                         `SELECT * FROM ${table} WHERE id = ? LIMIT 1`, [item_id]
                     );

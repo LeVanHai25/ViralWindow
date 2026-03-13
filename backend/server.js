@@ -53,7 +53,6 @@ app.use(optionalAuth); // Populate req.user
 app.use(activityLogMiddleware); // Log activity using populated req.user
 
 // Serve static files (uploads)
-const path = require("path");
 // From FontEnd/uploads (legacy)
 app.use('/uploads', express.static(path.join(__dirname, '..', 'FontEnd', 'uploads')));
 // From backend/uploads (project photos, etc.)
