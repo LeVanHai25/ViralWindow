@@ -11762,28 +11762,15 @@
             }
 
             function getGlassDimensions(item) {
-                // Parse từ notes hoặc description để lấy chiều dài x chiều rộng
-                // Backend trả về notes as description
                 const notes = item.notes || item.description || '';
-
-                // Tìm pattern "Xm x Ym" trong notes (ví dụ: "2.0m x 1.5m")
-                const dimensionMatch = notes.match(/(\d+\.?\d*)\s*m\s*x\s*(\d+\.?\d*)\s*m/i);
-
-                if (dimensionMatch) {
-                    return `${dimensionMatch[1]}m x ${dimensionMatch[2]}m`;
+                // Tìm pattern "Xm x Ym" hoặc "X x Y" trong notes
+                const dimMatch = notes.match(/(\d+\.?\d*)\s*m?\s*x\s*(\d+\.?\d*)\s*m?/i);
+                if (dimMatch) {
+                    return `${dimMatch[1]}m x ${dimMatch[2]}m`;
                 }
-
-                // Thử tìm pattern "X x Y" (không có "m")
-                const simpleMatch = notes.match(/(\d+\.?\d*)\s*x\s*(\d+\.?\d*)/i);
-                if (simpleMatch) {
-                    return `${simpleMatch[1]}m x ${simpleMatch[2]}m`;
-                }
-
-                // Nếu không tìm thấy, thử parse từ các trường riêng nếu có
                 if (item.length_m && item.width_m) {
                     return `${item.length_m}m x ${item.width_m}m`;
                 }
-
                 return '-';
             }
 
@@ -11819,7 +11806,7 @@
                     const supplierName = item.supplier_name || '-';
                     const thickness = item.thickness || '-';
                     const area = item.area || '-';
-                    const imageUrl = getImageUrl(item.image_path);
+                    const imageUrl = item.image_url ? getImageUrl(item.image_url) : null;
 
                     return `
                     <tr class="${isLowStock ? 'bg-orange-50' : 'hover:bg-gray-50'} transition">
@@ -11887,21 +11874,32 @@
                     if (result.success) {
                         // Map dữ liệu từ inventory sang format hiển thị kính
                         // Trong inventory: item_code là mã, item_name là tên, notes lưu structure (kích thước)
-                        allGlassData = (result.data || []).map(item => ({
-                            id: item.id,
-                            item_code: item.item_code,
-                            item_name: item.item_name,
-                            notes: item.notes || '',
-                            description: item.notes || '',
-                            quantity: parseFloat(item.quantity) || 0,
-                            stock_quantity: parseFloat(item.quantity) || 0,
-                            unit_price: parseFloat(item.unit_price) || 0,
-                            supplier_id: item.supplier_id,
-                            supplier_name: item.supplier_name || '',
-                            image_url: item.image_url || '',
-                            min_stock_level: item.min_stock_level || 5, // Ensure min_stock_level is passed
-                            max_stock_level: item.max_stock_level || 50 // Ensure max_stock_level is passed
-                        }));
+                        allGlassData = (result.data || []).map(item => {
+                            const notes = item.notes || '';
+                            const thicknessMatch = notes.match(/(\d+\.?\d*)mm/i);
+                            const dimMatch = notes.match(/(\d+\.?\d*)\s*m?\s*x\s*(\d+\.?\d*)\s*m?/i);
+                            const length = dimMatch ? parseFloat(dimMatch[1]) : 0;
+                            const width = dimMatch ? parseFloat(dimMatch[2]) : 0;
+                            const area = length * width;
+
+                            return {
+                                id: item.id,
+                                item_code: item.item_code,
+                                item_name: item.item_name,
+                                notes: notes,
+                                description: notes,
+                                thickness: thicknessMatch ? thicknessMatch[1] : '-',
+                                area: area > 0 ? area.toFixed(2) : '-',
+                                quantity: parseFloat(item.quantity) || 0,
+                                stock_quantity: parseFloat(item.quantity) || 0,
+                                unit_price: parseFloat(item.unit_price) || 0,
+                                supplier_id: item.supplier_id,
+                                supplier_name: item.supplier_name || '',
+                                image_url: item.image_url || '',
+                                min_stock_level: item.min_stock_level || 5,
+                                max_stock_level: item.max_stock_level || 50
+                            };
+                        });
 
                         displayGlassItems(allGlassData);
                     }
@@ -12027,18 +12025,11 @@
                         const thicknessMatch = structure.match(/(\d+\.?\d*)mm/i);
                         document.getElementById('glassThickness').value = thicknessMatch ? thicknessMatch[1] : '';
 
-                        // Parse chiều dài và rộng từ structure (format: "Xm x Ym")
-                        const dimensionMatch = structure.match(/(\d+\.?\d*)\s*m\s*x\s*(\d+\.?\d*)\s*m/i);
+                        // Parse chiều dài và rộng từ structure (format: "Xm x Ym" hoặc "X x Y")
+                        const dimensionMatch = structure.match(/(\d+\.?\d*)\s*m?\s*x\s*(\d+\.?\d*)\s*m?/i);
                         if (dimensionMatch) {
                             document.getElementById('glassLength').value = dimensionMatch[1];
                             document.getElementById('glassWidth').value = dimensionMatch[2];
-                        } else {
-                            // Thử pattern đơn giản hơn "X x Y"
-                            const simpleMatch = structure.match(/(\d+\.?\d*)\s*x\s*(\d+\.?\d*)/i);
-                            if (simpleMatch) {
-                                document.getElementById('glassLength').value = simpleMatch[1];
-                                document.getElementById('glassWidth').value = simpleMatch[2];
-                            }
                         }
 
                         // Tính lại diện tích
@@ -12060,10 +12051,16 @@
                             document.getElementById('glassDescription').value = '';
                         }
 
-                        // Hiển thị ảnh hiện có nếu có
+                        // Hiển thị ảnh hiện có nếu có - Lưu lại URL vào hidden input để preserve khi update
                         if (item.image_url) {
+                            if (document.getElementById('glassImageUrl')) {
+                                document.getElementById('glassImageUrl').value = item.image_url;
+                            }
                             setInventoryImagePreview('glass', getImageUrl(item.image_url));
                         } else {
+                            if (document.getElementById('glassImageUrl')) {
+                                document.getElementById('glassImageUrl').value = '';
+                            }
                             resetInventoryImagePreview('glass');
                         }
                     }
@@ -12132,19 +12129,30 @@
                     structure += ` - ${description}`;
                 }
 
-                // Dữ liệu gửi lên API inventory
-                const inventoryData = {
-                    item_code: codeEl.value.trim(),
-                    item_name: nameEl.value.trim(),
-                    item_type: 'glass',
-                    unit: 'm²',
-                    quantity: stock,
-                    unit_price: unitPrice,
-                    notes: structure, // Lưu structure vào notes
-                    min_stock_level: parseInt(document.getElementById('glassMinStock').value) || 10,
-                    max_stock_level: parseInt(document.getElementById('glassMaxStock').value) || 100,
-                    supplier_id: supplierId
-                };
+                // Sử dụng FormData để support upload ảnh
+                const formData = new FormData();
+                formData.append('item_code', codeEl.value.trim());
+                formData.append('item_name', nameEl.value.trim());
+                formData.append('item_type', 'glass');
+                formData.append('unit', 'm²');
+                formData.append('quantity', stock);
+                formData.append('unit_price', unitPrice);
+                formData.append('notes', structure);
+                formData.append('min_stock_level', parseInt(document.getElementById('glassMinStock').value) || 10);
+                formData.append('max_stock_level', parseInt(document.getElementById('glassMaxStock').value) || 100);
+                formData.append('supplier_id', supplierId);
+
+                // Ảnh
+                const imageFile = document.getElementById('glassImage')?.files[0];
+                if (imageFile) {
+                    formData.append('image', imageFile);
+                } else if (id) {
+                    // Preserve existing image if no new file selected
+                    const existingImageUrl = document.getElementById('glassImageUrl')?.value;
+                    if (existingImageUrl) {
+                        formData.append('image_url', existingImageUrl);
+                    }
+                }
 
                 try {
                     const token = sessionStorage.getItem('token');
@@ -12160,10 +12168,9 @@
                     const response = await fetch(url, {
                         method: method,
                         headers: {
-                            'Content-Type': 'application/json',
                             'Authorization': `Bearer ${token}`
                         },
-                        body: JSON.stringify(inventoryData)
+                        body: formData
                     });
 
                     if (response.status === 401) {
