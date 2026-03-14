@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -3071,7 +3071,11 @@
                                         tư</th>
                                     <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Loại
                                     </th>
-                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-20">SL
+                                    <th class="px-3 py-2 text-center text-xs font-medium text-gray-400 uppercase w-20">SL Trước
+                                    </th>
+                                    <th class="px-3 py-2 text-center text-xs font-medium text-teal-600 uppercase w-20">SL Nhập
+                                    </th>
+                                    <th class="px-3 py-2 text-center text-xs font-medium text-gray-600 uppercase w-20">SL Sau
                                     </th>
                                     <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Đơn giá
                                     </th>
@@ -3083,7 +3087,7 @@
                             </thead>
                             <tbody id="importLinesTable" class="divide-y divide-gray-200">
                                 <tr id="importEmptyRow">
-                                    <td colspan="8" class="px-4 py-6 text-center text-gray-400">
+                                    <td colspan="10" class="px-4 py-6 text-center text-gray-400">
                                         Chưa có vật tư. Thêm vật tư ở trên.
                                     </td>
                                 </tr>
@@ -3092,7 +3096,9 @@
                                 <tr>
                                     <td colspan="4" class="px-3 py-2 text-right font-semibold text-gray-700">Tổng cộng:
                                     </td>
-                                    <td class="px-3 py-2 font-bold text-teal-600" id="importTotalQty">0</td>
+                                    <td></td>
+                                    <td class="px-3 py-2 text-center font-bold text-teal-600" id="importTotalQty">0</td>
+                                    <td></td>
                                     <td></td>
                                     <td class="px-3 py-2 font-bold text-teal-600" id="importTotalValue">0 ₫</td>
                                     <td></td>
@@ -3410,7 +3416,9 @@
                                     <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Mã</th>
                                     <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Tên vật tư</th>
                                     <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Loại</th>
-                                    <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 w-20">SL</th>
+                                    <th class="px-3 py-2 text-center text-xs font-medium text-gray-400 w-20">SL Trước</th>
+                                    <th class="px-3 py-2 text-center text-xs font-medium text-blue-600 w-20">SL Xuất</th>
+                                    <th class="px-3 py-2 text-center text-xs font-medium text-gray-600 w-20">SL Sau</th>
                                     <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 w-48">Thông tin
                                     </th>
                                     <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 w-10"></th>
@@ -3418,15 +3426,16 @@
                             </thead>
                             <tbody id="exportLinesTable" class="divide-y divide-gray-200">
                                 <tr>
-                                    <td colspan="7" class="px-4 py-6 text-center text-gray-400">Chưa có vật tư. Thêm vật
+                                    <td colspan="9" class="px-4 py-6 text-center text-gray-400">Chưa có vật tư. Thêm vật
                                         tư ở trên.</td>
                                 </tr>
                             </tbody>
                             <tfoot class="bg-gray-50">
                                 <tr>
-                                    <td colspan="4" class="px-3 py-2 text-right font-semibold text-gray-700">Tổng dòng:
-                                    </td>
+                                    <td colspan="4" class="px-3 py-2 text-right font-semibold text-gray-700">Tổng xuất:</td>
+                                    <td></td>
                                     <td class="px-3 py-2 text-center font-bold text-blue-600" id="exportTotalQty">0</td>
+                                    <td></td>
                                     <td class="px-3 py-2 text-left text-sm text-gray-500" id="exportTotalInfo"></td>
                                     <td></td>
                                 </tr>
@@ -4228,7 +4237,7 @@
             // Add line to export document
             function addExportLine() {
                 const idx = exportLines.length;
-                exportLines.push({ item_type: '', item_id: '', qty: 1, unit_price: 0 });
+                exportLines.push({ item_type: '', item_id: '', qty: 1, stock_quantity: 0, unit_price: 0 });
                 renderExportLines();
             }
 
@@ -4242,7 +4251,7 @@
             function renderExportLines() {
                 const tbody = document.getElementById('exportLinesTable');
                 if (exportLines.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-6 text-center text-gray-400">Chưa có vật tư. Thêm vật tư ở trên.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="9" class="px-4 py-6 text-center text-gray-400">Chưa có vật tư. Thêm vật tư ở trên.</td></tr>';
                     document.getElementById('exportTotalQty').textContent = '0';
                     const infoEl = document.getElementById('exportTotalInfo');
                     if (infoEl) infoEl.textContent = '';
@@ -4254,9 +4263,15 @@
 
                 tbody.innerHTML = exportLines.map((line, idx) => {
                     const qty = parseInt(line.qty) || 0;
+                    const stockBefore = parseInt(line.stock_quantity) || 0;
+                    let stockAfter = stockBefore - qty;
+                    // Tồn kho không thể âm do valid trong addExportLineNew, nhưng fallback
+                    stockAfter = stockAfter < 0 ? 0 : stockAfter; 
+                    
                     totalQty += qty;
 
                     // Aluminum-specific: show meters info
+                    // Calculate "stock after" roughly for aluminum (cây)
                     if (line.item_type === 'aluminum') {
                         const metersUsed = parseFloat(line.meters_used) || 0;
                         const lengthPerBar = parseFloat(line.length_per_bar_m) || 6;
@@ -4272,14 +4287,16 @@
                                 <td class="px-3 py-2 text-sm">
                                     <span class="bg-teal-100 text-teal-700 px-2 py-0.5 rounded text-xs font-medium">Nhôm</span>
                                 </td>
-                                <td class="px-3 py-2 text-center text-sm font-medium">${qty} cây</td>
+                                <td class="px-3 py-2 text-center text-sm font-semibold text-gray-500 border-x border-gray-100">${stockBefore} <span class="text-xs">cây</span></td>
+                                <td class="px-3 py-2 text-center text-sm font-bold text-blue-600 border-x border-blue-50 bg-blue-50/30">${qty} <span class="text-xs">cây</span></td>
+                                <td class="px-3 py-2 text-center text-sm font-semibold text-gray-600 border-x border-gray-100">${stockAfter} <span class="text-xs">cây</span></td>
                                 <td class="px-3 py-2 text-sm">
                                     <span class="text-teal-600 font-medium">SD: ${metersUsed}m</span>
                                     ${metersLeftover > 0 ? `<span class="text-orange-500 ml-2">Thừa: ${metersLeftover.toFixed(1)}m</span>` : ''}
                                     <span class="text-gray-400 text-xs ml-1">(${lengthPerBar}m/cây)</span>
                                 </td>
                                 <td class="px-3 py-2 text-center">
-                                    <button onclick="removeExportLine(${idx})" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">Xóa</button>
+                                    <button onclick="removeExportLine(${idx})" class="text-red-500 font-bold hover:text-red-700 px-2">✕</button>
                                 </td>
                             </tr>
                         `;
@@ -4301,14 +4318,16 @@
                                 <td class="px-3 py-2 text-sm">
                                     <span class="bg-orange-100 text-orange-700 px-2 py-0.5 rounded text-xs font-medium">Đề C</span>
                                 </td>
-                                <td class="px-3 py-2 text-center text-sm font-medium">1</td>
+                                <td class="px-3 py-2 text-center text-sm font-semibold text-gray-500 border-x border-gray-100">-</td>
+                                <td class="px-3 py-2 text-center text-sm font-bold text-blue-600 border-x border-blue-50 bg-blue-50/30">1</td>
+                                <td class="px-3 py-2 text-center text-sm font-semibold text-gray-600 border-x border-gray-100">-</td>
                                 <td class="px-3 py-2 text-sm">
                                     <span class="text-orange-600 font-medium">SD: ${metersUsed}m</span>
                                     ${metersLeftover > 0 ? `<span class="text-teal-500 ml-2">Còn: ${metersLeftover.toFixed(2)}m</span>` : '<span class="text-red-500 ml-2">Dùng hết</span>'}
                                     <span class="text-gray-400 text-xs ml-1">(${lengthCm}cm)</span>
                                 </td>
                                 <td class="px-3 py-2 text-center">
-                                    <button onclick="removeExportLine(${idx})" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">Xóa</button>
+                                    <button onclick="removeExportLine(${idx})" class="text-red-500 font-bold hover:text-red-700 px-2">✕</button>
                                 </td>
                             </tr>
                         `;
@@ -4319,12 +4338,14 @@
                         <tr class="hover:bg-gray-50">
                             <td class="px-3 py-2 text-sm">${idx + 1}</td>
                             <td class="px-3 py-2 text-sm font-medium">${line.item_code || '-'}</td>
-                            <td class="px-3 py-2 text-sm">${line.item_name || '-'}</td>
+                            <td class="px-3 py-2 text-sm truncate max-w-[200px]" title="${line.item_name || ''}">${line.item_name || '-'}</td>
                             <td class="px-3 py-2 text-sm">${getExportItemTypeLabel(line.item_type)}</td>
-                            <td class="px-3 py-2 text-center text-sm font-medium">${qty}</td>
+                            <td class="px-3 py-2 text-center text-sm font-semibold text-gray-500 border-x border-gray-100">${stockBefore}</td>
+                            <td class="px-3 py-2 text-center text-sm font-bold text-blue-600 border-x border-blue-50 bg-blue-50/30">${qty}</td>
+                            <td class="px-3 py-2 text-center text-sm font-semibold ${stockAfter === 0 ? 'text-orange-500' : 'text-gray-600'} border-x border-gray-100">${stockAfter}</td>
                             <td class="px-3 py-2 text-sm text-gray-400">-</td>
                             <td class="px-3 py-2 text-center">
-                                <button onclick="removeExportLine(${idx})" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">Xóa</button>
+                                <button onclick="removeExportLine(${idx})" class="text-red-500 font-bold hover:text-red-700 px-2">✕</button>
                             </td>
                         </tr>
                     `;
@@ -4628,6 +4649,7 @@
                         item_code: selectedExportItem.code,
                         item_name: selectedExportItem.name,
                         qty: qty,
+                        stock_quantity: selectedExportItem.stock || 0,
                         unit_price: (itemType === 'aluminum' || itemType === 'scrap') ? 0 : price // No price for aluminum/scrap
                     };
                     if (itemType === 'aluminum') {
@@ -6065,7 +6087,9 @@
                             }
                         }
 
-                        return { id: item.id, code, name, price };
+                        let stock = parseFloat(item.stock_quantity) || parseFloat(item.stock) || parseFloat(item.quantity) || 0;
+
+                        return { id: item.id, code, name, price, stock };
                     });
 
                     // Render dropdown
@@ -6086,7 +6110,7 @@
 
                 dropdown.innerHTML = items.slice(0, 50).map(item => `
                     <div class="px-3 py-2 hover:bg-teal-50 cursor-pointer text-sm border-b border-gray-100 flex justify-between"
-                         onclick="selectImportItem(${item.id}, '${item.code.replace(/'/g, "\\'")}', '${item.name.replace(/'/g, "\\'")}', ${item.price})">
+                         onclick="selectImportItem(${item.id}, '${item.code.replace(/'/g, "\\'")}', '${item.name.replace(/'/g, "\\'")}', ${item.price}, ${item.stock || 0})">
                         <span><strong class="text-teal-600">${item.code}</strong> - ${item.name}</span>
                         <span class="text-gray-400 text-xs">${item.price > 0 ? formatCurrency(item.price) : ''}</span>
                     </div>
@@ -6122,8 +6146,8 @@
             }
 
             // Select item from dropdown
-            function selectImportItem(id, code, name, price) {
-                selectedImportItem = { id, code, name, price };
+            function selectImportItem(id, code, name, price, stock = 0) {
+                selectedImportItem = { id, code, name, price, stock };
                 document.getElementById('importItemId').value = id;
                 document.getElementById('importItemSearch').value = code + ' - ' + name;
                 document.getElementById('importItemSelected').textContent = '✓ Đã chọn: ' + code;
@@ -6176,6 +6200,7 @@
                         item_code: code,
                         item_name: name,
                         qty: qty,
+                        stock_quantity: selectedImportItem.stock || 0,
                         unit_price: price,
                         line_total: qty * price
                     });
@@ -6191,7 +6216,7 @@
                 const emptyRow = document.getElementById('importEmptyRow');
 
                 if (importDocLines.length === 0) {
-                    tbody.innerHTML = `<tr id="importEmptyRow"><td colspan="8" class="px-4 py-6 text-center text-gray-400">Chưa có vật tư. Thêm vật tư ở trên.</td></tr>`;
+                    tbody.innerHTML = `<tr id="importEmptyRow"><td colspan="10" class="px-4 py-6 text-center text-gray-400">Chưa có vật tư. Thêm vật tư ở trên.</td></tr>`;
                     document.getElementById('importTotalQty').textContent = '0';
                     document.getElementById('importTotalValue').textContent = '0 ₫';
                     return;
@@ -6201,21 +6226,31 @@
                 tbody.innerHTML = importDocLines.map((line, idx) => {
                     totalQty += line.qty;
                     totalValue += line.line_total;
+
+                    const stockBefore = parseFloat(line.stock_quantity) || 0;
+                    const stockAfter = stockBefore + line.qty;
+
                     return `
-                        <tr class="hover:bg-gray-50">
+                        <tr class="hover:bg-gray-50 border-b border-gray-100">
                             <td class="px-3 py-2 text-sm">${idx + 1}</td>
-                            <td class="px-3 py-2 text-sm font-medium">${line.item_code}</td>
-                            <td class="px-3 py-2 text-sm">${line.item_name}</td>
-                            <td class="px-3 py-2 text-sm">${getItemTypeLabel(line.item_type)}</td>
-                            <td class="px-3 py-2">
-                                <input type="number" value="${line.qty}" min="1" 
-                                    class="w-16 px-2 py-1 border rounded text-sm text-center"
-                                    onchange="updateImportLineQty(${idx}, this.value)">
+                            <td class="px-3 py-2 text-sm font-medium text-gray-800">${line.item_code}</td>
+                            <td class="px-3 py-2 text-sm max-w-[200px] truncate" title="${line.item_name}">${line.item_name}</td>
+                            <td class="px-3 py-2 text-sm">
+                                <span class="bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-xs font-medium">${getItemTypeLabel(line.item_type)}</span>
                             </td>
-                            <td class="px-3 py-2 text-sm">${formatCurrency(line.unit_price)}</td>
-                            <td class="px-3 py-2 text-sm font-medium">${formatCurrency(line.line_total)}</td>
-                            <td class="px-3 py-2">
-                                <button onclick="removeImportLine(${idx})" class="text-red-500 hover:text-red-700">✕</button>
+                            <td class="px-3 py-2 text-center text-sm font-semibold text-gray-500 border-x border-gray-100">${stockBefore}</td>
+                            <td class="px-3 py-2 text-center font-bold text-teal-600 border-x border-teal-50 bg-teal-50/30">
+                                <input type="number" min="0.1" step="0.1" value="${line.qty}" class="w-16 border rounded px-1 py-0.5 text-center text-sm font-bold text-teal-600 bg-white shadow-sm"
+                                       onchange="updateImportLineQty(${idx}, this.value)">
+                            </td>
+                            <td class="px-3 py-2 text-center text-sm font-semibold text-gray-600 border-x border-gray-100">${stockAfter}</td>
+                            <td class="px-3 py-2 text-sm text-right">
+                                <input type="number" min="0" step="100" value="${line.unit_price}" class="w-24 border rounded px-1 py-0.5 text-right text-sm"
+                                       onchange="updateImportLinePrice(${idx}, this.value)">
+                            </td>
+                            <td class="px-3 py-2 text-sm font-medium text-right text-orange-600">${formatCurrency(line.line_total)}</td>
+                            <td class="px-3 py-2 text-center">
+                                <button onclick="removeImportLine(${idx})" class="text-red-500 hover:text-red-700 font-bold px-2 py-1">✕</button>
                             </td>
                         </tr>
                     `;
