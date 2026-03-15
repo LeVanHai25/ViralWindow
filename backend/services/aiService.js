@@ -35,7 +35,9 @@ function getModel() {
             throw new Error('GEMINI_API_KEY chưa được cấu hình trong .env');
         }
         genAI = new GoogleGenerativeAI(API_KEY);
-        model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        // gemini-1.5-flash retired April 2025 → use gemini-2.0-flash
+        // Alternatives: gemini-2.5-flash, gemini-2.0-flash-lite
+        model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
     }
     return model;
 }
