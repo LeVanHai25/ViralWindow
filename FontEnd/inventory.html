@@ -9712,6 +9712,216 @@
                 }, 150);
             }
 
+            // =====================================================
+            // AI ĐỀ XUẤT NHẬP KHO - Functions
+            // =====================================================
+            let aiRestockData = []; // Store fetched suggestions
+
+            async function openAIRestockModal() {
+                const modal = document.getElementById('aiRestockModal');
+                modal.classList.remove('hidden');
+
+                // Show loading
+                document.getElementById('aiRestockTableBody').innerHTML = `
+                    <tr><td colspan="12" class="px-4 py-10 text-center text-gray-400">
+                        <div class="flex flex-col items-center gap-2">
+                            <svg class="w-8 h-8 animate-spin text-indigo-400" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                            </svg>
+                            <span>AI đang phân tích tồn kho...</span>
+                        </div>
+                    </td></tr>`;
+
+                try {
+                    const response = await fetch(API_BASE + '/inventory/ai-restock-suggestion', {
+                        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
+                    });
+                    const result = await response.json();
+
+                    if (!result.success) {
+                        throw new Error(result.message);
+                    }
+
+                    aiRestockData = result.data.map(item => ({
+                        ...item,
+                        selected: true,
+                        note: ''
+                    }));
+
+                    // Update summary cards
+                    document.getElementById('aiTotalItems').textContent = result.summary.totalItems;
+                    document.getElementById('aiCriticalCount').textContent = result.summary.criticalCount;
+                    document.getElementById('aiWarningCount').textContent = result.summary.warningCount;
+
+                    renderAIRestockTable();
+                } catch (error) {
+                    console.error('AI Restock error:', error);
+                    document.getElementById('aiRestockTableBody').innerHTML = `
+                        <tr><td colspan="12" class="px-4 py-10 text-center text-red-500">
+                            ❌ Lỗi: ${error.message}
+                        </td></tr>`;
+                }
+            }
+
+            function renderAIRestockTable() {
+                const tbody = document.getElementById('aiRestockTableBody');
+
+                if (aiRestockData.length === 0) {
+                    tbody.innerHTML = `
+                        <tr><td colspan="12" class="px-4 py-10 text-center text-green-600">
+                            ✅ Tuyệt vời! Không có vật tư nào cần nhập thêm.
+                        </td></tr>`;
+                    updateAISelectedCount();
+                    return;
+                }
+
+                const moduleColors = {
+                    'accessory': 'bg-blue-100 text-blue-700',
+                    'aluminum': 'bg-teal-100 text-teal-700',
+                    'glass': 'bg-purple-100 text-purple-700',
+                    'other': 'bg-orange-100 text-orange-700'
+                };
+
+                tbody.innerHTML = aiRestockData.map((item, idx) => {
+                    const priorityBadge = item.priority === 'critical'
+                        ? '<span class="px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">🔴 Hết hàng</span>'
+                        : '<span class="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-700">🟡 Sắp hết</span>';
+
+                    const moduleClass = moduleColors[item.module_type] || 'bg-gray-100 text-gray-700';
+                    const rowBg = item.priority === 'critical' ? 'bg-red-50/40' : '';
+
+                    return `
+                        <tr class="${rowBg} hover:bg-indigo-50/40 transition-colors">
+                            <td class="px-3 py-2 text-center">
+                                <input type="checkbox" ${item.selected ? 'checked' : ''}
+                                    onchange="toggleAIItem(${idx})"
+                                    class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+                            </td>
+                            <td class="px-3 py-2 font-mono text-xs text-gray-600">${item.item_code || '-'}</td>
+                            <td class="px-3 py-2 font-medium text-gray-800">${item.item_name || '-'}</td>
+                            <td class="px-3 py-2 text-center">
+                                <span class="px-2 py-0.5 rounded-full text-xs ${moduleClass}">${item.module_name}</span>
+                            </td>
+                            <td class="px-2 py-2 text-center">
+                                <span class="px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 whitespace-nowrap">${item.warehouse_name || '-'}</span>
+                            </td>
+                            <td class="px-2 py-2 text-center text-xs text-gray-600 whitespace-nowrap">${item.category_name || '-'}</td>
+                            <td class="px-2 py-2 text-center">${item.aluminum_system ? '<span class="px-1.5 py-0.5 rounded text-xs bg-teal-50 text-teal-700 whitespace-nowrap">' + item.aluminum_system + '</span>' : '<span class="text-gray-300">—</span>'}</td>
+                            <td class="px-3 py-2 text-center">${priorityBadge}</td>
+                            <td class="px-3 py-2 text-center font-semibold ${item.current_qty <= 0 ? 'text-red-600' : 'text-orange-600'}">${item.current_qty} ${item.unit}</td>
+                            <td class="px-3 py-2 text-center text-gray-500">${item.min_stock_level} ${item.unit}</td>
+                            <td class="px-3 py-2 text-center bg-indigo-50/50">
+                                <input type="number" value="${item.suggest_qty}" min="1"
+                                    onchange="updateAISuggestQty(${idx}, this.value)"
+                                    class="w-20 px-2 py-1 border border-indigo-300 rounded-lg text-center text-sm font-bold text-indigo-700 bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            </td>
+                            <td class="px-3 py-2">
+                                <input type="text" placeholder="Ghi chú..."
+                                    value="${item.note || ''}"
+                                    onchange="updateAINote(${idx}, this.value)"
+                                    class="w-full px-2 py-1 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-indigo-400 focus:outline-none">
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+                updateAISelectedCount();
+            }
+
+            function toggleAIItem(idx) {
+                aiRestockData[idx].selected = !aiRestockData[idx].selected;
+                updateAISelectedCount();
+            }
+
+            function toggleAllAIItems() {
+                const allChecked = document.getElementById('aiSelectAll').checked;
+                aiRestockData.forEach(item => item.selected = allChecked);
+                renderAIRestockTable();
+                document.getElementById('aiSelectAll').checked = allChecked;
+            }
+
+            function updateAISuggestQty(idx, value) {
+                aiRestockData[idx].suggest_qty = Math.max(parseInt(value) || 1, 1);
+                updateAISelectedCount();
+            }
+
+            function updateAINote(idx, value) {
+                aiRestockData[idx].note = value;
+            }
+
+            function updateAISelectedCount() {
+                const selected = aiRestockData.filter(item => item.selected);
+                document.getElementById('aiSelectedCount').textContent = selected.length;
+                const totalQty = selected.reduce((sum, item) => sum + item.suggest_qty, 0);
+                document.getElementById('aiTotalSuggestQty').textContent = totalQty;
+            }
+
+            function closeAIRestockModal() {
+                document.getElementById('aiRestockModal').classList.add('hidden');
+            }
+
+            async function confirmAIRestock() {
+                const selectedItems = aiRestockData.filter(item => item.selected);
+
+                if (selectedItems.length === 0) {
+                    alert('⚠️ Vui lòng chọn ít nhất 1 vật tư để tạo phiếu nhập!');
+                    return;
+                }
+
+                if (!confirm(`Xác nhận tạo phiếu nhập kho nháp với ${selectedItems.length} vật tư?`)) {
+                    return;
+                }
+
+                try {
+                    // Build lines for stock document
+                    const lines = selectedItems.map(item => ({
+                        item_type: item.module_type,
+                        item_id: item.id,
+                        item_code: item.item_code,
+                        item_name: item.item_name,
+                        qty: item.suggest_qty,
+                        unit_price: item.unit_price || 0,
+                        note: item.note || `AI đề xuất nhập (tồn: ${item.current_qty}, min: ${item.min_stock_level})`
+                    }));
+
+                    const docData = {
+                        doc_type: 'import',
+                        warehouse_id: 1,
+                        note: ` Phiếu nhập tự động từ AI đề xuất — ${selectedItems.length} vật tư cần bổ sung`,
+                        lines: lines
+                    };
+
+                    const response = await fetch(STOCK_DOC_API, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(docData)
+                    });
+
+                    const result = await response.json();
+
+                    if (!result.success) {
+                        throw new Error(result.message);
+                    }
+
+                    alert(`✅ Đã tạo phiếu nhập nháp ${result.data.doc_no} với ${selectedItems.length} vật tư!\n\n➡️ Vào tab "NHẬP KHO" để xem và hạch toán phiếu.`);
+
+                    closeAIRestockModal();
+
+                    // Refresh import documents list
+                    if (typeof loadImportDocuments === 'function') {
+                        loadImportDocuments();
+                    }
+                } catch (error) {
+                    console.error('Confirm AI Restock error:', error);
+                    alert('❌ Lỗi tạo phiếu: ' + error.message);
+                }
+            }
+
+
             function showValueBreakdown() {
                 if (!lastBreakdownData) {
                     console.warn('Chưa có dữ liệu breakdown');
@@ -13814,11 +14024,115 @@
                     <span class="text-2xl font-black text-red-600" id="bk-low-total">0</span>
                 </div>
             </div>
-            <div class="p-4 bg-gray-50 text-center border-t border-gray-100">
+            <div class="p-4 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
                 <button onclick="closeLowStockBreakdown()"
-                    class="px-6 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-100 transition-colors shadow-sm">
+                    class="px-5 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-100 transition-colors shadow-sm">
                     Đóng
                 </button>
+                <button onclick="closeLowStockBreakdown(); openAIRestockModal();"
+                    class="px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all shadow-md flex items-center gap-2 text-sm">
+                    <span></span> Đề xuất nhập kho
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- MODAL: AI Đề Xuất Nhập Kho -->
+    <!-- ============================================= -->
+    <div id="aiRestockModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-60 z-[10002] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] overflow-hidden flex flex-col">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-700 px-6 py-4 flex justify-between items-center text-white">
+                <div>
+                    <h3 class="text-lg font-bold flex items-center gap-2">
+                        <span class="text-2xl"></span> Đề Xuất Nhập Kho
+                    </h3>
+                    <p class="text-indigo-200 text-xs mt-0.5">Phân tích tồn kho thông minh — chỉnh sửa rồi xác nhận tạo phiếu</p>
+                </div>
+                <button onclick="closeAIRestockModal()" class="hover:bg-white/20 p-1.5 rounded-full transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="px-6 py-3 bg-gray-50 border-b grid grid-cols-4 gap-3">
+                <div class="bg-white rounded-lg p-3 border border-gray-200 text-center shadow-sm">
+                    <div class="text-xs text-gray-500 uppercase">Tổng cảnh báo</div>
+                    <div class="text-2xl font-bold text-gray-800" id="aiTotalItems">0</div>
+                </div>
+                <div class="bg-red-50 rounded-lg p-3 border border-red-200 text-center shadow-sm">
+                    <div class="text-xs text-red-500 uppercase">🔴 Hết hàng</div>
+                    <div class="text-2xl font-bold text-red-600" id="aiCriticalCount">0</div>
+                </div>
+                <div class="bg-amber-50 rounded-lg p-3 border border-amber-200 text-center shadow-sm">
+                    <div class="text-xs text-amber-500 uppercase">🟡 Sắp hết</div>
+                    <div class="text-2xl font-bold text-amber-600" id="aiWarningCount">0</div>
+                </div>
+                <div class="bg-indigo-50 rounded-lg p-3 border border-indigo-200 text-center shadow-sm">
+                    <div class="text-xs text-indigo-500 uppercase">Đã chọn</div>
+                    <div class="text-2xl font-bold text-indigo-600" id="aiSelectedCount">0</div>
+                </div>
+            </div>
+
+            <!-- Body: Table -->
+            <div class="flex-1 overflow-y-auto px-6 py-4">
+                <div class="overflow-x-auto border rounded-lg">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-100 sticky top-0">
+                            <tr>
+                                <th class="px-3 py-2.5 text-center w-10">
+                                    <input type="checkbox" id="aiSelectAll" onchange="toggleAllAIItems()" checked
+                                        class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+                                </th>
+                                <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase">Mã</th>
+                                <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase">Tên vật tư</th>
+                                <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600 uppercase">Loại</th>
+                                <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600 uppercase">Kho</th>
+                                <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600 uppercase">Danh mục</th>
+                                <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600 uppercase">Hệ</th>
+                                <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600 uppercase">Ưu tiên</th>
+                                <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600 uppercase">Tồn hiện tại</th>
+                                <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600 uppercase">Mức tối thiểu</th>
+                                <th class="px-3 py-2.5 text-center text-xs font-semibold text-indigo-700 uppercase bg-indigo-50">SL đề xuất nhập</th>
+                                <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase">Thông tin</th>
+                            </tr>
+                        </thead>
+                        <tbody id="aiRestockTableBody" class="divide-y divide-gray-100">
+                            <tr>
+                                <td colspan="12" class="px-4 py-10 text-center text-gray-400">
+                                    <div class="flex flex-col items-center gap-2">
+                                        <svg class="w-8 h-8 animate-spin text-indigo-400" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                        </svg>
+                                        <span>AI đang phân tích tồn kho...</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-between items-center">
+                <div class="text-sm text-gray-500">
+                    Tổng SL đề xuất: <strong class="text-indigo-600" id="aiTotalSuggestQty">0</strong>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="closeAIRestockModal()"
+                        class="px-5 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 font-medium">
+                        Hủy
+                    </button>
+                    <button onclick="confirmAIRestock()"
+                        class="px-6 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all shadow-md flex items-center gap-2">
+                         Xác nhận tạo phiếu nhập
+                    </button>
+                </div>
             </div>
         </div>
     </div>

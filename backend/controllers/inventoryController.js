@@ -1,4 +1,4 @@
-﻿const db = require("../config/db");
+const db = require("../config/db");
 const NotificationService = require("../services/notificationService");
 const NotificationEventService = require("../services/notificationEventService");
 const SystemNotifier = require("../services/SystemNotifier");
@@ -1120,6 +1120,89 @@ exports.getExportSlipsForAluminum = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Lỗi khi lấy danh sách phiếu xuất: ' + err.message
+        });
+    }
+};
+
+// =====================================================
+// AI RESTOCK SUGGESTION - Đề xuất nhập kho thông minh
+// Phân tích vật tư hết/sắp hết và đề xuất SL cần nhập
+// =====================================================
+exports.getAIRestockSuggestion = async (req, res) => {
+    try {
+        const aggregationService = require("../services/inventoryAggregationService");
+        const lowStockItems = await aggregationService.getLowStockItems();
+
+        // Tính toán đề xuất cho mỗi item
+        const suggestions = lowStockItems.map(item => {
+            const currentQty = parseFloat(item.quantity) || 0;
+            const minStock = parseFloat(item.min_stock_level) || 0;
+            const unitPrice = parseFloat(item.unit_price) || 0;
+
+            // Công thức: nhập đủ để đạt gấp đôi mức tối thiểu
+            const targetQty = Math.max(minStock * 2, 1);
+            const suggestQty = Math.max(Math.ceil(targetQty - currentQty), 1);
+
+            // Ưu tiên: hết hàng = critical, sắp hết = warning
+            let priority = 'warning';
+            let priorityLabel = 'Sắp hết';
+            if (currentQty <= 0) {
+                priority = 'critical';
+                priorityLabel = 'Hết hàng';
+            }
+
+            return {
+                id: item.id,
+                item_code: item.item_code,
+                item_name: item.item_name,
+                module_type: item.module_type,   // accessory | aluminum | glass | other
+                module_name: item.module_name,   // Phụ kiện | Kho nhôm | Kính | Vật tư phụ
+                unit: item.unit || 'cái',
+                current_qty: currentQty,
+                min_stock_level: minStock,
+                suggest_qty: suggestQty,
+                unit_price: unitPrice,
+                estimated_cost: suggestQty * unitPrice,
+                priority,
+                priorityLabel,
+                // Enhanced fields
+                warehouse_id: item.warehouse_id || 1,
+                warehouse_name: item.warehouse_name || 'Kho chính',
+                category_name: item.category_name || item.item_type || '-',
+                aluminum_system: item.aluminum_system || null
+            };
+        });
+
+        // Sắp xếp: critical trước, rồi warning
+        suggestions.sort((a, b) => {
+            if (a.priority === 'critical' && b.priority !== 'critical') return -1;
+            if (a.priority !== 'critical' && b.priority === 'critical') return 1;
+            return a.current_qty - b.current_qty; // Tồn ít nhất trước
+        });
+
+        // Tổng hợp thống kê
+        const totalItems = suggestions.length;
+        const criticalCount = suggestions.filter(s => s.priority === 'critical').length;
+        const warningCount = suggestions.filter(s => s.priority === 'warning').length;
+        const totalEstimatedCost = suggestions.reduce((sum, s) => sum + s.estimated_cost, 0);
+        const totalSuggestQty = suggestions.reduce((sum, s) => sum + s.suggest_qty, 0);
+
+        res.json({
+            success: true,
+            data: suggestions,
+            summary: {
+                totalItems,
+                criticalCount,
+                warningCount,
+                totalSuggestQty,
+                totalEstimatedCost
+            }
+        });
+    } catch (err) {
+        console.error('Error getting AI restock suggestion:', err);
+        res.status(500).json({
+            success: false,
+            message: "Lỗi server: " + (err.message || 'Lỗi không xác định')
         });
     }
 };

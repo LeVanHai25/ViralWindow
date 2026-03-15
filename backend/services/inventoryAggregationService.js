@@ -209,7 +209,13 @@ exports.getLowStockItems = async () => {
     try {
         const lowStockItems = [];
 
-        // 1. Phụ kiện vi phạm
+        // ===== WAREHOUSE MAP =====
+        const WAREHOUSES = {
+            1: 'Kho Nhôm VIRAL',
+            2: 'Kho Nhôm YANGLY'
+        };
+
+        // 1. Phụ kiện vi phạm — thêm category
         const [accessories] = await db.query(`
             SELECT 
                 id,
@@ -218,6 +224,7 @@ exports.getLowStockItems = async () => {
                 'accessory' as module_type,
                 'Phụ kiện' as module_name,
                 category as item_type,
+                category as category_name,
                 stock_quantity as quantity,
                 min_stock_level,
                 unit,
@@ -233,82 +240,117 @@ exports.getLowStockItems = async () => {
             lowStockItems.push({
                 ...item,
                 module_type: 'accessory',
-                module_name: 'Phụ kiện'
+                module_name: 'Phụ kiện',
+                warehouse_id: 1,
+                warehouse_name: 'Kho Phụ kiện',
+                aluminum_system: null
             });
         });
 
-        // 2. Hệ nhôm vi phạm (quantity_m < 10m hoặc NULL)
-        let aluminum = [];
+        // 2. Hệ nhôm vi phạm — TÁCH THEO TỪNG KHO (aluminum_warehouse_stock)
         try {
-            const [aluminumRows] = await db.query(`
+            // Lấy danh sách tất cả nhôm cùng thông tin hệ
+            const [allAluminum] = await db.query(`
                 SELECT 
-                    id,
-                    code as item_code,
-                    name as item_name,
-                    'aluminum' as module_type,
-                    'Hệ nhôm' as module_name,
-                    'Hệ nhôm' as item_type,
-                    COALESCE(quantity_m, 0) as quantity,
-                    10 as min_stock_level,
-                    'm' as unit,
-                    COALESCE(unit_price, 0) as unit_price,
-                    (COALESCE(quantity_m, 0) * COALESCE(unit_price, 0)) as total_value
-                FROM aluminum_systems
-                WHERE is_active = 1
-                AND (quantity_m IS NULL OR quantity_m < 10 OR quantity_m = 0)
-                ORDER BY COALESCE(quantity_m, 0) ASC
+                    als.id,
+                    als.code as item_code,
+                    als.name as item_name,
+                    als.aluminum_system,
+                    als.brand,
+                    als.min_stock_level as profile_min_stock,
+                    COALESCE(als.unit_price, 0) as unit_price
+                FROM aluminum_systems als
+                WHERE als.is_active = 1
             `);
-            aluminum = aluminumRows || [];
+
+            // Lấy tồn kho theo từng warehouse
+            const [warehouseStocks] = await db.query(`
+                SELECT 
+                    aws.aluminum_system_id,
+                    aws.warehouse_id,
+                    COALESCE(aws.quantity, 0) as warehouse_qty
+                FROM aluminum_warehouse_stock aws
+            `);
+
+            // Build map: { itemId_warehouseId: qty }
+            const stockMap = {};
+            warehouseStocks.forEach(ws => {
+                const key = `${ws.aluminum_system_id}_${ws.warehouse_id}`;
+                stockMap[key] = parseFloat(ws.warehouse_qty) || 0;
+            });
+
+            // Kiểm tra từng nhôm ở từng kho
+            const warehouseIds = [1, 2]; // VIRAL, YANGLY
+            const minStockPerWarehouse = 5; // Min stock mỗi kho (thanh)
+
+            for (const whId of warehouseIds) {
+                for (const alu of allAluminum) {
+                    const key = `${alu.id}_${whId}`;
+                    const whQty = stockMap[key] !== undefined ? stockMap[key] : 0;
+                    const minStock = alu.profile_min_stock || minStockPerWarehouse;
+
+                    if (whQty <= minStock) {
+                        lowStockItems.push({
+                            id: alu.id,
+                            item_code: alu.item_code,
+                            item_name: alu.item_name,
+                            module_type: 'aluminum',
+                            module_name: 'Kho nhôm',
+                            item_type: 'Hệ nhôm',
+                            category_name: alu.aluminum_system || 'Chưa phân hệ',
+                            aluminum_system: alu.aluminum_system || null,
+                            quantity: whQty,
+                            min_stock_level: minStock,
+                            unit: 'thanh',
+                            unit_price: parseFloat(alu.unit_price) || 0,
+                            total_value: whQty * (parseFloat(alu.unit_price) || 0),
+                            warehouse_id: whId,
+                            warehouse_name: WAREHOUSES[whId] || `Kho ${whId}`
+                        });
+                    }
+                }
+            }
         } catch (err) {
-            // Nếu cột quantity_m chưa tồn tại, dùng length_m
-            console.warn('Column quantity_m may not exist, using length_m:', err.message);
+            console.warn('Error checking per-warehouse aluminum:', err.message);
+            // Fallback: dùng query cũ nếu aluminum_warehouse_stock chưa tồn tại
             try {
                 const [aluminumRows] = await db.query(`
                     SELECT 
-                        id,
-                        code as item_code,
-                        name as item_name,
-                        'aluminum' as module_type,
-                        'Hệ nhôm' as module_name,
+                        id, code as item_code, name as item_name,
+                        'aluminum' as module_type, 'Kho nhôm' as module_name,
                         'Hệ nhôm' as item_type,
-                        COALESCE(length_m, 0) as quantity,
-                        10 as min_stock_level,
-                        'm' as unit,
+                        aluminum_system as category_name,
+                        aluminum_system,
+                        COALESCE(quantity_m, 0) as quantity,
+                        10 as min_stock_level, 'm' as unit,
                         COALESCE(unit_price, 0) as unit_price,
-                        (COALESCE(length_m, 0) * COALESCE(unit_price, 0)) as total_value
+                        (COALESCE(quantity_m, 0) * COALESCE(unit_price, 0)) as total_value
                     FROM aluminum_systems
-                    WHERE is_active = 1
-                    AND (length_m IS NULL OR length_m < 10 OR length_m = 0)
-                    ORDER BY COALESCE(length_m, 0) ASC
+                    WHERE is_active = 1 AND (quantity_m IS NULL OR quantity_m < 10 OR quantity_m = 0)
+                    ORDER BY COALESCE(quantity_m, 0) ASC
                 `);
-                aluminum = aluminumRows || [];
+                (aluminumRows || []).forEach(item => {
+                    lowStockItems.push({
+                        ...item,
+                        warehouse_id: 1,
+                        warehouse_name: WAREHOUSES[1]
+                    });
+                });
             } catch (err2) {
-                aluminum = [];
+                console.warn('Fallback aluminum query failed:', err2.message);
             }
         }
 
-        aluminum.forEach(item => {
-            lowStockItems.push({
-                ...item,
-                module_type: 'aluminum',
-                module_name: 'Hệ nhôm'
-            });
-        });
-
-        // 3. Kính vi phạm
+        // 3. Kính vi phạm — thêm category
         let glass = [];
         try {
             const [glassRows] = await db.query(`
                 SELECT 
-                    id,
-                    item_code,
-                    item_name,
-                    'glass' as module_type,
-                    'Kính' as module_name,
+                    id, item_code, item_name,
+                    'glass' as module_type, 'Kính' as module_name,
                     item_type,
-                    quantity,
-                    min_stock_level,
-                    unit,
+                    item_type as category_name,
+                    quantity, min_stock_level, unit,
                     COALESCE(unit_price, 0) as unit_price,
                     (quantity * COALESCE(unit_price, 0)) as total_value
                 FROM inventory
@@ -318,7 +360,6 @@ exports.getLowStockItems = async () => {
             `);
             glass = glassRows || [];
         } catch (err) {
-            // Bảng không tồn tại hoặc lỗi, bỏ qua
             glass = [];
         }
 
@@ -326,22 +367,21 @@ exports.getLowStockItems = async () => {
             lowStockItems.push({
                 ...item,
                 module_type: 'glass',
-                module_name: 'Kính'
+                module_name: 'Kính',
+                warehouse_id: 1,
+                warehouse_name: 'Kho Kính',
+                aluminum_system: null
             });
         });
 
-        // 4. Khác vi phạm
+        // 4. Vật tư phụ / Khác vi phạm — thêm category
         const [other] = await db.query(`
             SELECT 
-                id,
-                item_code,
-                item_name,
-                'other' as module_type,
-                'Khác' as module_name,
+                id, item_code, item_name,
+                'other' as module_type, 'Vật tư phụ' as module_name,
                 item_type,
-                quantity,
-                min_stock_level,
-                unit,
+                item_type as category_name,
+                quantity, min_stock_level, unit,
                 COALESCE(unit_price, 0) as unit_price,
                 (quantity * COALESCE(unit_price, 0)) as total_value
             FROM inventory
@@ -355,7 +395,10 @@ exports.getLowStockItems = async () => {
             lowStockItems.push({
                 ...item,
                 module_type: 'other',
-                module_name: 'Khác'
+                module_name: 'Vật tư phụ',
+                warehouse_id: 1,
+                warehouse_name: 'Kho Vật tư phụ',
+                aluminum_system: null
             });
         });
 
@@ -365,6 +408,7 @@ exports.getLowStockItems = async () => {
         throw err;
     }
 };
+
 
 /**
  * Lấy danh sách tất cả vật tư từ 4 module (để hiển thị trong dashboard)

@@ -49,6 +49,7 @@ router.get("/export-excel", auth, inventoryExportCtrl.exportInventory);
 router.get("/stats", inventoryCtrl.getStatistics);
 router.get("/aggregated", inventoryCtrl.getAggregatedItems);
 router.get("/low-stock", inventoryCtrl.getLowStockItems);
+router.get("/ai-restock-suggestion", auth, inventoryCtrl.getAIRestockSuggestion);
 router.get("/alerts-summary", inventoryCtrl.getDashboardAlertsSummary);
 
 // Other Item Category management - MUST be before any generic :id routes
