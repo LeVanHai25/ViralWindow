@@ -332,62 +332,262 @@ async function getChatContext(message) {
 }
 
 // =====================================================
-// 4. REPORT DATA
+// 4. REPORT DATA (Category-aware + Filters)
 // =====================================================
-async function getReportData(type = 'daily', dateRange = {}) {
+
+/**
+ * Build SQL date condition from timeRange
+ */
+function buildDateFilter(filters = {}) {
+    const tr = filters.timeRange || 'week';
+    switch (tr) {
+        case 'today': return 'CURDATE()';
+        case 'week':  return 'DATE_SUB(CURDATE(), INTERVAL 7 DAY)';
+        case 'month': return 'DATE_SUB(CURDATE(), INTERVAL 30 DAY)';
+        case 'quarter': return 'DATE_SUB(CURDATE(), INTERVAL 90 DAY)';
+        case 'custom':
+            // custom dates handled via params
+            return null;
+        default: return 'DATE_SUB(CURDATE(), INTERVAL 7 DAY)';
+    }
+}
+
+async function getReportData(type = 'daily', filters = {}) {
     const data = {};
+    const category = filters.category || 'overview';
 
     try {
-        let dateFilter;
-        if (type === 'daily') dateFilter = 'CURDATE()';
-        else if (type === 'weekly') dateFilter = 'DATE_SUB(CURDATE(), INTERVAL 7 DAY)';
-        else dateFilter = 'DATE_SUB(CURDATE(), INTERVAL 30 DAY)';
+        // Date filter
+        const dateSql = buildDateFilter(filters);
+        const dateFrom = filters.date_from || null;
+        const dateTo = filters.date_to || null;
 
-        // Dự án (JOIN customers)
-        data.projects_updated = await safeQuery(`
-            SELECT p.project_name, p.project_code, p.status, p.deadline, 
-                   p.total_value, p.updated_at, c.full_name as customer_name
-            FROM projects p
-            LEFT JOIN customers c ON p.customer_id = c.id
-            WHERE p.updated_at >= ${dateFilter}
-            ORDER BY p.updated_at DESC LIMIT 20
-        `);
+        // Build reusable date WHERE fragment
+        function dateWhere(column) {
+            if (dateSql) return `${column} >= ${dateSql}`;
+            if (dateFrom && dateTo) return `${column} >= ? AND ${column} <= ?`;
+            if (dateFrom) return `${column} >= ?`;
+            if (dateTo) return `${column} <= ?`;
+            return `${column} >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)`;
+        }
+        function dateParams() {
+            const p = [];
+            if (!dateSql) {
+                if (dateFrom) p.push(dateFrom);
+                if (dateTo) p.push(dateTo);
+            }
+            return p;
+        }
 
-        // Phiếu kho
-        data.stock_documents = await safeQuery(`
-            SELECT doc_no, doc_type, status, total_value, note, created_at
-            FROM stock_documents
-            WHERE created_at >= ${dateFilter}
-            ORDER BY created_at DESC LIMIT 20
-        `);
+        // ============================================
+        // PROJECTS — cho overview, projects, customers
+        // ============================================
+        if (['overview', 'projects', 'customers', 'hr'].includes(category)) {
+            let projectWhere = [dateWhere('p.updated_at')];
+            let projectParams = [...dateParams()];
 
-        // Tài chính tổng
-        data.financial_summary = await safeQuery(`
-            SELECT transaction_type, SUM(amount) as total, COUNT(*) as count
-            FROM financial_transactions
-            WHERE transaction_date >= ${dateFilter}
-            GROUP BY transaction_type
-        `);
+            if (filters.project_id) {
+                projectWhere.push('p.id = ?');
+                projectParams.push(filters.project_id);
+            }
+            if (filters.customer_id) {
+                projectWhere.push('p.customer_id = ?');
+                projectParams.push(filters.customer_id);
+            }
+            if (filters.status) {
+                projectWhere.push('p.status = ?');
+                projectParams.push(filters.status);
+            }
+            if (filters.branch_id) {
+                projectWhere.push('p.agency_id = ?');
+                projectParams.push(filters.branch_id);
+            }
 
-        // Tài chính chi tiết
-        data.financial_detail = await safeQuery(`
-            SELECT transaction_type, category, SUM(amount) as total, COUNT(*) as count
-            FROM financial_transactions
-            WHERE transaction_date >= ${dateFilter}
-            GROUP BY transaction_type, category
-            ORDER BY total DESC
-        `);
+            const whereClause = projectWhere.length > 0 ? 'WHERE ' + projectWhere.join(' AND ') : '';
 
-        // Kho tồn thấp
-        data.low_stock_items = await safeQuery(`
-            (SELECT 'accessory' as item_type, code, name, stock_quantity as qty FROM accessories WHERE stock_quantity <= 5 LIMIT 10)
-            UNION ALL
-            (SELECT 'aluminum' as item_type, code, name, quantity as qty FROM aluminum_systems WHERE quantity <= 5 LIMIT 10)
-            UNION ALL
-            (SELECT 'inventory' as item_type, item_code as code, item_name as name, quantity as qty FROM inventory WHERE quantity <= 5 LIMIT 10)
-        `);
+            data.projects_updated = await safeQuery(`
+                SELECT p.project_name, p.project_code, p.status, p.deadline, 
+                       p.total_value, p.updated_at, c.full_name as customer_name,
+                       p.workforce
+                FROM projects p
+                LEFT JOIN customers c ON p.customer_id = c.id
+                ${whereClause}
+                ORDER BY p.updated_at DESC LIMIT 30
+            `, projectParams);
 
+            // Project stats
+            data.project_stats = await safeQuery(`
+                SELECT 
+                    COUNT(*) as total,
+                    SUM(CASE WHEN p.status IN ('active','in_progress','processing','pending') THEN 1 ELSE 0 END) as active,
+                    SUM(CASE WHEN p.status IN ('completed','done') THEN 1 ELSE 0 END) as completed,
+                    SUM(CASE WHEN p.deadline IS NOT NULL AND p.deadline < CURDATE() AND p.status NOT IN ('completed','done','cancelled') THEN 1 ELSE 0 END) as overdue,
+                    COALESCE(SUM(p.total_value), 0) as total_value
+                FROM projects p
+                ${whereClause}
+            `, projectParams);
+        }
+
+        // ============================================
+        // STOCK / INVENTORY — cho overview, inventory
+        // ============================================
+        if (['overview', 'inventory'].includes(category)) {
+            let stockWhere = [dateWhere('created_at')];
+            let stockParams = [...dateParams()];
+
+            if (filters.branch_id) {
+                stockWhere.push('warehouse_id = ?');
+                stockParams.push(filters.branch_id);
+            }
+
+            data.stock_documents = await safeQuery(`
+                SELECT doc_no, doc_type, status, total_value, note, created_at
+                FROM stock_documents
+                WHERE ${stockWhere.join(' AND ')}
+                ORDER BY created_at DESC LIMIT 30
+            `, stockParams);
+
+            // Stock summary by type
+            data.stock_summary = await safeQuery(`
+                SELECT doc_type, COUNT(*) as count, COALESCE(SUM(total_value), 0) as total_value
+                FROM stock_documents
+                WHERE ${stockWhere.join(' AND ')}
+                GROUP BY doc_type
+            `, stockParams);
+
+            // Low stock items (always relevant for inventory)
+            data.low_stock_items = await safeQuery(`
+                (SELECT 'accessory' as item_type, code, name, stock_quantity as qty FROM accessories WHERE stock_quantity <= 5 LIMIT 15)
+                UNION ALL
+                (SELECT 'aluminum' as item_type, code, name, quantity as qty FROM aluminum_systems WHERE quantity <= 5 LIMIT 15)
+                UNION ALL
+                (SELECT 'inventory' as item_type, item_code as code, item_name as name, quantity as qty FROM inventory WHERE quantity <= 5 LIMIT 15)
+            `);
+
+            // Inventory totals
+            data.inventory_totals = {
+                accessories: (await safeQuery('SELECT COUNT(*) as total, SUM(CASE WHEN stock_quantity <= 5 THEN 1 ELSE 0 END) as low FROM accessories'))[0] || {},
+                aluminum: (await safeQuery('SELECT COUNT(*) as total, SUM(CASE WHEN quantity <= 5 THEN 1 ELSE 0 END) as low FROM aluminum_systems'))[0] || {},
+                glass: (await safeQuery('SELECT COUNT(*) as total, SUM(CASE WHEN quantity <= 5 THEN 1 ELSE 0 END) as low FROM inventory'))[0] || {}
+            };
+        }
+
+        // ============================================
+        // FINANCE — cho overview, finance
+        // ============================================
+        if (['overview', 'finance'].includes(category)) {
+            let finWhere = [dateWhere('transaction_date')];
+            let finParams = [...dateParams()];
+
+            if (filters.project_id) {
+                finWhere.push('project_id = ?');
+                finParams.push(filters.project_id);
+            }
+            if (filters.branch_id) {
+                finWhere.push('agency_id = ?');
+                finParams.push(filters.branch_id);
+            }
+
+            data.financial_summary = await safeQuery(`
+                SELECT transaction_type, SUM(amount) as total, COUNT(*) as count
+                FROM financial_transactions
+                WHERE ${finWhere.join(' AND ')}
+                GROUP BY transaction_type
+            `, finParams);
+
+            data.financial_detail = await safeQuery(`
+                SELECT transaction_type, category, SUM(amount) as total, COUNT(*) as count
+                FROM financial_transactions
+                WHERE ${finWhere.join(' AND ')}
+                GROUP BY transaction_type, category
+                ORDER BY total DESC
+                LIMIT 20
+            `, finParams);
+
+            // Recent transactions
+            data.recent_transactions = await safeQuery(`
+                SELECT transaction_type, amount, category, description, transaction_date
+                FROM financial_transactions
+                WHERE ${finWhere.join(' AND ')}
+                ORDER BY transaction_date DESC
+                LIMIT 15
+            `, finParams);
+        }
+
+        // ============================================
+        // CUSTOMERS — cho customers
+        // ============================================
+        if (category === 'customers') {
+            let custWhere = [];
+            let custParams = [];
+
+            if (filters.customer_id) {
+                custWhere.push('c.id = ?');
+                custParams.push(filters.customer_id);
+            }
+
+            const custWhereClause = custWhere.length > 0 ? 'WHERE ' + custWhere.join(' AND ') : '';
+
+            data.customers = await safeQuery(`
+                SELECT c.id, c.full_name, c.phone, c.email, c.address,
+                       COUNT(p.id) as project_count,
+                       COALESCE(SUM(p.total_value), 0) as total_project_value,
+                       MAX(p.created_at) as last_project_date
+                FROM customers c
+                LEFT JOIN projects p ON c.id = p.customer_id
+                ${custWhereClause}
+                GROUP BY c.id, c.full_name, c.phone, c.email, c.address
+                ORDER BY total_project_value DESC
+                LIMIT 30
+            `, custParams);
+
+            // Top customers by revenue
+            data.top_customers = await safeQuery(`
+                SELECT c.full_name, COUNT(p.id) as projects, 
+                       COALESCE(SUM(p.total_value), 0) as revenue
+                FROM customers c
+                INNER JOIN projects p ON c.id = p.customer_id
+                GROUP BY c.id, c.full_name
+                ORDER BY revenue DESC
+                LIMIT 10
+            `);
+        }
+
+        // ============================================
+        // HR — cho hr (Nhân sự & Năng suất)
+        // ============================================
+        if (category === 'hr') {
+            // Workforce from projects
+            data.workforce_summary = await safeQuery(`
+                SELECT p.project_name, p.project_code, p.workforce, p.status,
+                       c.full_name as customer_name
+                FROM projects p
+                LEFT JOIN customers c ON p.customer_id = c.id
+                WHERE p.workforce IS NOT NULL AND p.workforce != ''
+                ORDER BY p.updated_at DESC
+                LIMIT 20
+            `);
+
+            // Project count by status (productivity indicator)
+            data.productivity = await safeQuery(`
+                SELECT status, COUNT(*) as count
+                FROM projects
+                GROUP BY status
+            `);
+        }
+
+        // Metadata
         data.report_type = type;
+        data.category = category;
+        data.filters_applied = {
+            category,
+            timeRange: filters.timeRange || 'week',
+            project_id: filters.project_id || null,
+            customer_id: filters.customer_id || null,
+            branch_id: filters.branch_id || null,
+            status: filters.status || null,
+            format: filters.format || 'detailed'
+        };
         data.generated_at = new Date().toISOString();
 
     } catch (error) {

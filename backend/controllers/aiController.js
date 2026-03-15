@@ -103,75 +103,185 @@ function generateLocalInsights(context) {
     return items.join('\n');
 }
 
-function generateLocalReport(type, data) {
+function generateLocalReport(type, data, filters = {}) {
     const now = new Date().toLocaleDateString('vi-VN');
-    const typeNames = { daily: 'Hàng Ngày', weekly: 'Hàng Tuần', monthly: 'Hàng Tháng' };
+    const category = filters.category || 'overview';
+    const CATEGORY_NAMES = {
+        overview: 'Tổng Quan Hệ Thống', projects: 'Dự Án & Tiến Độ',
+        finance: 'Tài Chính & Doanh Thu', inventory: 'Kho & Vật Tư',
+        customers: 'Khách Hàng', hr: 'Nhân Sự & Năng Suất'
+    };
+    const TIME_NAMES = {
+        today: 'Hôm nay', week: '7 ngày', month: '30 ngày', quarter: 'Quý', custom: 'Tuỳ chọn'
+    };
+
+    const reportTitle = CATEGORY_NAMES[category] || 'Tổng Quan';
+    const timeName = TIME_NAMES[filters.timeRange] || '';
 
     let html = `<div class="ai-report">
-        <h2>📊 Báo Cáo ${typeNames[type] || type} — ${now}</h2>
-        <p class="ai-report-date">Được tạo tự động lúc ${new Date().toLocaleTimeString('vi-VN')}</p>`;
+        <h2>📊 Báo Cáo ${reportTitle} — ${now}</h2>
+        <p class="ai-report-date">Được tạo tự động lúc ${new Date().toLocaleTimeString('vi-VN')} | Khoảng thời gian: ${timeName}</p>`;
 
-    // Dự án
-    const projects = data.projects_updated || [];
-    html += `<div class="ai-report-section"><h3>📋 Dự Án (${projects.length})</h3>`;
-    if (projects.length > 0) {
-        html += '<ul>';
-        projects.forEach(p => {
-            html += `<li><b>${p.project_name}</b> (${p.project_code || ''}) — ${vn(p.status)}${p.customer_name ? ` — KH: ${p.customer_name}` : ''}${p.total_value ? ` — ${Number(p.total_value).toLocaleString('vi-VN')}đ` : ''}</li>`;
-        });
-        html += '</ul>';
-    } else {
-        html += '<p>Không có dự án cập nhật trong kỳ này.</p>';
-    }
-    html += '</div>';
-
-    // Phiếu kho
-    const stockDocs = data.stock_documents || [];
-    html += `<div class="ai-report-section"><h3>📦 Phiếu Kho (${stockDocs.length})</h3>`;
-    if (stockDocs.length > 0) {
-        html += '<ul>';
-        stockDocs.forEach(d => {
-            const icon = d.doc_type === 'import' ? '📥' : d.doc_type === 'export' ? '📤' : '📋';
-            html += `<li>${icon} ${vn(d.doc_type)} — ${d.doc_no} — ${Number(d.total_value || 0).toLocaleString('vi-VN')}đ — ${vn(d.status)}</li>`;
-        });
-        html += '</ul>';
-    } else {
-        html += '<p>Không có phiếu kho trong kỳ này.</p>';
-    }
-    html += '</div>';
-
-    // Tài chính
-    const fin = data.financial_summary || [];
-    html += `<div class="ai-report-section"><h3>💰 Tài Chính</h3>`;
-    if (fin.length > 0) {
-        let totalIncome = 0, totalExpense = 0;
-        html += '<ul>';
-        fin.forEach(f => {
-            const icon = f.transaction_type === 'income' ? '💰' : '💸';
-            const amount = Number(f.total || 0);
-            if (f.transaction_type === 'income') totalIncome += amount;
-            else totalExpense += amount;
-            html += `<li>${icon} ${vn(f.transaction_type)}: <b>${amount.toLocaleString('vi-VN')}đ</b> (${f.count} giao dịch)</li>`;
-        });
-        const profit = totalIncome - totalExpense;
-        html += `<li>📊 <b>Lãi/Lỗ: <span style="color:${profit >= 0 ? '#16a34a' : '#dc2626'}">${profit.toLocaleString('vi-VN')}đ</span></b></li>`;
-        html += '</ul>';
-    } else {
-        html += '<p>Không có giao dịch trong kỳ này.</p>';
-    }
-    html += '</div>';
-
-    // Kho tồn thấp
-    const lowStock = data.low_stock_items || [];
-    if (lowStock.length > 0) {
-        html += `<div class="ai-report-section"><h3>⚠️ Vật Tư Tồn Thấp (${lowStock.length})</h3><ul>`;
-        lowStock.forEach(item => {
-            html += `<li>${item.code} — ${item.name} — <span style="color:#dc2626">Còn ${item.qty}</span></li>`;
-        });
-        html += '</ul></div>';
+    // Filter tags
+    const filterTags = [];
+    if (filters.project_id) filterTags.push('🏗️ Lọc theo dự án');
+    if (filters.customer_id) filterTags.push('👥 Lọc theo khách hàng');
+    if (filters.branch_id) filterTags.push('🏢 Lọc theo chi nhánh');
+    if (filters.status) filterTags.push(`📊 Trạng thái: ${vn(filters.status)}`);
+    if (filterTags.length > 0) {
+        html += `<p style="font-size:12px;color:#6366f1;">${filterTags.join(' | ')}</p>`;
     }
 
-    html += `<div class="ai-report-summary"><h3>💡 Ghi chú</h3><p>Báo cáo được tạo tự động từ dữ liệu hệ thống. Nhấn <b>Tạo Báo Cáo AI</b> lại để cập nhật.</p></div></div>`;
+    // ========== PROJECTS SECTION ==========
+    if (['overview', 'projects', 'hr'].includes(category)) {
+        const projects = data.projects_updated || [];
+        const stats = (data.project_stats || [])[0] || {};
+        html += `<div class="ai-report-section"><h3>📋 Dự Án (${projects.length})</h3>`;
+        if (stats.total > 0) {
+            html += `<p>Tổng: <b>${stats.total}</b> | Đang triển khai: <b>${stats.active || 0}</b> | Hoàn thành: <b>${stats.completed || 0}</b> | <span style="color:${(stats.overdue || 0) > 0 ? '#dc2626' : '#16a34a'}">Quá hạn: <b>${stats.overdue || 0}</b></span> | Giá trị: <b>${Number(stats.total_value || 0).toLocaleString('vi-VN')}đ</b></p>`;
+        }
+        if (projects.length > 0) {
+            html += '<ul>';
+            projects.forEach(p => {
+                html += `<li><b>${p.project_name}</b> (${p.project_code || ''}) — ${vn(p.status)}${p.customer_name ? ` — KH: ${p.customer_name}` : ''}${p.total_value ? ` — ${Number(p.total_value).toLocaleString('vi-VN')}đ` : ''}</li>`;
+            });
+            html += '</ul>';
+        } else {
+            html += '<p>Không có dự án cập nhật trong kỳ này.</p>';
+        }
+        html += '</div>';
+    }
+
+    // ========== INVENTORY SECTION ==========
+    if (['overview', 'inventory'].includes(category)) {
+        const stockDocs = data.stock_documents || [];
+        const stockSummary = data.stock_summary || [];
+        html += `<div class="ai-report-section"><h3>📦 Phiếu Kho (${stockDocs.length})</h3>`;
+        if (stockSummary.length > 0) {
+            html += '<p>';
+            stockSummary.forEach(s => {
+                const icon = s.doc_type === 'import' ? '📥' : s.doc_type === 'export' ? '📤' : '📋';
+                html += `${icon} ${vn(s.doc_type)}: <b>${s.count}</b> phiếu (${Number(s.total_value || 0).toLocaleString('vi-VN')}đ) | `;
+            });
+            html += '</p>';
+        }
+        if (stockDocs.length > 0) {
+            html += '<ul>';
+            stockDocs.forEach(d => {
+                const icon = d.doc_type === 'import' ? '📥' : d.doc_type === 'export' ? '📤' : '📋';
+                html += `<li>${icon} ${vn(d.doc_type)} — ${d.doc_no} — ${Number(d.total_value || 0).toLocaleString('vi-VN')}đ — ${vn(d.status)}</li>`;
+            });
+            html += '</ul>';
+        } else {
+            html += '<p>Không có phiếu kho trong kỳ này.</p>';
+        }
+        html += '</div>';
+
+        // Low stock
+        const lowStock = data.low_stock_items || [];
+        if (lowStock.length > 0) {
+            html += `<div class="ai-report-section"><h3>⚠️ Vật Tư Tồn Thấp (${lowStock.length})</h3><ul>`;
+            lowStock.forEach(item => {
+                html += `<li>${item.code} — ${item.name} — <span style="color:#dc2626">Còn ${item.qty}</span></li>`;
+            });
+            html += '</ul></div>';
+        }
+
+        // Inventory totals
+        const totals = data.inventory_totals || {};
+        if (totals.accessories || totals.aluminum || totals.glass) {
+            html += '<div class="ai-report-section"><h3>📊 Tồn Kho Tổng Quan</h3><ul>';
+            if (totals.accessories) html += `<li>Phụ kiện: <b>${totals.accessories.total || 0}</b> mã | Tồn thấp: <span style="color:${(totals.accessories.low || 0) > 0 ? '#dc2626' : '#16a34a'}">${totals.accessories.low || 0}</span></li>`;
+            if (totals.aluminum) html += `<li>Nhôm: <b>${totals.aluminum.total || 0}</b> mã | Tồn thấp: <span style="color:${(totals.aluminum.low || 0) > 0 ? '#dc2626' : '#16a34a'}">${totals.aluminum.low || 0}</span></li>`;
+            if (totals.glass) html += `<li>Kính/VT khác: <b>${totals.glass.total || 0}</b> mã | Tồn thấp: <span style="color:${(totals.glass.low || 0) > 0 ? '#dc2626' : '#16a34a'}">${totals.glass.low || 0}</span></li>`;
+            html += '</ul></div>';
+        }
+    }
+
+    // ========== FINANCE SECTION ==========
+    if (['overview', 'finance'].includes(category)) {
+        const fin = data.financial_summary || [];
+        html += `<div class="ai-report-section"><h3>💰 Tài Chính</h3>`;
+        if (fin.length > 0) {
+            let totalIncome = 0, totalExpense = 0;
+            html += '<ul>';
+            fin.forEach(f => {
+                const icon = f.transaction_type === 'income' ? '💰' : '💸';
+                const amount = Number(f.total || 0);
+                if (f.transaction_type === 'income') totalIncome += amount;
+                else totalExpense += amount;
+                html += `<li>${icon} ${vn(f.transaction_type)}: <b>${amount.toLocaleString('vi-VN')}đ</b> (${f.count} giao dịch)</li>`;
+            });
+            const profit = totalIncome - totalExpense;
+            html += `<li>📊 <b>Lãi/Lỗ: <span style="color:${profit >= 0 ? '#16a34a' : '#dc2626'}">${profit.toLocaleString('vi-VN')}đ</span></b></li>`;
+            html += '</ul>';
+        } else {
+            html += '<p>Không có giao dịch trong kỳ này.</p>';
+        }
+
+        // Detail by category
+        const finDetail = data.financial_detail || [];
+        if (finDetail.length > 0) {
+            html += '<h3>📋 Chi Tiết Theo Danh Mục</h3><ul>';
+            finDetail.forEach(fd => {
+                html += `<li>${vn(fd.transaction_type)} > ${fd.category || 'Khác'}: <b>${Number(fd.total || 0).toLocaleString('vi-VN')}đ</b> (${fd.count})</li>`;
+            });
+            html += '</ul>';
+        }
+        html += '</div>';
+    }
+
+    // ========== CUSTOMERS SECTION ==========
+    if (category === 'customers') {
+        const customers = data.customers || [];
+        html += `<div class="ai-report-section"><h3>👥 Khách Hàng (${customers.length})</h3>`;
+        if (customers.length > 0) {
+            html += '<ul>';
+            customers.forEach(c => {
+                html += `<li><b>${c.full_name}</b> — ${c.project_count || 0} dự án — Tổng giá trị: <b>${Number(c.total_project_value || 0).toLocaleString('vi-VN')}đ</b>${c.phone ? ` — ĐT: ${c.phone}` : ''}</li>`;
+            });
+            html += '</ul>';
+        } else {
+            html += '<p>Không có dữ liệu khách hàng.</p>';
+        }
+        html += '</div>';
+
+        const topCustomers = data.top_customers || [];
+        if (topCustomers.length > 0) {
+            html += '<div class="ai-report-section"><h3>🏆 Top Khách Hàng</h3><ul>';
+            topCustomers.forEach((c, i) => {
+                html += `<li><b>#${i + 1} ${c.full_name}</b> — ${c.projects} dự án — <b>${Number(c.revenue || 0).toLocaleString('vi-VN')}đ</b></li>`;
+            });
+            html += '</ul></div>';
+        }
+    }
+
+    // ========== HR SECTION ==========
+    if (category === 'hr') {
+        const workforce = data.workforce_summary || [];
+        html += `<div class="ai-report-section"><h3>👷 Nhân Lực Dự Án</h3>`;
+        if (workforce.length > 0) {
+            html += '<ul>';
+            workforce.forEach(w => {
+                html += `<li><b>${w.project_name}</b> (${w.project_code || ''}) — Nhân lực: <b>${w.workforce || 'N/A'}</b> — ${vn(w.status)}</li>`;
+            });
+            html += '</ul>';
+        } else {
+            html += '<p>Không có dữ liệu nhân lực.</p>';
+        }
+        html += '</div>';
+
+        const productivityData = data.productivity || [];
+        if (productivityData.length > 0) {
+            html += '<div class="ai-report-section"><h3>📊 Phân Bổ Trạng Thái Dự Án</h3><ul>';
+            productivityData.forEach(pd => {
+                html += `<li>${vn(pd.status)}: <b>${pd.count}</b> dự án</li>`;
+            });
+            html += '</ul></div>';
+        }
+    }
+
+    html += `<div class="ai-report-summary"><h3>💡 Ghi chú</h3><p>Báo cáo <b>${reportTitle}</b> được tạo từ dữ liệu hệ thống thực tế. Nhấn <b>✨ Tạo Báo Cáo AI</b> để cập nhật.</p></div></div>`;
     return html;
 }
 
@@ -372,29 +482,42 @@ exports.chat = async (req, res) => {
 };
 
 // =====================================================
-// 4. AUTO REPORTS
+// 4. AUTO REPORTS (Category-aware + Filters)
 // =====================================================
 exports.getReport = async (req, res) => {
     try {
         const { type } = req.params;
         if (!['daily', 'weekly', 'monthly', 'custom'].includes(type)) {
-            return res.status(400).json({ success: false, message: 'Loại: daily, weekly, monthly' });
+            return res.status(400).json({ success: false, message: 'Loại: daily, weekly, monthly, custom' });
         }
 
-        console.log(`📋 AI Report: ${type}`);
-        const reportData = await aiDataCollector.getReportData(type);
+        // Read all filter params from query string
+        const filters = {
+            category: req.query.category || 'overview',
+            timeRange: req.query.timeRange || (type === 'daily' ? 'today' : type === 'weekly' ? 'week' : 'month'),
+            project_id: req.query.project_id || null,
+            customer_id: req.query.customer_id || null,
+            branch_id: req.query.branch_id || null,
+            status: req.query.status || null,
+            format: req.query.format || 'detailed',
+            date_from: req.query.date_from || null,
+            date_to: req.query.date_to || null
+        };
+
+        console.log(`📋 AI Report: type=${type}, category=${filters.category}, timeRange=${filters.timeRange}, filters=`, JSON.stringify(filters));
+        const reportData = await aiDataCollector.getReportData(type, filters);
 
         let report;
         try {
-            report = await aiService.generateReport(type, reportData);
+            report = await aiService.generateReport(type, reportData, filters);
         } catch (aiError) {
-            console.warn('⚠️ Gemini unavailable, using local report fallback');
-            report = generateLocalReport(type, reportData);
+            console.warn('⚠️ Gemini unavailable, using local report fallback:', aiError.message);
+            report = generateLocalReport(type, reportData, filters);
         }
 
         res.json({
             success: true,
-            data: { type, report, raw_data: reportData, generated_at: new Date().toISOString() }
+            data: { type, category: filters.category, report, raw_data: reportData, generated_at: new Date().toISOString() }
         });
     } catch (error) {
         console.error('❌ Report Error:', error.message);

@@ -557,14 +557,15 @@
 
             // Load customers
             try {
-                const res = await fetch(`${API_BASE}/sales/customers`, { headers });
+                const res = await fetch(`${API_BASE}/customers`, { headers });
                 const data = await res.json();
                 if (data.success && data.data) {
                     const sel = document.getElementById('filterCustomer');
-                    data.data.forEach(c => {
+                    const customers = Array.isArray(data.data) ? data.data : data.data.customers || [];
+                    customers.forEach(c => {
                         const opt = document.createElement('option');
                         opt.value = c.id;
-                        opt.textContent = c.name || c.customer_name || c.full_name || '';
+                        opt.textContent = c.full_name || c.name || c.customer_name || '';
                         sel.appendChild(opt);
                     });
                 }

@@ -245,45 +245,79 @@ Giữ câu trả lời ngắn gọn, dưới 300 từ.`;
 }
 
 // =====================================================
-// 4. AUTO REPORTS
+// 4. AUTO REPORTS (Category-aware)
 // =====================================================
-async function generateReport(reportType, dataContext) {
-    const reportPrompts = {
-        daily: 'Tạo BÁO CÁO HÀNG NGÀY tổng hợp hoạt động nhập xuất kho, dự án cập nhật, và giao dịch tài chính trong ngày.',
-        weekly: 'Tạo BÁO CÁO HÀNG TUẦN tổng hợp tiến độ dự án, tình hình kho, doanh thu chi phí, và cảnh báo.',
-        monthly: 'Tạo BÁO CÁO HÀNG THÁNG phân tích chi tiết doanh thu, chi phí, lãi lỗ, tồn kho, và xu hướng.',
-        custom: 'Tạo BÁO CÁO TÙY CHỈNH theo dữ liệu được cung cấp.'
+async function generateReport(reportType, dataContext, filters = {}) {
+    const category = filters.category || 'overview';
+    const CATEGORY_NAMES = {
+        overview: 'Tổng Quan Hệ Thống', projects: 'Dự Án & Tiến Độ',
+        finance: 'Tài Chính & Doanh Thu', inventory: 'Kho & Vật Tư',
+        customers: 'Khách Hàng', hr: 'Nhân Sự & Năng Suất'
     };
+    const TIME_NAMES = {
+        today: 'hôm nay', week: '7 ngày qua', month: '30 ngày qua', quarter: 'quý này', custom: 'theo tuỳ chọn'
+    };
+
+    const categoryName = CATEGORY_NAMES[category] || 'Tổng Quan';
+    const timeName = TIME_NAMES[filters.timeRange] || '7 ngày qua';
+
+    // Build category-specific instructions
+    const categoryInstructions = {
+        overview: 'Phân tích TỔNG QUAN toàn bộ hệ thống: dự án, kho vật tư, tài chính, khách hàng. Đưa ra cái nhìn toàn diện.',
+        projects: 'Tập trung phân tích DỰ ÁN: tiến độ, trạng thái, giá trị, quá hạn, rủi ro. Không phân tích kho hay tài chính.',
+        finance: 'Tập trung phân tích TÀI CHÍNH: doanh thu, chi phí, lãi lỗ, xu hướng, cảnh báo. Không phân tích dự án hay kho.',
+        inventory: 'Tập trung phân tích KHO VẬT TƯ: nhập xuất, tồn kho, vật tư sắp hết, cảnh báo bổ sung. Không phân tích tài chính hay dự án.',
+        customers: 'Tập trung phân tích KHÁCH HÀNG: top khách hàng, giá trị dự án, tần suất, tiềm năng.',
+        hr: 'Tập trung phân tích NHÂN SỰ & NĂNG SUẤT: phân bổ nhân lực, hiệu suất dự án, gợi ý tối ưu hoá.'
+    };
+
+    // Build filter description
+    let filterDesc = '';
+    if (filters.project_id) filterDesc += '\n- Đang LỌC theo 1 dự án cụ thể.';
+    if (filters.customer_id) filterDesc += '\n- Đang LỌC theo 1 khách hàng cụ thể.';
+    if (filters.branch_id) filterDesc += '\n- Đang LỌC theo 1 chi nhánh cụ thể.';
+    if (filters.status) filterDesc += `\n- Đang LỌC trạng thái: ${filters.status}`;
 
     const prompt = `${SYSTEM_PROMPT}
 
-${reportPrompts[reportType] || reportPrompts.custom}
+NGƯỜI DÙNG YÊU CẦU BÁO CÁO:
+- Danh mục: ${categoryName}
+- Khoảng thời gian: ${timeName}
+- Định dạng: ${filters.format === 'summary' ? 'Tóm tắt ngắn gọn' : filters.format === 'executive' ? 'Dành cho lãnh đạo (tổng hợp, gợi ý chiến lược)' : 'Chi tiết đầy đủ'}${filterDesc}
 
-DỮ LIỆU:
+CHỈ DẪN:
+${categoryInstructions[category] || categoryInstructions.overview}
+
+DỮ LIỆU TỪ DATABASE (DỮ LIỆU THỰC TẾ - KHÔNG BỊA):
 ${JSON.stringify(dataContext, null, 2)}
 
 FORMAT BÁO CÁO (HTML):
 <div class="ai-report">
-  <h2>📊 [Tiêu đề báo cáo]</h2>
-  <p class="ai-report-date">Ngày: [ngày hiện tại]</p>
+  <h2>📊 Báo Cáo ${categoryName}</h2>
+  <p class="ai-report-date">Khoảng thời gian: ${timeName}</p>
   
   <div class="ai-report-section">
-    <h3>📌 [Tên mục]</h3>
+    <h3>📌 [Tên mục phù hợp với ${categoryName}]</h3>
     <ul>
-      <li>[Nội dung phân tích]</li>
+      <li>[Phân tích cụ thể dựa trên dữ liệu thực tế]</li>
     </ul>
   </div>
   
   <div class="ai-report-summary">
     <h3>💡 Nhận xét & Gợi ý</h3>
     <ul>
-      <li>[Gợi ý hành động]</li>
+      <li>[Gợi ý hành động cụ thể, khả thi]</li>
     </ul>
   </div>
 </div>
 
-Bao gồm các mục: Tổng quan, Dự án, Kho vật tư, Tài chính, Nhận xét & Gợi ý.
-Dùng số liệu cụ thể, đừng nói chung chung.`;
+QUY TẮC QUAN TRỌNG:
+1. CHỈ phân tích dữ liệu được cung cấp, KHÔNG bịa số liệu
+2. Chỉ tập trung vào danh mục "${categoryName}", KHÔNG lan man sang danh mục khác
+3. Format tiền VNĐ đúng: 1.000.000đ
+4. Nếu dữ liệu rỗng, nói rõ "Không có dữ liệu trong khoảng thời gian này" thay vì bịa
+5. Dùng số liệu cụ thể từ data, đừng nói chung chung
+6. Đưa ra ít nhất 3 gợi ý hành động cụ thể và khả thi`;
 
     return await callGemini(prompt, { temperature: 0.5, maxTokens: 3000 });
 }
