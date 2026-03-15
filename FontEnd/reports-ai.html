@@ -20,26 +20,49 @@
     <script src="js/vw-modal.js"></script>
     <script src="js/permission-guard.js"></script>
     <style>
-        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .report-card {
-            border: 2px solid #e2e8f0; border-radius: 16px; padding: 24px;
-            cursor: pointer; transition: all 0.2s; background: white;
-        }
-        .report-card:hover { border-color: #6366f1; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(99,102,241,0.15); }
-        .report-card.active { border-color: #6366f1; background: linear-gradient(135deg, #eff6ff, #f5f3ff); }
-        .report-card-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
-        .report-output { background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; padding: 32px; min-height: 300px; }
-        .ai-report h2 { color: #1e293b; font-size: 20px; font-weight: 700; margin-bottom: 8px; }
-        .ai-report h3 { color: #4f46e5; font-size: 16px; font-weight: 600; margin: 16px 0 8px; }
-        .ai-report ul { padding-left: 20px; margin: 8px 0; }
-        .ai-report li { margin: 4px 0; color: #475569; line-height: 1.6; }
-        .ai-report-section { margin-bottom: 16px; padding: 16px; background: #f8fafc; border-radius: 12px; }
-        .ai-report-summary { background: linear-gradient(135deg, #eff6ff, #f5f3ff); padding: 16px; border-radius: 12px; border: 1px solid #c7d2fe; }
-        .ai-report-date { color: #94a3b8; font-size: 13px; margin-bottom: 16px; }
-        .loading-spinner { display: inline-block; width: 32px; height: 32px; border: 3px solid #e2e8f0; border-top-color: #6366f1; border-radius: 50%; animation: spin 0.6s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .raw-data-toggle { cursor: pointer; color: #6366f1; font-size: 13px; font-weight: 600; }
-        .raw-data-toggle:hover { text-decoration: underline; }
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8fafc; }
+        /* Category pills */
+        .cat-pill { display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:12px;border:2px solid #e2e8f0;background:white;cursor:pointer;transition:all .2s;font-size:13px;font-weight:600;color:#64748b;white-space:nowrap; }
+        .cat-pill:hover { border-color:#c7d2fe;color:#6366f1;transform:translateY(-1px);box-shadow:0 4px 12px rgba(99,102,241,.08); }
+        .cat-pill.active { border-color:#6366f1;background:linear-gradient(135deg,#eff6ff,#f5f3ff);color:#6366f1; }
+        .cat-pill .cat-icon { width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px; }
+        /* Time cards */
+        .time-card { flex:1;min-width:120px;padding:14px;border-radius:12px;border:2px solid #e2e8f0;background:white;cursor:pointer;transition:all .2s;text-align:center; }
+        .time-card:hover { border-color:#c7d2fe;transform:translateY(-1px); }
+        .time-card.active { border-color:#6366f1;background:linear-gradient(135deg,#eff6ff,#f5f3ff); }
+        .time-card .tc-icon { font-size:24px;margin-bottom:6px; }
+        .time-card .tc-label { font-size:13px;font-weight:700;color:#1e293b; }
+        .time-card .tc-desc { font-size:11px;color:#94a3b8;margin-top:2px; }
+        /* Filter controls */
+        .filter-row { display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px; }
+        .filter-group { display:flex;flex-direction:column;gap:4px; }
+        .filter-group label { font-size:12px;font-weight:600;color:#64748b; }
+        .filter-group select, .filter-group input[type="date"] { padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:13px;color:#1e293b;background:white;transition:border-color .2s;outline:none; }
+        .filter-group select:focus, .filter-group input[type="date"]:focus { border-color:#6366f1; }
+        /* Report output */
+        .report-output { background:#fff;border-radius:16px;border:1px solid #e2e8f0;padding:32px;min-height:300px; }
+        .ai-report h2 { color:#1e293b;font-size:20px;font-weight:700;margin-bottom:8px; }
+        .ai-report h3 { color:#4f46e5;font-size:16px;font-weight:600;margin:16px 0 8px; }
+        .ai-report ul { padding-left:20px;margin:8px 0; }
+        .ai-report li { margin:4px 0;color:#475569;line-height:1.6; }
+        .ai-report-section { margin-bottom:16px;padding:16px;background:#f8fafc;border-radius:12px; }
+        .ai-report-summary { background:linear-gradient(135deg,#eff6ff,#f5f3ff);padding:16px;border-radius:12px;border:1px solid #c7d2fe; }
+        .ai-report-date { color:#94a3b8;font-size:13px;margin-bottom:16px; }
+        .loading-spinner { display:inline-block;width:32px;height:32px;border:3px solid #e2e8f0;border-top-color:#6366f1;border-radius:50%;animation:spin .6s linear infinite; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        @keyframes fadeIn { from { opacity:0;transform:translateY(8px); } to { opacity:1;transform:translateY(0); } }
+        .raw-data-toggle { cursor:pointer;color:#6366f1;font-size:13px;font-weight:600; }
+        .raw-data-toggle:hover { text-decoration:underline; }
+        /* Generate button */
+        .btn-generate { padding:14px 32px;border-radius:14px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border:none;cursor:pointer;font-size:15px;font-weight:700;display:flex;align-items:center;gap:10px;transition:all .2s;box-shadow:0 4px 16px rgba(99,102,241,.3); }
+        .btn-generate:hover:not(:disabled) { transform:translateY(-1px);box-shadow:0 6px 24px rgba(99,102,241,.4); }
+        .btn-generate:disabled { opacity:.6;cursor:not-allowed;transform:none; }
+        /* Panel card */
+        .panel-card { background:white;border-radius:16px;border:1px solid #e2e8f0;padding:24px;margin-bottom:20px; }
+        .panel-card h2 { margin:0 0 16px;font-size:15px;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:8px; }
+        /* Active filters summary */
+        .active-filters { display:flex;flex-wrap:wrap;gap:6px;margin-top:8px; }
+        .active-filter-tag { display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:8px;background:#eff6ff;color:#6366f1;font-size:11px;font-weight:600; }
     </style>
 </head>
 <body>
@@ -261,51 +284,177 @@
     </div>
 
     <!-- MAIN CONTENT -->
-    <div class="main-content">
-        <div style="padding: 24px; max-width: 1200px; margin: 0 auto;">
+    <div class="main-content" style="overflow-y:auto;">
+        <div style="padding:24px;max-width:1200px;margin:0 auto;">
             <!-- Header -->
-            <div style="display:flex; align-items:center; gap:16px; margin-bottom:32px;">
-                <div style="width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:28px;">🤖</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px;flex-wrap:wrap;">
+                <div style="display:flex;align-items:center;gap:16px;">
+                    <div style="width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 4px 12px rgba(99,102,241,.2);">🤖</div>
+                    <div>
+                        <h1 style="margin:0;font-size:24px;font-weight:800;color:#1e293b;">Báo Cáo AI Thông Minh</h1>
+                        <p style="margin:0;font-size:13px;color:#94a3b8;">Chọn danh mục, bộ lọc và tạo báo cáo phân tích chuyên sâu theo ý muốn</p>
+                    </div>
+                </div>
+                <div id="reportStatus" style="font-size:13px;color:#94a3b8;"></div>
+            </div>
+
+            <!-- 1. REPORT CATEGORY -->
+            <div class="panel-card" style="animation:fadeIn .3s ease;">
+                <h2>📂 Danh mục báo cáo</h2>
+                <div style="display:flex;flex-wrap:wrap;gap:10px;" id="categoryList">
+                    <div class="cat-pill active" onclick="selectCategory('overview',this)">
+                        <div class="cat-icon" style="background:#dbeafe;">📊</div> Tổng quan hệ thống
+                    </div>
+                    <div class="cat-pill" onclick="selectCategory('projects',this)">
+                        <div class="cat-icon" style="background:#fef3c7;">🏗️</div> Dự án & Tiến độ
+                    </div>
+                    <div class="cat-pill" onclick="selectCategory('finance',this)">
+                        <div class="cat-icon" style="background:#dcfce7;">💰</div> Tài chính & Doanh thu
+                    </div>
+                    <div class="cat-pill" onclick="selectCategory('inventory',this)">
+                        <div class="cat-icon" style="background:#fce7f3;">📦</div> Kho & Vật tư
+                    </div>
+                    <div class="cat-pill" onclick="selectCategory('customers',this)">
+                        <div class="cat-icon" style="background:#e0e7ff;">👥</div> Khách hàng
+                    </div>
+                    <div class="cat-pill" onclick="selectCategory('hr',this)">
+                        <div class="cat-icon" style="background:#fef9c3;">👷</div> Nhân sự & Năng suất
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. TIME RANGE -->
+            <div class="panel-card" style="animation:fadeIn .3s ease .1s both;">
+                <h2>📅 Khoảng thời gian</h2>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+                    <div class="time-card" onclick="selectTimeRange('today',this)">
+                        <div class="tc-icon">📋</div>
+                        <div class="tc-label">Hôm nay</div>
+                    </div>
+                    <div class="time-card active" onclick="selectTimeRange('week',this)">
+                        <div class="tc-icon">📊</div>
+                        <div class="tc-label">7 ngày</div>
+                        <div class="tc-desc">Tuần này</div>
+                    </div>
+                    <div class="time-card" onclick="selectTimeRange('month',this)">
+                        <div class="tc-icon">📈</div>
+                        <div class="tc-label">30 ngày</div>
+                        <div class="tc-desc">Tháng này</div>
+                    </div>
+                    <div class="time-card" onclick="selectTimeRange('quarter',this)">
+                        <div class="tc-icon">📉</div>
+                        <div class="tc-label">Quý</div>
+                        <div class="tc-desc">3 tháng</div>
+                    </div>
+                    <div class="time-card" onclick="selectTimeRange('custom',this)">
+                        <div class="tc-icon">🔧</div>
+                        <div class="tc-label">Tuỳ chọn</div>
+                        <div class="tc-desc">Chọn ngày</div>
+                    </div>
+                </div>
+                <!-- Custom date range (hidden by default) -->
+                <div id="customDateRange" style="display:none;" class="filter-row">
+                    <div class="filter-group">
+                        <label>Từ ngày</label>
+                        <input type="date" id="dateFrom">
+                    </div>
+                    <div class="filter-group">
+                        <label>Đến ngày</label>
+                        <input type="date" id="dateTo">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. ADVANCED FILTERS -->
+            <div class="panel-card" style="animation:fadeIn .3s ease .2s both;">
+                <h2>🔍 Bộ lọc nâng cao <span style="font-size:11px;color:#94a3b8;font-weight:400;margin-left:8px;">(tuỳ chọn — để trống sẽ báo cáo toàn hệ thống)</span></h2>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>🏗️ Dự án</label>
+                        <select id="filterProject">
+                            <option value="">Tất cả dự án</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>👥 Khách hàng</label>
+                        <select id="filterCustomer">
+                            <option value="">Tất cả khách hàng</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>🏢 Chi nhánh</label>
+                        <select id="filterBranch">
+                            <option value="">Tất cả chi nhánh</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>📊 Trạng thái dự án</label>
+                        <select id="filterStatus">
+                            <option value="">Tất cả</option>
+                            <option value="pending">Chờ xử lý</option>
+                            <option value="in_progress">Đang thực hiện</option>
+                            <option value="completed">Hoàn thành</option>
+                            <option value="overdue">Quá hạn</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>📋 Định dạng báo cáo</label>
+                        <select id="filterFormat">
+                            <option value="detailed">Chi tiết (đầy đủ)</option>
+                            <option value="summary">Tóm tắt ngắn gọn</option>
+                            <option value="executive">Dành cho lãnh đạo</option>
+                        </select>
+                    </div>
+                    <div class="filter-group" style="justify-content:flex-end;">
+                        <label>&nbsp;</label>
+                        <button type="button" onclick="resetFilters()" style="padding:10px 16px;border:1.5px solid #e2e8f0;border-radius:10px;background:white;color:#64748b;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='#fca5a5';this.style.color='#ef4444'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'">🗑️ Xóa bộ lọc</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. GENERATE BUTTON + ACTIVE FILTERS SUMMARY -->
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px;animation:fadeIn .3s ease .3s both;">
                 <div>
-                    <h1 style="margin:0;font-size:24px;font-weight:800;color:#1e293b;">Báo Cáo AI Tự Động</h1>
-                    <p style="margin:0;font-size:14px;color:#94a3b8;">AI phân tích dữ liệu hệ thống và tạo báo cáo chuyên nghiệp</p>
+                    <button type="button" onclick="generateReport()" id="btnGenerate" class="btn-generate">
+                        ✨ Tạo Báo Cáo AI
+                    </button>
+                    <div class="active-filters" id="activeFilters"></div>
+                </div>
+                <div style="display:flex;gap:8px;">
+                    <button type="button" onclick="exportReport()" id="btnExport" style="padding:10px 18px;border-radius:10px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:13px;font-weight:600;cursor:pointer;display:none;transition:all .2s;" onmouseover="this.style.borderColor='#6366f1';this.style.color='#6366f1'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'">📄 Xuất PDF</button>
+                    <button type="button" onclick="printReport()" id="btnPrint" style="padding:10px 18px;border-radius:10px;border:1.5px solid #e2e8f0;background:white;color:#64748b;font-size:13px;font-weight:600;cursor:pointer;display:none;transition:all .2s;" onmouseover="this.style.borderColor='#6366f1';this.style.color='#6366f1'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'">🖨️ In</button>
                 </div>
             </div>
 
-            <!-- Report Type Cards -->
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:32px;">
-                <div class="report-card active" onclick="selectReport('daily', this)" id="card-daily">
-                    <div class="report-card-icon" style="background:#fef3c7;">📅</div>
-                    <h3 style="margin:12px 0 4px;font-size:15px;font-weight:700;color:#1e293b;">Hàng ngày</h3>
-                    <p style="font-size:12px;color:#94a3b8;margin:0;">Nhập xuất, cập nhật dự án, giao dịch hôm nay</p>
-                </div>
-                <div class="report-card" onclick="selectReport('weekly', this)" id="card-weekly">
-                    <div class="report-card-icon" style="background:#dbeafe;">📊</div>
-                    <h3 style="margin:12px 0 4px;font-size:15px;font-weight:700;color:#1e293b;">Hàng tuần</h3>
-                    <p style="font-size:12px;color:#94a3b8;margin:0;">Tiến độ dự án, cảnh báo kho, tài chính 7 ngày</p>
-                </div>
-                <div class="report-card" onclick="selectReport('monthly', this)" id="card-monthly">
-                    <div class="report-card-icon" style="background:#dcfce7;">📈</div>
-                    <h3 style="margin:12px 0 4px;font-size:15px;font-weight:700;color:#1e293b;">Hàng tháng</h3>
-                    <p style="font-size:12px;color:#94a3b8;margin:0;">Doanh thu, chi phí, lãi lỗ, tồn kho, xu hướng</p>
-                </div>
-            </div>
-
-            <!-- Generate Button -->
-            <div style="margin-bottom:24px; display:flex; gap:12px; align-items:center;">
-                <button onclick="generateReport()" id="btnGenerate"
-                    style="padding:12px 28px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border:none;cursor:pointer;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px;transition:all 0.2s;box-shadow:0 4px 16px rgba(99,102,241,0.3);">
-                    🤖 Tạo Báo Cáo AI
-                </button>
-                <span id="reportStatus" style="font-size:13px;color:#94a3b8;"></span>
-            </div>
-
-            <!-- Report Output -->
-            <div class="report-output" id="reportOutput">
-                <div style="text-align:center;padding:60px 0;color:#94a3b8;">
-                    <div style="font-size:48px;margin-bottom:16px;">📊</div>
-                    <h3 style="font-size:16px;font-weight:600;color:#64748b;margin-bottom:8px;">Chọn loại báo cáo và nhấn "Tạo Báo Cáo AI"</h3>
-                    <p style="font-size:13px;">AI sẽ tổng hợp dữ liệu hệ thống và tạo báo cáo phân tích chi tiết cho bạn</p>
+            <!-- 5. REPORT OUTPUT -->
+            <div class="report-output" id="reportOutput" style="animation:fadeIn .3s ease .4s both;">
+                <div style="text-align:center;padding:60px 20px;">
+                    <div style="width:80px;height:80px;border-radius:20px;background:linear-gradient(135deg,#eff6ff,#f5f3ff);display:inline-flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:20px;">📊</div>
+                    <h3 style="font-size:18px;font-weight:700;color:#1e293b;margin:0 0 8px;">Tạo Báo Cáo AI Thông Minh</h3>
+                    <p style="font-size:14px;color:#94a3b8;margin:0 0 24px;max-width:500px;margin-left:auto;margin-right:auto;">Chọn danh mục, thời gian và bộ lọc phía trên, sau đó nhấn <strong style="color:#6366f1;">✨ Tạo Báo Cáo AI</strong> để nhận phân tích chi tiết</p>
+                    <div style="display:flex;justify-content:center;gap:24px;flex-wrap:wrap;">
+                        <div style="text-align:center;">
+                            <div style="font-size:24px;margin-bottom:4px;">1️⃣</div>
+                            <div style="font-size:12px;color:#64748b;font-weight:600;">Chọn danh mục</div>
+                        </div>
+                        <div style="font-size:24px;color:#e2e8f0;display:flex;align-items:center;">→</div>
+                        <div style="text-align:center;">
+                            <div style="font-size:24px;margin-bottom:4px;">2️⃣</div>
+                            <div style="font-size:12px;color:#64748b;font-weight:600;">Chọn thời gian</div>
+                        </div>
+                        <div style="font-size:24px;color:#e2e8f0;display:flex;align-items:center;">→</div>
+                        <div style="text-align:center;">
+                            <div style="font-size:24px;margin-bottom:4px;">3️⃣</div>
+                            <div style="font-size:12px;color:#64748b;font-weight:600;">Thêm bộ lọc</div>
+                        </div>
+                        <div style="font-size:24px;color:#e2e8f0;display:flex;align-items:center;">→</div>
+                        <div style="text-align:center;">
+                            <div style="font-size:24px;margin-bottom:4px;">✨</div>
+                            <div style="font-size:12px;color:#6366f1;font-weight:700;">Tạo báo cáo</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -321,21 +470,120 @@
 
     <script>
         const API_BASE = window.API_BASE || 'http://127.0.0.1:3001/api';
-        let selectedType = 'daily';
+        let selectedCategory = 'overview';
+        let selectedTimeRange = 'week';
+
+        const CATEGORY_MAP = {
+            overview: 'Tổng quan hệ thống',
+            projects: 'Dự án & Tiến độ',
+            finance: 'Tài chính & Doanh thu',
+            inventory: 'Kho & Vật tư',
+            customers: 'Khách hàng',
+            hr: 'Nhân sự & Năng suất'
+        };
+        const TIME_MAP = {
+            today: 'Hôm nay', week: '7 ngày', month: '30 ngày', quarter: 'Quý', custom: 'Tuỳ chọn'
+        };
+        // Map categories to API report types
+        const CATEGORY_TO_API = {
+            overview: 'daily', projects: 'weekly', finance: 'monthly',
+            inventory: 'daily', customers: 'monthly', hr: 'weekly'
+        };
 
         function checkAuth() {
             const token = sessionStorage.getItem('token');
-            if (!token) {
-                window.location.href = 'login.html';
-                return false;
-            }
+            if (!token) { window.location.href = 'login.html'; return false; }
             return true;
         }
 
-        function selectReport(type, el) {
-            selectedType = type;
-            document.querySelectorAll('.report-card').forEach(c => c.classList.remove('active'));
+        function selectCategory(cat, el) {
+            selectedCategory = cat;
+            document.querySelectorAll('.cat-pill').forEach(c => c.classList.remove('active'));
             el.classList.add('active');
+            updateActiveFilters();
+        }
+
+        function selectTimeRange(range, el) {
+            selectedTimeRange = range;
+            document.querySelectorAll('.time-card').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('customDateRange').style.display = range === 'custom' ? 'grid' : 'none';
+            updateActiveFilters();
+        }
+
+        function resetFilters() {
+            document.getElementById('filterProject').value = '';
+            document.getElementById('filterCustomer').value = '';
+            document.getElementById('filterBranch').value = '';
+            document.getElementById('filterStatus').value = '';
+            document.getElementById('filterFormat').value = 'detailed';
+            updateActiveFilters();
+        }
+
+        function updateActiveFilters() {
+            const tags = [];
+            tags.push(`<span class="active-filter-tag">📂 ${CATEGORY_MAP[selectedCategory]}</span>`);
+            tags.push(`<span class="active-filter-tag">📅 ${TIME_MAP[selectedTimeRange]}</span>`);
+            const project = document.getElementById('filterProject');
+            const customer = document.getElementById('filterCustomer');
+            const branch = document.getElementById('filterBranch');
+            const status = document.getElementById('filterStatus');
+            if (project && project.value) tags.push(`<span class="active-filter-tag">🏗️ ${project.options[project.selectedIndex].text}</span>`);
+            if (customer && customer.value) tags.push(`<span class="active-filter-tag">👥 ${customer.options[customer.selectedIndex].text}</span>`);
+            if (branch && branch.value) tags.push(`<span class="active-filter-tag">🏢 ${branch.options[branch.selectedIndex].text}</span>`);
+            if (status && status.value) tags.push(`<span class="active-filter-tag">📊 ${status.options[status.selectedIndex].text}</span>`);
+            document.getElementById('activeFilters').innerHTML = tags.join('');
+        }
+
+        async function loadFilterData() {
+            const token = sessionStorage.getItem('token');
+            if (!token) return;
+            const headers = { 'Authorization': `Bearer ${token}` };
+
+            // Load projects
+            try {
+                const res = await fetch(`${API_BASE}/projects`, { headers });
+                const data = await res.json();
+                if (data.success && data.data) {
+                    const sel = document.getElementById('filterProject');
+                    (Array.isArray(data.data) ? data.data : data.data.projects || []).forEach(p => {
+                        const opt = document.createElement('option');
+                        opt.value = p.id;
+                        opt.textContent = `${p.ma_don || p.code || ''} - ${p.don_hang || p.name || p.project_name || ''}`;
+                        sel.appendChild(opt);
+                    });
+                }
+            } catch(e) { console.warn('Load projects error:', e); }
+
+            // Load customers
+            try {
+                const res = await fetch(`${API_BASE}/sales/customers`, { headers });
+                const data = await res.json();
+                if (data.success && data.data) {
+                    const sel = document.getElementById('filterCustomer');
+                    data.data.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.id;
+                        opt.textContent = c.name || c.customer_name || c.full_name || '';
+                        sel.appendChild(opt);
+                    });
+                }
+            } catch(e) { console.warn('Load customers error:', e); }
+
+            // Load branches
+            try {
+                const res = await fetch(`${API_BASE}/agencies`, { headers });
+                const data = await res.json();
+                if (data.success && data.data) {
+                    const sel = document.getElementById('filterBranch');
+                    data.data.forEach(b => {
+                        const opt = document.createElement('option');
+                        opt.value = b.id;
+                        opt.textContent = b.name || b.agency_name || '';
+                        sel.appendChild(opt);
+                    });
+                }
+            } catch(e) { console.warn('Load branches error:', e); }
         }
 
         async function generateReport() {
@@ -346,47 +594,117 @@
             const btn = document.getElementById('btnGenerate');
 
             btn.disabled = true;
-            btn.style.opacity = '0.7';
             status.textContent = '⏳ AI đang phân tích dữ liệu...';
+
+            // Build active filter summary for display
+            const filterSummary = [];
+            filterSummary.push(`Danh mục: ${CATEGORY_MAP[selectedCategory]}`);
+            filterSummary.push(`Thời gian: ${TIME_MAP[selectedTimeRange]}`);
 
             output.innerHTML = `
                 <div style="text-align:center;padding:60px 0;color:#94a3b8;">
                     <div class="loading-spinner"></div>
-                    <p style="margin-top:16px;font-size:14px;">🤖 AI đang thu thập và phân tích dữ liệu hệ thống...</p>
-                    <p style="font-size:12px;">Có thể mất 10-30 giây tuỳ thuộc lượng dữ liệu</p>
+                    <p style="margin-top:16px;font-size:14px;font-weight:600;color:#6366f1;">🤖 AI đang thu thập và phân tích dữ liệu...</p>
+                    <p style="font-size:12px;">${filterSummary.join(' · ')}</p>
+                    <p style="font-size:11px;color:#cbd5e1;">Có thể mất 10-30 giây tuỳ thuộc lượng dữ liệu</p>
                 </div>
             `;
 
             try {
                 const token = sessionStorage.getItem('token');
-                const response = await fetch(`${API_BASE}/ai/reports/${selectedType}`, {
+                // Build query params from filters
+                const params = new URLSearchParams();
+                params.set('category', selectedCategory);
+                params.set('timeRange', selectedTimeRange);
+                if (document.getElementById('filterProject').value) params.set('project_id', document.getElementById('filterProject').value);
+                if (document.getElementById('filterCustomer').value) params.set('customer_id', document.getElementById('filterCustomer').value);
+                if (document.getElementById('filterBranch').value) params.set('branch_id', document.getElementById('filterBranch').value);
+                if (document.getElementById('filterStatus').value) params.set('status', document.getElementById('filterStatus').value);
+                if (document.getElementById('filterFormat').value) params.set('format', document.getElementById('filterFormat').value);
+                if (selectedTimeRange === 'custom') {
+                    params.set('date_from', document.getElementById('dateFrom').value || '');
+                    params.set('date_to', document.getElementById('dateTo').value || '');
+                }
+
+                // Use the API type mapping
+                const apiType = CATEGORY_TO_API[selectedCategory] || 'daily';
+                const response = await fetch(`${API_BASE}/ai/reports/${apiType}?${params.toString()}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
                 const result = await response.json();
 
                 if (result.success && result.data) {
-                    output.innerHTML = result.data.report;
-                    status.textContent = `✅ Báo cáo tạo lúc ${new Date(result.data.generated_at).toLocaleString('vi-VN')}`;
+                    output.innerHTML = `<div class="ai-report" style="animation:fadeIn .3s ease;">${result.data.report}</div>`;
+                    status.innerHTML = `✅ Báo cáo tạo lúc <strong>${new Date(result.data.generated_at).toLocaleString('vi-VN')}</strong>`;
+
+                    // Show export/print buttons
+                    document.getElementById('btnExport').style.display = 'inline-flex';
+                    document.getElementById('btnPrint').style.display = 'inline-flex';
 
                     if (result.data.raw_data) {
                         document.getElementById('rawDataSection').classList.remove('hidden');
                         document.getElementById('rawDataContent').textContent = JSON.stringify(result.data.raw_data, null, 2);
                     }
                 } else {
-                    output.innerHTML = `<div style="text-align:center;padding:40px;color:#ef4444;">❌ ${result.message || 'Lỗi tạo báo cáo'}</div>`;
+                    output.innerHTML = `<div style="text-align:center;padding:40px;color:#ef4444;">
+                        <div style="font-size:40px;margin-bottom:12px;">⚠️</div>
+                        <h3 style="margin:0 0 8px;font-size:16px;">Không thể tạo báo cáo</h3>
+                        <p style="font-size:13px;">${result.message || 'Lỗi không xác định'}</p>
+                        <button type="button" onclick="generateReport()" style="margin-top:16px;padding:10px 20px;border-radius:10px;border:1.5px solid #6366f1;background:white;color:#6366f1;font-weight:600;cursor:pointer;">🔄 Thử lại</button>
+                    </div>`;
                     status.textContent = '❌ Lỗi';
                 }
             } catch (error) {
-                output.innerHTML = `<div style="text-align:center;padding:40px;color:#ef4444;">❌ Không thể kết nối máy chủ AI<br><span style="font-size:12px">${error.message}</span></div>`;
+                output.innerHTML = `<div style="text-align:center;padding:40px;color:#ef4444;">
+                    <div style="font-size:40px;margin-bottom:12px;">🔌</div>
+                    <h3 style="margin:0 0 8px;font-size:16px;">Không thể kết nối máy chủ AI</h3>
+                    <p style="font-size:13px;">${error.message}</p>
+                    <button type="button" onclick="generateReport()" style="margin-top:16px;padding:10px 20px;border-radius:10px;border:1.5px solid #6366f1;background:white;color:#6366f1;font-weight:600;cursor:pointer;">🔄 Thử lại</button>
+                </div>`;
                 status.textContent = '❌ Lỗi kết nối';
             }
 
             btn.disabled = false;
-            btn.style.opacity = '1';
         }
 
-        document.addEventListener('DOMContentLoaded', () => checkAuth());
+        function exportReport() {
+            const content = document.getElementById('reportOutput');
+            if (!content) return;
+            const win = window.open('', '_blank');
+            var h = '<html><head><title>Báo cáo AI - ViralWindow<' + '/title><style>body{font-family:"Segoe UI",sans-serif;padding:32px;max-width:900px;margin:0 auto;}h2{color:#1e293b;}h3{color:#4f46e5;}ul{padding-left:20px;}li{margin:4px 0;color:#475569;line-height:1.6;}<' + '/style><' + '/head><body>' + content.innerHTML + '<' + '/body><' + '/html>';
+            win.document.write(h);
+            win.document.close();
+            win.print();
+        }
+
+        function printReport() {
+            const content = document.getElementById('reportOutput');
+            if (!content) return;
+            const printWindow = window.open('', '_blank');
+            var h = '<html><head><title>Báo cáo AI - ViralWindow<' + '/title><style>body{font-family:"Segoe UI",sans-serif;padding:32px;max-width:900px;margin:0 auto;}h2{color:#1e293b;}h3{color:#4f46e5;}ul{padding-left:20px;}li{margin:4px 0;color:#475569;line-height:1.6;}@media print{body{padding:16px;}}<' + '/style><' + '/head><body>' + content.innerHTML + '<' + '/body><' + '/html>';
+            printWindow.document.write(h);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        // On change filter → update tags
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            loadFilterData();
+            updateActiveFilters();
+
+            // Set today's date as default for custom range
+            const today = new Date().toISOString().split('T')[0];
+            const weekAgo = new Date(Date.now() - 7*86400000).toISOString().split('T')[0];
+            document.getElementById('dateFrom').value = weekAgo;
+            document.getElementById('dateTo').value = today;
+
+            // Listen to filter changes
+            ['filterProject','filterCustomer','filterBranch','filterStatus','filterFormat'].forEach(id => {
+                document.getElementById(id)?.addEventListener('change', updateActiveFilters);
+            });
+        });
     </script>
     <script src="js/sidebar-enterprise.js"></script>
     <script src="js/ai-chatbot-widget.js"></script>

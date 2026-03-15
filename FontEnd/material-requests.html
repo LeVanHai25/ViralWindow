@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -1189,7 +1189,7 @@
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                                 </svg>
-                                📦 Chuyển phiếu nhập kho
+                                 Chuyển phiếu nhập kho
                             </button>
                             <button onclick="createPaymentFromRequest()" 
                                 class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 inline-flex items-center">
@@ -1315,12 +1315,12 @@
                         inventoryData = result.success ? (result.data || []) : [];
                     }
 
-                    console.log(`📦 Loaded: ${aluminumData.length} aluminum, ${accessoriesData.length} accessories, ${inventoryData.length} inventory items`);
+                    console.log(` Loaded: ${aluminumData.length} aluminum, ${accessoriesData.length} accessories, ${inventoryData.length} inventory items`);
 
                     // Debug: Show sample codes from each source
-                    console.log('📦 Sample aluminum codes:', aluminumData.slice(0, 5).map(d => ({ code: d.code, unit_price: d.unit_price })));
-                    console.log('📦 Sample accessories codes:', accessoriesData.slice(0, 5).map(d => ({ code: d.code, unit_price: d.unit_price })));
-                    console.log('📦 Sample inventory item_codes:', inventoryData.slice(0, 5).map(d => ({ item_code: d.item_code, unit_price: d.unit_price })));
+                    console.log(' Sample aluminum codes:', aluminumData.slice(0, 5).map(d => ({ code: d.code, unit_price: d.unit_price })));
+                    console.log(' Sample accessories codes:', accessoriesData.slice(0, 5).map(d => ({ code: d.code, unit_price: d.unit_price })));
+                    console.log(' Sample inventory item_codes:', inventoryData.slice(0, 5).map(d => ({ item_code: d.item_code, unit_price: d.unit_price })));
 
                     // Debug: Show request items to be looked up
                     console.log('📋 Request items to lookup:', (request.items || []).map(i => ({
@@ -1901,7 +1901,7 @@
                 const docData = {
                     doc_type: 'import',
                     warehouse_id: 1,
-                    note: `📦 Nhập kho từ YCVT: ${request.order_code} — ${request.project_name || ''} (${items.length} vật tư)`,
+                    note: ` Nhập kho từ YCVT: ${request.order_code} — ${request.project_name || ''} (${items.length} vật tư)`,
                     lines: lines
                 };
 

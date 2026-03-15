@@ -12,6 +12,7 @@ class EnterpriseSidebar {
     }
 
     init() {
+        this.injectMissingMenuItems();
         this.setupMobileMenu();
         this.setupActiveStates();
         this.setupSPANavigation();
@@ -22,6 +23,64 @@ class EnterpriseSidebar {
         this.loadUserRoleDisplay();
         this.loadCompanyLogo();
         this.loadAIWidgets();
+    }
+
+    /**
+     * Inject missing TRỢ LÝ AI and TIN NHẮN menu items into sidebar
+     * This ensures ALL pages have these menu items without editing 30+ HTML files
+     */
+    injectMissingMenuItems() {
+        const nav = document.querySelector('.sidebar-nav');
+        if (!nav) return;
+
+        // Find QUẢN TRỊ section to insert before it
+        const allNavItems = nav.querySelectorAll(':scope > .nav-item, :scope > a.nav-item, :scope > div.nav-item');
+        let quantriEl = null;
+        allNavItems.forEach(item => {
+            const text = item.textContent || '';
+            if (text.includes('QUẢN TRỊ')) quantriEl = item;
+        });
+
+        // Check if TRỢ LÝ AI already exists
+        const hasAI = nav.innerHTML.includes('reports-ai.html');
+        if (!hasAI) {
+            const aiSection = document.createElement('div');
+            aiSection.innerHTML = `
+            <!-- TRỢ LÝ AI -->
+            <div class="nav-item has-submenu"><div class="flex items-center gap-3 flex-1"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg><span>TRỢ LÝ AI</span><span style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;font-size:9px;padding:2px 6px;border-radius:10px;font-weight:700;">AI</span></div><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 transition-transform duration-200 arrow-icon"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg></div>
+            <div class="submenu">
+                <a href="reports-ai.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg><span>Báo cáo AI</span></a>
+                <a href="javascript:void(0)" class="submenu-item" onclick="if(window.openAISearch)window.openAISearch();else alert('Nhấn Ctrl+K');"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg><span>Tìm kiếm AI</span><span style="font-size:10px;color:#94a3b8;margin-left:auto;">Ctrl+K</span></a>
+            </div>`;
+            // Insert all children before QUẢN TRỊ or at end of nav
+            const aiNodes = Array.from(aiSection.children);
+            aiNodes.forEach(node => {
+                if (quantriEl) nav.insertBefore(node, quantriEl);
+                else nav.appendChild(node);
+            });
+            // Update quantriEl reference since we may need it for TIN NHẮN
+            if (!quantriEl) {
+                allNavItems.forEach(item => {
+                    if ((item.textContent || '').includes('QUẢN TRỊ')) quantriEl = item;
+                });
+            }
+        }
+
+        // Check if TIN NHẮN already exists
+        const hasMsg = nav.innerHTML.includes('sidebarMsgBadge');
+        if (!hasMsg) {
+            const isMessagesPage = this.currentPage === 'messages.html';
+            const msgLink = document.createElement('a');
+            msgLink.href = 'messages.html';
+            msgLink.className = 'nav-item';
+            if (isMessagesPage) msgLink.style.background = 'rgba(255,255,255,0.1)';
+            msgLink.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                <span>TIN NHẮN</span>
+                <span style="background:#ef4444;color:white;font-size:9px;padding:2px 6px;border-radius:10px;font-weight:700;" id="sidebarMsgBadge" class="hidden">0</span>`;
+            if (quantriEl) nav.insertBefore(msgLink, quantriEl);
+            else nav.appendChild(msgLink);
+        }
     }
 
     /**
