@@ -116,7 +116,7 @@ function renderMessage(msg){
     const time=formatTime(msg.created_at);
 
     let content='';
-    if(msg.type==='image'){const u=resolveFileUrl(msg.file_url);content=`<div class="chat-msg-image"><img src="${u}" alt="" onclick="window.open('${u}','_blank')" style="max-width:280px;max-height:200px;border-radius:8px;cursor:pointer;"></div>`;}
+    if(msg.type==='image'){const u=resolveFileUrl(msg.file_url);content=`<div class="chat-msg-image"><img src="${u}" alt="" onclick="openImageLightbox('${u}')" style="max-width:280px;max-height:200px;border-radius:8px;cursor:pointer;"></div>`;}
     else if(msg.type==='file'){const u=resolveFileUrl(msg.file_url);const sz=msg.file_size?`(${(msg.file_size/1024).toFixed(0)}KB)`:'';content=`<a href="${u}" target="_blank" style="color:${isMe?'#e0e7ff':'#6366f1'};text-decoration:underline;">📎 ${escHtml(msg.file_name)} ${sz}</a>`;}
     else{content=renderMentions(linkify(escHtml(msg.content||''),isMe?'#d4d4ff':'#6366f1'));}
 
@@ -317,7 +317,7 @@ if(tab==='members'){let members=[];try{const token=sessionStorage.getItem('token
 if(tab==='pinned'){content.innerHTML='<p style="text-align:center;color:#94a3b8;padding:20px;">⏳ Đang tải...</p>';try{const token=sessionStorage.getItem('token');const res=await fetch(`${API_BASE}/chat/conversations/${currentConversationId}/pinned`,{headers:{'Authorization':`Bearer ${token}`}});const data=await res.json();if(!data.success||!data.data.length){content.innerHTML='<div style="text-align:center;padding:40px;color:#94a3b8;"><div style="font-size:32px;margin-bottom:8px;">📌</div><p>Chưa có tin nhắn ghim</p></div>';return;}content.innerHTML=data.data.map(m=>`<div style="padding:10px;border-bottom:1px solid #f1f5f9;border-radius:8px;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background=''"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><strong style="font-size:13px;">${escHtml(m.sender_name)}</strong><span style="font-size:11px;color:#94a3b8;">${formatTime(m.created_at)}</span></div><p style="font-size:13px;margin:0;color:#1e293b;">${escHtml(m.content||m.file_name||'[Media]')}</p></div>`).join('');}catch(e){content.innerHTML='<p style="color:#ef4444;">Lỗi</p>';}return;}
 content.innerHTML='<p style="text-align:center;color:#94a3b8;padding:20px;">⏳ Đang tải...</p>';const typeMap={images:'image',files:'file',links:'link'};
 try{const token=sessionStorage.getItem('token');const res=await fetch(`${API_BASE}/chat/conversations/${currentConversationId}/media?type=${typeMap[tab]}`,{headers:{'Authorization':`Bearer ${token}`}});const data=await res.json();if(!data.success||!data.data.length){const icons={images:'🖼️',files:'📎',links:'🔗'},labels={images:'ảnh',files:'file',links:'link'};content.innerHTML=`<div style="text-align:center;padding:40px;color:#94a3b8;"><div style="font-size:32px;margin-bottom:8px;">${icons[tab]}</div><p>Chưa có ${labels[tab]}</p></div>`;return;}
-if(tab==='images')content.innerHTML=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">${data.data.map(m=>{const u=resolveFileUrl(m.file_url);return `<img src="${u}" onclick="window.open('${u}','_blank')" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;cursor:pointer;">`;}).join('')}</div>`;
+if(tab==='images')content.innerHTML=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">${data.data.map(m=>{const u=resolveFileUrl(m.file_url);return `<img src="${u}" onclick="openImageLightbox('${u}')" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;cursor:pointer;">`;}).join('')}</div>`;
 else if(tab==='files')content.innerHTML=data.data.map(m=>{const u=resolveFileUrl(m.file_url);return `<a href="${u}" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid #f1f5f9;text-decoration:none;color:#1e293b;border-radius:8px;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background=''"><div style="width:40px;height:40px;background:#f1f5f9;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;">📄</div><div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(m.file_name||'File')}</div><div style="font-size:11px;color:#94a3b8;">${m.file_size?(m.file_size/1024).toFixed(0)+'KB':''} · ${escHtml(m.sender_name)}</div></div><span>⬇️</span></a>`;}).join('');
 else{const rx=/(https?:\/\/[^\s<]+)/g;let h='';data.data.forEach(m=>{(m.content||'').match(rx)?.forEach(url=>{h+=`<a href="${url}" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid #f1f5f9;text-decoration:none;color:#1e293b;border-radius:8px;"><div style="width:40px;height:40px;background:#f0f9ff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;">🔗</div><div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;color:#6366f1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(url)}</div><div style="font-size:11px;color:#94a3b8;">${escHtml(m.sender_name)}</div></div></a>`;});});content.innerHTML=h||'<p style="text-align:center;color:#94a3b8;padding:20px;">Chưa có link</p>';}}catch(e){content.innerHTML='<p style="color:#ef4444;">Lỗi</p>';}}
 
@@ -352,6 +352,65 @@ function setupDragDrop(){
     area.addEventListener('dragover',(e)=>{e.preventDefault();e.stopPropagation();if(!dragOverlay){dragOverlay=document.createElement('div');dragOverlay.id='dragDropOverlay';dragOverlay.style.cssText='position:absolute;inset:0;background:rgba(99,102,241,0.08);border:2px dashed #6366f1;border-radius:12px;display:flex;align-items:center;justify-content:center;z-index:50;pointer-events:none;';dragOverlay.innerHTML='<div style="text-align:center;pointer-events:none;"><div style="font-size:40px;margin-bottom:8px;">📎</div><p style="font-size:14px;font-weight:600;color:#6366f1;">Thả file vào đây để gửi</p></div>';area.style.position='relative';area.appendChild(dragOverlay);}});
     area.addEventListener('dragleave',(e)=>{e.preventDefault();if(dragOverlay&&!area.contains(e.relatedTarget)){dragOverlay.remove();dragOverlay=null;}});
     area.addEventListener('drop',async(e)=>{e.preventDefault();e.stopPropagation();if(dragOverlay){dragOverlay.remove();dragOverlay=null;}if(!currentConversationId){alert('Chọn cuộc trò chuyện trước');return;}const files=e.dataTransfer?.files;if(!files||!files.length)return;for(const file of files){if(file.size>10*1024*1024){alert(`File ${file.name} quá lớn (max 10MB)`);continue;}const fd=new FormData();fd.append('file',file);try{const token=sessionStorage.getItem('token');const res=await fetch(`${API_BASE}/chat/upload`,{method:'POST',headers:{'Authorization':`Bearer ${token}`},body:fd});const data=await res.json();if(data.success){socket.emit('send_message',{conversationId:currentConversationId,content:file.name,type:data.data.type,fileData:data.data});}else{alert(data.message||'Lỗi upload '+file.name);}}catch(err){alert('Lỗi upload '+file.name);}}});
+}
+
+// =====================================================
+// IMAGE LIGHTBOX — View images in-page overlay
+// =====================================================
+function openImageLightbox(url) {
+    // Remove existing lightbox if any
+    document.getElementById('imageLightbox')?.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'imageLightbox';
+    overlay.className = 'image-lightbox-overlay';
+
+    // Extract filename from URL
+    const filename = decodeURIComponent(url.split('/').pop().split('?')[0]);
+
+    overlay.innerHTML = `
+        <div class="image-lightbox-actions">
+            <button type="button" onclick="event.stopPropagation();downloadLightboxImage('${url}','${filename.replace(/'/g, "\\'")}')"
+                    title="Tải ảnh">⬇️</button>
+            <button type="button" onclick="event.stopPropagation();window.open('${url}','_blank')"
+                    title="Mở tab mới">↗️</button>
+            <button type="button" onclick="event.stopPropagation();closeLightbox()"
+                    title="Đóng (ESC)">✕</button>
+        </div>
+        <img src="${url}" alt="" onclick="event.stopPropagation()">
+        <div class="image-lightbox-filename">${escHtml(filename)}</div>
+    `;
+
+    // Click backdrop → close
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) closeLightbox();
+    });
+
+    document.body.appendChild(overlay);
+
+    // ESC key → close
+    function onEsc(e) {
+        if (e.key === 'Escape') { closeLightbox(); document.removeEventListener('keydown', onEsc); }
+    }
+    document.addEventListener('keydown', onEsc);
+}
+
+function closeLightbox() {
+    const el = document.getElementById('imageLightbox');
+    if (el) {
+        el.style.animation = 'lightboxFadeIn 0.15s ease reverse';
+        setTimeout(() => el.remove(), 150);
+    }
+}
+
+function downloadLightboxImage(url, filename) {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename || 'image';
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
 }
 
 document.addEventListener('DOMContentLoaded',initChat);
