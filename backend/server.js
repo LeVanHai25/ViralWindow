@@ -1,11 +1,13 @@
 const express = require("express");
 const cors = require("cors");
+const http = require('http');
 require("dotenv").config();
 
 // Standardize timezone for whole app
 process.env.TZ = "Asia/Ho_Chi_Minh";
 
 const app = express();
+const httpServer = http.createServer(app);
 
 // ============================================
 // DIAGNOSTICS (Render Deployment Debug)
@@ -304,6 +306,15 @@ const aiRoutes = require("./routes/ai");
 app.use("/api/ai", aiRoutes);
 console.log('🤖 Route /api/ai đã được đăng ký (AI Dashboard, Search, Chat, Reports)');
 
+// ============================================
+// CHAT - MessageBox Internal Communication
+// ============================================
+const chatRoutes = require("./routes/chat");
+app.use("/api/chat", chatRoutes);
+// Serve chat file uploads
+app.use('/uploads/chat', express.static(require('path').join(__dirname, 'uploads', 'chat')));
+console.log('💬 Route /api/chat đã được đăng ký (MessageBox Chat)');
+
 // DEBUG Routes (Development only)
 const debugRoutes = require("./routes/debug");
 app.use("/api/debug", debugRoutes);
@@ -389,38 +400,116 @@ async function runStartupMigrations() {
     }
 }
 
+// ============================================
+// CHAT TABLES MIGRATION
+// ============================================
+async function runChatMigrations() {
+    const db = require('./config/db');
+    const chatTables = [
+        {
+            name: 'conversations',
+            sql: `CREATE TABLE IF NOT EXISTS conversations (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                type ENUM('private','group') NOT NULL DEFAULT 'private',
+                name VARCHAR(255) NULL,
+                avatar_url TEXT NULL,
+                description TEXT NULL,
+                created_by INT NOT NULL,
+                last_message_id INT NULL,
+                last_message_at TIMESTAMP NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`
+        },
+        {
+            name: 'conversation_members',
+            sql: `CREATE TABLE IF NOT EXISTS conversation_members (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                conversation_id INT NOT NULL,
+                user_id INT NOT NULL,
+                role ENUM('owner','admin','member') DEFAULT 'member',
+                nickname VARCHAR(100) NULL,
+                is_muted TINYINT(1) DEFAULT 0,
+                joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE KEY uq_conv_user (conversation_id, user_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`
+        },
+        {
+            name: 'messages',
+            sql: `CREATE TABLE IF NOT EXISTS messages (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                conversation_id INT NOT NULL,
+                sender_id INT NOT NULL,
+                content TEXT NULL,
+                type ENUM('text','image','file','system') DEFAULT 'text',
+                file_url TEXT NULL,
+                file_name VARCHAR(255) NULL,
+                file_size INT NULL,
+                reply_to_id INT NULL,
+                is_pinned TINYINT(1) DEFAULT 0,
+                is_deleted TINYINT(1) DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_conv_time (conversation_id, created_at),
+                INDEX idx_sender (sender_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`
+        },
+        {
+            name: 'message_reads',
+            sql: `CREATE TABLE IF NOT EXISTS message_reads (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                message_id INT NOT NULL,
+                user_id INT NOT NULL,
+                read_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE KEY uq_msg_user (message_id, user_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`
+        },
+        {
+            name: 'user_presence',
+            sql: `CREATE TABLE IF NOT EXISTS user_presence (
+                user_id INT PRIMARY KEY,
+                status ENUM('online','offline','away') DEFAULT 'offline',
+                last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                socket_id VARCHAR(100) NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`
+        }
+    ];
+    for (const t of chatTables) {
+        try {
+            await db.query(t.sql);
+            console.log(`💬 Migration: ${t.name} table OK`);
+        } catch (err) {
+            console.error(`❌ Chat Migration ${t.name}:`, err.message);
+        }
+    }
+}
+
 // Run migrations on startup (Async, non-blocking)
 console.log(`[${new Date().toISOString()}] 🛠️ Đang khởi chạy migrations...`);
-runStartupMigrations()
+Promise.all([
+    runStartupMigrations(),
+    runChatMigrations()
+])
     .then(() => console.log(`[${new Date().toISOString()}] ✅ Hoàn tất migrations`))
     .catch(err => console.error(`[${new Date().toISOString()}] ❌ Migration error:`, err));
 
 
+// ============================================
+// SOCKET.IO INITIALIZATION
+// ============================================
+const { initSocketIO } = require('./services/socketService');
+const ioInstance = initSocketIO(httpServer);
+app.set('io', ioInstance); // Share io with controllers
+
 // Handle port already in use error
-const server = app.listen(PORT, '0.0.0.0', () => {
+const server = httpServer.listen(PORT, '0.0.0.0', () => {
     console.log(`[${new Date().toISOString()}] 🔥 API Server đang chạy tại port ${PORT} (Binding: 0.0.0.0)`);
-    console.log("📡 Các endpoints:");
-    console.log("   GET  /api/aluminum-systems");
-    console.log("   GET  /api/projects");
-    console.log("   GET  /api/accessories");
-    console.log("   GET  /api/customers");
-    console.log("   GET  /api/quotations");
-    console.log("   GET  /api/reports");
-    console.log("   GET  /api/production-orders");
-    console.log("   GET  /api/inventory");
-    console.log("   GET  /api/formulas");
-    console.log("   GET  /api/company-settings");
-    console.log("   GET  /api/door-templates");
-    console.log("   GET  /api/user-door-library");
-    console.log("   GET  /api/door-drawings");
-    console.log("   GET  /api/project-summaries/:projectId/aluminum");
-    console.log("   GET  /api/project-summaries/:projectId/glass");
-    console.log("   GET  /api/project-summaries/:projectId/accessories");
-    console.log("   GET  /api/project-summaries/:projectId/quotation");
-    console.log("   GET  /api/project-summaries/:projectId/financial");
-    console.log("   ✅ GET  /api/project-materials/check-export-requirement/:projectId");
-    console.log("   ✅ GET  /api/project-materials/exported");
-    console.log("   ✅ GET  /api/projects/:id/detail");
+    console.log(`[${new Date().toISOString()}] 💬 WebSocket Chat Server đã sẵn sàng`);
+    console.log("📡 Các endpoints chính:");
+    console.log("   GET  /api/chat/conversations");
+    console.log("   POST /api/chat/conversations");
+    console.log("   GET  /api/chat/conversations/:id/messages");
+    console.log("   POST /api/chat/conversations/:id/messages");
+    console.log("   WS   Socket.io (cùng port)");
 });
 
 // Handle port already in use

@@ -78,7 +78,8 @@ const EXCLUDED_TABLES = [
     'project_door_library',
     'activity_logs',
     'inventory_warehouses',
-    'aluminum_warehouse_stock'
+    'aluminum_warehouse_stock',
+    'user_presence'
 ];
 
 /**
