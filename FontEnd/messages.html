@@ -188,14 +188,14 @@
                     <div class="chat-typing-indicator" id="typingIndicator"></div>
 
                     <!-- Input -->
-                    <div class="chat-input-area" onsubmit="return false;">
+                    <div class="chat-input-area" id="chatInputArea">
                         <div class="chat-input-wrapper">
                             <div class="chat-input-actions">
-                                <button type="button" onclick="uploadChatFile();return false;" title="Đính kèm file">📎</button>
+                                <button type="button" id="btnAttach" title="Đính kèm file">📎</button>
                             </div>
                             <textarea id="chatInput" placeholder="Nhập tin nhắn... (Enter để gửi, Shift+Enter xuống dòng)"
-                                      rows="1" onkeydown="handleInputKeydown(event)" oninput="autoResizeTextarea(this)"></textarea>
-                            <button type="button" class="chat-send-btn" onclick="sendMessage();return false;" title="Gửi">
+                                      rows="1"></textarea>
+                            <button type="button" class="chat-send-btn" id="btnSend" title="Gửi">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:18px;height:18px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
                             </button>
                         </div>
@@ -207,5 +207,57 @@
 
     <script src="js/chat-client.js"></script>
     <script src="js/sidebar-enterprise.js"></script>
+
+    <!-- BULLETPROOF: prevent ALL form/submit/reload behavior -->
+    <script>
+    (function(){
+        // 1. Global form submit blocker
+        document.addEventListener('submit', function(e){ e.preventDefault(); e.stopPropagation(); return false; }, true);
+
+        // 2. Send button — click handler with preventDefault FIRST
+        var btnSend = document.getElementById('btnSend');
+        if(btnSend) btnSend.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            try { if(typeof sendMessage==='function') sendMessage(); } catch(err) { console.error('sendMessage error:', err); }
+        }, true);
+
+        // 3. Attach button
+        var btnAttach = document.getElementById('btnAttach');
+        if(btnAttach) btnAttach.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            try { if(typeof uploadChatFile==='function') uploadChatFile(); } catch(err) { console.error('uploadChatFile error:', err); }
+        }, true);
+
+        // 4. Textarea — Enter key handler
+        var chatInput = document.getElementById('chatInput');
+        if(chatInput) {
+            chatInput.addEventListener('keydown', function(e){
+                if(e.key==='Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    try { if(typeof sendMessage==='function') sendMessage(); } catch(err) { console.error('sendMessage error:', err); }
+                    return false;
+                }
+                // Typing indicator + mention
+                try { if(typeof handleInputKeydown==='function') handleInputKeydown(e); } catch(err) {}
+            }, true);
+
+            chatInput.addEventListener('input', function(){
+                try { if(typeof autoResizeTextarea==='function') autoResizeTextarea(this); } catch(err) {}
+            });
+        }
+
+        // 5. Global keydown — catch any Enter on any button that might trigger submit
+        document.addEventListener('keydown', function(e){
+            if(e.key==='Enter' && e.target && e.target.tagName==='BUTTON') {
+                e.preventDefault();
+                return false;
+            }
+        }, true);
+    })();
+    </script>
 </body>
 </html>

@@ -200,10 +200,14 @@ async function createMessage(convId, senderId, content, type = 'text', fileData 
         [msgId, senderId]
     );
 
-    // Return full message with sender info
+    // Return full message with sender info + reply info
     const [msgs] = await db.query(`
-        SELECT m.*, u.full_name AS sender_name, u.avatar_url AS sender_avatar
-        FROM messages m JOIN users u ON m.sender_id = u.id
+        SELECT m.*, u.full_name AS sender_name, u.avatar_url AS sender_avatar,
+               rm.content AS reply_content, ru.full_name AS reply_sender_name
+        FROM messages m
+        JOIN users u ON m.sender_id = u.id
+        LEFT JOIN messages rm ON m.reply_to_id = rm.id
+        LEFT JOIN users ru ON rm.sender_id = ru.id
         WHERE m.id = ?
     `, [msgId]);
     return msgs[0];
