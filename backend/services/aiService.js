@@ -21,6 +21,7 @@ if (!globalThis.fetch) {
  */
 
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const aiBrain = require('../ai-brain');
 
 // =====================================================
 // INIT GEMINI
@@ -43,24 +44,10 @@ function getModel() {
 }
 
 // =====================================================
-// SYSTEM PROMPT - Context chung cho mọi request
+// SYSTEM PROMPT - Powered by AI Brain
 // =====================================================
-const SYSTEM_PROMPT = `Bạn là AI Assistant của phần mềm ViralWindow - hệ thống quản lý sản xuất nhôm kính chuyên nghiệp.
-
-VỀ HỆ THỐNG:
-- ViralWindow quản lý: Dự án, Kho vật tư (Nhôm, Kính, Phụ kiện), Tài chính, Sản xuất, Báo giá, Khách hàng
-- Có 2 kho nhôm: Kho Nhôm VIRAL (id=1) và Kho Nhôm YANGLY (id=2)
-- Phụ kiện có danh mục riêng (accessory_categories)
-- Nhôm có các hệ (VRA-55, VRE-65, v.v.)
-- Đơn vị tiền: VNĐ (Việt Nam Đồng)
-
-QUY TẮC:
-1. Trả lời bằng tiếng Việt, ngắn gọn, chuyên nghiệp
-2. Dùng emoji phù hợp để dễ đọc
-3. Khi nói về tiền, format: 1.000.000đ
-4. Khi phân tích, đưa ra gợi ý hành động cụ thể
-5. Không bịa dữ liệu - chỉ phân tích dữ liệu thực được cung cấp
-6. Format output bằng HTML đẹp (bold, list, color) để hiển thị trên web`;
+// SYSTEM_PROMPT is now dynamically built by aiBrain.buildSmartPrompt()
+// See: backend/ai-brain/index.js
 
 // =====================================================
 // CACHE - Tránh gọi API quá nhiều
@@ -130,14 +117,16 @@ async function callGemini(prompt, options = {}) {
 }
 
 // =====================================================
-// 1. DASHBOARD INSIGHTS
+// 1. DASHBOARD INSIGHTS (Powered by AI Brain)
 // =====================================================
 async function generateInsights(dataContext) {
-    const cacheKey = 'dashboard_insights_' + new Date().toISOString().slice(0, 13); // Cache per hour
+    const cacheKey = 'dashboard_insights_' + new Date().toISOString().slice(0, 13);
     const cached = getCached(cacheKey);
     if (cached) return cached;
 
-    const prompt = `${SYSTEM_PROMPT}
+    const smartPrompt = aiBrain.buildSmartPrompt('overview');
+
+    const prompt = `${smartPrompt}
 
 DỮ LIỆU HỆ THỐNG HIỆN TẠI:
 ${JSON.stringify(dataContext, null, 2)}
@@ -165,10 +154,14 @@ KHÔNG bao giờ nói "dữ liệu không có" - hãy phân tích với những 
 }
 
 // =====================================================
-// 2. SMART SEARCH - NLP → Structured Query
+// 2. SMART SEARCH - NLP → Structured Query (Powered by AI Brain)
 // =====================================================
 async function parseSearchQuery(query) {
-    const prompt = `${SYSTEM_PROMPT}
+    // Detect relevant tables from user query
+    const detectedTables = aiBrain.detectRelevantTables(query);
+    const schemaContext = aiBrain.getSchemaContext(detectedTables);
+
+    const prompt = `${aiBrain.buildSmartPrompt('overview', query)}
 
 Người dùng tìm kiếm: "${query}"
 
@@ -182,18 +175,7 @@ Hãy phân tích câu hỏi và trả về JSON với format:
   "suggested_sql_where": "Điều kiện WHERE gợi ý (KHÔNG có SELECT/FROM)"
 }
 
-CÁC BẢNG CHÍNH:
-- projects: id, project_name, order_code, status, deadline, customer_name, total_amount
-- stock_documents: id, doc_no, doc_type(import/export), warehouse_id, status, created_at
-- stock_document_lines: item_type, item_id, item_code, item_name, qty, unit_price
-- financial_transactions: type(income/expense), amount, category, description, transaction_date
-- inventory: item_code, item_name, quantity, unit_price
-- accessories: code, name, stock_quantity, category_id
-- aluminum_systems: code, name, quantity, warehouse_id
-- customers: name, phone, email, address
-- quotations: id, customer_name, status, total_amount, created_at
-- material_requests: order_code, category, status, created_at
-
+Dùng đúng tên bảng và cột theo Schema Dictionary ở trên.
 CHỈ trả về JSON, KHÔNG giải thích thêm.`;
 
     const result = await callGemini(prompt, { temperature: 0.1 });
@@ -219,20 +201,29 @@ CHỈ trả về JSON, KHÔNG giải thích thêm.`;
 }
 
 // =====================================================
-// 3. CHATBOT
+// 3. CHATBOT (Powered by AI Brain)
 // =====================================================
 async function chat(message, history = [], dataContext = null) {
+    // Detect category from message for smart prompt
+    const detectedTables = aiBrain.detectRelevantTables(message);
+    const category = detectedTables.includes('financial_transactions') ? 'finance'
+        : detectedTables.includes('accessories') || detectedTables.includes('aluminum_systems') || detectedTables.includes('inventory') ? 'inventory'
+        : detectedTables.includes('projects') ? 'projects'
+        : detectedTables.includes('customers') ? 'customers'
+        : 'overview';
+
+    const smartPrompt = aiBrain.buildSmartPrompt(category, message);
+
     let contextBlock = '';
     if (dataContext) {
         contextBlock = `\n\nDỮ LIỆU LIÊN QUAN TỪ HỆ THỐNG:\n${JSON.stringify(dataContext, null, 2)}`;
     }
 
-    // Build conversation history
     const historyText = history.map(h => 
         `${h.role === 'user' ? 'Người dùng' : 'AI'}: ${h.content}`
     ).join('\n');
 
-    const prompt = `${SYSTEM_PROMPT}
+    const prompt = `${smartPrompt}
 ${contextBlock}
 
 ${historyText ? `LỊCH SỬ HỘI THOẠI:\n${historyText}\n` : ''}
@@ -240,6 +231,7 @@ Người dùng: ${message}
 
 Hãy trả lời bằng HTML đẹp. Dùng <b>, <ul><li>, <span style="color:...">, <br> để format.
 Nếu người dùng hỏi về dữ liệu hệ thống, hãy phân tích dữ liệu được cung cấp.
+Nếu người dùng hỏi về thuật ngữ ngành nhôm kính, sử dụng tri thức chuyên ngành.
 Nếu hỏi hướng dẫn thao tác, hãy mô tả từng bước chi tiết.
 Giữ câu trả lời ngắn gọn, dưới 300 từ.`;
 
@@ -280,7 +272,9 @@ async function generateReport(reportType, dataContext, filters = {}) {
     if (filters.branch_id) filterDesc += '\n- Đang LỌC theo 1 chi nhánh cụ thể.';
     if (filters.status) filterDesc += `\n- Đang LỌC trạng thái: ${filters.status}`;
 
-    const prompt = `${SYSTEM_PROMPT}
+    const smartPrompt = aiBrain.buildSmartPrompt(category);
+
+    const prompt = `${smartPrompt}
 
 NGƯỜI DÙNG YÊU CẦU BÁO CÁO:
 - Danh mục: ${categoryName}
@@ -319,7 +313,8 @@ QUY TẮC QUAN TRỌNG:
 3. Format tiền VNĐ đúng: 1.000.000đ
 4. Nếu dữ liệu rỗng, nói rõ "Không có dữ liệu trong khoảng thời gian này" thay vì bịa
 5. Dùng số liệu cụ thể từ data, đừng nói chung chung
-6. Đưa ra ít nhất 3 gợi ý hành động cụ thể và khả thi`;
+6. Sử dụng đúng thuật ngữ ngành nhôm kính
+7. Đưa ra ít nhất 3 gợi ý hành động cụ thể và khả thi`;
 
     return await callGemini(prompt, { temperature: 0.5, maxTokens: 3000 });
 }
