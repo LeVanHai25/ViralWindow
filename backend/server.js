@@ -297,6 +297,13 @@ const securityRoutes = require("./routes/security");
 app.use("/api/security", securityRoutes);
 console.log('🔐 Route /api/security đã được đăng ký (Login History, Sessions, Password)');
 
+// ============================================
+// AI Features - Gemini Integration
+// ============================================
+const aiRoutes = require("./routes/ai");
+app.use("/api/ai", aiRoutes);
+console.log('🤖 Route /api/ai đã được đăng ký (AI Dashboard, Search, Chat, Reports)');
+
 // DEBUG Routes (Development only)
 const debugRoutes = require("./routes/debug");
 app.use("/api/debug", debugRoutes);

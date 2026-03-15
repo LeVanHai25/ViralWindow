@@ -418,7 +418,59 @@ exports.create = async (req, res) => {
 
 
         for (const line of lines) {
-            const { item_type, item_id, qty, unit_price = 0, note: lineNote, meters_used, qty_actual, qty_diff } = line;
+            let { item_type, item_id, qty, unit_price = 0, note: lineNote, meters_used, qty_actual, qty_diff, item_code: lineItemCode, item_name: lineItemName } = line;
+
+            // =====================================================
+            // AUTO-RESOLVE: item_code/item_name → item_id
+            // Khi tạo phiếu từ YCVT, chỉ có item_code/item_name, không có item_id
+            // =====================================================
+            if (!item_id && (lineItemCode || lineItemName) && item_type) {
+                try {
+                    const table = getItemTable(item_type);
+                    let resolvedId = null;
+
+                    if (item_type === 'accessory') {
+                        // accessories: code, name
+                        if (lineItemCode) {
+                            const [rows] = await connection.query('SELECT id FROM accessories WHERE code = ? LIMIT 1', [lineItemCode]);
+                            if (rows.length > 0) resolvedId = rows[0].id;
+                        }
+                        if (!resolvedId && lineItemName) {
+                            const [rows] = await connection.query('SELECT id FROM accessories WHERE name = ? LIMIT 1', [lineItemName]);
+                            if (rows.length > 0) resolvedId = rows[0].id;
+                        }
+                    } else if (item_type === 'aluminum') {
+                        // aluminum_systems: code, name
+                        if (lineItemCode) {
+                            const [rows] = await connection.query('SELECT id FROM aluminum_systems WHERE code = ? LIMIT 1', [lineItemCode]);
+                            if (rows.length > 0) resolvedId = rows[0].id;
+                        }
+                        if (!resolvedId && lineItemName) {
+                            const [rows] = await connection.query('SELECT id FROM aluminum_systems WHERE name = ? LIMIT 1', [lineItemName]);
+                            if (rows.length > 0) resolvedId = rows[0].id;
+                        }
+                    } else {
+                        // inventory (glass, other): item_code, item_name
+                        if (lineItemCode) {
+                            const [rows] = await connection.query('SELECT id FROM inventory WHERE item_code = ? LIMIT 1', [lineItemCode]);
+                            if (rows.length > 0) resolvedId = rows[0].id;
+                        }
+                        if (!resolvedId && lineItemName) {
+                            const [rows] = await connection.query('SELECT id FROM inventory WHERE item_name = ? LIMIT 1', [lineItemName]);
+                            if (rows.length > 0) resolvedId = rows[0].id;
+                        }
+                    }
+
+                    if (resolvedId) {
+                        item_id = resolvedId;
+                        console.log(`✅ Auto-resolved ${item_type} "${lineItemCode || lineItemName}" → ID ${item_id}`);
+                    } else {
+                        console.warn(`⚠️ Could not resolve ${item_type} "${lineItemCode || lineItemName}" to item_id, skipping line`);
+                    }
+                } catch (resolveErr) {
+                    console.warn('⚠️ Error resolving item_id:', resolveErr.message);
+                }
+            }
 
             if (!item_type || !item_id || !qty || qty <= 0) {
                 continue; // Skip invalid lines

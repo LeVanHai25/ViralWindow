@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -891,6 +891,42 @@
             </div>
 
 
+            <!-- AI ASSISTANT -->
+            <div class="nav-item has-submenu">
+                <div class="flex items-center gap-3 flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                    <span>AI ASSISTANT</span>
+                    <span style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;font-size:9px;padding:2px 6px;border-radius:10px;font-weight:700;">AI</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    class="w-4 h-4 transition-transform duration-200 arrow-icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+            <div class="submenu">
+                <a href="reports-ai.html" class="submenu-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Báo cáo AI</span>
+                </a>
+                <a href="javascript:void(0)" class="submenu-item" onclick="if(window.openAISearch)window.openAISearch();else alert('Nhấn Ctrl+K');">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <span>Tìm kiếm AI</span>
+                    <span style="font-size:10px;color:#94a3b8;margin-left:auto;">Ctrl+K</span>
+                </a>
+            </div>
+
             <!-- QUẢN TRỊ -->
             <div class="nav-item has-submenu">
                 <div class="flex items-center gap-3 flex-1">
@@ -1254,6 +1290,32 @@
                     </div>
                 </div>
             </div>
+
+                <!-- AI Dashboard Insights -->
+                <div class="bg-white rounded-2xl shadow-sm p-6" id="aiInsightsPanel" style="margin-top:24px;">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+                        <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:20px;">🤖</div>
+                        <div style="flex:1">
+                            <h2 style="margin:0;font-size:16px;font-weight:700;color:#1e293b;">AI Phân Tích Thông Minh</h2>
+                            <span style="font-size:12px;color:#94a3b8;">Powered by Gemini AI</span>
+                        </div>
+                        <button onclick="loadAIInsights()" style="padding:6px 12px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;cursor:pointer;font-size:12px;color:#6366f1;font-weight:600;transition:all 0.15s;" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='#f8fafc'">🔄 Phân tích lại</button>
+                    </div>
+                    <div id="aiInsightsContent" style="min-height:120px;">
+                        <div style="text-align:center;padding:32px 0;color:#94a3b8;">
+                            <div style="display:inline-block;width:24px;height:24px;border:3px solid #e2e8f0;border-top-color:#6366f1;border-radius:50%;animation:spin 0.6s linear infinite;"></div>
+                            <p style="margin-top:8px;font-size:13px;">🤖 AI đang phân tích dữ liệu hệ thống...</p>
+                        </div>
+                    </div>
+                    <style>
+                        @keyframes spin { to { transform: rotate(360deg); } }
+                        .ai-insight-item { display:flex; gap:10px; padding:10px 12px; border-radius:10px; margin-bottom:8px; border:1px solid #f1f5f9; transition: background 0.15s; }
+                        .ai-insight-item:hover { background:#f8fafc; }
+                        .ai-icon { font-size:20px; flex-shrink:0; margin-top:2px; }
+                        .ai-text { font-size:13.5px; line-height:1.6; color:#334155; }
+                        .ai-text b { color:#4f46e5; }
+                    </style>
+                </div>
 
             <!-- Quick Actions & Recent Activities -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -2187,6 +2249,42 @@
                 document.addEventListener('DOMContentLoaded', init);
             } else { init(); }
         })();
+    </script>
+
+    <!-- AI Widgets -->
+    <script src="js/ai-chatbot-widget.js"></script>
+    <script src="js/ai-search-widget.js"></script>
+    <script>
+        // Load AI Dashboard Insights
+        async function loadAIInsights() {
+            const container = document.getElementById('aiInsightsContent');
+            if (!container) return;
+            container.innerHTML = '<div style="text-align:center;padding:32px 0;color:#94a3b8;"><div style="display:inline-block;width:24px;height:24px;border:3px solid #e2e8f0;border-top-color:#6366f1;border-radius:50%;animation:spin 0.6s linear infinite;"></div><p style="margin-top:8px;font-size:13px;">🤖 AI đang phân tích dữ liệu hệ thống...</p></div>';
+            try {
+                const token = sessionStorage.getItem('token');
+                const response = await fetch(`${API_BASE}/ai/dashboard-insights`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const result = await response.json();
+                if (result.success && result.data && result.data.insights) {
+                    container.innerHTML = result.data.insights;
+                } else {
+                    const msg = result.message || 'Không thể tải AI insights';
+                    const isRateLimit = msg.includes('429') || msg.includes('bận') || msg.includes('quota') || msg.includes('thử lại');
+                    if (isRateLimit) {
+                        container.innerHTML = '<div style="text-align:center;padding:24px;background:#fffbeb;border-radius:12px;border:1px solid #fde68a;"><p style="font-size:15px;margin:0 0 8px;">⏳ AI đang bận</p><p style="font-size:13px;color:#92400e;margin:0;">Gemini API giới hạn request miễn phí. Vui lòng nhấn <b>Phân tích lại</b> sau 1-2 phút.</p></div>';
+                    } else {
+                        container.innerHTML = '<div style="text-align:center;padding:24px;background:#fef2f2;border-radius:12px;border:1px solid #fecaca;"><p style="font-size:13px;color:#dc2626;margin:0;">❌ ' + msg + '</p></div>';
+                    }
+                }
+            } catch (error) {
+                container.innerHTML = '<div style="text-align:center;padding:24px;background:#fef2f2;border-radius:12px;border:1px solid #fecaca;"><p style="font-size:13px;color:#dc2626;margin:0;">❌ Không thể kết nối AI server. Kiểm tra backend đã chạy.</p></div>';
+            }
+        }
+        // Auto-load insights on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(loadAIInsights, 2000);
+        });
     </script>
 </body>
 

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -932,6 +932,13 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
                             </button>
+                            <button onclick="convertToImportTicket(${request.id})" 
+                                class="px-3 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors text-sm" title="Chuyển thành phiếu nhập kho">
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                </svg>
+                                Nhập kho
+                            </button>
                         </div>
                     </div>
                 `;
@@ -1177,6 +1184,13 @@
                         </div>
                     ` : `
                         <div class="flex justify-end gap-3 mt-6">
+                            <button onclick="convertToImportTicketFromModal()" 
+                                class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 inline-flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                </svg>
+                                📦 Chuyển phiếu nhập kho
+                            </button>
                             <button onclick="createPaymentFromRequest()" 
                                 class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 inline-flex items-center">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1815,6 +1829,104 @@
 
             // Navigate to purchase-request.html with pre-filled data
             window.location.href = `purchase-request.html?${params.toString()}`;
+        }
+
+        // =====================================================
+        // CHUYỂN PHIẾU YÊU CẦU VẬT TƯ → PHIẾU NHẬP KHO
+        // =====================================================
+        const STOCK_DOC_API = API_BASE + '/stock-documents';
+
+        const CATEGORY_TO_ITEM_TYPE = {
+            'nhom': 'aluminum',
+            'kinh': 'glass',
+            'phukien': 'accessory',
+            'vattu': 'other'
+        };
+
+        async function convertToImportTicket(requestId) {
+            const confirmed = await confirm('Xác nhận chuyển phiếu yêu cầu này thành phiếu nhập kho nháp?');
+            if (!confirmed) return;
+
+            try {
+                // 1. Fetch request detail
+                const response = await fetch(`${API_BASE}/material-requests/${requestId}`, {
+                    headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
+                });
+                const result = await response.json();
+
+                if (!result.success || !result.data) {
+                    throw new Error(result.message || 'Không tìm thấy phiếu yêu cầu');
+                }
+
+                const request = result.data;
+                await doConvertToImport(request);
+            } catch (error) {
+                console.error('Convert error:', error);
+                await alert('❌ Lỗi: ' + error.message);
+            }
+        }
+
+        async function convertToImportTicketFromModal() {
+            if (!currentViewingRequest) {
+                await alert('Không có dữ liệu phiếu yêu cầu');
+                return;
+            }
+            const confirmed = await confirm('Xác nhận chuyển phiếu yêu cầu này thành phiếu nhập kho nháp?');
+            if (!confirmed) return;
+            await doConvertToImport(currentViewingRequest);
+        }
+
+        async function doConvertToImport(request) {
+            try {
+                const itemType = CATEGORY_TO_ITEM_TYPE[request.category] || 'other';
+                const items = request.items || [];
+
+                if (items.length === 0) {
+                    await alert('⚠️ Phiếu yêu cầu không có vật tư nào!');
+                    return;
+                }
+
+                // 2. Map items → stock document lines
+                const lines = items.map(item => ({
+                    item_type: itemType,
+                    item_id: item.item_id || null,
+                    item_code: item.material_code || '',
+                    item_name: item.material_name || item.glass_type || '',
+                    qty: parseFloat(item.quantity) || parseFloat(item.panels) || 1,
+                    unit_price: 0,
+                    note: item.notes || `Từ YCVT: ${request.order_code}`
+                }));
+
+                // 3. POST to create draft import ticket
+                const docData = {
+                    doc_type: 'import',
+                    warehouse_id: 1,
+                    note: `📦 Nhập kho từ YCVT: ${request.order_code} — ${request.project_name || ''} (${items.length} vật tư)`,
+                    lines: lines
+                };
+
+                const postResponse = await fetch(STOCK_DOC_API, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(docData)
+                });
+
+                const postResult = await postResponse.json();
+
+                if (!postResult.success) {
+                    throw new Error(postResult.message || 'Lỗi tạo phiếu nhập');
+                }
+
+                await alert(`✅ Đã tạo phiếu nhập kho nháp: ${postResult.data.doc_no}\n\n📋 ${items.length} vật tư từ YCVT: ${request.order_code}\n\n➡️ Vào Kho vật tư → tab NHẬP KHO để xem và hạch toán.`);
+
+                closeModal();
+            } catch (error) {
+                console.error('doConvertToImport error:', error);
+                await alert('❌ Lỗi tạo phiếu nhập: ' + error.message);
+            }
         }
 
         // Initialize

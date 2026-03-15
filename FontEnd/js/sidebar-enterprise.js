@@ -21,6 +21,22 @@ class EnterpriseSidebar {
         this.setupSkeletonLoading();
         this.loadUserRoleDisplay();
         this.loadCompanyLogo();
+        this.loadAIWidgets();
+    }
+
+    /**
+     * Load AI Widgets (Chatbot + Search) on all pages
+     */
+    loadAIWidgets() {
+        const scripts = ['js/ai-chatbot-widget.js', 'js/ai-search-widget.js'];
+        scripts.forEach(src => {
+            if (!document.querySelector(`script[src="${src}"]`)) {
+                const s = document.createElement('script');
+                s.src = src;
+                s.async = true;
+                document.body.appendChild(s);
+            }
+        });
     }
 
     /**
