@@ -28,7 +28,13 @@ class EnterpriseSidebar {
      * Load AI Widgets (Chatbot + Search) on all pages
      */
     loadAIWidgets() {
-        const scripts = ['js/ai-chatbot-widget.js', 'js/ai-search-widget.js'];
+        const isMessagesPage = window.location.pathname.includes('messages.html');
+
+        // Load AI widgets (skip chatbot on messages page to avoid overlap)
+        const scripts = isMessagesPage
+            ? ['js/ai-search-widget.js']
+            : ['js/ai-chatbot-widget.js', 'js/ai-search-widget.js'];
+
         scripts.forEach(src => {
             if (!document.querySelector(`script[src="${src}"]`)) {
                 const s = document.createElement('script');
@@ -37,6 +43,14 @@ class EnterpriseSidebar {
                 document.body.appendChild(s);
             }
         });
+
+        // Auto-load chat menu on ALL pages (TIN NHẮN + unread badge)
+        if (!document.querySelector('script[src="js/sidebar-chat-menu.js"]')) {
+            const chatMenuScript = document.createElement('script');
+            chatMenuScript.src = 'js/sidebar-chat-menu.js';
+            chatMenuScript.async = true;
+            document.body.appendChild(chatMenuScript);
+        }
     }
 
     /**

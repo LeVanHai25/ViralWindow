@@ -123,10 +123,65 @@ function initSocketIO(httpServer) {
                 // Broadcast to room
                 io.to(`conv_${conversationId}`).emit('new_message', message);
 
+                // Parse @mentions and notify
+                if (type === 'text' && content) {
+                    const mentionRegex = /@([^\s@]+)/g;
+                    let match;
+                    const mentioned = new Set();
+                    while ((match = mentionRegex.exec(content)) !== null) {
+                        mentioned.add(match[1]);
+                    }
+                    if (mentioned.size > 0) {
+                        try {
+                            const members = await chatService.getConversationMembers(conversationId);
+                            members.forEach(m => {
+                                const names = [m.full_name, m.full_name?.split(' ').pop()];
+                                const isMentioned = names.some(n => n && mentioned.has(n));
+                                if (isMentioned && m.user_id !== userId) {
+                                    io.emit('mention_notification', {
+                                        userId: m.user_id,
+                                        conversationId,
+                                        messageId: message.id,
+                                        mentionedBy: userName,
+                                        content: sanitized?.substring(0, 100)
+                                    });
+                                }
+                            });
+                        } catch (e) { /* ignore mention errors */ }
+                    }
+                }
+
                 logChat('send_message', { userId, conversationId, messageId: message.id });
             } catch (err) {
                 console.error('WS send_message error:', err.message);
                 socket.emit('error', { message: 'Lỗi gửi tin nhắn' });
+            }
+        });
+
+        // -------------------------------------------------
+        // REACTION (Realtime)
+        // -------------------------------------------------
+        socket.on('add_reaction', async (data) => {
+            try {
+                const { messageId, emoji, conversationId } = data;
+                if (!messageId || !emoji) return;
+
+                const db = require('../config/db');
+                const [existing] = await db.query(
+                    'SELECT id FROM message_reactions WHERE message_id = ? AND user_id = ? AND emoji = ?',
+                    [messageId, userId, emoji]
+                );
+
+                if (existing.length > 0) {
+                    await chatService.removeReaction(messageId, userId, emoji);
+                } else {
+                    await chatService.addReaction(messageId, userId, emoji);
+                }
+
+                const reactions = await chatService.getReactions(messageId);
+                io.to(`conv_${conversationId}`).emit('reaction_update', { messageId, reactions });
+            } catch (err) {
+                console.error('WS add_reaction error:', err.message);
             }
         });
 

@@ -92,10 +92,10 @@ exports.deleteConversation = async (req, res) => {
     }
 };
 
-// GET /api/chat/conversations/:id/members
+// GET /api/chat/conversations/:id/members (WITH presence)
 exports.getMembers = async (req, res) => {
     try {
-        const members = await chatService.getConversationMembers(req.params.id);
+        const members = await chatService.getConversationMembersWithPresence(req.params.id);
         res.json({ success: true, data: members });
     } catch (err) {
         console.error('Chat getMembers error:', err);
@@ -149,12 +149,18 @@ exports.removeMember = async (req, res) => {
     }
 };
 
-// GET /api/chat/conversations/:id/messages
+// GET /api/chat/conversations/:id/messages (WITH reactions batch)
 exports.getMessages = async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 20;
         const before = req.query.before ? parseInt(req.query.before) : null;
         const messages = await chatService.getMessages(req.params.id, limit, before);
+
+        // Batch load reactions for all messages
+        const msgIds = messages.map(m => m.id);
+        const reactionsMap = await chatService.getMessageReactionsBatch(msgIds);
+        messages.forEach(m => { m.reactions = reactionsMap[m.id] || []; });
+
         res.json({ success: true, data: messages });
     } catch (err) {
         console.error('Chat getMessages error:', err);
@@ -193,6 +199,9 @@ exports.sendMessage = async (req, res) => {
 exports.togglePin = async (req, res) => {
     try {
         await chatService.togglePin(req.params.id);
+        // Broadcast pin update via socket
+        const io = req.app.get('io');
+        if (io) io.emit('pin_update', { messageId: parseInt(req.params.id) });
         res.json({ success: true, message: 'Đã cập nhật ghim' });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Lỗi ghim tin nhắn' });
@@ -206,6 +215,55 @@ exports.deleteMessage = async (req, res) => {
         res.json({ success: true, message: 'Đã xoá tin nhắn' });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Lỗi xoá tin nhắn' });
+    }
+};
+
+// POST /api/chat/messages/:id/reactions (toggle)
+exports.toggleReaction = async (req, res) => {
+    try {
+        const { emoji } = req.body;
+        if (!emoji) return res.status(400).json({ success: false, message: 'Thiếu emoji' });
+
+        const db = require('../config/db');
+        const [existing] = await db.query(
+            'SELECT id FROM message_reactions WHERE message_id = ? AND user_id = ? AND emoji = ?',
+            [req.params.id, req.user.id, emoji]
+        );
+
+        if (existing.length > 0) {
+            await chatService.removeReaction(req.params.id, req.user.id, emoji);
+        } else {
+            await chatService.addReaction(req.params.id, req.user.id, emoji);
+        }
+
+        const reactions = await chatService.getReactions(req.params.id);
+        const io = req.app.get('io');
+        if (io) io.emit('reaction_update', { messageId: parseInt(req.params.id), reactions });
+
+        res.json({ success: true, data: reactions });
+    } catch (err) {
+        console.error('Chat toggleReaction error:', err);
+        res.status(500).json({ success: false, message: 'Lỗi reaction' });
+    }
+};
+
+// GET /api/chat/messages/:id/reactions
+exports.getReactions = async (req, res) => {
+    try {
+        const reactions = await chatService.getReactions(req.params.id);
+        res.json({ success: true, data: reactions });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Lỗi tải reactions' });
+    }
+};
+
+// GET /api/chat/conversations/:id/pinned
+exports.getPinnedMessages = async (req, res) => {
+    try {
+        const pinned = await chatService.getPinnedMessages(req.params.id);
+        res.json({ success: true, data: pinned });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Lỗi tải tin ghim' });
     }
 };
 
@@ -267,6 +325,30 @@ exports.getUsers = async (req, res) => {
         res.json({ success: true, data: users });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Lỗi tải danh sách người dùng' });
+    }
+};
+
+// GET /api/chat/conversations/:id/media?type=image|file|link
+exports.getSharedMedia = async (req, res) => {
+    try {
+        const type = req.query.type || 'image'; // image | file | link
+        const media = await chatService.getSharedMedia(req.params.id, type);
+        res.json({ success: true, data: media });
+    } catch (err) {
+        console.error('Chat getSharedMedia error:', err);
+        res.status(500).json({ success: false, message: 'Lỗi tải media' });
+    }
+};
+
+// DELETE /api/chat/conversations/:id/messages (clear all history)
+exports.clearHistory = async (req, res) => {
+    try {
+        await chatService.clearHistory(req.params.id);
+        logChat('clear_history', { userId: req.user.id, conversationId: req.params.id });
+        res.json({ success: true, message: 'Đã xoá lịch sử trò chuyện' });
+    } catch (err) {
+        console.error('Chat clearHistory error:', err);
+        res.status(500).json({ success: false, message: 'Lỗi xoá lịch sử' });
     }
 };
 

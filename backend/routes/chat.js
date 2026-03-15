@@ -70,6 +70,19 @@ router.put('/messages/:id/pin', requireAuth, chatController.togglePin);
 router.delete('/messages/:id', requireAuth, chatController.deleteMessage);
 router.post('/messages/:id/read', requireAuth, chatController.markAsRead);
 
+// === REACTIONS ===
+router.post('/messages/:id/reactions', requireAuth, chatController.toggleReaction);
+router.get('/messages/:id/reactions', requireAuth, chatController.getReactions);
+
+// === PINNED MESSAGES ===
+router.get('/conversations/:id/pinned', requireAuth, isConversationMember, chatController.getPinnedMessages);
+
+// === SHARED MEDIA ===
+router.get('/conversations/:id/media', requireAuth, isConversationMember, chatController.getSharedMedia);
+
+// === CLEAR HISTORY ===
+router.delete('/conversations/:id/messages', requireAuth, isConversationMember, chatController.clearHistory);
+
 // === SEARCH ===
 router.get('/search', requireAuth, chatController.searchMessages);
 

@@ -137,7 +137,7 @@
                     <h2>💬 Tin nhắn</h2>
                     <div style="display:flex;align-items:center;gap:8px;">
                         <span id="connectionStatus" style="font-size:11px;color:#94a3b8;">⏳ Kết nối...</span>
-                        <button class="btn-new-chat" onclick="showNewChatModal()">+ Mới</button>
+                        <button type="button" class="btn-new-chat" onclick="showNewChatModal()">+ Mới</button>
                     </div>
                 </div>
 
@@ -161,7 +161,7 @@
                     <div class="icon">💬</div>
                     <h3 style="font-size:18px;font-weight:700;color:#1e293b;margin:0 0 8px;">Chào mừng đến Tin nhắn</h3>
                     <p style="font-size:14px;color:#94a3b8;margin:0 0 20px;">Chọn cuộc trò chuyện hoặc tạo mới để bắt đầu</p>
-                    <button class="btn-new-chat" onclick="showNewChatModal()">+ Cuộc trò chuyện mới</button>
+                    <button type="button" class="btn-new-chat" onclick="showNewChatModal()">+ Cuộc trò chuyện mới</button>
                 </div>
 
                 <!-- Active Chat Window -->
@@ -169,14 +169,14 @@
                     <!-- Header -->
                     <div class="chat-window-header" id="chatWindowHeader">
                         <button onclick="goBackToList()" style="display:none;border:none;background:none;cursor:pointer;padding:8px;font-size:18px;" class="mobile-back-btn">←</button>
-                        <div class="chat-conv-avatar" style="width:40px;height:40px;font-size:14px;">💬</div>
+                        <div class="chat-conv-avatar" id="chatWindowHeaderAvatar" style="width:40px;height:40px;font-size:14px;">💬</div>
                         <div class="chat-window-header-info">
-                            <h3>Chat</h3>
-                            <p>Tin nhắn riêng</p>
+                            <h3 id="chatWindowHeaderName">Chat</h3>
+                            <p id="chatWindowHeaderSub">Tin nhắn riêng</p>
                         </div>
                         <div class="chat-window-actions">
-                            <button title="Tìm kiếm tin nhắn">🔍</button>
-                            <button title="Thông tin nhóm">ℹ️</button>
+                            <button type="button" onclick="showSearchPanel()" title="Tìm kiếm tin nhắn">🔍</button>
+                            <button type="button" onclick="showInfoPanel()" title="Thông tin nhóm">ℹ️</button>
                         </div>
                     </div>
 
@@ -188,14 +188,14 @@
                     <div class="chat-typing-indicator" id="typingIndicator"></div>
 
                     <!-- Input -->
-                    <div class="chat-input-area">
+                    <div class="chat-input-area" onsubmit="return false;">
                         <div class="chat-input-wrapper">
                             <div class="chat-input-actions">
-                                <button onclick="uploadChatFile()" title="Đính kèm file">📎</button>
+                                <button type="button" onclick="uploadChatFile();return false;" title="Đính kèm file">📎</button>
                             </div>
                             <textarea id="chatInput" placeholder="Nhập tin nhắn... (Enter để gửi, Shift+Enter xuống dòng)"
                                       rows="1" onkeydown="handleInputKeydown(event)" oninput="autoResizeTextarea(this)"></textarea>
-                            <button class="chat-send-btn" onclick="sendMessage()" title="Gửi">
+                            <button type="button" class="chat-send-btn" onclick="sendMessage();return false;" title="Gửi">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:18px;height:18px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
                             </button>
                         </div>

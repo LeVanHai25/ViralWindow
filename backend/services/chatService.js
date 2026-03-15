@@ -273,10 +273,170 @@ async function getAllUsers() {
     return rows;
 }
 
+// =====================================================
+// SHARED MEDIA
+// =====================================================
+
+async function getSharedMedia(convId, type = 'image', limit = 50) {
+    let condition = '';
+    if (type === 'image') {
+        condition = "AND m.type = 'image'";
+    } else if (type === 'file') {
+        condition = "AND m.type = 'file'";
+    } else if (type === 'link') {
+        condition = "AND m.type = 'text' AND m.content LIKE '%http%'";
+    }
+
+    const [rows] = await db.query(`
+        SELECT m.id, m.content, m.type, m.file_url, m.file_name, m.file_size,
+               m.created_at, u.full_name AS sender_name
+        FROM messages m
+        JOIN users u ON m.sender_id = u.id
+        WHERE m.conversation_id = ? AND m.is_deleted = 0 ${condition}
+        ORDER BY m.created_at DESC
+        LIMIT ?
+    `, [convId, limit]);
+    return rows;
+}
+
+async function clearHistory(convId) {
+    await db.query(
+        'UPDATE messages SET is_deleted = 1, content = NULL WHERE conversation_id = ?',
+        [convId]
+    );
+    await db.query(
+        'UPDATE conversations SET last_message_id = NULL, last_message_at = NULL WHERE id = ?',
+        [convId]
+    );
+}
+
+// =====================================================
+// MESSAGE READ STATUS (✓ / ✓✓)
+// =====================================================
+
+async function getMessageReadCount(messageId, conversationId) {
+    const [[{ read_count }]] = await db.query(
+        'SELECT COUNT(*) AS read_count FROM message_reads WHERE message_id = ?', [messageId]
+    );
+    const [[{ member_count }]] = await db.query(
+        'SELECT COUNT(*) AS member_count FROM conversation_members WHERE conversation_id = ?', [conversationId]
+    );
+    return { read_count, member_count, all_read: read_count >= member_count };
+}
+
+// =====================================================
+// USER PRESENCE
+// =====================================================
+
+async function getUserPresence(userId) {
+    const [rows] = await db.query(
+        'SELECT status, last_seen FROM user_presence WHERE user_id = ?', [userId]
+    );
+    if (rows.length === 0) return { status: 'offline', last_seen: null };
+    return rows[0];
+}
+
+async function getConversationMembersWithPresence(convId) {
+    const [rows] = await db.query(`
+        SELECT cm.user_id, cm.role, cm.nickname, u.full_name, u.email, u.avatar_url,
+               COALESCE(up.status, 'offline') AS online_status,
+               up.last_seen
+        FROM conversation_members cm
+        JOIN users u ON cm.user_id = u.id
+        LEFT JOIN user_presence up ON cm.user_id = up.user_id
+        WHERE cm.conversation_id = ?
+        ORDER BY cm.role ASC, u.full_name ASC
+    `, [convId]);
+    return rows;
+}
+
+// =====================================================
+// REACTIONS (👍❤️😂😮😢🔥)
+// =====================================================
+
+async function addReaction(messageId, userId, emoji) {
+    await db.query(
+        'INSERT IGNORE INTO message_reactions (message_id, user_id, emoji) VALUES (?, ?, ?)',
+        [messageId, userId, emoji]
+    );
+}
+
+async function removeReaction(messageId, userId, emoji) {
+    await db.query(
+        'DELETE FROM message_reactions WHERE message_id = ? AND user_id = ? AND emoji = ?',
+        [messageId, userId, emoji]
+    );
+}
+
+async function getReactions(messageId) {
+    const [rows] = await db.query(`
+        SELECT mr.emoji, mr.user_id, u.full_name
+        FROM message_reactions mr
+        JOIN users u ON mr.user_id = u.id
+        WHERE mr.message_id = ?
+        ORDER BY mr.created_at ASC
+    `, [messageId]);
+
+    // Group by emoji
+    const grouped = {};
+    rows.forEach(r => {
+        if (!grouped[r.emoji]) grouped[r.emoji] = { emoji: r.emoji, count: 0, users: [] };
+        grouped[r.emoji].count++;
+        grouped[r.emoji].users.push({ id: r.user_id, name: r.full_name });
+    });
+    return Object.values(grouped);
+}
+
+async function getMessageReactionsBatch(messageIds) {
+    if (!messageIds.length) return {};
+    const [rows] = await db.query(`
+        SELECT mr.message_id, mr.emoji, mr.user_id, u.full_name
+        FROM message_reactions mr
+        JOIN users u ON mr.user_id = u.id
+        WHERE mr.message_id IN (?)
+        ORDER BY mr.created_at ASC
+    `, [messageIds]);
+
+    const result = {};
+    rows.forEach(r => {
+        if (!result[r.message_id]) result[r.message_id] = {};
+        if (!result[r.message_id][r.emoji]) result[r.message_id][r.emoji] = { emoji: r.emoji, count: 0, users: [] };
+        result[r.message_id][r.emoji].count++;
+        result[r.message_id][r.emoji].users.push({ id: r.user_id, name: r.full_name });
+    });
+
+    // Convert inner objects to arrays
+    Object.keys(result).forEach(msgId => {
+        result[msgId] = Object.values(result[msgId]);
+    });
+    return result;
+}
+
+// =====================================================
+// PINNED MESSAGES
+// =====================================================
+
+async function getPinnedMessages(convId) {
+    const [rows] = await db.query(`
+        SELECT m.id, m.content, m.type, m.file_url, m.file_name, m.created_at,
+               u.full_name AS sender_name
+        FROM messages m
+        JOIN users u ON m.sender_id = u.id
+        WHERE m.conversation_id = ? AND m.is_pinned = 1 AND m.is_deleted = 0
+        ORDER BY m.created_at DESC
+    `, [convId]);
+    return rows;
+}
+
 module.exports = {
     getConversationsByUser, createConversation, findPrivateConversation,
     updateConversation, deleteConversation, getConversationMembers,
     addMember, removeMember, getMemberRole,
     getMessages, createMessage, deleteMessage, togglePin, markAsRead, searchMessages,
-    setUserOnline, setUserOffline, getOnlineUsers, getAllUsers
+    setUserOnline, setUserOffline, getOnlineUsers, getAllUsers,
+    getSharedMedia, clearHistory,
+    getMessageReadCount, getUserPresence, getConversationMembersWithPresence,
+    addReaction, removeReaction, getReactions, getMessageReactionsBatch,
+    getPinnedMessages
 };
+
