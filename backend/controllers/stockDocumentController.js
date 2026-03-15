@@ -521,6 +521,8 @@ exports.create = async (req, res) => {
             let finalQtyActual = qty_actual !== undefined ? parseFloat(qty_actual) : null;
             let finalQtyDiff = qty_diff !== undefined ? parseFloat(qty_diff) : null;
             let qtySystem = null;
+            let balanceBefore = null;
+            let balanceAfter = null;
 
             if (doc_type === 'stocktake') {
                 qtySystem = await getCurrentStock(item_type, item_id, warehouse_id, connection);
@@ -534,6 +536,13 @@ exports.create = async (req, res) => {
                 if (finalQtyDiff === null && finalQtyActual !== null) {
                     finalQtyDiff = finalQtyActual - qtySystem;
                 }
+            } else {
+                balanceBefore = await getCurrentStock(item_type, item_id, warehouse_id, connection);
+                if (doc_type === 'import' || doc_type === 'adjust') {
+                    balanceAfter = balanceBefore + qty;
+                } else if (doc_type === 'export') {
+                    balanceAfter = balanceBefore - qty;
+                }
             }
 
             // Get project_id from document for export lines
@@ -542,9 +551,9 @@ exports.create = async (req, res) => {
             // Insert line with meters columns for aluminum and stocktake columns
             await connection.query(`
                 INSERT INTO stock_document_lines 
-                (document_id, item_type, item_id, item_code, item_name, qty, unit_price, line_total, qty_system, qty_actual, qty_diff, note, project_id, meters_used, length_per_bar_m, meters_leftover)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `, [docId, item_type, item_id, itemCode, itemName, qty, finalUnitPrice, lineTotal, qtySystem, finalQtyActual, finalQtyDiff, lineNote, lineProjectId, metersUsed, lengthPerBarM, metersLeftover]);
+                (document_id, item_type, item_id, item_code, item_name, qty, unit_price, line_total, qty_system, qty_actual, qty_diff, note, project_id, meters_used, length_per_bar_m, meters_leftover, balance_before, balance_after)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `, [docId, item_type, item_id, itemCode, itemName, qty, finalUnitPrice, lineTotal, qtySystem, finalQtyActual, finalQtyDiff, lineNote, lineProjectId, metersUsed, lengthPerBarM, metersLeftover, balanceBefore, balanceAfter]);
 
             totalQty += qty;
             totalValue += lineTotal;
@@ -644,22 +653,44 @@ exports.addLines = async (req, res) => {
             );
 
             if (existing.length > 0) {
+                // Determine balance snapshot for draft import/export/adjust
+                let balanceBefore = null;
+                let balanceAfter = null;
+                
+                if (doc.doc_type !== 'stocktake') {
+                    balanceBefore = await getCurrentStock(item_type, item_id, doc.warehouse_id, connection);
+                    if (doc.doc_type === 'import' || doc.doc_type === 'adjust') {
+                        balanceAfter = balanceBefore + qty;
+                    } else if (doc.doc_type === 'export') {
+                        balanceAfter = balanceBefore - qty;
+                    }
+                }
+
                 // Update existing
                 await connection.query(`
                     UPDATE stock_document_lines 
-                    SET qty = ?, unit_price = ?, line_total = ?, note = ?, qty_actual = ?, qty_diff = ?
+                    SET qty = ?, unit_price = ?, line_total = ?, note = ?, qty_actual = ?, qty_diff = ?, balance_before = ?, balance_after = ?
                     WHERE id = ?
-                `, [qty, unit_price, lineTotal, lineNote, qty_actual || null, qty_diff || null, existing[0].id]);
+                `, [qty, unit_price, lineTotal, lineNote, qty_actual || null, qty_diff || null, balanceBefore, balanceAfter, existing[0].id]);
             } else {
                 // Insert new
                 let qtySystem = null;
                 let finalQtyActual = qty_actual !== undefined ? parseFloat(qty_actual) : null;
                 let finalQtyDiff = qty_diff !== undefined ? parseFloat(qty_diff) : null;
+                let balanceBefore = null;
+                let balanceAfter = null;
 
                 if (doc.doc_type === 'stocktake') {
                     qtySystem = await getCurrentStock(item_type, item_id, doc.warehouse_id, connection);
                     if (finalQtyActual === null) finalQtyActual = qty;
                     if (finalQtyDiff === null && finalQtyActual !== null) finalQtyDiff = finalQtyActual - qtySystem;
+                } else {
+                    balanceBefore = await getCurrentStock(item_type, item_id, doc.warehouse_id, connection);
+                    if (doc.doc_type === 'import' || doc.doc_type === 'adjust') {
+                        balanceAfter = balanceBefore + qty;
+                    } else if (doc.doc_type === 'export') {
+                        balanceAfter = balanceBefore - qty;
+                    }
                 }
 
                 // Get project_id from document for export lines
@@ -667,13 +698,13 @@ exports.addLines = async (req, res) => {
 
                 await connection.query(`
                     INSERT INTO stock_document_lines 
-                    (document_id, item_type, item_id, item_code, item_name, qty, unit_price, line_total, qty_system, qty_actual, qty_diff, note, project_id)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                `, [id, item_type, item_id, itemCode, itemName, qty, unit_price, lineTotal, qtySystem, finalQtyActual, finalQtyDiff, lineNote, lineProjectId]);
-
-                totalQty += qty;
-                totalValue += lineTotal;
+                    (document_id, item_type, item_id, item_code, item_name, qty, unit_price, line_total, qty_system, qty_actual, qty_diff, note, project_id, balance_before, balance_after)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                `, [id, item_type, item_id, itemCode, itemName, qty, unit_price, lineTotal, qtySystem, finalQtyActual, finalQtyDiff, lineNote, lineProjectId, balanceBefore, balanceAfter]);
             }
+
+            totalQty += qty;
+            totalValue += lineTotal;
         }
 
         // Recalculate totals
@@ -815,18 +846,27 @@ exports.update = async (req, res) => {
                 let qtySystem = null;
                 let finalQtyActual = qty_actual !== undefined ? parseFloat(qty_actual) : null;
                 let finalQtyDiff = qty_diff !== undefined ? parseFloat(qty_diff) : null;
+                let balanceBefore = null;
+                let balanceAfter = null;
 
                 if (doc.doc_type === 'stocktake') {
                     qtySystem = await getCurrentStock(item_type, item_id, doc.warehouse_id, connection);
                     if (finalQtyActual === null) finalQtyActual = qty;
                     if (finalQtyDiff === null && finalQtyActual !== null) finalQtyDiff = finalQtyActual - qtySystem;
+                } else {
+                    balanceBefore = await getCurrentStock(item_type, item_id, doc.warehouse_id, connection);
+                    if (doc.doc_type === 'import' || doc.doc_type === 'adjust') {
+                        balanceAfter = balanceBefore + qty;
+                    } else if (doc.doc_type === 'export') {
+                        balanceAfter = balanceBefore - qty;
+                    }
                 }
 
                 await connection.query(`
                     INSERT INTO stock_document_lines 
-                    (document_id, item_type, item_id, item_code, item_name, qty, unit_price, line_total, qty_system, qty_actual, qty_diff, note)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                `, [id, item_type, item_id, itemCode, itemName, qty, finalUnitPrice, lineTotal, qtySystem, finalQtyActual, finalQtyDiff, lineNote || '']);
+                    (document_id, item_type, item_id, item_code, item_name, qty, unit_price, line_total, qty_system, qty_actual, qty_diff, note, balance_before, balance_after)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                `, [id, item_type, item_id, itemCode, itemName, qty, finalUnitPrice, lineTotal, qtySystem, finalQtyActual, finalQtyDiff, lineNote || '', balanceBefore, balanceAfter]);
 
                 totalQty += qty;
                 totalValue += lineTotal;

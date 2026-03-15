@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -3077,17 +3077,15 @@
                                     </th>
                                     <th class="px-3 py-2 text-center text-xs font-medium text-gray-600 uppercase w-20">SL Sau
                                     </th>
-                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Đơn giá
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Thông tin
                                     </th>
-                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Thành
-                                        tiền</th>
                                     <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-16">
                                     </th>
                                 </tr>
                             </thead>
                             <tbody id="importLinesTable" class="divide-y divide-gray-200">
                                 <tr id="importEmptyRow">
-                                    <td colspan="10" class="px-4 py-6 text-center text-gray-400">
+                                    <td colspan="9" class="px-4 py-6 text-center text-gray-400">
                                         Chưa có vật tư. Thêm vật tư ở trên.
                                     </td>
                                 </tr>
@@ -3100,7 +3098,6 @@
                                     <td class="px-3 py-2 text-center font-bold text-teal-600" id="importTotalQty">0</td>
                                     <td></td>
                                     <td></td>
-                                    <td class="px-3 py-2 font-bold text-teal-600" id="importTotalValue">0 ₫</td>
                                     <td></td>
                                 </tr>
                             </tfoot>
@@ -3387,11 +3384,11 @@
                                     class="w-full px-2 py-2 border border-teal-500 rounded-lg text-sm text-center bg-teal-50"
                                     placeholder="Mét sử dụng">
                             </div>
-                            <!-- Đơn giá (ẩn cho Nhôm) -->
-                            <div class="col-span-2" id="exportPriceContainer">
-                                <label class="block text-xs text-gray-600 mb-1">Đơn giá</label>
-                                <input type="number" id="exportItemPrice" value="0" min="0"
-                                    class="w-full px-2 py-2 border border-gray-300 rounded-lg text-sm text-right">
+                            <!-- Thông tin -->
+                            <div class="col-span-2" id="exportLineNoteContainer">
+                                <label class="block text-xs text-gray-600 mb-1">Thông tin</label>
+                                <input type="text" id="exportLineNote"
+                                    class="w-full px-2 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Ghi chú...">
                             </div>
                             <!-- Nút thêm -->
                             <div class="col-span-1">
@@ -4188,7 +4185,8 @@
                         item_code: line.item_code || '',
                         item_name: line.item_name || line.material_name_lookup || '',
                         qty: parseInt(line.qty) || 0,
-                        unit_price: parseFloat(line.unit_price) || 0,
+                        unit_price: 0,
+                        note: line.note || '',
                         meters_used: parseFloat(line.meters_used) || 0,
                         length_per_bar_m: parseFloat(line.length_per_bar_m) || 6,
                         length_cm: parseFloat(line.length_cm) || 0
@@ -4237,7 +4235,7 @@
             // Add line to export document
             function addExportLine() {
                 const idx = exportLines.length;
-                exportLines.push({ item_type: '', item_id: '', qty: 1, stock_quantity: 0, unit_price: 0 });
+                exportLines.push({ item_type: '', item_id: '', qty: 1, stock_quantity: 0, unit_price: 0, note: '' });
                 renderExportLines();
             }
 
@@ -4343,7 +4341,7 @@
                             <td class="px-3 py-2 text-center text-sm font-semibold text-gray-500 border-x border-gray-100">${stockBefore}</td>
                             <td class="px-3 py-2 text-center text-sm font-bold text-blue-600 border-x border-blue-50 bg-blue-50/30">${qty}</td>
                             <td class="px-3 py-2 text-center text-sm font-semibold ${stockAfter === 0 ? 'text-orange-500' : 'text-gray-600'} border-x border-gray-100">${stockAfter}</td>
-                            <td class="px-3 py-2 text-sm text-gray-400">-</td>
+                            <td class="px-3 py-2 text-sm text-gray-500 italic ${!line.note ? 'text-gray-400 not-italic text-center' : ''}">${line.note || '-'}</td>
                             <td class="px-3 py-2 text-center">
                                 <button onclick="removeExportLine(${idx})" class="text-red-500 font-bold hover:text-red-700 px-2">✕</button>
                             </td>
@@ -4380,14 +4378,12 @@
                 document.getElementById('exportItemId').value = '';
                 dropdown.classList.add('hidden');
 
-                // Show/hide meters_used and price based on item type
+                // Show/hide meters_used based on item type
                 // Scrap cũng dùng mét như Nhôm
                 if (itemType === 'aluminum' || itemType === 'scrap') {
                     if (metersUsedContainer) metersUsedContainer.classList.remove('hidden');
-                    if (priceContainer) priceContainer.classList.add('hidden');
                 } else {
                     if (metersUsedContainer) metersUsedContainer.classList.add('hidden');
-                    if (priceContainer) priceContainer.classList.remove('hidden');
                 }
 
                 if (!itemType) return;
@@ -4526,7 +4522,7 @@
                 selectedExportItem = { id, code, name, price, length_m, stock, length_cm, is_scrap: is_scrap === 1 };
                 document.getElementById('exportItemId').value = id;
                 document.getElementById('exportItemSearch').value = `${code} - ${name}`;
-                document.getElementById('exportItemPrice').value = price;
+                if (document.getElementById('exportLineNote')) document.getElementById('exportLineNote').value = '';
 
                 // ✅ CRITICAL: Set max quantity based on available stock
                 const qtyInput = document.getElementById('exportItemQty');
@@ -4572,7 +4568,7 @@
                 const itemType = document.getElementById('exportItemType').value;
                 const itemId = document.getElementById('exportItemId').value;
                 const qty = parseInt(document.getElementById('exportItemQty').value) || 1;
-                const price = parseFloat(document.getElementById('exportItemPrice').value) || 0;
+                const note = document.getElementById('exportLineNote')?.value || '';
 
                 if (!itemType || !itemId || !selectedExportItem) {
                     alert('Vui lòng chọn loại và vật tư!');
@@ -4650,7 +4646,8 @@
                         item_name: selectedExportItem.name,
                         qty: qty,
                         stock_quantity: selectedExportItem.stock || 0,
-                        unit_price: (itemType === 'aluminum' || itemType === 'scrap') ? 0 : price // No price for aluminum/scrap
+                        note: note,
+                        unit_price: 0 // No price fields in export modal input
                     };
                     if (itemType === 'aluminum') {
                         lineData.meters_used = meters_used;
@@ -4668,7 +4665,7 @@
                 document.getElementById('exportItemId').value = '';
                 document.getElementById('exportItemQty').value = 1;
                 document.getElementById('exportItemQty').disabled = false;
-                document.getElementById('exportItemPrice').value = 0;
+                if (document.getElementById('exportLineNote')) document.getElementById('exportLineNote').value = '';
                 if (document.getElementById('exportMetersUsed')) {
                     document.getElementById('exportMetersUsed').value = '';
                 }
@@ -5086,16 +5083,17 @@
                                 const balAfter = line.balance_after !== null ? parseFloat(line.balance_after) : null;
                                 
                                 // Build Thông tin column
-                                let infoHtml = '-';
+                                let infoHtml = line.note ? `<div class="text-gray-700">${line.note}</div>` : '-';
                                 if (line.item_type === 'aluminum') {
                                     const metersUsed = parseFloat(line.meters_used) || 0;
                                     const lengthPerBar = parseFloat(line.length_per_bar_m) || 6;
                                     const metersLeftover = parseFloat(line.meters_leftover) || (qty * lengthPerBar - metersUsed);
                                     totalMetersUsed += metersUsed;
 
-                                    infoHtml = metersUsed > 0
+                                    let aluHtml = metersUsed > 0
                                         ? `<span class="text-teal-600 font-medium">SD: ${metersUsed}m</span>${metersLeftover > 0 ? `<span class="text-orange-500 ml-2">Thừa: ${metersLeftover.toFixed(1)}m</span>` : ''}`
                                         : `<span class="text-gray-400">${lengthPerBar}m/cây</span>`;
+                                    infoHtml = infoHtml !== '-' ? infoHtml + '<div class="mt-1">' + aluHtml + '</div>' : aluHtml;
                                 }
 
                                 return `
@@ -6201,8 +6199,9 @@
                         item_name: name,
                         qty: qty,
                         stock_quantity: selectedImportItem.stock || 0,
-                        unit_price: price,
-                        line_total: qty * price
+                        unit_price: price, // still kept in memory just in case
+                        line_total: qty * price, // still kept in memory just in case
+                        note: '' // new field for information string
                     });
                 }
 
@@ -6216,9 +6215,8 @@
                 const emptyRow = document.getElementById('importEmptyRow');
 
                 if (importDocLines.length === 0) {
-                    tbody.innerHTML = `<tr id="importEmptyRow"><td colspan="10" class="px-4 py-6 text-center text-gray-400">Chưa có vật tư. Thêm vật tư ở trên.</td></tr>`;
+                    tbody.innerHTML = `<tr id="importEmptyRow"><td colspan="9" class="px-4 py-6 text-center text-gray-400">Chưa có vật tư. Thêm vật tư ở trên.</td></tr>`;
                     document.getElementById('importTotalQty').textContent = '0';
-                    document.getElementById('importTotalValue').textContent = '0 ₫';
                     return;
                 }
 
@@ -6244,12 +6242,11 @@
                                        onchange="updateImportLineQty(${idx}, this.value)">
                             </td>
                             <td class="px-3 py-2 text-center text-sm font-semibold text-gray-600 border-x border-gray-100">${stockAfter}</td>
-                            <td class="px-3 py-2 text-sm text-right">
-                                <input type="number" min="0" step="100" value="${line.unit_price}" class="w-24 border rounded px-1 py-0.5 text-right text-sm"
-                                       onchange="updateImportLinePrice(${idx}, this.value)">
+                            <td class="px-3 py-2 w-48 truncate">
+                                <input type="text" placeholder="Ghi chú thêm..." value="${line.note || ''}" class="w-full border rounded px-2 py-1 text-sm bg-white"
+                                       onchange="updateImportLineNote(${idx}, this.value)">
                             </td>
-                            <td class="px-3 py-2 text-sm font-medium text-right text-orange-600">${formatCurrency(line.line_total)}</td>
-                            <td class="px-3 py-2 text-center">
+                            <td class="px-3 py-2 text-center w-12">
                                 <button onclick="removeImportLine(${idx})" class="text-red-500 hover:text-red-700 font-bold px-2 py-1">✕</button>
                             </td>
                         </tr>
@@ -6257,7 +6254,10 @@
                 }).join('');
 
                 document.getElementById('importTotalQty').textContent = formatNumber(totalQty);
-                document.getElementById('importTotalValue').textContent = formatCurrency(totalValue);
+            }
+
+            function updateImportLineNote(idx, note) {
+                importDocLines[idx].note = note;
             }
 
             function getItemTypeLabel(type) {
