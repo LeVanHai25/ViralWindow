@@ -15,7 +15,8 @@
  */
 
 const db = require('../config/db');
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
+const uuidv4 = () => crypto.randomUUID();
 
 // =====================================================
 // HELPER: Lấy tên bảng vật tư theo item_type

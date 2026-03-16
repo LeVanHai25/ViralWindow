@@ -8,6 +8,7 @@
 
 const aiService = require('../services/aiService');
 const aiDataCollector = require('../services/aiDataCollector');
+const { getCachedAI } = require('../ai-brain/ai-cache');
 
 // =====================================================
 // VIETNAMESE LABELS - Mapping tiếng Anh → tiếng Việt
@@ -368,10 +369,17 @@ exports.getDashboardInsights = async (req, res) => {
     try {
         console.log('🤖 AI Dashboard Insights requested');
         const context = await aiDataCollector.getDashboardContext();
+        
+        // Tạo cache key dựa trên user/agency nếu có, hiện tại dùng chung cho toàn hệ thống
+        const cacheKey = `ai:dashboard_insights`;
 
         let insights;
         try {
-            insights = await aiService.generateInsights(context);
+            insights = await getCachedAI(
+                cacheKey,
+                async () => await aiService.generateInsights(context),
+                600 // Cache 10 phút
+            );
         } catch (aiError) {
             console.warn('⚠️ Gemini unavailable, using local fallback:', aiError.message);
             insights = generateLocalInsights(context);
@@ -427,7 +435,13 @@ exports.smartSearch = async (req, res) => {
         // Summary: try AI, fallback to local
         let summary;
         try {
-            summary = await aiService.chat(`Tóm tắt kết quả tìm kiếm "${query}". Ngắn gọn, HTML.`, [], { search_results: searchResults });
+            // Cache Smart Search Summary dựa trên nội dung câu hỏi (Cache 5 phút)
+            const cacheKey = `ai:search_summary:${Buffer.from(query).toString('base64').substring(0, 30)}`;
+            summary = await getCachedAI(
+                cacheKey,
+                async () => await aiService.chat(`Tóm tắt kết quả tìm kiếm "${query}". Ngắn gọn, HTML.`, [], { search_results: searchResults }),
+                300
+            );
         } catch (aiError) {
             summary = generateLocalSearchSummary(query, searchResults);
         }
@@ -447,31 +461,109 @@ exports.smartSearch = async (req, res) => {
 };
 
 // =====================================================
-// 3. CHATBOT
+// 3. CHATBOT (Powered by AI Brain Router & Persistent Memory)
 // =====================================================
 exports.chat = async (req, res) => {
     try {
-        const { message, history = [] } = req.body;
+        const { message, session_id = null } = req.body;
+        // Tương thích ngược: vãn nhận history từ client nếu chưa có UI lưu session
+        const clientHistory = req.body.history || [];
+        
         if (!message || message.trim().length < 1) {
             return res.status(400).json({ success: false, message: 'Vui lòng nhập tin nhắn' });
         }
 
         console.log(`💬 AI Chat: "${message.substring(0, 50)}..."`);
-        const dataContext = await aiDataCollector.getChatContext(message);
+        const startTime = Date.now();
+
+        const aiBrain = require('../ai-brain');
+        const userUserId = req.user ? req.user.id : null; // Nếu có auth middleware
+
+        // Phase 4: Init Session & Load Memory
+        let activeSessionId = session_id;
+        let dbHistory = [];
+        
+        if (userUserId) {
+            activeSessionId = await aiBrain.memory.getOrCreateSession(userUserId, session_id);
+            if (activeSessionId) {
+                dbHistory = await aiBrain.memory.loadSessionHistory(activeSessionId, 10);
+            }
+        }
+        
+        // Merge DB history with Client history (ưu tiên DB nếu có session_id)
+        const activeHistory = activeSessionId && dbHistory.length > 0 ? dbHistory : clientHistory;
+
+        // Lưu tin nhắn User vào DB
+        if (activeSessionId) {
+            await aiBrain.memory.saveMessage(activeSessionId, 'user', message);
+        }
+
+        // Phase 3: Route Message (Intent, Tools, Prompt)
+        const routerResult = await aiBrain.processMessage(message, { 
+            history: activeHistory 
+        });
 
         let reply;
+        let tokensUsed = {};
+
         try {
-            reply = await aiService.chat(message, history, dataContext);
+            // Gemini call
+            const aiResponseResult = await aiService.callGemini(routerResult.prompt, { temperature: 0.7, maxTokens: 1500 });
+            
+            // Xử lý nếu hàm callGemini trả về string hay object tuỳ phiên bản cũ/mới
+            if (typeof aiResponseResult === 'string') {
+                reply = aiResponseResult;
+                // Estimate tokens
+                tokensUsed = {
+                    prompt: Math.round(routerResult.promptLength / 4),
+                    completion: Math.round(reply.length / 4),
+                    total: Math.round((routerResult.promptLength + reply.length) / 4)
+                };
+            } else {
+                reply = aiResponseResult.reply || aiResponseResult.text || '';
+                tokensUsed = aiResponseResult.tokens || {};
+            }
         } catch (aiError) {
             console.warn('⚠️ Gemini unavailable, using local chat fallback');
+            const dataContext = routerResult.dataCollected || await aiDataCollector.getChatContext(message);
             reply = generateLocalChatReply(message, dataContext);
+        }
+
+        const processingMs = Date.now() - startTime;
+
+        // Lưu tin nhắn AI vào DB
+        if (activeSessionId) {
+            await aiBrain.memory.saveMessage(activeSessionId, 'assistant', reply, {
+                tools_used: routerResult.toolsUsed,
+                data_context: routerResult.dataCollected
+            });
+        }
+
+        // Ghi Analytics Logs
+        if (userUserId || activeSessionId) {
+            await aiBrain.memory.logAnalytics({
+                user_id: userUserId,
+                session_id: activeSessionId,
+                intent: routerResult.intent?.intent || 'general',
+                category: routerResult.intent?.category || 'overview',
+                query_text: message,
+                response_preview: reply,
+                tools_executed: routerResult.toolsUsed?.length || 0,
+                processing_ms: processingMs,
+                token_metrics: tokensUsed
+            });
         }
 
         res.json({
             success: true,
             data: {
                 reply,
-                has_data_context: Object.keys(dataContext).length > 0,
+                session_id: activeSessionId,
+                intent: routerResult.intent?.intent || 'general',
+                category: routerResult.intent?.category || 'overview',
+                tools_used: routerResult.toolsUsed || [],
+                has_data_context: (routerResult.toolsUsed?.length || 0) > 0,
+                processing_ms: processingMs,
                 timestamp: new Date().toISOString()
             }
         });
@@ -507,9 +599,15 @@ exports.getReport = async (req, res) => {
         console.log(`📋 AI Report: type=${type}, category=${filters.category}, timeRange=${filters.timeRange}, filters=`, JSON.stringify(filters));
         const reportData = await aiDataCollector.getReportData(type, filters);
 
+        const cacheKey = `ai:report:${type}:${filters.category}:${filters.timeRange}`;
+
         let report;
         try {
-            report = await aiService.generateReport(type, reportData, filters);
+            report = await getCachedAI(
+                cacheKey,
+                async () => await aiService.generateReport(type, reportData, filters),
+                1800 // Cache 30 phút cho Report
+            );
         } catch (aiError) {
             console.warn('⚠️ Gemini unavailable, using local report fallback:', aiError.message);
             report = generateLocalReport(type, reportData, filters);
@@ -526,7 +624,40 @@ exports.getReport = async (req, res) => {
 };
 
 // =====================================================
-// 5. TEST CONNECTION
+// 5. MEMORY & HISTORY ENDPOINTS (Phase 4)
+// =====================================================
+exports.getSessions = async (req, res) => {
+    try {
+        const userId = req.user ? req.user.id : null;
+        if (!userId) {
+            return res.json({ success: true, data: [] }); // Tạm thời trả rỗng nếu ko có user
+        }
+        
+        const aiBrain = require('../ai-brain');
+        const sessions = await aiBrain.memory.getUserSessions(userId);
+        res.json({ success: true, data: sessions });
+    } catch (error) {
+        console.error('❌ Get Sessions Error:', error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+exports.getSessionHistory = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (!id) return res.status(400).json({ success: false, message: 'Thiếu session_id' });
+
+        const aiBrain = require('../ai-brain');
+        const history = await aiBrain.memory.loadSessionHistory(id, 50); // Load 50 tin nhắn
+        res.json({ success: true, data: history });
+    } catch (error) {
+        console.error('❌ Get History Error:', error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// =====================================================
+// 6. TEST CONNECTION
 // =====================================================
 exports.testConnection = async (req, res) => {
     try {

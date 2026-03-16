@@ -175,15 +175,12 @@
     window.fetch = async function (...args) {
         const response = await originalFetch.apply(this, args);
 
-        // Clone response to read body without consuming it
         const responseClone = response.clone();
 
-        // Check for SESSION_EXPIRED on 401 responses
         if (response.status === 401) {
             try {
                 const data = await responseClone.json();
                 if (data.code === 'SESSION_EXPIRED') {
-                    // Show message and redirect to login
                     alert('Phiên đăng nhập đã hết hạn hoặc đã bị đăng xuất từ thiết bị khác.');
                     window.AuthHelper.clearAuth();
                     window.location.href = 'login.html';
@@ -196,5 +193,14 @@
 
         return response;
     };
+
+    // Load AI Brain Chat Widget for authenticated users
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.AuthHelper.isAuthenticated()) {
+            const aiScript = document.createElement('script');
+            aiScript.src = 'js/ai-chat.js';
+            document.head.appendChild(aiScript);
+        }
+    });
 
 })();

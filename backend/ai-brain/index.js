@@ -14,6 +14,9 @@
 
 const { SCHEMA_DICTIONARY, getSchemaContext, getTablesForCategory } = require('./schema-dictionary');
 const { DOMAIN_KNOWLEDGE, BUSINESS_RULES, TERMINOLOGY, getKnowledgeContext, getBusinessRulesContext } = require('./knowledge-base');
+const { DATA_TOOLS, getToolDescriptions, autoExecuteTools, executeTool } = require('./data-tools');
+const aiRouter = require('./ai-router');
+const memory = require('./memory');
 
 /**
  * Xây dựng System Prompt thông minh dựa trên context
@@ -100,6 +103,20 @@ module.exports = {
     SCHEMA_DICTIONARY,
     getSchemaContext,
     getTablesForCategory,
+
+    // Layer 4: Data Tools
+    DATA_TOOLS,
+    getToolDescriptions,
+    autoExecuteTools,
+    executeTool,
+
+    // Layer 5: AI Router
+    classifyIntent: aiRouter.classifyIntent,
+    processMessage: aiRouter.processMessage,
+    INTENTS: aiRouter.INTENTS,
+
+    // Layer 6: Memory & Analytics
+    memory,
 
     // Smart functions
     buildSmartPrompt,

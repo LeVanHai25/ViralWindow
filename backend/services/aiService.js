@@ -214,9 +214,20 @@ async function chat(message, history = [], dataContext = null) {
 
     const smartPrompt = aiBrain.buildSmartPrompt(category, message);
 
+    // Phase 2: Auto-execute data tools to get real data from DB
+    let toolData = null;
+    try {
+        toolData = await aiBrain.autoExecuteTools(message);
+        console.log(`🧠 AI Brain: Auto-executed ${toolData._tools_used?.length || 0} data tools for chat`);
+    } catch (err) {
+        console.warn('⚠️ AI Brain autoExecuteTools failed:', err.message);
+    }
+
     let contextBlock = '';
-    if (dataContext) {
-        contextBlock = `\n\nDỮ LIỆU LIÊN QUAN TỪ HỆ THỐNG:\n${JSON.stringify(dataContext, null, 2)}`;
+    // Combine existing dataContext with tool data
+    const mergedData = { ...dataContext, ...toolData };
+    if (Object.keys(mergedData).length > 0) {
+        contextBlock = `\n\nDỮ LIỆU THỰC TẾ TỪ DATABASE (được truy vấn tự động bởi AI Brain):\n${JSON.stringify(mergedData, null, 2)}`;
     }
 
     const historyText = history.map(h => 
@@ -230,7 +241,7 @@ ${historyText ? `LỊCH SỬ HỘI THOẠI:\n${historyText}\n` : ''}
 Người dùng: ${message}
 
 Hãy trả lời bằng HTML đẹp. Dùng <b>, <ul><li>, <span style="color:...">, <br> để format.
-Nếu người dùng hỏi về dữ liệu hệ thống, hãy phân tích dữ liệu được cung cấp.
+Nếu người dùng hỏi về dữ liệu hệ thống, hãy phân tích DỮ LIỆU THỰC TẾ ở trên (đã lấy trực tiếp từ database).
 Nếu người dùng hỏi về thuật ngữ ngành nhôm kính, sử dụng tri thức chuyên ngành.
 Nếu hỏi hướng dẫn thao tác, hãy mô tả từng bước chi tiết.
 Giữ câu trả lời ngắn gọn, dưới 300 từ.`;
