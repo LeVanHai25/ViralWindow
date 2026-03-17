@@ -103,6 +103,14 @@ class EnterpriseSidebar {
             }
         });
 
+        // Auto-load Socket.IO client globally if not present
+        if (!window.io && !document.querySelector('script[src*="socket.io.min.js"]')) {
+            const socketScript = document.createElement('script');
+            socketScript.src = 'https://cdn.socket.io/4.7.4/socket.io.min.js';
+            socketScript.async = false;
+            document.head.appendChild(socketScript);
+        }
+
         // Auto-load chat menu on ALL pages (TIN NHẮN + unread badge)
         if (!document.querySelector('script[src="js/sidebar-chat-menu.js"]')) {
             const chatMenuScript = document.createElement('script');

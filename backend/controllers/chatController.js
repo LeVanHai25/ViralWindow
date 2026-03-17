@@ -83,7 +83,7 @@ exports.updateConversation = async (req, res) => {
 // DELETE /api/chat/conversations/:id
 exports.deleteConversation = async (req, res) => {
     try {
-        await chatService.deleteConversation(req.params.id);
+        await chatService.deleteConversation(req.params.id, req.user.id);
         logChat('delete_conversation', { userId: req.user.id, conversationId: req.params.id });
         res.json({ success: true, message: 'Đã xoá cuộc trò chuyện' });
     } catch (err) {
@@ -154,7 +154,7 @@ exports.getMessages = async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 20;
         const before = req.query.before ? parseInt(req.query.before) : null;
-        const messages = await chatService.getMessages(req.params.id, limit, before);
+        const messages = await chatService.getMessages(req.params.id, req.user.id, limit, before);
 
         // Batch load reactions for all messages
         const msgIds = messages.map(m => m.id);
@@ -260,7 +260,7 @@ exports.getReactions = async (req, res) => {
 // GET /api/chat/conversations/:id/pinned
 exports.getPinnedMessages = async (req, res) => {
     try {
-        const pinned = await chatService.getPinnedMessages(req.params.id);
+        const pinned = await chatService.getPinnedMessages(req.params.id, req.user.id);
         res.json({ success: true, data: pinned });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Lỗi tải tin ghim' });
@@ -332,7 +332,7 @@ exports.getUsers = async (req, res) => {
 exports.getSharedMedia = async (req, res) => {
     try {
         const type = req.query.type || 'image'; // image | file | link
-        const media = await chatService.getSharedMedia(req.params.id, type);
+        const media = await chatService.getSharedMedia(req.params.id, req.user.id, type);
         res.json({ success: true, data: media });
     } catch (err) {
         console.error('Chat getSharedMedia error:', err);
@@ -343,7 +343,7 @@ exports.getSharedMedia = async (req, res) => {
 // DELETE /api/chat/conversations/:id/messages (clear all history)
 exports.clearHistory = async (req, res) => {
     try {
-        await chatService.clearHistory(req.params.id);
+        await chatService.clearHistory(req.params.id, req.user.id);
         logChat('clear_history', { userId: req.user.id, conversationId: req.params.id });
         res.json({ success: true, message: 'Đã xoá lịch sử trò chuyện' });
     } catch (err) {

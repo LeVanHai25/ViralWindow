@@ -11,16 +11,18 @@ const db = require('../config/db');
 
 async function getConversationsByUser(userId) {
     const [rows] = await db.query(`
-        SELECT c.*, cm.role AS my_role,
+        SELECT c.*, cm.role AS my_role, cm.cleared_at,
             (SELECT COUNT(*) FROM conversation_members WHERE conversation_id = c.id) AS member_count,
             (SELECT COUNT(*) FROM messages m
                 WHERE m.conversation_id = c.id
+                AND (cm.cleared_at IS NULL OR m.created_at > cm.cleared_at)
                 AND m.id > COALESCE((SELECT MAX(mr.message_id) FROM message_reads mr
                     JOIN messages m2 ON mr.message_id = m2.id
                     WHERE m2.conversation_id = c.id AND mr.user_id = ?), 0)
             ) AS unread_count
         FROM conversations c
         JOIN conversation_members cm ON c.id = cm.conversation_id AND cm.user_id = ?
+        WHERE (c.type = 'group' OR cm.cleared_at IS NULL OR (c.last_message_at IS NOT NULL AND c.last_message_at > cm.cleared_at))
         ORDER BY c.last_message_at DESC, c.created_at DESC
     `, [userId, userId]);
 
@@ -111,8 +113,13 @@ async function updateConversation(convId, data) {
     await db.query(`UPDATE conversations SET ${fields.join(', ')} WHERE id = ?`, values);
 }
 
-async function deleteConversation(convId) {
-    await db.query('DELETE FROM conversations WHERE id = ?', [convId]);
+async function deleteConversation(convId, userId) {
+    const [[conv]] = await db.query('SELECT type FROM conversations WHERE id = ?', [convId]);
+    if (conv && conv.type === 'private' && userId) {
+        await db.query('UPDATE conversation_members SET cleared_at = NOW() WHERE conversation_id = ? AND user_id = ?', [convId, userId]);
+    } else {
+        await db.query('DELETE FROM conversations WHERE id = ?', [convId]);
+    }
 }
 
 async function getConversationMembers(convId) {
@@ -154,7 +161,7 @@ async function getMemberRole(convId, userId) {
 // MESSAGES
 // =====================================================
 
-async function getMessages(convId, limit = 20, beforeId = null) {
+async function getMessages(convId, userId, limit = 20, beforeId = null) {
     let sql = `
         SELECT m.*, u.full_name AS sender_name, u.avatar_url AS sender_avatar,
             rm.content AS reply_content, ru.full_name AS reply_sender_name
@@ -162,9 +169,11 @@ async function getMessages(convId, limit = 20, beforeId = null) {
         JOIN users u ON m.sender_id = u.id
         LEFT JOIN messages rm ON m.reply_to_id = rm.id
         LEFT JOIN users ru ON rm.sender_id = ru.id
+        JOIN conversation_members cm ON m.conversation_id = cm.conversation_id AND cm.user_id = ?
         WHERE m.conversation_id = ? AND m.is_deleted = 0
+        AND (cm.cleared_at IS NULL OR m.created_at > cm.cleared_at)
     `;
-    const params = [convId];
+    const params = [userId, convId];
 
     if (beforeId) {
         sql += ' AND m.id < ?';
@@ -239,6 +248,7 @@ async function searchMessages(userId, query, limit = 20) {
         JOIN conversations c ON m.conversation_id = c.id
         JOIN conversation_members cm ON c.id = cm.conversation_id AND cm.user_id = ?
         WHERE m.content LIKE ? AND m.is_deleted = 0
+        AND (cm.cleared_at IS NULL OR m.created_at > cm.cleared_at)
         ORDER BY m.created_at DESC LIMIT ?
     `, [userId, `%${query}%`, limit]);
     return rows;
@@ -281,7 +291,7 @@ async function getAllUsers() {
 // SHARED MEDIA
 // =====================================================
 
-async function getSharedMedia(convId, type = 'image', limit = 50) {
+async function getSharedMedia(convId, userId, type = 'image', limit = 50) {
     let condition = '';
     if (type === 'image') {
         condition = "AND m.type = 'image'";
@@ -296,22 +306,29 @@ async function getSharedMedia(convId, type = 'image', limit = 50) {
                m.created_at, u.full_name AS sender_name
         FROM messages m
         JOIN users u ON m.sender_id = u.id
+        JOIN conversation_members cm ON m.conversation_id = cm.conversation_id AND cm.user_id = ?
         WHERE m.conversation_id = ? AND m.is_deleted = 0 ${condition}
+        AND (cm.cleared_at IS NULL OR m.created_at > cm.cleared_at)
         ORDER BY m.created_at DESC
         LIMIT ?
-    `, [convId, limit]);
+    `, [userId, convId, limit]);
     return rows;
 }
 
-async function clearHistory(convId) {
-    await db.query(
-        'UPDATE messages SET is_deleted = 1, content = NULL WHERE conversation_id = ?',
-        [convId]
-    );
-    await db.query(
-        'UPDATE conversations SET last_message_id = NULL, last_message_at = NULL WHERE id = ?',
-        [convId]
-    );
+async function clearHistory(convId, userId) {
+    const [[conv]] = await db.query('SELECT type FROM conversations WHERE id = ?', [convId]);
+    if (conv && conv.type === 'private' && userId) {
+        await db.query('UPDATE conversation_members SET cleared_at = NOW() WHERE conversation_id = ? AND user_id = ?', [convId, userId]);
+    } else {
+        await db.query(
+            'UPDATE messages SET is_deleted = 1, content = NULL WHERE conversation_id = ?',
+            [convId]
+        );
+        await db.query(
+            'UPDATE conversations SET last_message_id = NULL, last_message_at = NULL WHERE id = ?',
+            [convId]
+        );
+    }
 }
 
 // =====================================================
@@ -420,15 +437,17 @@ async function getMessageReactionsBatch(messageIds) {
 // PINNED MESSAGES
 // =====================================================
 
-async function getPinnedMessages(convId) {
+async function getPinnedMessages(convId, userId) {
     const [rows] = await db.query(`
         SELECT m.id, m.content, m.type, m.file_url, m.file_name, m.created_at,
                u.full_name AS sender_name
         FROM messages m
         JOIN users u ON m.sender_id = u.id
+        JOIN conversation_members cm ON m.conversation_id = cm.conversation_id AND cm.user_id = ?
         WHERE m.conversation_id = ? AND m.is_pinned = 1 AND m.is_deleted = 0
+        AND (cm.cleared_at IS NULL OR m.created_at > cm.cleared_at)
         ORDER BY m.created_at DESC
-    `, [convId]);
+    `, [userId, convId]);
     return rows;
 }
 

@@ -20,7 +20,13 @@ function escHtml(s){if(!s)return '';const d=document.createElement('div');d.text
 function linkify(t,c){c=c||'#6366f1';return t.replace(/(https?:\/\/[^\s<]+)/g,`<a href="$1" target="_blank" style="color:${c};text-decoration:underline;word-break:break-all;" onclick="event.stopPropagation()">$1</a>`);}
 function formatTime(ds){if(!ds)return '';const d=new Date(ds),now=new Date(),diff=now-d;if(diff<60000)return 'Vừa xong';if(diff<3600000)return Math.floor(diff/60000)+' phút';if(diff<86400000)return d.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});if(diff<604800000){return['CN','T2','T3','T4','T5','T6','T7'][d.getDay()];}return d.toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'});}
 function formatLastSeen(ds){if(!ds)return 'Không rõ';const d=new Date(ds),now=new Date(),diff=now-d;if(diff<60000)return 'vừa xong';if(diff<3600000)return Math.floor(diff/60000)+' phút trước';if(diff<86400000)return Math.floor(diff/3600000)+' giờ trước';return d.toLocaleDateString('vi-VN');}
-function playNotificationSound(){try{const c=new(window.AudioContext||window.webkitAudioContext)();const o=c.createOscillator();const g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=800;g.gain.value=0.1;o.start();o.stop(c.currentTime+0.1);}catch(e){}}
+function playNotificationSound(){
+    if (window.playChatNotification) {
+        window.playChatNotification();
+    } else {
+        try{const c=new(window.AudioContext||window.webkitAudioContext)();const o=c.createOscillator();const g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=800;g.gain.value=0.1;o.start();o.stop(c.currentTime+0.1);}catch(e){}
+    }
+}
 
 // INIT
 function initChat(){
@@ -141,7 +147,30 @@ function renderMessage(msg){
     </div>`;
 }
 
-function renderMentions(text){return text.replace(/@(\S+)/g,'<span style="background:#dbeafe;color:#2563eb;padding:0 3px;border-radius:4px;font-weight:600;cursor:pointer;">@$1</span>');}
+function renderMentions(text) {
+    if (!text) return '';
+    let result = text;
+    // 1. Dò tìm tên đầy đủ của nhân sự trong mảng allUsers có sẵn
+    if (allUsers && allUsers.length > 0) {
+        // Sắp xếp tên dài xuống trước vòng lặp để tránh việc "Hoa" nuốt mất "Hoa Kế Toán"
+        const sortedUsers = [...allUsers]
+            .filter(u => u.full_name)
+            .sort((a, b) => b.full_name.length - a.full_name.length);
+
+        sortedUsers.forEach(u => {
+            // Escape các ký tự đặc biệt trong Tên để Regex không hiểu lầm
+            const safeName = u.full_name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            // Tìm chính xác ký tự @ + Tên Mở Rộng
+            const regex = new RegExp(`@${safeName}(?=[\\s\\.,!\\?"'\n]|$)`, 'g');
+            result = result.replace(regex, `<span style="background:#dbeafe;color:#2563eb;padding:0 3px;border-radius:4px;font-weight:600;cursor:pointer;">@${u.full_name}</span>`);
+        });
+    }
+
+    // 2. Fallback cho các từ khóa một từ như @admin, @all (chỉ match những chữ chưa bị bọc thẻ span)
+    // Lưu ý: Regex này lấy phần "@text" chưa nằm trong thẻ <span>
+    result = result.replace(/(^|[^>])@(\w+)/g, '$1<span style="background:#dbeafe;color:#2563eb;padding:0 3px;border-radius:4px;font-weight:600;cursor:pointer;">@$2</span>');
+    return result;
+}
 
 function renderReactionBadges(reactions,msgId){
     if(!reactions||!reactions.length)return '';
@@ -307,7 +336,7 @@ const conv=currentConversation,isAdmin=conv.my_role==='owner'||conv.my_role==='a
 const avSrc=conv.display_avatar?resolveFileUrl(conv.display_avatar):'';
 const avHtml=avSrc?`<img src="${avSrc}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;">`:`<div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:white;">${(conv.display_name||'?')[0].toUpperCase()}</div>`;
 const ov=document.createElement('div');ov.className='chat-modal-overlay';ov.id='infoPanelOverlay';ov.onclick=(e)=>{if(e.target===ov)ov.remove();};
-ov.innerHTML=`<div class="chat-modal" style="width:460px;max-height:90vh;overflow-y:auto;"><div style="text-align:center;margin-bottom:20px;">${avHtml}<h3 style="margin:12px 0 4px;font-size:18px;">${escHtml(conv.display_name||'Chat')}</h3><p style="color:#94a3b8;font-size:13px;margin:0;">${conv.type==='group'?`Nhóm · ${members.length} thành viên`:'Tin nhắn riêng'}</p></div><div style="display:flex;border-bottom:2px solid #e2e8f0;margin-bottom:16px;" id="infoTabs"><button type="button" class="info-tab active" onclick="switchInfoTab('members',this)">👥 Thành viên</button><button type="button" class="info-tab" onclick="switchInfoTab('images',this)">🖼️ Ảnh</button><button type="button" class="info-tab" onclick="switchInfoTab('files',this)">📎 File</button><button type="button" class="info-tab" onclick="switchInfoTab('links',this)">🔗 Link</button><button type="button" class="info-tab" onclick="switchInfoTab('pinned',this)">📌 Ghim</button></div><div id="infoTabContent" style="min-height:200px;">${renderMembersTab(members,isAdmin,isOwner)}</div><div style="margin-top:20px;padding-top:16px;border-top:2px solid #e2e8f0;"><button type="button" onclick="confirmClearHistory()" style="width:100%;padding:10px;border:1px solid #fca5a5;border-radius:10px;background:#fff5f5;color:#dc2626;font-weight:600;cursor:pointer;font-size:13px;margin-bottom:8px;">🗑️ Xóa lịch sử</button>${isOwner||!conv.type==='group'?`<button type="button" onclick="confirmDeleteConversation()" style="width:100%;padding:10px;border:1px solid #fca5a5;border-radius:10px;background:#dc2626;color:white;font-weight:600;cursor:pointer;font-size:13px;">❌ Xóa cuộc trò chuyện</button>`:''}</div><div class="chat-modal-btns" style="margin-top:16px;"><button type="button" class="btn-cancel" onclick="this.closest('.chat-modal-overlay').remove()">Đóng</button></div></div>`;
+ov.innerHTML=`<div class="chat-modal" style="width:460px;max-height:90vh;overflow-y:auto;"><div style="text-align:center;margin-bottom:20px;">${avHtml}<h3 style="margin:12px 0 4px;font-size:18px;">${escHtml(conv.display_name||'Chat')}</h3><p style="color:#94a3b8;font-size:13px;margin:0;">${conv.type==='group'?`Nhóm · ${members.length} thành viên`:'Tin nhắn riêng'}</p></div><div style="display:flex;border-bottom:2px solid #e2e8f0;margin-bottom:16px;" id="infoTabs"><button type="button" class="info-tab active" onclick="switchInfoTab('members',this)">👥 Thành viên</button><button type="button" class="info-tab" onclick="switchInfoTab('images',this)">🖼️ Ảnh</button><button type="button" class="info-tab" onclick="switchInfoTab('files',this)">📎 File</button><button type="button" class="info-tab" onclick="switchInfoTab('links',this)">🔗 Link</button><button type="button" class="info-tab" onclick="switchInfoTab('pinned',this)">📌 Ghim</button></div><div id="infoTabContent" style="min-height:200px;">${renderMembersTab(members,isAdmin,isOwner)}</div><div style="margin-top:20px;padding-top:16px;border-top:2px solid #e2e8f0;"><button type="button" onclick="confirmClearHistory()" style="width:100%;padding:10px;border:1px solid #fca5a5;border-radius:10px;background:#fff5f5;color:#dc2626;font-weight:600;cursor:pointer;font-size:13px;margin-bottom:8px;">🗑️ Xóa lịch sử</button>${isOwner||conv.type==='private'?`<button type="button" onclick="confirmDeleteConversation()" style="width:100%;padding:10px;border:1px solid #fca5a5;border-radius:10px;background:#dc2626;color:white;font-weight:600;cursor:pointer;font-size:13px;">❌ Xóa cuộc trò chuyện</button>`:''}</div><div class="chat-modal-btns" style="margin-top:16px;"><button type="button" class="btn-cancel" onclick="this.closest('.chat-modal-overlay').remove()">Đóng</button></div></div>`;
 document.body.appendChild(ov);}
 
 function renderMembersTab(members,isAdmin,isOwner){const rl={owner:'👑 Chủ nhóm',admin:'🛡️ Quản trị',member:'👤 Thành viên'};return `<div style="max-height:300px;overflow-y:auto;">${members.map(m=>{const mAv=m.avatar_url?`<img src="${resolveFileUrl(m.avatar_url)}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">`:`<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;">${(m.full_name||'?')[0].toUpperCase()}</div>`;const onSt=m.online_status==='online'?'<span style="color:#22c55e;font-size:10px;margin-left:4px;">● Online</span>':(m.last_seen?`<span style="color:#94a3b8;font-size:10px;margin-left:4px;">${formatLastSeen(m.last_seen)}</span>`:'');const rmBtn=(isAdmin||isOwner)&&m.user_id!==currentUserId&&m.role!=='owner'?`<button type="button" onclick="confirmRemoveMember(${m.user_id},'${escHtml(m.full_name).replace(/'/g,"\\'")}')" style="border:none;background:none;color:#ef4444;cursor:pointer;font-size:11px;padding:4px 8px;border-radius:6px;">Xóa</button>`:'';const you=m.user_id===currentUserId?'<span style="font-size:10px;color:#6366f1;margin-left:4px;">Bạn</span>':'';return `<div style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background=''">${mAv}<div style="flex:1;"><div style="font-size:14px;font-weight:600;">${escHtml(m.full_name)}${you}${onSt}</div><div style="font-size:11px;color:#94a3b8;">${rl[m.role]||m.role}</div></div>${rmBtn}</div>`;}).join('')}</div>${(isAdmin||isOwner)?`<div style="margin-top:12px;"><button type="button" onclick="showAddMemberModal()" style="width:100%;padding:10px;border:1px dashed #c7d2fe;border-radius:10px;background:none;color:#6366f1;font-weight:600;cursor:pointer;font-size:13px;">+ Thêm thành viên</button></div>`:''}`;}
@@ -324,13 +353,25 @@ else{const rx=/(https?:\/\/[^\s<]+)/g;let h='';data.data.forEach(m=>{(m.content|
 // MEMBER MANAGEMENT
 async function showAddMemberModal(){document.getElementById('infoPanelOverlay')?.remove();const users=allUsers.filter(u=>u.id!==currentUserId);const ov=document.createElement('div');ov.className='chat-modal-overlay';ov.onclick=(e)=>{if(e.target===ov)ov.remove();};ov.innerHTML=`<div class="chat-modal"><h3>➕ Thêm thành viên</h3><div class="chat-modal-user-list">${users.map(u=>`<label class="chat-modal-user-item"><input type="checkbox" value="${u.id}" name="add_member"><div class="chat-conv-avatar" style="width:32px;height:32px;font-size:12px;">${u.avatar_url?`<img src="${resolveFileUrl(u.avatar_url)}">`:(u.full_name||'?')[0].toUpperCase()}</div><span style="font-size:14px;">${escHtml(u.full_name)}</span></label>`).join('')}</div><div class="chat-modal-btns"><button type="button" class="btn-cancel" onclick="this.closest('.chat-modal-overlay').remove()">Huỷ</button><button type="button" class="btn-primary" onclick="addMembers()">Thêm</button></div></div>`;document.body.appendChild(ov);}
 async function addMembers(){const ck=Array.from(document.querySelectorAll('input[name="add_member"]:checked')).map(i=>parseInt(i.value));if(!ck.length){alert('Chọn ít nhất 1 người');return;}const token=sessionStorage.getItem('token');let n=0;for(const uid of ck){try{await fetch(`${API_BASE}/chat/conversations/${currentConversationId}/members`,{method:'POST',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({user_id:uid})});n++;}catch(e){}}document.querySelector('.chat-modal-overlay')?.remove();if(n>0){alert(`Đã thêm ${n} thành viên`);loadConversations();}}
-function confirmRemoveMember(uid,name){if(!confirm(`Xóa "${name}" khỏi nhóm?`))return;removeMember(uid);}
+async function confirmRemoveMember(uid,name){
+    const confirmed = await confirm(`Xóa "${name}" khỏi nhóm?`);
+    if(!confirmed) return;
+    removeMember(uid);
+}
 async function removeMember(uid){try{const token=sessionStorage.getItem('token');const res=await fetch(`${API_BASE}/chat/conversations/${currentConversationId}/members/${uid}`,{method:'DELETE',headers:{'Authorization':`Bearer ${token}`}});const data=await res.json();if(data.success){alert('Đã xóa');document.getElementById('infoPanelOverlay')?.remove();loadConversations();showInfoPanel();}else alert(data.message);}catch(e){alert('Lỗi');}}
 
 // DELETE
-function confirmClearHistory(){if(!confirm('⚠️ Xóa toàn bộ lịch sử?\nKhông thể hoàn tác!'))return;clearChatHistory();}
+async function confirmClearHistory(){
+    const confirmed = await confirm('⚠️ Xóa toàn bộ lịch sử?\nKhông thể hoàn tác!');
+    if(!confirmed) return;
+    clearChatHistory();
+}
 async function clearChatHistory(){try{const token=sessionStorage.getItem('token');const res=await fetch(`${API_BASE}/chat/conversations/${currentConversationId}/messages`,{method:'DELETE',headers:{'Authorization':`Bearer ${token}`}});const data=await res.json();if(data.success){alert('✅ Đã xóa lịch sử');document.getElementById('infoPanelOverlay')?.remove();document.getElementById('messagesArea').innerHTML='<div style="text-align:center;padding:40px;color:#94a3b8;"><p>Lịch sử đã xóa</p></div>';loadConversations();}else alert(data.message);}catch(e){alert('Lỗi');}}
-function confirmDeleteConversation(){if(!confirm('⚠️ Xóa vĩnh viễn cuộc trò chuyện?\nKhông thể hoàn tác!'))return;deleteConversation();}
+async function confirmDeleteConversation(){
+    const confirmed = await confirm('⚠️ Xóa vĩnh viễn cuộc trò chuyện?\nKhông thể hoàn tác!');
+    if(!confirmed) return;
+    deleteConversation();
+}
 async function deleteConversation(){try{const token=sessionStorage.getItem('token');const res=await fetch(`${API_BASE}/chat/conversations/${currentConversationId}`,{method:'DELETE',headers:{'Authorization':`Bearer ${token}`}});const data=await res.json();if(data.success){alert('✅ Đã xóa');document.getElementById('infoPanelOverlay')?.remove();currentConversationId=null;currentConversation=null;document.getElementById('chatActiveWindow').style.display='none';document.getElementById('chatEmptyState').style.display='flex';loadConversations();}else alert(data.message);}catch(e){alert('Lỗi');}}
 
 // NEW CHAT

@@ -1,20 +1,54 @@
 /**
  * =====================================================
- * SIDEBAR CHAT MENU — Auto-inject TIN NHẮN + TRỢ LÝ AI
+ * SIDEBAR CHAT MENU — Real-time Notifications & Sound
  * =====================================================
- * Include this script on ALL pages to add chat menu + unread badge.
- * Script auto-detects and injects missing menu items before QUẢN TRỊ.
+ * Features: Socket.IO integration, Badge updates, Sound alerts
  */
 (function() {
     'use strict';
 
     const API_BASE = window.API_BASE || 'http://127.0.0.1:3001/api';
+    const SERVER_BASE = API_BASE.replace('/api', '');
+    let socket = null;
 
-    // Wait for DOM
-    document.addEventListener('DOMContentLoaded', function() {
+    // Pulse/Notification Sound logic
+    function playNotificationSound() {
+        try {
+            const context = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = context.createOscillator();
+            const gain = context.createGain();
+            oscillator.connect(gain);
+            gain.connect(context.destination);
+            
+            // Messenger-like "Ting" frequency sequence
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(880, context.currentTime); // A5
+            oscillator.frequency.exponentialRampToValueAtTime(1320, context.currentTime + 0.1); // E6
+            
+            gain.gain.setValueAtTime(0.1, context.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.5);
+            
+            oscillator.start();
+            oscillator.stop(context.currentTime + 0.5);
+        } catch (e) {
+            console.warn('[ChatBadge] Could not play sound:', e);
+        }
+    }
+
+    function initApp() {
         injectMenuItems();
-        startUnreadPolling();
-    });
+        updateUnreadBadge();
+        
+        // Wait a bit for Socket.IO script to be ready (injected by sidebar-enterprise.js)
+        setTimeout(initGlobalSocket, 1500);
+    }
+
+    // Since this script is dynamically injected, DOMContentLoaded may have already fired.
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+        initApp(); // Execute immediately if DOM is already ready
+    }
 
     function injectMenuItems() {
         const nav = document.querySelector('.sidebar-nav, .sidebar nav, nav');
@@ -23,22 +57,20 @@
         // Check if TIN NHẮN already exists
         const hasTinNhan = nav.innerHTML.includes('TIN NHẮN');
         if (hasTinNhan) {
-            // Just ensure badge element exists
-            if (!document.getElementById('sidebarMsgBadge')) {
-                const msgLink = nav.querySelector('a[href="messages.html"]');
-                if (msgLink) {
-                    const badge = document.createElement('span');
-                    badge.id = 'sidebarMsgBadge';
-                    badge.className = 'hidden';
-                    badge.style.cssText = 'background:#ef4444;color:white;font-size:9px;padding:2px 6px;border-radius:10px;font-weight:700;margin-left:auto;';
-                    msgLink.appendChild(badge);
-                }
+            // Just ensure badge element exists and has ID
+            const msgLink = nav.querySelector('a[href="messages.html"]');
+            if (msgLink && !document.getElementById('sidebarMsgBadge')) {
+                const badge = document.createElement('span');
+                badge.id = 'sidebarMsgBadge';
+                badge.className = 'hidden';
+                badge.style.cssText = 'background:#ef4444;color:white;font-size:9px;padding:2px 6px;border-radius:10px;font-weight:700;margin-left:auto;';
+                msgLink.appendChild(badge);
             }
             return;
         }
 
         // Find QUẢN TRỊ nav-item to insert before it
-        const navItems = nav.querySelectorAll('.nav-item');
+        const navItems = nav.querySelectorAll('.nav-item, a.nav-item');
         let quanTriItem = null;
         navItems.forEach(item => {
             if (item.textContent.includes('QUẢN TRỊ') && !quanTriItem) {
@@ -48,25 +80,9 @@
 
         if (!quanTriItem) return;
 
-        // Check if TRỢ LÝ AI exists
-        const hasAI = nav.innerHTML.includes('TRỢ LÝ AI');
-
-        // Build HTML to inject
-        let html = '';
-
-        if (!hasAI) {
-            html += `
-            <!-- TRỢ LÝ AI (auto-injected) -->
-            <div class="nav-item has-submenu"><div class="flex items-center gap-3 flex-1"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg><span>TRỢ LÝ AI</span><span style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;font-size:9px;padding:2px 6px;border-radius:10px;font-weight:700;">AI</span></div><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 transition-transform duration-200 arrow-icon"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg></div>
-            <div class="submenu">
-                <a href="reports-ai.html" class="submenu-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg><span>Báo cáo AI</span></a>
-                <a href="javascript:void(0)" class="submenu-item" onclick="if(window.openAISearch)window.openAISearch();else alert('Nhấn Ctrl+K');"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg><span>Tìm kiếm AI</span><span style="font-size:10px;color:#94a3b8;margin-left:auto;">Ctrl+K</span></a>
-            </div>`;
-        }
-
         // TIN NHẮN link
         const isMessagesPage = window.location.pathname.includes('messages.html');
-        html += `
+        const msgHtml = `
             <!-- TIN NHẮN (auto-injected) -->
             <a href="messages.html" class="nav-item" ${isMessagesPage ? 'style="background:rgba(255,255,255,0.1);"' : ''}>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
@@ -75,33 +91,51 @@
             </a>`;
 
         // Insert before QUẢN TRỊ
-        quanTriItem.insertAdjacentHTML('beforebegin', html);
-
-        // Re-init submenu toggles for injected items
-        if (window.initSidebarSubmenus) {
-            window.initSidebarSubmenus();
-        } else {
-            // Manual submenu toggle for injected items
-            const injectedSubmenus = quanTriItem.parentNode.querySelectorAll('.has-submenu');
-            injectedSubmenus.forEach(item => {
-                if (item._listenerAdded) return;
-                item._listenerAdded = true;
-                item.addEventListener('click', function() {
-                    const submenu = this.nextElementSibling;
-                    if (submenu && submenu.classList.contains('submenu')) {
-                        submenu.classList.toggle('active');
-                        const arrow = this.querySelector('.arrow-icon');
-                        if (arrow) arrow.style.transform = submenu.classList.contains('active') ? 'rotate(180deg)' : '';
-                    }
-                });
-            });
-        }
+        quanTriItem.insertAdjacentHTML('beforebegin', msgHtml);
     }
 
-    // Poll for unread messages every 30 seconds
-    function startUnreadPolling() {
-        updateUnreadBadge();
-        setInterval(updateUnreadBadge, 30000);
+    async function initGlobalSocket() {
+        // Skip if we're on the messages page (chat-client.js handles its own socket)
+        if (window.location.pathname.includes('messages.html')) {
+            console.log('[ChatBadge] On messages.html, skipping secondary socket.');
+            return;
+        }
+
+        if (typeof io === 'undefined') {
+            console.warn('[ChatBadge] Socket.IO client not found yet. Retrying...');
+            setTimeout(initGlobalSocket, 2000);
+            return;
+        }
+
+        const token = sessionStorage.getItem('token');
+        if (!token) return;
+
+        try {
+            socket = io(SERVER_BASE, { 
+                auth: { token },
+                reconnectionDelay: 5000,
+                reconnectionAttempts: 10
+            });
+
+            socket.on('connect', () => console.log('[ChatBadge] Real-time monitoring active.'));
+            
+            socket.on('new_message', (msg) => {
+                console.log('[ChatBadge] New message received via socket.');
+                // Update badge
+                updateUnreadBadge();
+                // Play notification sound
+                playNotificationSound();
+            });
+
+            socket.on('mention_notification', (data) => {
+                console.log('[ChatBadge] Mention received via socket.');
+                updateUnreadBadge();
+                playNotificationSound();
+            });
+
+        } catch (e) {
+            console.error('[ChatBadge] Socket init error:', e);
+        }
     }
 
     async function updateUnreadBadge() {
@@ -115,24 +149,41 @@
             const data = await res.json();
             if (!data.success) return;
 
-            const totalUnread = (data.data || []).reduce((s, c) => s + (c.unread_count || 0), 0);
+            // Ensure we strictly sum integers in case MySQL returns BigInt strings
+            let totalUnread = 0;
+            (data.data || []).forEach(c => {
+                totalUnread += parseInt(c.unread_count || 0, 10);
+            });
+
             const badge = document.getElementById('sidebarMsgBadge');
+            
             if (badge) {
                 if (totalUnread > 0) {
                     badge.textContent = totalUnread > 99 ? '99+' : totalUnread;
                     badge.classList.remove('hidden');
+                    // Force display to override any flex/hidden conflicts
+                    badge.style.display = 'inline-block';
+                    badge.style.setProperty('display', 'inline-block', 'important');
+                    
+                    // Update document title optionally
+                    if (!window.location.pathname.includes('messages.html')) {
+                        const originalTitle = document.title.replace(/^\(\d+\+\) /, '').replace(/^\(\d+\) /, '');
+                        document.title = `(${totalUnread}) ${originalTitle}`;
+                    }
                 } else {
                     badge.classList.add('hidden');
+                    badge.style.display = 'none';
+                    badge.style.setProperty('display', 'none', 'important');
+                    document.title = document.title.replace(/^\(\d+\) /, '').replace(/^\(\d+\+\) /, '');
                 }
             }
-
-            // Also update page title if there are unreads
-            if (totalUnread > 0 && !window.location.pathname.includes('messages.html')) {
-                // Don't override title on messages page
-            }
-        } catch (e) { /* silent fail */ }
+        } catch (e) { console.error('[ChatBadge] Update failed:', e); }
     }
 
-    // Expose for external use
+    // Polling backup (less frequent now that we have socket)
+    setInterval(updateUnreadBadge, 120000); // 2 minutes backup
+
+    // Expose for external use (like chat-client.js)
     window.updateChatBadge = updateUnreadBadge;
+    window.playChatNotification = playNotificationSound;
 })();
