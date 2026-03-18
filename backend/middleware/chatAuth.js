@@ -42,8 +42,19 @@ async function isConversationOwner(req, res, next) {
     if (!userId || !convId) return res.status(401).json({ success: false, message: 'Không có quyền truy cập' });
 
     const role = await chatService.getMemberRole(convId, userId);
-    if (role !== 'owner') {
-        return res.status(403).json({ success: false, message: 'Chỉ chủ nhóm mới có quyền này' });
+    
+    // Check if it's a private chat
+    const db = require('../config/db');
+    const [[conv]] = await db.query('SELECT type FROM conversations WHERE id = ?', [convId]);
+    
+    if (conv && conv.type === 'private') {
+        if (!role) {
+            return res.status(403).json({ success: false, message: 'Bạn không phải thành viên cuộc trò chuyện này' });
+        }
+    } else {
+        if (role !== 'owner') {
+            return res.status(403).json({ success: false, message: 'Chỉ chủ nhóm mới có quyền này' });
+        }
     }
 
     req.memberRole = role;
