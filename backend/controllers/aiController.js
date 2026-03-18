@@ -381,7 +381,7 @@ exports.getDashboardInsights = async (req, res) => {
                 600 // Cache 10 phút
             );
         } catch (aiError) {
-            console.warn('⚠️ Gemini unavailable, using local fallback:', aiError.message);
+            console.warn('⚠️ AI Provider unavailable, using local fallback:', aiError.message);
             insights = generateLocalInsights(context);
         }
 
@@ -524,7 +524,7 @@ exports.chat = async (req, res) => {
                 tokensUsed = aiResponseResult.tokens || {};
             }
         } catch (aiError) {
-            console.warn('⚠️ Gemini unavailable, using local chat fallback');
+            console.warn('⚠️ AI Provider unavailable, using local chat fallback');
             const dataContext = routerResult.dataCollected || await aiDataCollector.getChatContext(message);
             reply = generateLocalChatReply(message, dataContext);
         }
@@ -609,7 +609,7 @@ exports.getReport = async (req, res) => {
                 1800 // Cache 30 phút cho Report
             );
         } catch (aiError) {
-            console.warn('⚠️ Gemini unavailable, using local report fallback:', aiError.message);
+            console.warn('⚠️ AI Provider unavailable, using local report fallback:', aiError.message);
             report = generateLocalReport(type, reportData, filters);
         }
 

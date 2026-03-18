@@ -9,9 +9,11 @@ if (!globalThis.fetch) {
 
 /**
  * =====================================================
- * AI SERVICE - Core Engine
+ * AI SERVICE - Multi-Provider Engine (Gemini + Groq)
  * =====================================================
- * Kết nối Google Gemini API cho ViralWindow
+ * Kết nối Google Gemini + Groq API cho ViralWindow
+ * - Ưu tiên Groq (Llama 3.3 70B - miễn phí, siêu nhanh)
+ * - Tự động Fallback sang Gemini nếu Groq lỗi
  * - generateInsights(): Tạo insights cho dashboard
  * - parseSearchQuery(): NLP → SQL params
  * - chat(): Chatbot conversation
@@ -24,87 +26,189 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const aiBrain = require('../ai-brain');
 
 // =====================================================
-// INIT GEMINI
+// INIT GEMINI (API KEY ROTATION) - Backup Provider
 // =====================================================
-const API_KEY = process.env.GEMINI_API_KEY;
-let genAI = null;
-let model = null;
+const rawKeys = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY || '';
+const API_KEYS = rawKeys.split(',').map(k => k.trim()).filter(k => k.length > 0);
 
-function getModel() {
-    if (!model) {
-        if (!API_KEY) {
-            throw new Error('GEMINI_API_KEY chưa được cấu hình trong .env');
-        }
-        genAI = new GoogleGenerativeAI(API_KEY);
-        // gemini-1.5-flash retired April 2025 → use gemini-2.0-flash
-        // Alternatives: gemini-2.5-flash, gemini-2.0-flash-lite
-        model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-    }
-    return model;
+if (API_KEYS.length === 0) {
+    console.warn('⚠️ GEMINI_API_KEYS chưa được cấu hình (Gemini sẽ không khả dụng)');
+}
+
+let currentKeyIndex = 0;
+
+function getModelForKey(keyIndex) {
+    if (API_KEYS.length === 0) throw new Error('GEMINI_API_KEYS chưa cấu hình');
+    const key = API_KEYS[keyIndex % API_KEYS.length];
+    const genAI = new GoogleGenerativeAI(key);
+    return genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 }
 
 // =====================================================
-// SYSTEM PROMPT - Powered by AI Brain
+// INIT GROQ (Primary Provider - Miễn phí, Siêu nhanh)
 // =====================================================
-// SYSTEM_PROMPT is now dynamically built by aiBrain.buildSmartPrompt()
-// See: backend/ai-brain/index.js
+const rawGroqKeys = process.env.GROQ_API_KEYS || process.env.GROQ_API_KEY || '';
+const GROQ_API_KEYS = rawGroqKeys.split(',').map(k => k.trim()).filter(k => k.length > 0);
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+// Danh sách model dự phòng — nếu model đầu bị Groq xoá, tự nhảy sang model tiếp
+const GROQ_MODELS = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768'];
+let currentGroqModel = GROQ_MODELS[0];
+
+let currentGroqIndex = 0;
+
+if (GROQ_API_KEYS.length > 0) {
+    console.log(`🚀 [AI Provider] GROQ đã sẵn sàng với ${GROQ_API_KEYS.length} keys → Ưu tiên sử dụng Groq (Llama 3 70B)`);
+} else {
+    console.warn('⚠️ GROQ_API_KEYS chưa cấu hình trong .env → Sẽ chỉ dùng Gemini hoặc Local Fallback');
+}
+
+/**
+ * Gọi Groq API (OpenAI-compatible REST API) bằng fetch thuần túy
+ * Có hỗ trợ Key Rotation tương tự Gemini
+ */
+async function callGroq(prompt, options = {}) {
+    if (GROQ_API_KEYS.length === 0) {
+        throw new Error('GROQ_API_KEYS chưa được cấu hình');
+    }
+
+    // Thử tối đa qua tất cả keys VÀ tất cả models
+    for (let modelAttempt = 0; modelAttempt < GROQ_MODELS.length; modelAttempt++) {
+        const modelName = GROQ_MODELS[modelAttempt] || currentGroqModel;
+
+        for (let keyAttempt = 0; keyAttempt < GROQ_API_KEYS.length; keyAttempt++) {
+            const key = GROQ_API_KEYS[currentGroqIndex % GROQ_API_KEYS.length];
+
+            try {
+                const response = await fetch(GROQ_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${key}`
+                    },
+                    body: JSON.stringify({
+                        model: modelName,
+                        messages: [{ role: 'user', content: prompt }],
+                        temperature: options.temperature || 0.7,
+                        max_tokens: options.maxTokens || 2048,
+                        stream: false
+                    })
+                });
+
+                // Lỗi 429 = Key hết lượt → đổi key
+                if (response.status === 429) {
+                    console.warn(`[Groq] ⚠️ Key #${currentGroqIndex} hết lượt (429). Đổi key...`);
+                    currentGroqIndex = (currentGroqIndex + 1) % GROQ_API_KEYS.length;
+                    continue;
+                }
+
+                // Lỗi 400 = Model bị xoá → nhảy sang model tiếp theo
+                if (response.status === 400) {
+                    const errBody = await response.text();
+                    if (errBody.includes('decommissioned') || errBody.includes('not found')) {
+                        console.warn(`[Groq] ⚠️ Model "${modelName}" đã bị Groq xoá. Tự động thử model tiếp theo...`);
+                        currentGroqModel = GROQ_MODELS[modelAttempt + 1] || GROQ_MODELS[0];
+                        break; // Thoát vòng key, nhảy sang model tiếp
+                    }
+                    throw new Error(`Groq 400: ${errBody.substring(0, 150)}`);
+                }
+
+                if (!response.ok) {
+                    const errorBody = await response.text();
+                    throw new Error(`Groq ${response.status}: ${errorBody.substring(0, 100)}`);
+                }
+
+                const data = await response.json();
+                // Ghi nhận model thành công
+                if (currentGroqModel !== modelName) {
+                    currentGroqModel = modelName;
+                    console.log(`[Groq] ✅ Đã chuyển sang model: ${modelName}`);
+                }
+                return data.choices[0]?.message?.content || '';
+
+            } catch (err) {
+                console.error(`❌ Groq Error (Key #${currentGroqIndex}, Model: ${modelName}):`, err.message?.substring(0, 100));
+                currentGroqIndex = (currentGroqIndex + 1) % GROQ_API_KEYS.length;
+            }
+        }
+    }
+
+    throw new Error('Tất cả Groq models và keys đều thất bại');
+}
 
 // =====================================================
-// CACHE - Managed by ai-cache.js wrapper with Redis
+// CORE: Call Gemini API (với Key Rotation & Retry cho 429)
 // =====================================================
+async function callGeminiDirect(prompt, options = {}) {
+    if (API_KEYS.length === 0) {
+        throw new Error('GEMINI_API_KEYS chưa cấu hình');
+    }
 
-// =====================================================
-// CORE: Call Gemini API (with retry for 429)
-// =====================================================
-async function callGemini(prompt, options = {}) {
-    const m = getModel();
-    
     const generationConfig = {
         temperature: options.temperature || 0.7,
         maxOutputTokens: options.maxTokens || 2048,
     };
 
     const MAX_RETRIES = 3;
-    const BASE_DELAY = 3000; // 3 seconds
+    const BASE_DELAY = 3000;
+    let attempt = 1;
 
-    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    while (attempt <= MAX_RETRIES) {
         try {
+            const m = getModelForKey(currentKeyIndex);
             const result = await m.generateContent({
                 contents: [{ role: 'user', parts: [{ text: prompt }] }],
                 generationConfig
             });
-            
-            const response = result.response;
-            return response.text();
+            return result.response.text();
         } catch (error) {
-            const is429 = error.message && (error.message.includes('429') || error.message.includes('Too Many Requests') || error.message.includes('quota') || error.message.includes('RESOURCE_EXHAUSTED'));
-            
-            // Nếu lỗi báo rõ ràng là "quota" hoặc "limit: 0", đây là Hard Limit => Không retry nữa
-            const isHardQuotaLimit = error.message && (error.message.includes('quota') || error.message.includes('limit: 0'));
+            const isQuota = error.message && (error.message.includes('429') || error.message.includes('quota') || error.message.includes('RESOURCE_EXHAUSTED') || error.message.includes('limit'));
 
-            if (is429 && !isHardQuotaLimit && attempt < MAX_RETRIES) {
-                const delay = BASE_DELAY * Math.pow(2, attempt - 1); // 3s, 6s, 12s
-                console.warn(`⚠️ Gemini rate limit (attempt ${attempt}/${MAX_RETRIES}). Retry in ${delay/1000}s...`);
-                await new Promise(resolve => setTimeout(resolve, delay));
+            if (isQuota && attempt < API_KEYS.length) {
+                currentKeyIndex = (currentKeyIndex + 1) % API_KEYS.length;
+                console.warn(`[AI Rotate] 🔄 Key #${currentKeyIndex} → tiếp...`);
+                attempt++;
                 continue;
             }
-            
-            if (isHardQuotaLimit) {
-                console.error(`❌ Gemini Quota Exhausted (Limit: 0). Skipping retries.`);
-                // Quăng 1 object Error đặc biệt để ai-cache.js nhận biết và sập Cầu Dao
-                const customErr = new Error('AI_QUOTA_EXHAUSTED');
-                customErr.code = 'QUOTA_EXHAUSTED';
-                throw customErr;
-            }
 
-            console.error(`❌ Gemini API Error (attempt ${attempt}):`, error.message);
-            
-            if (is429) {
-                throw new Error('⏳ AI đang bận, vui lòng thử lại sau 1-2 phút. (Gemini API giới hạn request)');
-            }
-            throw new Error('AI tạm thời không khả dụng. Vui lòng thử lại.');
+            console.error(`❌ Gemini Error (Key #${currentKeyIndex}, lần ${attempt}):`, error.message?.substring(0, 150));
+            throw error;
         }
     }
+}
+
+// =====================================================
+// SMART PROVIDER: Tự động chọn Groq → Gemini → Fallback
+// =====================================================
+async function callGemini(prompt, options = {}) {
+    // 1. THỬ GROQ TRƯỚC (Nhanh, miễn phí, không bị khoá)
+    if (GROQ_API_KEYS.length > 0) {
+        try {
+            console.log('🚀 [AI] Đang gọi Groq (Llama 3 70B)...');
+            const result = await callGroq(prompt, options);
+            console.log('✅ [AI] Groq trả lời thành công!');
+            return result;
+        } catch (groqErr) {
+            console.warn(`⚠️ [AI] Groq thất bại: ${groqErr.message?.substring(0, 100)}. Chuyển sang Gemini...`);
+        }
+    }
+
+    // 2. THỬ GEMINI (Backup)
+    if (API_KEYS.length > 0) {
+        try {
+            console.log('🔄 [AI] Đang thử Gemini (Backup)...');
+            const result = await callGeminiDirect(prompt, options);
+            console.log('✅ [AI] Gemini trả lời thành công!');
+            return result;
+        } catch (geminiErr) {
+            console.warn(`⚠️ [AI] Gemini cũng thất bại: ${geminiErr.message?.substring(0, 100)}`);
+        }
+    }
+
+    // 3. TẤT CẢ ĐỀU CHẾT → Ném lỗi cho ai-cache.js bắt và Fallback cục bộ
+    console.error('❌ [AI] CẢ GROQ VÀ GEMINI ĐỀU KHÔNG KHẢ DỤNG!');
+    const err = new Error('AI_QUOTA_EXHAUSTED');
+    err.code = 'QUOTA_EXHAUSTED';
+    throw err;
 }
 
 // =====================================================

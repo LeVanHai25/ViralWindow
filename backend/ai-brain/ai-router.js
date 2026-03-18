@@ -257,7 +257,7 @@ CHỈ DẪN: ${intentInstruction}
 Format: HTML. Tối đa 200 từ. Cắt gọn bảng nếu quá dài.`;
 
     const elapsed = Date.now() - startTime;
-    console.log(`🧠 AI Router: Prompt ready in ${elapsed}ms (${intent.intent}/${intent.category}) → Sending to Gemini`);
+    console.log(`🧠 AI Router: Prompt ready in ${elapsed}ms (${intent.intent}/${intent.category}) → Sending to AI Provider`);
 
     return {
         prompt: finalPrompt,
