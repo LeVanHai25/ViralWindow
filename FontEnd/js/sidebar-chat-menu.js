@@ -180,10 +180,49 @@
         } catch (e) { console.error('[ChatBadge] Update failed:', e); }
     }
 
+    // Update Material Request Badge (Yêu cầu vật tư)
+    async function updateMaterialRequestBadge() {
+        const token = sessionStorage.getItem('token');
+        if (!token) return;
+
+        try {
+            const res = await fetch(`${API_BASE}/material-requests/pending-count`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (!data.success) return;
+
+            const pendingCount = parseInt(data.count || 0, 10);
+            const badge = document.getElementById('sidebarMRBadge');
+            
+            if (badge) {
+                if (pendingCount > 0) {
+                    badge.textContent = pendingCount > 99 ? '99+' : pendingCount;
+                    badge.classList.remove('hidden');
+                    badge.style.display = 'inline-block';
+                    badge.style.setProperty('display', 'inline-block', 'important');
+                } else {
+                    badge.classList.add('hidden');
+                    badge.style.display = 'none';
+                    badge.style.setProperty('display', 'none', 'important');
+                }
+            }
+        } catch (e) { console.error('[MRBadge] Update failed:', e); }
+    }
+
     // Polling backup (less frequent now that we have socket)
-    setInterval(updateUnreadBadge, 120000); // 2 minutes backup
+    setInterval(() => {
+        updateUnreadBadge();
+        updateMaterialRequestBadge();
+    }, 120000); // 2 minutes backup
+
+    // Fetch initial state for MR Badge too
+    // Call this inside initApp() below.
+    
+    setTimeout(updateMaterialRequestBadge, 1000); // Fetch on load
 
     // Expose for external use (like chat-client.js)
     window.updateChatBadge = updateUnreadBadge;
     window.playChatNotification = playNotificationSound;
+    window.updateMaterialRequestBadge = updateMaterialRequestBadge;
 })();

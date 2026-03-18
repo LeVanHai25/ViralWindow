@@ -38,11 +38,11 @@ async function lookupMaterialPrice(code, category) {
         } else if (category === 'phukien' || category === 'vattu') {
             // Tra cứu từ bảng accessories
             const [rows] = await db.query(
-                `SELECT unit_price FROM accessories WHERE code = ? LIMIT 1`,
+                `SELECT purchase_price FROM accessories WHERE code = ? LIMIT 1`,
                 [code]
             );
-            if (rows.length > 0 && rows[0].unit_price) {
-                price = parseFloat(rows[0].unit_price) || 0;
+            if (rows.length > 0 && rows[0].purchase_price) {
+                price = parseFloat(rows[0].purchase_price) || 0;
             }
         } else if (category === 'kinh') {
             // Tra cứu từ bảng inventory (kính thường lưu ở inventory)
@@ -369,6 +369,20 @@ exports.getAll = async (req, res) => {
     } catch (err) {
         console.error('Error getting purchase requests:', err);
         res.status(500).json({ success: false, message: "Lỗi server: " + err.message });
+    }
+};
+
+// GET /api/purchase-requests/pending-count - Đếm số phiếu đang chờ duyệt
+exports.getPendingCount = async (req, res) => {
+    try {
+        // Đếm các phiếu (draft, submitted) chưa được duyệt
+        const [rows] = await db.query(
+            `SELECT COUNT(*) as count FROM purchase_requests WHERE status IN ('draft', 'submitted')`
+        );
+        res.json({ success: true, count: rows[0].count });
+    } catch (err) {
+        console.error('Error counting pending purchase requests:', err);
+        res.status(500).json({ success: false, message: "Lỗi server: " + err.message, count: 0 });
     }
 };
 

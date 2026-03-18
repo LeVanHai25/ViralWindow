@@ -9,6 +9,8 @@ router.use(authenticateToken);
 
 // GET /api/purchase-requests - Lấy danh sách phiếu yêu cầu
 router.get("/", purchaseRequestCtrl.getAll);
+// GET /api/purchase-requests/pending-count - Đếm số phiếu yêu cầu đang chờ duyệt (draft/submitted)
+router.get("/pending-count", purchaseRequestCtrl.getPendingCount);
 
 // GET /api/purchase-requests/:id/export-excel - Xuất Excel (PHẢI đặt trước /:id)
 router.get("/:id/export-excel", purchaseRequestExcelCtrl.exportExcel);
