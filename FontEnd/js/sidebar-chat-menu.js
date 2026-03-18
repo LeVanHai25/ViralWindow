@@ -54,6 +54,20 @@
         const nav = document.querySelector('.sidebar-nav, .sidebar nav, nav');
         if (!nav) return;
 
+        // --- YÊU CẦU VẬT TƯ (auto-inject badge) ---
+        // Move this BEFORE the TIN NHẮN early return so it executes on all pages
+        const vtLinks = document.querySelectorAll('a[href="material-requests.html"]');
+        vtLinks.forEach(link => {
+            if (!link.querySelector('#sidebarMRBadge')) {
+                const badge = document.createElement('span');
+                badge.id = 'sidebarMRBadge';
+                badge.className = 'hidden';
+                badge.style.cssText = 'background:#ef4444;color:white;font-size:9px;padding:2px 6px;border-radius:10px;font-weight:700;margin-left:auto;';
+                badge.textContent = '0';
+                link.appendChild(badge);
+            }
+        });
+
         // Check if TIN NHẮN already exists
         const hasTinNhan = nav.innerHTML.includes('TIN NHẮN');
         if (hasTinNhan) {
@@ -66,7 +80,7 @@
                 badge.style.cssText = 'background:#ef4444;color:white;font-size:9px;padding:2px 6px;border-radius:10px;font-weight:700;margin-left:auto;';
                 msgLink.appendChild(badge);
             }
-            return;
+            return; // EXIT EARLY IF TIN NHẮN EXISTS
         }
 
         // Find QUẢN TRỊ nav-item to insert before it

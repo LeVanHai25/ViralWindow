@@ -30,5 +30,8 @@ router.delete("/:id", purchaseRequestCtrl.delete);
 // PUT /api/purchase-requests/:id/status - Cập nhật trạng thái
 router.put("/:id/status", purchaseRequestCtrl.updateStatus);
 
+// PUT /api/purchase-requests/:id/read - Đánh dấu là đã đọc
+router.put("/:id/read", purchaseRequestCtrl.markAsRead);
+
 module.exports = router;
 

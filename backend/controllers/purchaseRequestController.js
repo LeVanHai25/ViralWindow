@@ -375,14 +375,26 @@ exports.getAll = async (req, res) => {
 // GET /api/purchase-requests/pending-count - Đếm số phiếu đang chờ duyệt
 exports.getPendingCount = async (req, res) => {
     try {
-        // Đếm các phiếu (draft, submitted) chưa được duyệt
+        // Đếm các phiếu (draft, submitted) chưa được duyệt VÀ chưa đọc (is_read = FALSE hoặc NULL)
         const [rows] = await db.query(
-            `SELECT COUNT(*) as count FROM purchase_requests WHERE status IN ('draft', 'submitted')`
+            `SELECT COUNT(*) as count FROM purchase_requests WHERE status IN ('draft', 'submitted') AND (is_read = FALSE OR is_read IS NULL)`
         );
         res.json({ success: true, count: rows[0].count });
     } catch (err) {
         console.error('Error counting pending purchase requests:', err);
         res.status(500).json({ success: false, message: "Lỗi server: " + err.message, count: 0 });
+    }
+};
+
+// PUT /api/purchase-requests/:id/read - Đánh dấu là đã đọc
+exports.markAsRead = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await db.query(`UPDATE purchase_requests SET is_read = TRUE WHERE id = ?`, [id]);
+        res.json({ success: true, message: "Đã đánh dấu là đã đọc" });
+    } catch (err) {
+        console.error('Error marking as read:', err);
+        res.status(500).json({ success: false, message: "Lỗi server: " + err.message });
     }
 };
 
