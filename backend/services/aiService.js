@@ -50,28 +50,8 @@ function getModel() {
 // See: backend/ai-brain/index.js
 
 // =====================================================
-// CACHE - Tránh gọi API quá nhiều
+// CACHE - Managed by ai-cache.js wrapper with Redis
 // =====================================================
-const cache = new Map();
-const CACHE_TTL = 5 * 60 * 1000; // 5 phút
-
-function getCached(key) {
-    const entry = cache.get(key);
-    if (entry && Date.now() - entry.timestamp < CACHE_TTL) {
-        return entry.data;
-    }
-    cache.delete(key);
-    return null;
-}
-
-function setCache(key, data) {
-    cache.set(key, { data, timestamp: Date.now() });
-    // Cleanup old entries
-    if (cache.size > 50) {
-        const oldest = [...cache.entries()].sort((a, b) => a[1].timestamp - b[1].timestamp);
-        for (let i = 0; i < 10; i++) cache.delete(oldest[i][0]);
-    }
-}
 
 // =====================================================
 // CORE: Call Gemini API (with retry for 429)
@@ -99,13 +79,24 @@ async function callGemini(prompt, options = {}) {
         } catch (error) {
             const is429 = error.message && (error.message.includes('429') || error.message.includes('Too Many Requests') || error.message.includes('quota') || error.message.includes('RESOURCE_EXHAUSTED'));
             
-            if (is429 && attempt < MAX_RETRIES) {
+            // Nếu lỗi báo rõ ràng là "quota" hoặc "limit: 0", đây là Hard Limit => Không retry nữa
+            const isHardQuotaLimit = error.message && (error.message.includes('quota') || error.message.includes('limit: 0'));
+
+            if (is429 && !isHardQuotaLimit && attempt < MAX_RETRIES) {
                 const delay = BASE_DELAY * Math.pow(2, attempt - 1); // 3s, 6s, 12s
                 console.warn(`⚠️ Gemini rate limit (attempt ${attempt}/${MAX_RETRIES}). Retry in ${delay/1000}s...`);
                 await new Promise(resolve => setTimeout(resolve, delay));
                 continue;
             }
             
+            if (isHardQuotaLimit) {
+                console.error(`❌ Gemini Quota Exhausted (Limit: 0). Skipping retries.`);
+                // Quăng 1 object Error đặc biệt để ai-cache.js nhận biết và sập Cầu Dao
+                const customErr = new Error('AI_QUOTA_EXHAUSTED');
+                customErr.code = 'QUOTA_EXHAUSTED';
+                throw customErr;
+            }
+
             console.error(`❌ Gemini API Error (attempt ${attempt}):`, error.message);
             
             if (is429) {
@@ -120,10 +111,6 @@ async function callGemini(prompt, options = {}) {
 // 1. DASHBOARD INSIGHTS (Powered by AI Brain)
 // =====================================================
 async function generateInsights(dataContext) {
-    const cacheKey = 'dashboard_insights_' + new Date().toISOString().slice(0, 13);
-    const cached = getCached(cacheKey);
-    if (cached) return cached;
-
     const smartPrompt = aiBrain.buildSmartPrompt('overview');
 
     const prompt = `${smartPrompt}
@@ -149,7 +136,6 @@ Mỗi insight là 1 div riêng. Bao gồm:
 KHÔNG bao giờ nói "dữ liệu không có" - hãy phân tích với những gì có.`;
 
     const result = await callGemini(prompt, { temperature: 0.6 });
-    setCache(cacheKey, result);
     return result;
 }
 

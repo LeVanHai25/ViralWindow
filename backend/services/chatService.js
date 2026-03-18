@@ -22,8 +22,8 @@ async function getConversationsByUser(userId) {
             ) AS unread_count
         FROM conversations c
         JOIN conversation_members cm ON c.id = cm.conversation_id AND cm.user_id = ?
-        WHERE (c.type = 'group' OR cm.cleared_at IS NULL OR (c.last_message_at IS NOT NULL AND c.last_message_at > cm.cleared_at))
-        ORDER BY c.last_message_at DESC, c.created_at DESC
+        WHERE (c.type = 'group' OR c.type = 'private')
+        ORDER BY GREATEST(COALESCE(c.last_message_at, c.created_at), COALESCE(cm.cleared_at, '1970-01-01')) DESC, c.created_at DESC
     `, [userId, userId]);
 
     // Enrich with member info for private chats
@@ -46,18 +46,28 @@ async function getConversationsByUser(userId) {
             conv.display_avatar = conv.avatar_url;
         }
 
-        // Last message preview
+        // Last message preview logic
         if (conv.last_message_id) {
-            const [msgs] = await db.query(`
-                SELECT m.content, m.type, m.file_name, u.full_name AS sender_name
-                FROM messages m JOIN users u ON m.sender_id = u.id
-                WHERE m.id = ?
-            `, [conv.last_message_id]);
-            if (msgs.length > 0) {
-                const lm = msgs[0];
-                conv.last_message_preview = lm.type === 'text'
-                    ? `${lm.sender_name}: ${(lm.content || '').substring(0, 50)}`
-                    : `${lm.sender_name}: 📎 ${lm.file_name || 'File'}`;
+            const clearedDate = conv.cleared_at ? new Date(conv.cleared_at) : null;
+            const lastMsgDate = conv.last_message_at ? new Date(conv.last_message_at) : null;
+            
+            // If the user cleared history AFTER the last message was sent, do not show preview
+            if (clearedDate && lastMsgDate && clearedDate >= lastMsgDate) {
+                conv.last_message_preview = '';
+                // Optional: We can adjust last_message_at to cleared_at so sorting on client matches DB
+                conv.last_message_at = conv.cleared_at;
+            } else {
+                const [msgs] = await db.query(`
+                    SELECT m.content, m.type, m.file_name, u.full_name AS sender_name
+                    FROM messages m JOIN users u ON m.sender_id = u.id
+                    WHERE m.id = ?
+                `, [conv.last_message_id]);
+                if (msgs.length > 0) {
+                    const lm = msgs[0];
+                    conv.last_message_preview = lm.type === 'text'
+                        ? `${lm.sender_name}: ${(lm.content || '').substring(0, 50)}`
+                        : `${lm.sender_name}: 📎 ${lm.file_name || 'File'}`;
+                }
             }
         }
     }
