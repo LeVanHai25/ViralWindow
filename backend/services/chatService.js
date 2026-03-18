@@ -23,7 +23,7 @@ async function getConversationsByUser(userId) {
         FROM conversations c
         JOIN conversation_members cm ON c.id = cm.conversation_id AND cm.user_id = ?
         WHERE (c.type = 'group' OR c.type = 'private')
-        AND (cm.cleared_at IS NULL OR c.last_message_at IS NULL OR c.last_message_at >= cm.cleared_at)
+        AND cm.is_hidden = 0
         ORDER BY GREATEST(COALESCE(c.last_message_at, c.created_at), COALESCE(cm.cleared_at, '1970-01-01')) DESC, c.created_at DESC
     `, [userId, userId]);
 
@@ -127,7 +127,7 @@ async function updateConversation(convId, data) {
 async function deleteConversation(convId, userId) {
     const [[conv]] = await db.query('SELECT type FROM conversations WHERE id = ?', [convId]);
     if (conv && conv.type === 'private' && userId) {
-        await db.query('UPDATE conversation_members SET cleared_at = NOW() WHERE conversation_id = ? AND user_id = ?', [convId, userId]);
+        await db.query('UPDATE conversation_members SET cleared_at = NOW(), is_hidden = 1 WHERE conversation_id = ? AND user_id = ?', [convId, userId]);
     } else {
         await db.query('DELETE FROM conversations WHERE id = ?', [convId]);
     }
@@ -213,6 +213,9 @@ async function createMessage(convId, senderId, content, type = 'text', fileData 
         'UPDATE conversations SET last_message_id = ?, last_message_at = NOW() WHERE id = ?',
         [msgId, convId]
     );
+
+    // Unhide conversation for all members since a new message arrived
+    await db.query('UPDATE conversation_members SET is_hidden = 0 WHERE conversation_id = ?', [convId]);
 
     // Auto-read own message
     await db.query(

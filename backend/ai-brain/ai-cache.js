@@ -6,8 +6,14 @@ const NodeCache = require('node-cache');
 const redis = new Redis({
     host: process.env.REDIS_HOST || '127.0.0.1',
     port: process.env.REDIS_PORT || 6379,
-    retryStrategy: (times) => Math.min(times * 50, 2000), // Thử lại kết nối
-    maxRetriesPerRequest: 3 // Không treo vĩnh viễn
+    retryStrategy: (times) => {
+        if (times > 3) {
+            console.warn('[AI Cache] ⚠️ Tắt auto-reconnect Redis sau 3 lần thử. Hoàn toàn dùng Local Cache dự phòng để tránh spam log nhắn.');
+            return null; // Trả về null để ioredis NGỪNG việc cố gắng kết nối lại (chống spam log Render)
+        }
+        return Math.min(times * 500, 2000); // Thử lại sau 0.5s -> 2s
+    },
+    maxRetriesPerRequest: 1 // Không treo request lâu
 });
 
 // Cache dự phòng trên RAM (khi Redis chết)
