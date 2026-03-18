@@ -25,10 +25,18 @@ if (!globalThis.fetch) {
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const aiBrain = require('../ai-brain');
 
+// Helper để tìm biến môi trường bất chấp người dùng gõ dư khoảng trắng (ví dụ: 'GROQ_API_KEYS ')
+function findEnvKey(prefix) {
+    const keys = Object.keys(process.env);
+    const matchedKey = keys.find(k => k.trim().toUpperCase().includes(prefix));
+    if (matchedKey) return process.env[matchedKey] || '';
+    return '';
+}
+
 // =====================================================
 // INIT GEMINI (API KEY ROTATION) - Backup Provider
 // =====================================================
-const rawKeys = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY || '';
+const rawKeys = findEnvKey('GEMINI_API_KEY');
 const API_KEYS = rawKeys.split(',').map(k => k.trim()).filter(k => k.length > 0);
 
 if (API_KEYS.length === 0) {
@@ -47,7 +55,7 @@ function getModelForKey(keyIndex) {
 // =====================================================
 // INIT GROQ (Primary Provider - Miễn phí, Siêu nhanh)
 // =====================================================
-const rawGroqKeys = process.env.GROQ_API_KEYS || process.env.GROQ_API_KEY || '';
+const rawGroqKeys = findEnvKey('GROQ_API_KEY');
 const GROQ_API_KEYS = rawGroqKeys.split(',').map(k => k.trim()).filter(k => k.length > 0);
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 // Danh sách model dự phòng — nếu model đầu bị Groq xoá, tự nhảy sang model tiếp
@@ -59,7 +67,7 @@ let currentGroqIndex = 0;
 if (GROQ_API_KEYS.length > 0) {
     console.log(`🚀 [AI Provider] GROQ đã sẵn sàng với ${GROQ_API_KEYS.length} keys → Ưu tiên sử dụng Groq (Llama 3 70B)`);
 } else {
-    console.warn('⚠️ GROQ_API_KEYS chưa cấu hình trong .env → Sẽ chỉ dùng Gemini hoặc Local Fallback');
+    console.warn(`⚠️ GROQ_API_KEYS chưa cấu hình trong .env (Hiện có ${Object.keys(process.env).length} biến) → Sẽ chỉ dùng Gemini hoặc Local Fallback`);
 }
 
 /**
