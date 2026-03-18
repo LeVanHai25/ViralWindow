@@ -23,6 +23,7 @@ async function getConversationsByUser(userId) {
         FROM conversations c
         JOIN conversation_members cm ON c.id = cm.conversation_id AND cm.user_id = ?
         WHERE (c.type = 'group' OR c.type = 'private')
+        AND (cm.cleared_at IS NULL OR c.last_message_at IS NULL OR c.last_message_at >= cm.cleared_at)
         ORDER BY GREATEST(COALESCE(c.last_message_at, c.created_at), COALESCE(cm.cleared_at, '1970-01-01')) DESC, c.created_at DESC
     `, [userId, userId]);
 
