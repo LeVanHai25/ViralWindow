@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -3040,21 +3040,21 @@
                 if (item) {
                     if (item.isMaterial) {
                         // Vật tư: Thành tiền = (Rộng / 1000) × Số bộ × Đơn giá
-                        const widthInMeters = (item.width || 0) / 1000;
-                        item.total = Math.round(widthInMeters * (item.quantity || 1) * (item.unitPrice || 0));
+                        const widthInMeters = (parseFloat(item.width) || 0) / 1000;
+                        item.total = Math.round(widthInMeters * (parseInt(item.quantity) || 1) * (parseFloat(item.unitPrice) || 0));
 
                         console.log(`📦 Tính tiền vật tư: ${item.design} - Rộng: ${item.width}mm (${widthInMeters.toFixed(3)}m) × SL: ${item.quantity} × Đơn giá: ${formatCurrency(item.unitPrice)} = ${formatCurrency(item.total)}`);
                     } else {
                         // Diện tích 1 bộ sản phẩm
-                        const areaPerUnit = item.areaPerUnit || (item.width * item.height / 1000000);
+                        const areaPerUnit = parseFloat(item.areaPerUnit) || (parseFloat(item.width) * parseFloat(item.height) / 1000000) || 0;
                         // Giá vật tư = Diện tích × Đơn giá/m² (đơn giá đã bao gồm kính nếu có)
-                        const materialPrice = areaPerUnit * (item.unitPrice || 0);
+                        const materialPrice = areaPerUnit * (parseFloat(item.unitPrice) || 0);
                         // Phụ kiện 1 bộ
-                        const accessoryPrice = item.accessoryPrice || 0;
+                        const accessoryPrice = parseFloat(item.accessoryPrice) || 0;
                         // Giá 1 bộ sản phẩm = (Giá vật tư + Phụ kiện)
                         const pricePerUnit = materialPrice + accessoryPrice;
                         // Tổng tiền = Giá 1 bộ × Số bộ (làm tròn không có số thập phân)
-                        item.total = Math.round(pricePerUnit * item.quantity);
+                        item.total = Math.round(pricePerUnit * (parseInt(item.quantity) || 1));
 
                         // Log chi tiết giá
                         if (item.glassPrice > 0) {
@@ -5479,13 +5479,13 @@
                                     accessory_name: item.accessory_name || item.accessories || '',
                                     availableAccessories: (door && door.accessories) ? door.accessories : [],
                                     productPrices: (door && door.prices) ? door.prices : {},
-                                    width: item.width || 0,
-                                    height: item.height || 0,
-                                    area: item.area || 0,
-                                    quantity: item.quantity || 1,
-                                    unitPrice: item.unit_price || 0,
-                                    accessoryPrice: item.accessory_price || 0,
-                                    total: item.total_price || 0,
+                                    width: parseFloat(item.width) || 0,
+                                    height: parseFloat(item.height) || 0,
+                                    area: parseFloat(item.area) || 0,
+                                    quantity: parseInt(item.quantity) || 1,
+                                    unitPrice: parseFloat(item.unit_price) || 0,
+                                    accessoryPrice: parseFloat(item.accessory_price) || 0,
+                                    total: parseFloat(item.total_price) || 0,
                                     isMaterial: !!item.is_material
                                 };
                             });

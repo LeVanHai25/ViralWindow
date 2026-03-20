@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -1304,7 +1304,7 @@
 
                 if (result.success) {
                     // Xóa dự án khỏi danh sách local
-                    completedProjects = completedProjects.filter(p => p.id !== projectId);
+                    cancelledProjects = cancelledProjects.filter(p => p.id !== projectId);
                     projectsData = projectsData.filter(p => p.id !== projectId);
 
                     // Cập nhật UI
