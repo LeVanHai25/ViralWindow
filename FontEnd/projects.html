@@ -1176,8 +1176,7 @@
                     projectsData = (result.data || []).filter(project => {
                         const status = (project.status || '').toLowerCase();
                         const progress = parseFloat(project.progress_percent) || 0;
-                        // Loại bỏ dự án đã hoàn thành
-                        return status !== 'completed' && progress < 100;
+                        return status !== 'completed' && status !== 'handover' && status !== 'cancelled' && status !== 'paused' && progress < 100;
                     });
 
                     // Update heading with count

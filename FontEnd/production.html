@@ -652,9 +652,14 @@
                     ).length;
 
                     // Filter out cancelled, paused, and completed projects for workflow display
-                    const activeProjects = projects.filter(p =>
-                        p.status !== 'cancelled' && p.status !== 'paused' && p.status !== 'completed'
-                    );
+                    const activeProjects = projects.filter(p => {
+                        const progress = parseFloat(p.progress_percent) || 0;
+                        return p.status !== 'cancelled' && 
+                               p.status !== 'paused' && 
+                               p.status !== 'completed' &&
+                               p.status !== 'handover' &&
+                               progress < 100;
+                    });
 
                     // Map projects to workflow format
                     const mappedProjects = activeProjects.map(project => ({

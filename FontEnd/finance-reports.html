@@ -238,7 +238,7 @@
 
                         cust.projects.forEach(proj => {
                             projIdx++;
-                            const statusMap = { new: 'Mới', quotation_pending: 'Chờ BG', designing: 'Thiết kế', bom_extraction: 'Bóc tách', production: 'Sản xuất', installation: 'Lắp đặt', handover: 'Bàn giao', completed: 'Hoàn thành', cancelled: 'Đã hủy', paused: 'Tạm dừng' };
+                            const statusMap = { new: 'Mới', quotation_pending: 'Chờ BG', designing: 'Thiết kế', bom_extraction: 'Bóc tách', in_production: 'Sản xuất', ready_for_installation: 'Chờ LĐ', installation: 'Lắp đặt', payment_pending: 'Chờ TT', handover: 'Bàn giao', completed: 'Hoàn thành', cancelled: 'Đã hủy', paused: 'Tạm dừng', production: 'Sản xuất' };
                             const statusLabel = statusMap[proj.status] || proj.status || 'N/A';
                             const statusColor = proj.status === 'completed' ? 'green' : proj.status === 'cancelled' ? 'red' : 'blue';
                             html += '<tr class="project-row border-b border-gray-100"><td class="px-4 py-2.5 text-sm text-gray-500 pl-8">' + projIdx + '</td>';
@@ -326,13 +326,19 @@
                 });
                 html += '</tbody></table></div>';
                 
-                // Payment Method Table
                 html += '<div><h4 class="font-bold text-indigo-700 mb-3 text-sm uppercase tracking-wider">Phương thức thanh toán</h4><table class="w-full text-xs"><thead><tr class="bg-indigo-50 text-indigo-800"> <th class="px-3 py-2 text-left">Phương thức</th> <th class="px-3 py-2 text-center">Thu</th> <th class="px-3 py-2 text-center">Chi</th> </tr></thead><tbody>';
                 const methods = [...new Set(payment_methods.map(m => m.payment_method))];
                 methods.forEach(m => {
                     const rowIn = payment_methods.find(pm => pm.payment_method === m && pm.transaction_type === 'revenue')?.total || 0;
                     const rowOut = payment_methods.find(pm => pm.payment_method === m && pm.transaction_type === 'expense')?.total || 0;
-                    html += `<tr class="border-b border-gray-50"><td class="px-3 py-2 font-medium">${m === 'cash' ? '💵 Tiền mặt' : m === 'bank' ? '🏦 Chuyển khoản' : m}</td><td class="px-3 py-2 text-center text-emerald-600 font-bold">${formatCurrency(rowIn)}</td><td class="px-3 py-2 text-center text-rose-600 font-bold">${formatCurrency(rowOut)}</td></tr>`;
+                    
+                    let methodName = m;
+                    if (m === 'cash') methodName = '💵 Tiền mặt';
+                    else if (m === 'bank' || m === 'bank_transfer') methodName = '🏦 Chuyển khoản';
+                    else if (m === 'credit_card') methodName = '💳 Thẻ tín dụng';
+                    else if (m === 'null' || !m) methodName = '❓ Chưa phân loại';
+                    
+                    html += `<tr class="border-b border-gray-50"><td class="px-3 py-2 font-medium">${methodName}</td><td class="px-3 py-2 text-center text-emerald-600 font-bold">${formatCurrency(rowIn)}</td><td class="px-3 py-2 text-center text-rose-600 font-bold">${formatCurrency(rowOut)}</td></tr>`;
                 });
                 html += '</tbody></table></div>';
 
@@ -356,10 +362,11 @@
                     });
 
                     // Expense Donut
+                    const expMap = { material_cost: 'Mua vật tư', subcontractor_cost: 'Thầu phụ', salary_cost: 'Lương', overhead_cost: 'CP Chung', marketing_cost: 'Marketing', logistics_cost: 'Vận chuyển', other_cost: 'Khác', project_expense: 'CP Thi công' };
                     new Chart(document.getElementById('expenseChart'), {
                         type: 'doughnut',
                         data: {
-                            labels: categories.expense.map(e => e.expense_type || 'Khác'),
+                            labels: categories.expense.map(e => expMap[e.expense_type] || e.expense_type || 'Khác'),
                             datasets: [{
                                 data: categories.expense.map(e => e.total),
                                 backgroundColor: ['#f43f5e', '#fb923c', '#facc15', '#60a5fa', '#a78bfa', '#2dd4bf', '#94a3b8']

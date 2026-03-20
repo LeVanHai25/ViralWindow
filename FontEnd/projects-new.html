@@ -2596,8 +2596,8 @@
                         projects = projects.filter(p => {
                             const progress = parseFloat(p.progress_percent) || 0;
                             const status = (p.status || '').toLowerCase();
-                            // Bỏ các dự án đã hoàn thành 100% hoặc status = 'completed' hoặc 'handover'
-                            return progress < 100 && status !== 'completed' && status !== 'handover';
+                            // Bỏ các dự án đã hoàn thành 100% hoặc status = 'completed' hoặc 'handover' hoặc bị huỷ/tạm dừng
+                            return progress < 100 && status !== 'completed' && status !== 'handover' && status !== 'cancelled' && status !== 'paused';
                         });
 
                         // Update KPI (use all projects for KPI calculation)
@@ -2622,7 +2622,7 @@
                 const running = projects.filter(p => {
                     const status = (p.status || '').toLowerCase();
                     const progress = parseFloat(p.progress_percent) || 0;
-                    return status !== 'completed' && progress < 100;
+                    return status !== 'completed' && status !== 'handover' && status !== 'cancelled' && status !== 'paused' && progress < 100;
                 }).length;
 
                 const pending = projects.filter(p => {
