@@ -951,15 +951,11 @@
             document.getElementById('thisMonthCount').textContent = thisMonthCount;
 
             // In progress count - call main API to get active projects
-            fetch(`${API_BASE}/projects`, {
+            fetch(`${API_BASE}/projects?exclude_inactive=true`, {
                 headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
             }).then(r => r.json()).then(result => {
                 if (result.success) {
-                    const inProgressCount = result.data.filter(p => {
-                        const status = (p.status || '').toLowerCase();
-                        const progress = parseFloat(p.progress_percent || 0);
-                        return status !== 'completed' && status !== 'cancelled' && progress < 100;
-                    }).length;
+                    const inProgressCount = result.data.length;
                     document.getElementById('inProgressCount').textContent = inProgressCount;
                 }
             }).catch(e => console.error('Error getting in-progress count:', e));

@@ -1012,7 +1012,7 @@
     async function loadProjects() {
         try {
             const token = sessionStorage.getItem('token');
-            const res = await fetch(`${API_BASE}/projects`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const res = await fetch(`${API_BASE}/projects?exclude_inactive=true`, { headers: { 'Authorization': `Bearer ${token}` } });
             const data = await res.json();
             allProjects = data.success ? data.data : [];
             renderProjectList();

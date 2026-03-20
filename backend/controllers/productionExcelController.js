@@ -690,8 +690,9 @@ async function getOrdersData(req, options = {}) {
         whereConditions.push("p.status = ?");
         params.push(f.status);
     } else {
-        // Default: exclude cancelled/closed/completed
-        whereConditions.push("p.status NOT IN ('cancelled', 'closed', 'completed')");
+        // Default: exclude cancelled/closed/completed/handover/paused
+        whereConditions.push("p.status NOT IN ('cancelled', 'closed', 'completed', 'handover', 'paused')");
+        whereConditions.push("(p.progress_percent IS NULL OR p.progress_percent < 100)");
     }
 
     // Date range filter (deliveryPlanDate)
@@ -1010,7 +1011,8 @@ exports.getKpi = async (req, res) => {
             whereConditions.push("p.status = ?");
             params.push(f.status);
         } else {
-            whereConditions.push("p.status NOT IN ('cancelled', 'closed', 'completed')");
+            whereConditions.push("p.status NOT IN ('cancelled', 'closed', 'completed', 'handover', 'paused')");
+            whereConditions.push("(p.progress_percent IS NULL OR p.progress_percent < 100)");
         }
 
         if (f.fromDate) {

@@ -948,7 +948,7 @@
             const inProgressCount = projectsData.filter(p => {
                 const status = (p.status || '').toLowerCase();
                 const progress = parseFloat(p.progress_percent || 0);
-                return status !== 'completed' && progress < 100;
+                return !['completed', 'cancelled', 'handover', 'paused'].includes(status) && progress < 100;
             }).length;
             document.getElementById('inProgressCount').textContent = inProgressCount;
         }

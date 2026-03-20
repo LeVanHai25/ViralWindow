@@ -6,7 +6,7 @@ const SystemNotifier = require("../services/SystemNotifier");
 // GET all projects
 exports.getAllProjects = async (req, res) => {
     try {
-        const { status, progress, search, customer_id, without_quotation } = req.query;
+        const { status, progress, search, customer_id, without_quotation, exclude_inactive } = req.query;
 
         let query = `
             SELECT 
@@ -27,6 +27,12 @@ exports.getAllProjects = async (req, res) => {
             WHERE 1=1
         `;
         let params = [];
+
+
+        if (exclude_inactive === 'true') {
+            query += " AND (p.status IS NULL OR p.status NOT IN ('closed', 'completed', 'handover', 'paused', 'cancelled'))";
+            query += " AND (p.progress_percent IS NULL OR p.progress_percent < 100)";
+        }
 
 
         if (customer_id) {

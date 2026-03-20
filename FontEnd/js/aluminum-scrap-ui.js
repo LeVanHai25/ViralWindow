@@ -753,7 +753,7 @@
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE}/projects`, {
+            const response = await fetch(`${API_BASE}/projects?exclude_inactive=true`, {
                 headers: token ? { 'Authorization': `Bearer ${token}` } : {}
             });
 
@@ -779,7 +779,7 @@
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE}/projects`, {
+            const response = await fetch(`${API_BASE}/projects?exclude_inactive=true`, {
                 headers: token ? { 'Authorization': `Bearer ${token}` } : {}
             });
 

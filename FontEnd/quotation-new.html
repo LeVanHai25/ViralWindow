@@ -1839,7 +1839,7 @@
 
             async function loadProjectsForBOM() {
                 try {
-                    const response = await fetch(`${API_BASE}/projects`);
+                    const response = await fetch(`${API_BASE}/projects?exclude_inactive=true`);
                     const result = await response.json();
 
                     if (result.success) {
@@ -2297,7 +2297,7 @@
             // Load projects - all projects (used for initial load)
             async function loadProjects() {
                 try {
-                    const response = await fetch(`${API_BASE}/projects`);
+                    const response = await fetch(`${API_BASE}/projects?exclude_inactive=true`);
                     const result = await response.json();
                     if (result.success) {
                         const select = document.getElementById('projectSelect');

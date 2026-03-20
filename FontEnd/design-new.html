@@ -2386,7 +2386,7 @@
                 try {
                     // Lấy tất cả dự án từ API
                     console.log(`📡 Fetching projects from: ${API_BASE}/projects`);
-                    const response = await fetch(`${API_BASE}/projects`);
+                    const response = await fetch(`${API_BASE}/projects?exclude_inactive=true`);
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }

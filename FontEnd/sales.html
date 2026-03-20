@@ -2052,7 +2052,7 @@
                     // Show loading
                     container.innerHTML = '<p class="text-center text-gray-500 py-8">Đang tải dữ liệu...</p>';
 
-                    const response = await fetch(`${API_BASE}/projects`, {
+                    const response = await fetch(`${API_BASE}/projects?exclude_inactive=true`, {
                         headers: {
                             'Authorization': `Bearer ${token}`
                         }
@@ -4746,7 +4746,7 @@
 
             async function loadProjectsForBOM() {
                 try {
-                    const response = await fetch(`${API_BASE}/projects`);
+                    const response = await fetch(`${API_BASE}/projects?exclude_inactive=true`);
                     const result = await response.json();
 
                     if (result.success) {
@@ -5481,7 +5481,7 @@
                     const token = sessionStorage.getItem('token');
 
                     // Get existing project codes to avoid duplicates
-                    const response = await fetch(`${API_BASE}/projects`, {
+                    const response = await fetch(`${API_BASE}/projects?exclude_inactive=true`, {
                         headers: {
                             'Authorization': `Bearer ${token}`
                         }
@@ -5645,7 +5645,7 @@
                         return;
                     }
 
-                    const response = await fetch(`${API_BASE}/projects`, {
+                    const response = await fetch(`${API_BASE}/projects?exclude_inactive=true`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -5743,7 +5743,7 @@
             async function loadProjectCards() {
                 try {
                     const token = sessionStorage.getItem('token');
-                    const response = await fetch(`${API_BASE}/projects`, {
+                    const response = await fetch(`${API_BASE}/projects?exclude_inactive=true`, {
                         headers: {
                             'Authorization': `Bearer ${token}`
                         }

@@ -3946,7 +3946,7 @@
             // Load projects for export dropdown
             async function loadExportProjects() {
                 try {
-                    const response = await fetch(`${API_BASE}/projects`, {
+                    const response = await fetch(`${API_BASE}/projects?exclude_inactive=true`, {
                         headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
                     });
                     const result = await response.json();
@@ -9121,7 +9121,7 @@
 
             async function loadProjectsForTransaction() {
                 try {
-                    const response = await fetch(`${API_BASE}/projects`);
+                    const response = await fetch(`${API_BASE}/projects?exclude_inactive=true`);
                     const result = await response.json();
 
                     if (result.success) {
