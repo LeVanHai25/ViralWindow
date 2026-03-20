@@ -937,6 +937,19 @@ exports.updateStatus = async (req, res) => {
             console.error('Error creating notification:', notifErr);
         }
 
+        // Cập nhật lại giá trị dự án sau khi thay đổi trạng thái báo giá
+        if (quotation.project_id) {
+            try {
+                const projectCtrl = require("./projectController");
+                if (projectCtrl.updateProjectTotalValue) {
+                    await projectCtrl.updateProjectTotalValue(quotation.project_id);
+                    console.log(`[updateStatus] Updated project ${quotation.project_id} total_value after status changed to ${status}`);
+                }
+            } catch (e) {
+                console.warn('[updateStatus] Could not update project total value:', e.message);
+            }
+        }
+
         // Build response message
         let message = "Cập nhật trạng thái thành công";
         if (depositReceiptResult?.success) {
@@ -1298,45 +1311,12 @@ exports.signContract = async (req, res) => {
         let projectCode = quotation.project_code;
 
         if (!projectId) {
-            console.log(`[signContract] Quotation ${id} has no project_id. Creating one automatically...`);
-
-            // Get customer info to build project name and get agency_id
-            const [customerRows] = await connection.query("SELECT full_name, agency_id FROM customers WHERE id = ?", [quotation.customer_id]);
-            const customer = customerRows[0];
-            const customerName = customer?.full_name || 'Khách hàng';
-
-            projectCode = quotation.quotation_code; // Start with the BG code
-            const projectName = `Dự án ${customerName} - ${projectCode}`;
-
-            // Calculate default deadline (30 days from quotation date)
-            const qDate = new Date(quotation.quotation_date);
-            const deadline = new Date(qDate.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-
-            const [projectResult] = await connection.query(
-                `INSERT INTO projects 
-                 (project_code, project_name, customer_id, agency_id, status, start_date, deadline, notes) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                [
-                    projectCode,
-                    projectName,
-                    quotation.customer_id,
-                    customer?.agency_id || null,
-                    'quotation_pending',
-                    quotation.quotation_date,
-                    deadline,
-                    `Tự động tạo từ Báo giá ${projectCode}`
-                ]
-            );
-
-            projectId = projectResult.insertId;
-
-            // Link project back to quotation
-            await connection.query("UPDATE quotations SET project_id = ? WHERE id = ?", [projectId, id]);
-            console.log(`[signContract] Created project ID ${projectId} and linked to quotation ${id}`);
-
-            // Update local quotation object for subsequent code logic
-            quotation.project_id = projectId;
-            quotation.project_code = projectCode;
+            await connection.rollback();
+            connection.release();
+            return res.status(400).json({
+                success: false,
+                message: "Báo giá này chưa được gán cho Dự án nào. Vui lòng mở báo giá và chọn 'Dự án' trước khi chốt hợp đồng."
+            });
         }
 
         // Check if quotation is approved

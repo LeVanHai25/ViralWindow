@@ -1,0 +1,122 @@
+[
+  {
+    "table_name": "inventory_transactions",
+    "column_name": "project_id",
+    "referenced_table_name": "projects",
+    "referenced_column_name": "id"
+  },
+  {
+    "table_name": "inventory_transactions",
+    "column_name": "project_id",
+    "referenced_table_name": "projects",
+    "referenced_column_name": "id"
+  },
+  {
+    "table_name": "design_inventory_reservations",
+    "column_name": "project_id",
+    "referenced_table_name": "projects",
+    "referenced_column_name": "id"
+  },
+  {
+    "table_name": "financial_transactions",
+    "column_name": "project_id",
+    "referenced_table_name": "projects",
+    "referenced_column_name": "id"
+  },
+  {
+    "table_name": "financial_transactions",
+    "column_name": "customer_id",
+    "referenced_table_name": "customers",
+    "referenced_column_name": "id"
+  },
+  {
+    "table_name": "debts",
+    "column_name": "customer_id",
+    "referenced_table_name": "customers",
+    "referenced_column_name": "id"
+  },
+  {
+    "table_name": "debts",
+    "column_name": "project_id",
+    "referenced_table_name": "projects",
+    "referenced_column_name": "id"
+  },
+  {
+    "table_name": "inventory_out",
+    "column_name": "project_id",
+    "referenced_table_name": "projects",
+    "referenced_column_name": "id"
+  },
+  {
+    "table_name": "customer_agency_history",
+    "column_name": "customer_id",
+    "referenced_table_name": "customers",
+    "referenced_column_name": "id"
+  },
+  {
+    "table_name": "door_drawings",
+    "column_name": "project_id",
+    "referenced_table_name": "projects",
+    "referenced_column_name": "id"
+  },
+  {
+    "table_name": "aluminum_scraps",
+    "column_name": "project_id",
+    "referenced_table_name": "projects",
+    "referenced_column_name": "id"
+  },
+  {
+    "table_name": "aluminum_scraps",
+    "column_name": "used_in_project_id",
+    "referenced_table_name": "projects",
+    "referenced_column_name": "id"
+  },
+  {
+    "table_name": "door_designs",
+    "column_name": "project_id",
+    "referenced_table_name": "projects",
+    "referenced_column_name": "id"
+  },
+  {
+    "table_name": "design_purchase_requests",
+    "column_name": "project_id",
+    "referenced_table_name": "projects",
+    "referenced_column_name": "id"
+  },
+  {
+    "table_name": "decals",
+    "column_name": "source_project_id",
+    "referenced_table_name": "projects",
+    "referenced_column_name": "id"
+  },
+  {
+    "table_name": "production_orders",
+    "column_name": "project_id",
+    "referenced_table_name": "projects",
+    "referenced_column_name": "id"
+  },
+  {
+    "table_name": "material_requests",
+    "column_name": "project_id",
+    "referenced_table_name": "projects",
+    "referenced_column_name": "id"
+  },
+  {
+    "table_name": "design_revisions",
+    "column_name": "project_id",
+    "referenced_table_name": "projects",
+    "referenced_column_name": "id"
+  },
+  {
+    "table_name": "customer_interactions",
+    "column_name": "customer_id",
+    "referenced_table_name": "customers",
+    "referenced_column_name": "id"
+  },
+  {
+    "table_name": "customer_appointments",
+    "column_name": "customer_id",
+    "referenced_table_name": "customers",
+    "referenced_column_name": "id"
+  }
+]

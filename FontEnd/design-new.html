@@ -1767,11 +1767,11 @@
                                         </button>
                                         <button onclick="saveMaterialRequest('kinh')"
                                             class="px-4 py-2 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700">
-                                            💾 Lưu Yêu Cầu
+                                             Lưu Yêu Cầu
                                         </button>
                                         <button onclick="submitMaterialRequest('kinh')"
                                             class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700">
-                                            📤 Gửi Yêu Cầu
+                                             Gửi Yêu Cầu
                                         </button>
                                         <button onclick="exportMaterialRequestExcel('kinh')"
                                             class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 flex items-center gap-2">
@@ -1848,11 +1848,11 @@
                                         </button>
                                         <button onclick="saveMaterialRequest('vattu')"
                                             class="px-4 py-2 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700">
-                                            💾 Lưu Yêu Cầu
+                                             Lưu Yêu Cầu
                                         </button>
                                         <button onclick="submitMaterialRequest('vattu')"
                                             class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700">
-                                            📤 Gửi Yêu Cầu
+                                             Gửi Yêu Cầu
                                         </button>
                                         <button onclick="exportMaterialRequestExcel('vattu')"
                                             class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 flex items-center gap-2">
@@ -1929,11 +1929,11 @@
                                         </button>
                                         <button onclick="saveMaterialRequest('phukien')"
                                             class="px-4 py-2 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700">
-                                            💾 Lưu Yêu Cầu
+                                             Lưu Yêu Cầu
                                         </button>
                                         <button onclick="submitMaterialRequest('phukien')"
                                             class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700">
-                                            📤 Gửi Yêu Cầu
+                                             Gửi Yêu Cầu
                                         </button>
                                         <button onclick="exportMaterialRequestExcel('phukien')"
                                             class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 flex items-center gap-2">
@@ -3004,7 +3004,7 @@
 
                 // Save to session
                 sessionStorage.setItem('currentProject', JSON.stringify(currentProject));
-                console.log('💾 Saved currentProject to sessionStorage');
+                console.log(' Saved currentProject to sessionStorage');
 
                 // Update selected project name if element exists
                 const selectedProjectNameEl = document.getElementById('selectedProjectName');
@@ -3428,7 +3428,7 @@
                         }));
                         sessionStorage.setItem('uploadedDesignFiles', JSON.stringify(filesToSave));
                         sessionStorage.setItem('uploadedDesignFiles_projectId', projectId);
-                        console.log('💾 Saved uploadedDesignFiles to sessionStorage for project', projectId, filesToSave);
+                        console.log(' Saved uploadedDesignFiles to sessionStorage for project', projectId, filesToSave);
                     } catch (e) {
                         console.error('❌ Could not save files to sessionStorage:', e);
                     }
@@ -3861,13 +3861,13 @@
                         // Lưu currentProject vào sessionStorage để giữ lại khi reload
                         if (currentProject) {
                             sessionStorage.setItem('currentProject', JSON.stringify(currentProject));
-                            console.log('💾 Saved currentProject to sessionStorage');
+                            console.log(' Saved currentProject to sessionStorage');
                         }
 
                         // Lưu quotationItemsForDesign vào sessionStorage để giữ lại khi reload
                         try {
                             sessionStorage.setItem('quotationItemsForDesign', JSON.stringify(quotationItemsForDesign));
-                            console.log('💾 Saved quotationItemsForDesign to sessionStorage');
+                            console.log(' Saved quotationItemsForDesign to sessionStorage');
                         } catch (e) {
                             console.warn('Could not save quotationItemsForDesign to sessionStorage:', e);
                         }
@@ -9769,6 +9769,18 @@
                 // Collect items with shortage for all categories
                 materialRequestItems = { nhom: [], kinh: [], vattu: [], phukien: [] };
 
+                function generateNoteStatus(item) {
+                    const unitName = (item.unit || '').trim();
+                    if (item.status === 'not_found' || typeof item.available === 'undefined') {
+                        return `Không có trong kho, cần ${item.required} ${unitName}`.trim();
+                    } else if (item.available === 0 || item.status === 'out_of_stock') {
+                        return `Hết, cần ${item.required} ${unitName}`.trim();
+                    } else if (item.shortage > 0) {
+                        return `Thiếu ${item.shortage} ${unitName}`.trim();
+                    }
+                    return '';
+                }
+
                 console.log('📋 Opening material request form...');
                 console.log('📊 inventoryCheckResults:', {
                     nhom: inventoryCheckResults.nhom?.length || 0,
@@ -9802,7 +9814,7 @@
                                 type: 'nhom',
                                 category: 'Nhôm',
                                 requestQty: item.shortage || item.required, // Nếu not_found, requestQty = required
-                                notes: '',
+                                notes: generateNoteStatus(item),
                                 // Thêm thông tin chi tiết từ bocTachData
                                 density: bocTachItem ? (bocTachItem.density || bocTachItem.ty_trong || 0) : 0,
                                 length: bocTachItem ? (bocTachItem.length || bocTachItem.length_m || 6) : 6,
@@ -9844,7 +9856,7 @@
                                 type: 'kinh',
                                 category: 'Kính',
                                 requestQty: item.shortage || item.required, // Nếu not_found, requestQty = required
-                                notes: '',
+                                notes: generateNoteStatus(item),
                                 // Thêm thông tin chi tiết từ bocTachData - ưu tiên width_mm/height_mm
                                 width: width,
                                 width_mm: width, // Giữ cả hai để tương thích
@@ -9876,7 +9888,7 @@
                                 type: 'vattu',
                                 category: 'Vật tư phụ',
                                 requestQty: item.shortage || item.required,
-                                notes: ''
+                                notes: generateNoteStatus(item)
                             });
                             console.log(`✅ Added Vật tư phụ: ${item.name}, shortage=${item.shortage || item.required}`);
                         }
@@ -9898,7 +9910,7 @@
                                 type: 'phukien',
                                 category: 'Phụ kiện',
                                 requestQty: item.shortage || item.required,
-                                notes: ''
+                                notes: generateNoteStatus(item)
                             });
                             console.log(`✅ Added Phụ kiện: ${item.name}, shortage=${item.shortage || item.required}`);
                         }
@@ -12249,13 +12261,13 @@
                             // Lưu quotationItemsForDesign vào sessionStorage sau khi update
                             try {
                                 sessionStorage.setItem('quotationItemsForDesign', JSON.stringify(quotationItemsForDesign));
-                                console.log('💾 Saved updated quotationItemsForDesign to sessionStorage');
+                                console.log(' Saved updated quotationItemsForDesign to sessionStorage');
                             } catch (e) {
                                 console.warn('Could not save to sessionStorage:', e);
                             }
 
                             // Render lại bảng ngay lập tức với dữ liệu đã cập nhật
-                            console.log('🔄 Re-rendering table with updated data');
+                            console.log(' Re-rendering table with updated data');
                             renderProductCards(quotationItemsForDesign);
                             updateProductTypeSummary(quotationItemsForDesign);
 
@@ -12478,7 +12490,7 @@
                 try {
                     const key = getBocTachStorageKey();
                     localStorage.setItem(key, JSON.stringify(bocTachData));
-                    console.log('💾 Saved bocTachData to localStorage:', key);
+                    console.log(' Saved bocTachData to localStorage:', key);
                 } catch (error) {
                     console.error('❌ Error saving bocTachData:', error);
                 }

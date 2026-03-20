@@ -4787,11 +4787,15 @@
                                             Mở BG
                                         </button>
                                     ` : ''}
-                                    ${(q.status === 'draft' || q.status === 'sent' || q.status === 'revised') ? `
+                                    ${(q.status === 'draft' || q.status === 'sent' || q.status === 'revised' || q.status === 'pending') ? `
                                         <button onclick="deleteQuotation(${q.id}, '${q.quotation_code || 'N/A'}', '${q.status}')" class="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700">
                                             Hủy BG
                                         </button>
-                                    ` : ''}
+                                    ` : `
+                                        <button onclick="deleteQuotation(${q.id}, '${q.quotation_code || 'N/A'}', '${q.status}')" class="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700">
+                                            Xóa BG
+                                        </button>
+                                    `}
                                 </div>
                             </div>
                         `;
@@ -4808,36 +4812,18 @@
 
             // Delete quotation
             async function deleteQuotation(quotationId, quotationCode, status) {
-                // Kiểm tra status trước khi xóa - chỉ cho phép xóa báo giá ở trạng thái "Chờ chốt từ khách hàng"
-                const allowedStatuses = ['draft', 'sent', 'revised'];
-                if (status && !allowedStatuses.includes(status)) {
-                    alert('Không thể hủy báo giá này!\n\nChỉ có thể hủy các báo giá ở trạng thái "Chờ chốt từ khách hàng".\nBáo giá này đã được chốt hợp đồng hoặc đã hoàn thành.');
-                    return;
-                }
-
-                // Nếu không có status từ tham số, load quotation để kiểm tra
-                if (!status) {
-                    try {
-                        const token = sessionStorage.getItem('token');
-                        const checkResponse = await fetch(`${API_BASE}/quotations/${quotationId}`, {
-                            headers: { 'Authorization': `Bearer ${token}` }
-                        });
-                        const checkResult = await checkResponse.json();
-
-                        if (checkResult.success && !allowedStatuses.includes(checkResult.data.status)) {
-                            alert('Không thể hủy báo giá này!\n\nChỉ có thể hủy các báo giá ở trạng thái "Chờ chốt từ khách hàng".\nBáo giá này đã được chốt hợp đồng hoặc đã hoàn thành.');
-                            return;
-                        }
-                    } catch (error) {
-                        console.error('Error checking quotation status:', error);
-                        // Tiếp tục với việc xóa nếu không kiểm tra được
-                    }
-                }
+                // Đã loại bỏ ràng buộc allowedStatuses theo yêu cầu của người dùng
+                // để cho phép xóa cả các báo giá đã hoàn thành/chốt hợp đồng.
 
                 // Xác nhận trước khi xóa
                 const confirmMessage = `Bạn có chắc chắn muốn xóa báo giá "${quotationCode}"?\n\nHành động này không thể hoàn tác và sẽ xóa hoàn toàn báo giá khỏi database.`;
+                const confirmed = await VWModal.confirm('Xác nhận xóa', confirmMessage, {
+                    confirmText: 'Xác nhận',
+                    cancelText: 'Huỷ',
+                    type: 'confirm'
+                });
 
-                if (!confirm(confirmMessage)) {
+                if (!confirmed) {
                     return;
                 }
 

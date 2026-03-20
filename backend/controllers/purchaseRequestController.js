@@ -466,7 +466,7 @@ exports.getById = async (req, res) => {
                     density: density || '',
                     length_m: lengthM,
                     weight: calculatedWeight,
-                    notes: item.notes || item.ghi_chú || ''
+                    notes: item.notes || item.note || item.ghi_chú || ''
                 });
             });
         }
@@ -493,7 +493,7 @@ exports.getById = async (req, res) => {
                     height: height,
                     panels: panels,
                     area: area,
-                    notes: item.notes || item.ghi_chú || ''
+                    notes: item.notes || item.note || item.ghi_chú || ''
                 });
             });
         }
@@ -507,7 +507,7 @@ exports.getById = async (req, res) => {
                     material_name: item.name || item.material_name || '',
                     unit: item.unit || '',
                     quantity: item.quantity || 0,
-                    notes: item.notes || item.ghi_chú || ''
+                    notes: item.notes || item.note || item.ghi_chú || ''
                 });
             });
         }
@@ -521,7 +521,7 @@ exports.getById = async (req, res) => {
                     material_name: item.name || item.material_name || '',
                     unit: item.unit || '',
                     quantity: item.quantity || 0,
-                    notes: item.notes || item.ghi_chú || ''
+                    notes: item.notes || item.note || item.ghi_chú || ''
                 });
             });
         }

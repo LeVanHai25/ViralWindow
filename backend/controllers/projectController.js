@@ -1,4 +1,4 @@
-﻿const db = require("../config/db");
+const db = require("../config/db");
 const NotificationService = require("../services/notificationService");
 const NotificationEventService = require("../services/notificationEventService");
 const SystemNotifier = require("../services/SystemNotifier");
@@ -2592,7 +2592,7 @@ exports.updateProjectTotalValue = async function (projectId) {
              FROM quotations 
              WHERE project_id = ? 
              ORDER BY 
-                CASE WHEN status = 'approved' THEN 0 ELSE 1 END,
+                CASE WHEN status IN ('approved', 'contract', 'signed', 'completed') THEN 0 ELSE 1 END,
                 created_at DESC 
              LIMIT 1`,
             [projectId]
