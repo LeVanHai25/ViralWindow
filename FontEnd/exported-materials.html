@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -1671,33 +1671,37 @@
                                     notes: autoNote ? JSON.stringify({ user_notes: autoNote }) : ''
                                 };
 
-                                // ✅ Phân loại: ưu tiên lịch sử xuất kho thực tế
-                                if (isFullyExported) {
-                                    // ĐÃ XUẤT ĐỦ → luôn nằm trong "Có thể xuất" (đã xuất rồi)
-                                    materialData.stock_status = 'sufficient';
-                                    materialData.stock_note = 'Đã xuất kho';
-                                    materialData.available_stock = exportedQty; // Hiển thị SL đã xuất thay vì tồn kho
-                                    materialData.shortage = 0;
-                                    materialData.still_needed = 0;
-                                    exported.push(materialData);
-                                } else if (exportedQty > 0) {
-                                    // XUẤT MỘT PHẦN → kiểm tra phần còn lại vs tồn kho
-                                    const remainingNeeded = Math.max(0, required - exportedQty);
-                                    if (remainingNeeded <= 0 || available >= remainingNeeded) {
-                                        materialData.stock_status = 'sufficient';
-                                        materialData.stock_note = `Đã xuất ${exportedQty}, còn đủ kho`;
-                                        exported.push(materialData);
-                                    } else {
-                                        materialData.still_needed = Math.max(0, remainingNeeded - available);
-                                        materialData.shortage = materialData.still_needed;
-                                        insufficient.push(materialData);
-                                    }
-                                } else if (status === 'sufficient') {
-                                    // CHƯA XUẤT nhưng kho đủ
-                                    exported.push(materialData);
-                                } else {
-                                    // CHƯA XUẤT và kho thiếu
-                                    insufficient.push(materialData);
+                                // ✅ Phân loại: ưu tiên lịch sử xuất kho thực tế (FIXED SPLIT LOGIC)
+                                const remainingNeeded = Math.max(0, required - exportedQty);
+                                const canExportNow = Math.min(available, remainingNeeded);
+                                const qtyForExportedList = exportedQty + canExportNow;
+                                const qtyForInsufficientList = Math.max(0, remainingNeeded - available);
+
+                                if (qtyForExportedList > 0) {
+                                    const exportData = { ...materialData };
+                                    exportData.quantity = qtyForExportedList;
+                                    exportData.total_cost = qtyForExportedList * (stockItem?.unit_price || 0);
+                                    exportData.stock_status = (qtyForInsufficientList === 0) ? 'sufficient' : 'partial';
+                                    exportData.stock_note = (qtyForInsufficientList === 0) 
+                                        ? (exportedQty >= required ? 'Đã xuất đủ' : 'Đủ kho') 
+                                        : `Có thể xuất trước ${canExportNow} ${unit}`;
+                                    
+                                    // Về phần trừ kho hiển thị (ảo) - giữ available gốc để hiển thị Tồn kho trước
+                                    exportData.available_stock = Math.max(0, available);
+                                    exportData.shortage = 0;
+                                    exportData.still_needed = 0;
+                                    exported.push(exportData);
+                                }
+
+                                if (qtyForInsufficientList > 0) {
+                                    const insufficientData = { ...materialData };
+                                    insufficientData.quantity = qtyForInsufficientList;
+                                    insufficientData.still_needed = qtyForInsufficientList;
+                                    insufficientData.shortage = qtyForInsufficientList;
+                                    insufficientData.available_stock = 0; // Đã nhường tồn kho cho phần trên
+                                    insufficientData.stock_status = (canExportNow > 0 || exportedQty > 0) ? 'partial' : 'shortage';
+                                    insufficientData.stock_note = `Còn thiếu ${qtyForInsufficientList} ${unit}`;
+                                    insufficient.push(insufficientData);
                                 }
                             });
                         };

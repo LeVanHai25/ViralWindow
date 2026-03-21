@@ -2222,7 +2222,7 @@ exports.saveBOMData = async (req, res) => {
         await connection.query(
             `DELETE FROM project_materials 
              WHERE project_id = ? 
-             AND material_type IN ('aluminum', 'glass', 'accessory', 'phukien')`,
+             AND material_type IN ('aluminum', 'glass', 'accessory', 'phukien', 'other')`,
             [projectId]
         );
 
@@ -2231,8 +2231,8 @@ exports.saveBOMData = async (req, res) => {
             for (const item of nhom) {
                 await connection.query(
                     `INSERT INTO project_materials 
-                    (project_id, material_type, material_id, material_code, material_name, quantity, unit, notes)
-                    VALUES (?, 'aluminum', 0, ?, ?, ?, ?, ?)`,
+                    (project_id, material_type, material_id, material_code, material_name, quantity, quantity_used, unit, notes)
+                    VALUES (?, 'aluminum', 0, ?, ?, ?, 0, ?, ?)`,
                     [
                         projectId,
                         item.code || item.item_code || null,
@@ -2256,8 +2256,8 @@ exports.saveBOMData = async (req, res) => {
             for (const item of kinh) {
                 await connection.query(
                     `INSERT INTO project_materials 
-                    (project_id, material_type, material_id, material_code, material_name, quantity, unit, notes)
-                    VALUES (?, 'glass', 0, ?, ?, ?, ?, ?)`,
+                    (project_id, material_type, material_id, material_code, material_name, quantity, quantity_used, unit, notes)
+                    VALUES (?, 'glass', 0, ?, ?, ?, 0, ?, ?)`,
                     [
                         projectId,
                         // âœ… FIX: ThÃªm item_code vÃ o fallback Ä‘á»ƒ láº¥y Ä‘Ãºng mÃ£ kÃ­nh tá»« BOM (VD: K22, K-902)
@@ -2284,8 +2284,8 @@ exports.saveBOMData = async (req, res) => {
             for (const item of vattu) {
                 await connection.query(
                     `INSERT INTO project_materials 
-                    (project_id, material_type, material_id, material_code, material_name, quantity, unit, notes)
-                    VALUES (?, 'other', 0, ?, ?, ?, ?, ?)`,
+                    (project_id, material_type, material_id, material_code, material_name, quantity, quantity_used, unit, notes)
+                    VALUES (?, 'other', 0, ?, ?, ?, 0, ?, ?)`,
                     [
                         projectId,
                         item.code || item.item_code || null,
@@ -2309,8 +2309,8 @@ exports.saveBOMData = async (req, res) => {
                 console.log('ðŸ“¦ Inserting phukien:', item.name, 'with material_type=phukien');
                 const [insertResult] = await connection.query(
                     `INSERT INTO project_materials 
-                    (project_id, material_type, material_id, material_code, material_name, quantity, unit, notes)
-                    VALUES (?, 'phukien', 0, ?, ?, ?, ?, ?)`,
+                    (project_id, material_type, material_id, material_code, material_name, quantity, quantity_used, unit, notes)
+                    VALUES (?, 'phukien', 0, ?, ?, ?, 0, ?, ?)`,
                     [
                         projectId,
                         item.code || item.item_code || null,
@@ -2365,7 +2365,7 @@ exports.getBOMData = async (req, res) => {
         const [rows] = await db.query(
             `SELECT * FROM project_materials 
              WHERE project_id = ? 
-             AND material_type IN ('aluminum', 'glass', 'accessory', 'phukien')
+             AND material_type IN ('aluminum', 'glass', 'accessory', 'phukien', 'other')
              ORDER BY material_type, created_at`,
             [projectId]
         );
@@ -2399,7 +2399,7 @@ exports.getBOMData = async (req, res) => {
                     nhom.push({ ...baseItem, item_name: row.material_name, item_code: extraData.code, density: extraData.density, length_m: extraData.length_m, weight_kg: extraData.weight_kg, notes: extraData.user_notes || '' });
                 } else if (row.material_type === 'glass') {
                     kinh.push({ ...baseItem, glass_type: row.material_name, type: row.material_name, glass_code: extraData.code, code: extraData.code, width_mm: extraData.width_mm, width: extraData.width_mm, height_mm: extraData.height_mm, height: extraData.height_mm, area_m2: extraData.area_m2, position: extraData.position, location: extraData.position });
-                } else if (row.material_type === 'accessory') {
+                } else if (row.material_type === 'accessory' || row.material_type === 'other') {
                     vattu.push({ ...baseItem, item_name: row.material_name, item_code: extraData.code, category: extraData.category || '', notes: extraData.user_notes || '' });
                 } else if (row.material_type === 'phukien') {
                     phukien.push({ ...baseItem, item_name: row.material_name, item_code: extraData.code, code: extraData.code, category: extraData.category || '', notes: extraData.user_notes || '' });

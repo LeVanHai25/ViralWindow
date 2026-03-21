@@ -1,0 +1,45 @@
+{
+  "results": [
+    {
+      "table": "product_completion",
+      "count": 3
+    },
+    {
+      "table": "project_activity_logs",
+      "count": 10
+    },
+    {
+      "table": "purchase_requests",
+      "count": 30
+    },
+    {
+      "table": "product_manufacturing",
+      "count": 58
+    },
+    {
+      "table": "stock_document_lines",
+      "count": 10
+    },
+    {
+      "table": "installation_progress",
+      "count": 16
+    },
+    {
+      "table": "project_material_status",
+      "count": 20
+    },
+    {
+      "table": "product_materials",
+      "count": 9
+    },
+    {
+      "table": "handover_info",
+      "count": 1
+    },
+    {
+      "table": "stock_documents",
+      "count": 12
+    }
+  ],
+  "totalZombies": 169
+}

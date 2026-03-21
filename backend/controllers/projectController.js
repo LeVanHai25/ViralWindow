@@ -1261,8 +1261,18 @@ exports.delete = async (req, res) => {
             console.log('  - No project_materials table');
         }
 
-        // 16. XÃ³a warehouse exports vÃ  items
+        // 16. Kho, Stock Documents
         try {
+            await connection.query(`
+                DELETE FROM stock_document_lines 
+                WHERE project_id = ? OR document_id IN (SELECT id FROM stock_documents WHERE project_id = ?)
+            `, [id, id]);
+            await connection.query(
+                "DELETE FROM stock_documents WHERE project_id = ?",
+                [id]
+            );
+            console.log('  ✓ Deleted stock documents');
+
             await connection.query(`
                 DELETE FROM warehouse_export_items 
                 WHERE export_id IN (SELECT id FROM warehouse_exports WHERE project_id = ?)
@@ -1271,9 +1281,9 @@ exports.delete = async (req, res) => {
                 "DELETE FROM warehouse_exports WHERE project_id = ?",
                 [id]
             );
-            console.log('  âœ“ Deleted warehouse exports');
+            console.log('  ✓ Deleted warehouse exports');
         } catch (e) {
-            console.log('  - No warehouse_exports tables');
+            console.log('  - No warehouse_exports or stock_documents tables');
         }
 
         // 17. XÃ³a project cutting vÃ  bÃ³c tÃ¡ch
@@ -1408,6 +1418,29 @@ exports.delete = async (req, res) => {
             console.log('  âœ“ Deleted design files');
         } catch (e) {
             console.log('  - No design_files table or error:', e.message);
+        }
+
+        // 26.5. Xóa triệt để các bảng phụ trách khác để chống dọn rác (zombie data)
+        try {
+            await connection.query("DELETE FROM purchase_request_items WHERE request_id IN (SELECT id FROM purchase_requests WHERE project_id = ?)", [id]);
+            await connection.query("DELETE FROM material_request_items WHERE request_id IN (SELECT id FROM material_requests WHERE project_id = ?)", [id]);
+            await connection.query("DELETE FROM export_slip_items WHERE slip_id IN (SELECT id FROM export_slips WHERE project_id = ?)", [id]);
+            
+            const extraTables = [
+                'purchase_requests', 'material_requests', 'export_slips', 
+                'project_activity_logs', 'product_completion', 'product_manufacturing', 
+                'installation_progress', 'project_material_status', 'product_materials', 
+                'handover_info', 'design_purchase_requests', 'design_inventory_reservations', 
+                'aluminum_scraps', 'design_revisions'
+            ];
+            for (const t of extraTables) {
+                try {
+                    await connection.query(`DELETE FROM ${t} WHERE project_id = ?`, [id]);
+                } catch(err) {}
+            }
+            console.log('  ✓ Deleted all extra system tracking tables (zombie prevention)');
+        } catch (e) {
+            console.log('  - Error cleaning up extra tables', e);
         }
 
         // 27. Cuá»‘i cÃ¹ng, xÃ³a project
