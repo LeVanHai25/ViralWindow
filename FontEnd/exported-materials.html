@@ -1404,9 +1404,9 @@
                         const authHeaders = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
 
                         const [accessoriesRes, aluminumRes, glassRes, vatTuPhuRes] = await Promise.all([
-                            fetch(`${API_BASE}/accessories`, { headers: authHeaders }).catch(e => ({ ok: false, json: () => ({ success: false, data: [] }) })),
-                            fetch(`${API_BASE}/aluminum-systems`, { headers: authHeaders }).catch(e => ({ ok: false, json: () => ({ success: false, data: [] }) })),
-                            fetch(`${API_BASE}/glass-items`, { headers: authHeaders }).catch(e => ({ ok: false, json: () => ({ success: false, data: [] }) })),
+                            fetch(`${API_BASE}/project-materials/inventory/accessory`, { headers: authHeaders }).catch(e => ({ ok: false, json: () => ({ success: false, data: [] }) })),
+                            fetch(`${API_BASE}/project-materials/inventory/aluminum`, { headers: authHeaders }).catch(e => ({ ok: false, json: () => ({ success: false, data: [] }) })),
+                            fetch(`${API_BASE}/project-materials/inventory/glass`, { headers: authHeaders }).catch(e => ({ ok: false, json: () => ({ success: false, data: [] }) })),
                             fetch(`${API_BASE}/project-materials/inventory/other`, { headers: authHeaders }).catch(e => ({ ok: false, json: () => ({ success: false, data: [] }) }))
                         ]);
 

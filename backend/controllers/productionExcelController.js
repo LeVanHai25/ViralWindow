@@ -190,6 +190,24 @@ function computeMaterialPlanDate(materialsNorm) {
 }
 
 /**
+ * Compute overall export status from merged materials
+ * @param {Array} mergedMaterials - Array of material group objects with exportStatus
+ * @returns {string} - 'NONE' | 'PARTIAL' | 'FULL'
+ */
+function computeOverallExportStatus(mergedMaterials) {
+    const groups = mergedMaterials.filter(m => m.requiredQty > 0);
+    if (groups.length === 0) return 'NONE';
+    
+    const allFull = groups.every(m => m.exportStatus === 'FULL');
+    if (allFull) return 'FULL';
+    
+    const anyExported = groups.some(m => m.exportStatus === 'PARTIAL' || m.exportStatus === 'FULL');
+    if (anyExported) return 'PARTIAL';
+    
+    return 'NONE';
+}
+
+/**
  * Parse and validate filter parameters
  */
 function parseFilters(req) {
@@ -479,17 +497,21 @@ async function calculateMaterialStatusFromBOM(projectIds) {
                 pm.quantity
             FROM project_materials pm
             WHERE pm.project_id IN (?)
-              AND pm.material_type IN ('aluminum', 'glass', 'accessory', 'phukien')
+              AND pm.material_type IN ('aluminum', 'glass', 'accessory', 'phukien', 'other')
         `, [projectIds]);
 
         // Group by project and type
+        // ✅ FIX: Map 'other' → accessory bucket (saveBOMData uses 'other' for vật tư phụ)
         const byProject = {};
         materials.forEach(row => {
             const pid = row.project_id;
             if (!byProject[pid]) {
                 byProject[pid] = { aluminum: [], glass: [], accessory: [], phukien: [] };
             }
-            byProject[pid][row.material_type].push(row);
+            const bucket = row.material_type === 'other' ? 'accessory' : row.material_type;
+            if (byProject[pid][bucket]) {
+                byProject[pid][bucket].push(row);
+            }
         });
 
         console.log(`📊 calculateMaterialStatusFromBOM: Found materials for ${Object.keys(byProject).length} projects`);
@@ -498,37 +520,64 @@ async function calculateMaterialStatusFromBOM(projectIds) {
         // Get stock data - do this once for efficiency
         // =============================================
 
-        // Aluminum stock
+        // Aluminum stock - ✅ SYNCED with GET /api/aluminum-systems
+        // The API sums warehouse stock from aluminum_warehouse_stock table
         let aluStock = {};
         try {
-            const [aluSys] = await db.query(`SELECT code, quantity_m FROM aluminum_systems`);
-            aluSys.forEach(a => {
-                aluStock[(a.code || '').toLowerCase()] = parseFloat(a.quantity_m) || 0;
-            });
+            // First get system codes by ID
+            const [aluSys] = await db.query(`SELECT id, code, name FROM aluminum_systems WHERE is_active = 1`);
+            const sysById = {};
+            aluSys.forEach(a => { sysById[a.id] = a; });
+
+            // Sum warehouse stock per system (same as API endpoint)
+            try {
+                const [stockRows] = await db.query(`
+                    SELECT aws.aluminum_system_id, SUM(aws.quantity) as total_qty 
+                    FROM aluminum_warehouse_stock aws
+                    JOIN inventory_warehouses iw ON aws.warehouse_id = iw.id
+                    WHERE iw.inventory_type = 'aluminum'
+                    GROUP BY aws.aluminum_system_id
+                `);
+                stockRows.forEach(s => {
+                    const sys = sysById[s.aluminum_system_id];
+                    if (sys) {
+                        const stock = parseFloat(s.total_qty) || 0;
+                        const keyCode = (sys.code || '').toLowerCase();
+                        const keyName = (sys.name || '').toLowerCase();
+                        if (keyCode) aluStock[keyCode] = (aluStock[keyCode] || 0) + stock;
+                        if (keyName) aluStock[keyName] = (aluStock[keyName] || 0) + stock;
+                    }
+                });
+            } catch (whErr) {
+                // Fallback: if warehouse tables don't exist, use quantity column
+                console.log('⚠️ aluminum_warehouse_stock not available, falling back to aluminum_systems.quantity');
+                aluSys.forEach(a => {
+                    const stock = parseFloat(a.quantity) || 0;
+                    const keyCode = (a.code || '').toLowerCase();
+                    const keyName = (a.name || '').toLowerCase();
+                    if (keyCode) aluStock[keyCode] = (aluStock[keyCode] || 0) + stock;
+                    if (keyName) aluStock[keyName] = (aluStock[keyName] || 0) + stock;
+                });
+            }
         } catch (e) { }
 
-        const [aluInv] = await db.query(`SELECT item_code, quantity FROM inventory WHERE item_type IN ('aluminum', 'profile', 'frame')`);
-        aluInv.forEach(inv => {
-            const key = (inv.item_code || '').toLowerCase();
-            aluStock[key] = (aluStock[key] || 0) + (parseFloat(inv.quantity) || 0);
-        });
-
-        // Glass stock - ✅ FIX: Store both normalized and raw keys for flexible matching
+        // Glass stock - Store both normalized and raw keys for flexible matching
         let glassStock = {};
         try {
-            // ✅ FIX: Use 'name' column instead of 'glass_type' (glass_type doesn't exist in glass_items table!)
             const [glassItems] = await db.query(`SELECT code, name, quantity FROM glass_items`);
             glassItems.forEach(g => {
-                // Use g.name instead of g.glass_type
                 const rawCode = g.code || g.name || '';
                 const rawKey = rawCode.toLowerCase();
                 const normalizedKey = normalizeCode(rawCode);
                 const qty = parseFloat(g.quantity) || 0;
 
-                // Store with both keys for flexible lookup
                 glassStock[rawKey] = (glassStock[rawKey] || 0) + qty;
                 if (normalizedKey && normalizedKey !== rawKey) {
                     glassStock[normalizedKey] = (glassStock[normalizedKey] || 0) + qty;
+                }
+                if (g.name) {
+                    const nameKey = g.name.toLowerCase();
+                    if (nameKey !== rawKey) glassStock[nameKey] = (glassStock[nameKey] || 0) + qty;
                 }
             });
             console.log(`📊 calculateMaterialStatusFromBOM: Loaded ${Object.keys(glassStock).length} glass stock keys`);
@@ -536,29 +585,37 @@ async function calculateMaterialStatusFromBOM(projectIds) {
             console.error('❌ Error loading glass stock:', e.message);
         }
 
-        const [glassInv] = await db.query(`SELECT item_code, quantity FROM inventory WHERE item_type = 'glass'`);
-        glassInv.forEach(inv => {
-            const rawCode = inv.item_code || '';
-            const rawKey = rawCode.toLowerCase();
-            const normalizedKey = normalizeCode(rawCode);
-            const qty = parseFloat(inv.quantity) || 0;
+        try {
+            const [glassInv] = await db.query(`SELECT item_code, quantity FROM inventory WHERE item_type = 'glass'`);
+            glassInv.forEach(inv => {
+                const rawCode = inv.item_code || '';
+                const rawKey = rawCode.toLowerCase();
+                const normalizedKey = normalizeCode(rawCode);
+                const qty = parseFloat(inv.quantity) || 0;
 
-            // Store with both keys for flexible lookup
-            glassStock[rawKey] = (glassStock[rawKey] || 0) + qty;
-            if (normalizedKey && normalizedKey !== rawKey) {
-                glassStock[normalizedKey] = (glassStock[normalizedKey] || 0) + qty;
-            }
-        });
+                glassStock[rawKey] = (glassStock[rawKey] || 0) + qty;
+                if (normalizedKey && normalizedKey !== rawKey) {
+                    glassStock[normalizedKey] = (glassStock[normalizedKey] || 0) + qty;
+                }
+            });
+        } catch (e) { }
 
-        // Accessories stock (for both phukien and accessory)
-        const accStock = {};
-        const [accessories] = await db.query(`SELECT id, code, name, stock_quantity FROM accessories`);
+        // ✅ FIX: Split accessories into HARDWARE stock and ACCESSORY (vật tư phụ) stock
+        const vatTuPhuCategories = ['Ke', 'Gioăng', 'Nhựa ốp', 'Keo', 'Khác'];
+        const hwareStock = {};  // Phụ kiện (non-vật tư phụ)
+        const vattuStock = {};  // Vật tư phụ
+        const [accessories] = await db.query(`SELECT id, code, name, stock_quantity, category FROM accessories`);
         accessories.forEach(acc => {
             const keyCode = (acc.code || '').toLowerCase();
             const keyName = (acc.name || '').toLowerCase();
             const stock = parseFloat(acc.stock_quantity) || 0;
-            if (keyCode) accStock[keyCode] = stock;
-            if (keyName) accStock[keyName] = stock;
+            if (vatTuPhuCategories.includes(acc.category)) {
+                if (keyCode) vattuStock[keyCode] = stock;
+                if (keyName) vattuStock[keyName] = stock;
+            } else {
+                if (keyCode) hwareStock[keyCode] = stock;
+                if (keyName) hwareStock[keyName] = stock;
+            }
         });
 
         // =============================================
@@ -626,10 +683,9 @@ async function calculateMaterialStatusFromBOM(projectIds) {
                 data.phukien.forEach(item => {
                     const code = parseCode(item);
                     const required = parseFloat(item.quantity) || 0;
-                    const available = accStock[code] || 0;
+                    const available = hwareStock[code] || 0;
                     if (available > 0) hasAny = true;
                     if (available < required) allReady = false;
-                    // Track per-item status
                     const itemStatus = available >= required ? 'READY' : (available > 0 ? 'PARTIAL' : 'MISSING');
                     if (!itemStatuses.includes(itemStatus)) itemStatuses.push(itemStatus);
                 });
@@ -646,10 +702,9 @@ async function calculateMaterialStatusFromBOM(projectIds) {
                 data.accessory.forEach(item => {
                     const code = parseCode(item);
                     const required = parseFloat(item.quantity) || 0;
-                    const available = accStock[code] || 0;
+                    const available = vattuStock[code] || 0;
                     if (available > 0) hasAny = true;
                     if (available < required) allReady = false;
-                    // Track per-item status
                     const itemStatus = available >= required ? 'READY' : (available > 0 ? 'PARTIAL' : 'MISSING');
                     if (!itemStatuses.includes(itemStatus)) itemStatuses.push(itemStatus);
                 });
@@ -661,6 +716,103 @@ async function calculateMaterialStatusFromBOM(projectIds) {
         }
     } catch (e) {
         console.warn('Error calculating material status from BOM:', e.message);
+    }
+
+    return map;
+}
+
+/**
+ * Get warehouse export status for projects from stock_documents + stock_document_lines
+ * Returns: { projectId: { ALUMINUM: {exported, required, ratio, status}, GLASS: {...}, ... } }
+ */
+async function getExportStatusForProjects(projectIds) {
+    if (!projectIds || projectIds.length === 0) return {};
+
+    const map = {};
+    projectIds.forEach(pid => {
+        map[pid] = {};
+        MATERIAL_GROUPS.forEach(g => {
+            map[pid][g] = { exported: 0, required: 0, ratio: '0/0', status: 'NONE' };
+        });
+    });
+
+    try {
+        // 1. Get BOM required quantities per project per material_type
+        const [bomRows] = await db.query(`
+            SELECT project_id, material_type, COUNT(*) as item_count, SUM(COALESCE(quantity, 0)) as total_qty
+            FROM project_materials
+            WHERE project_id IN (?) AND material_type IN ('aluminum', 'glass', 'accessory', 'phukien')
+            GROUP BY project_id, material_type
+        `, [projectIds]);
+
+        const typeToGroup = { aluminum: 'ALUMINUM', glass: 'GLASS', phukien: 'HARDWARE', accessory: 'ACCESSORY' };
+        bomRows.forEach(row => {
+            const g = typeToGroup[row.material_type];
+            if (g && map[row.project_id]) {
+                map[row.project_id][g].required = parseFloat(row.total_qty) || 0;
+                map[row.project_id][g].itemCount = parseInt(row.item_count) || 0;
+            }
+        });
+
+        // 2. Get exported quantities from stock_documents
+        const [exportRows] = await db.query(`
+            SELECT 
+                COALESCE(l.project_id, d.project_id) as project_id,
+                l.item_type,
+                SUM(l.qty) as total_exported,
+                COUNT(DISTINCT l.item_code) as exported_items
+            FROM stock_document_lines l
+            JOIN stock_documents d ON l.document_id = d.id
+            WHERE d.doc_type = 'export'
+              AND d.status = 'posted'
+              AND COALESCE(l.project_id, d.project_id) IN (?)
+            GROUP BY COALESCE(l.project_id, d.project_id), l.item_type
+        `, [projectIds]);
+
+        // Map item_type to material group
+        const itemTypeToGroup = {
+            'aluminum': 'ALUMINUM', 'profile': 'ALUMINUM', 'frame': 'ALUMINUM',
+            'glass': 'GLASS',
+            'accessory': 'HARDWARE', 'hardware': 'HARDWARE',
+            'consumable': 'ACCESSORY', 'gasket': 'ACCESSORY', 'glue': 'ACCESSORY', 'sealant': 'ACCESSORY'
+        };
+
+        exportRows.forEach(row => {
+            const pid = row.project_id;
+            const g = itemTypeToGroup[(row.item_type || '').toLowerCase()];
+            if (g && map[pid]) {
+                map[pid][g].exported += parseFloat(row.total_exported) || 0;
+                map[pid][g].exportedItems = (map[pid][g].exportedItems || 0) + (parseInt(row.exported_items) || 0);
+            }
+        });
+
+        // 3. Calculate ratios and statuses
+        for (const pid of projectIds) {
+            if (!map[pid]) continue;
+            MATERIAL_GROUPS.forEach(g => {
+                const data = map[pid][g];
+                const req = data.required;
+                const exp = data.exported;
+                const reqItems = data.itemCount || 0;
+                const expItems = data.exportedItems || 0;
+
+                if (req <= 0 && exp <= 0) {
+                    data.ratio = '--';
+                    data.status = 'NONE';
+                } else if (exp >= req && req > 0) {
+                    data.ratio = `${expItems}/${reqItems}`;
+                    data.status = 'FULL';
+                } else if (exp > 0) {
+                    data.ratio = `${expItems}/${reqItems}`;
+                    data.status = 'PARTIAL';
+                } else {
+                    data.ratio = `0/${reqItems}`;
+                    data.status = 'NONE';
+                }
+            });
+        }
+    } catch (e) {
+        console.warn('Error getting export status:', e.message);
     }
 
     return map;
@@ -765,6 +917,7 @@ async function getOrdersData(req, options = {}) {
     let materialRequestsMap = {};
     let bomStatusMap = {};
     let aluminumWeightMap = {};
+    let exportStatusMap = {};
 
     if (orderIds.length > 0) {
         // 1. Get manual material status overrides from order_material_status
@@ -797,6 +950,9 @@ async function getOrdersData(req, options = {}) {
 
         // 4. Calculate aluminum weight from BOM
         aluminumWeightMap = await calculateAluminumWeightFromBOM(orderIds);
+
+        // 5. Get export status from stock_documents
+        exportStatusMap = await getExportStatusForProjects(orderIds);
     }
 
     // Get company name
@@ -832,32 +988,26 @@ async function getOrdersData(req, options = {}) {
             const bomGroupStatus = typeof bomStatusObj === 'string' ? bomStatusObj : (bomStatusObj.status || 'NONE');
             const bomItemStatuses = Array.isArray(bomStatusObj.itemStatuses) ? bomStatusObj.itemStatuses : [];
 
+            // Get export status for this group
+            const exportData = (exportStatusMap[row.id] || {})[group] || { exported: 0, required: 0, ratio: '--', status: 'NONE' };
+
             // Calculate final status
-            // ✅ Ưu tiên: ISSUED/ARRIVED (đã xuất/nhận kho thực tế) > DELIVERED > READY > BOM check
+            // ✅ FIX: Only override with manual status for terminal states (ISSUED/ARRIVED/DELIVERED/CUSTOMER_PROVIDED)
+            // For computed states (READY/PARTIAL/MISSING), always use real-time BOM check to match Kiểm tra kho
             let finalStatus = 'NONE';
             if (stored && stored.status === 'ISSUED') {
-                // ĐÃ XUẤT KHO → ưu tiên cao nhất (đã hạch toán phiếu xuất)
                 finalStatus = 'ISSUED';
             } else if (stored && stored.status === 'ARRIVED') {
                 finalStatus = 'ARRIVED';
             } else if (stored && stored.status === 'DELIVERED') {
                 finalStatus = 'DELIVERED';
-            } else if (stored && stored.status === 'READY') {
-                finalStatus = 'READY';
-            } else if (bomGroupStatus === 'READY') {
-                finalStatus = 'READY';
+            } else if (stored && stored.status === 'CUSTOMER_PROVIDED') {
+                finalStatus = 'CUSTOMER_PROVIDED';
+            } else if (bomGroupStatus !== 'NONE') {
+                // ✅ Always use BOM-calculated status for non-terminal states
+                finalStatus = bomGroupStatus;
             } else if (hasPurchaseRequest) {
-                if (stored && stored.status === 'ORDERED') {
-                    finalStatus = 'ORDERED';
-                } else if (bomGroupStatus === 'PARTIAL') {
-                    finalStatus = 'PARTIAL';
-                } else {
-                    finalStatus = 'ORDERED';
-                }
-            } else if (bomGroupStatus === 'PARTIAL') {
-                finalStatus = 'PARTIAL';
-            } else if (bomGroupStatus === 'MISSING') {
-                finalStatus = 'MISSING';
+                finalStatus = 'ORDERED';
             } else if (stored && stored.status && MATERIAL_STATUS.has(stored.status)) {
                 finalStatus = stored.status;
             }
@@ -884,7 +1034,7 @@ async function getOrdersData(req, options = {}) {
             return {
                 group,
                 status: MATERIAL_STATUS.has(finalStatus) ? finalStatus : 'NONE',
-                itemStatuses: itemStatuses.length > 0 ? itemStatuses : [finalStatus || 'NONE'], // Array of statuses for multi-badge
+                itemStatuses: itemStatuses.length > 0 ? itemStatuses : [finalStatus || 'NONE'],
                 planDate: reqData.planDate || (stored ? stored.planDate : null),
                 actualDate: stored ? stored.actualDate : null,
                 note: reqData.note || (stored ? stored.note : ''),
@@ -892,7 +1042,11 @@ async function getOrdersData(req, options = {}) {
                 quantity: stored ? stored.quantity : '',
                 updatedAt: stored ? stored.updatedAt : null,
                 updatedBy: stored ? stored.updatedBy : null,
-                hasPurchaseRequest: hasPurchaseRequest
+                hasPurchaseRequest: hasPurchaseRequest,
+                exportStatus: exportData.status,
+                exportRatio: exportData.ratio,
+                exportedQty: exportData.exported,
+                requiredQty: exportData.required
             };
         });
 
@@ -944,10 +1098,13 @@ async function getOrdersData(req, options = {}) {
             // Computed fields
             isOverdue,
             materialOverallStatus,
-            materialStatuses: materialStatusData.statuses,      // NEW: array of unique statuses (sorted by priority)
-            materialStatusDetails: materialStatusData.details,  // NEW: details for tooltip [{group, groupLabel, status}]
+            materialStatuses: materialStatusData.statuses,
+            materialStatusDetails: materialStatusData.details,
             materialPlanDate,
-            materials: mergedMaterials
+            materials: mergedMaterials,
+
+            // Export status (from stock_documents)
+            exportStatus: computeOverallExportStatus(mergedMaterials)
         };
     });
 
@@ -1799,22 +1956,25 @@ exports.getMaterialDetails = async (req, res) => {
         }
 
         // Map MATERIAL_GROUP to project_materials.material_type
-        const groupToMaterialType = {
-            'ALUMINUM': 'aluminum',
-            'GLASS': 'glass',
-            'HARDWARE': 'phukien',     // Phụ kiện (hardware)
-            'ACCESSORY': 'accessory'   // Vật tư phụ (gaskets, glue, etc.)
+        // ✅ FIX: ACCESSORY maps to BOTH 'accessory' AND 'other'
+        // because saveBOMData saves vật tư phụ as material_type='other'
+        const groupToMaterialTypes = {
+            'ALUMINUM': ['aluminum'],
+            'GLASS': ['glass'],
+            'HARDWARE': ['phukien'],
+            'ACCESSORY': ['accessory', 'other']  // saveBOMData uses 'other' for vattu!
         };
 
-        const materialType = groupToMaterialType[groupUpper];
+        const materialTypes = groupToMaterialTypes[groupUpper];
         let items = [];
 
-        console.log(`📦 getMaterialDetails for project ${id}, group ${groupUpper} (materialType: ${materialType})`);
+        console.log(`📦 getMaterialDetails for project ${id}, group ${groupUpper} (materialTypes: ${materialTypes})`);
 
         // ================================================
         // Get BOM data from project_materials table
+        // ✅ FIX: Use IN (?) to match multiple material types
         // ================================================
-        const [bomRows] = await db.query(`
+        let [bomRows] = await db.query(`
             SELECT 
                 pm.id,
                 pm.material_code,
@@ -1823,61 +1983,131 @@ exports.getMaterialDetails = async (req, res) => {
                 pm.unit,
                 pm.notes
             FROM project_materials pm
-            WHERE pm.project_id = ? AND pm.material_type = ?
+            WHERE pm.project_id = ? AND pm.material_type IN (?)
             ORDER BY pm.material_name
-        `, [id, materialType]);
+        `, [id, materialTypes]);
+
+        // ================================================
+        // ✅ FIX: Fallback to bom_items if project_materials is empty
+        // (same pattern as getBOMData in projectMaterialController)
+        // ================================================
+        if (bomRows.length === 0) {
+            console.log(`📦 project_materials empty → fallback to bom_items`);
+            try {
+                // Map group to bom_items item_type filters
+                const groupToBomTypes = {
+                    'ALUMINUM': ['frame', 'mullion', 'sash', 'bead', 'profile', 'aluminum'],
+                    'GLASS': ['glass'],
+                    'HARDWARE': ['hardware', 'lock', 'handle', 'hinge'],
+                    'ACCESSORY': ['accessory', 'gasket', 'glue', 'sealant', 'other']
+                };
+                const bomItemTypes = groupToBomTypes[groupUpper] || [];
+                
+                const [fallbackRows] = await db.query(`
+                    SELECT 
+                        NULL as id,
+                        COALESCE(bi.profile_code, bi.item_code) as material_code,
+                        COALESCE(bi.item_name, bi.profile_code) as material_name,
+                        SUM(bi.quantity) as quantity,
+                        bi.unit,
+                        NULL as notes
+                    FROM bom_items bi
+                    INNER JOIN door_designs dd ON dd.id = bi.design_id
+                    WHERE dd.project_id = ? AND LOWER(bi.item_type) IN (?)
+                    GROUP BY bi.item_code, bi.item_name, bi.profile_code, bi.unit
+                    ORDER BY bi.item_name
+                `, [id, bomItemTypes]);
+                
+                bomRows = fallbackRows;
+                console.log(`📦 bom_items fallback found ${bomRows.length} items`);
+            } catch (bomErr) {
+                console.warn('⚠️ bom_items fallback failed:', bomErr.message);
+            }
+        }
 
         console.log(`📦 Found ${bomRows.length} items in project_materials`);
 
         // ================================================
         // Get stock data based on material type
+        // ✅ SYNCED with design-new.html loadInventoryCheckData()
         // ================================================
         let stockMap = {};
 
         if (groupUpper === 'ALUMINUM') {
-            // Get inventory for aluminum
-            const [invRows] = await db.query(`
-                SELECT item_code, item_name, quantity FROM inventory 
-                WHERE item_type IN ('aluminum', 'profile', 'frame')
-            `);
-            invRows.forEach(inv => {
-                const key = (inv.item_code || '').toLowerCase();
-                stockMap[key] = (stockMap[key] || 0) + (parseFloat(inv.quantity) || 0);
-            });
-
-            // Also check aluminum_systems
+            // ✅ SYNCED with GET /api/aluminum-systems (warehouse stock)
             try {
-                const [aluSystems] = await db.query(`SELECT code, quantity_m FROM aluminum_systems`);
-                aluSystems.forEach(alu => {
-                    const key = (alu.code || '').toLowerCase();
-                    stockMap[key] = (stockMap[key] || 0) + (parseFloat(alu.quantity_m) || 0);
-                });
+                const [aluSystems] = await db.query(`SELECT id, code, name FROM aluminum_systems WHERE is_active = 1`);
+                const sysById = {};
+                aluSystems.forEach(a => { sysById[a.id] = a; });
+
+                try {
+                    const [stockRows] = await db.query(`
+                        SELECT aws.aluminum_system_id, SUM(aws.quantity) as total_qty 
+                        FROM aluminum_warehouse_stock aws
+                        JOIN inventory_warehouses iw ON aws.warehouse_id = iw.id
+                        WHERE iw.inventory_type = 'aluminum'
+                        GROUP BY aws.aluminum_system_id
+                    `);
+                    stockRows.forEach(s => {
+                        const sys = sysById[s.aluminum_system_id];
+                        if (sys) {
+                            const stock = parseFloat(s.total_qty) || 0;
+                            const keyCode = (sys.code || '').toLowerCase();
+                            const keyName = (sys.name || '').toLowerCase();
+                            if (keyCode) stockMap[keyCode] = (stockMap[keyCode] || 0) + stock;
+                            if (keyName) stockMap[keyName] = (stockMap[keyName] || 0) + stock;
+                        }
+                    });
+                    console.log(`📦 Aluminum stock: Loaded from warehouse_stock for ${stockRows.length} systems`);
+                } catch (whErr) {
+                    // Fallback to quantity column
+                    aluSystems.forEach(alu => {
+                        const stock = parseFloat(alu.quantity) || 0;
+                        const keyCode = (alu.code || '').toLowerCase();
+                        const keyName = (alu.name || '').toLowerCase();
+                        if (keyCode) stockMap[keyCode] = (stockMap[keyCode] || 0) + stock;
+                        if (keyName) stockMap[keyName] = (stockMap[keyName] || 0) + stock;
+                    });
+                }
             } catch (e) {
                 console.log('aluminum_systems table not found, skipping');
             }
+
+            // Also check general inventory for aluminum types
+            try {
+                const [invRows] = await db.query(`
+                    SELECT item_code, item_name, quantity FROM inventory 
+                    WHERE item_type IN ('aluminum', 'profile', 'frame')
+                `);
+                invRows.forEach(inv => {
+                    const key = (inv.item_code || '').toLowerCase();
+                    stockMap[key] = (stockMap[key] || 0) + (parseFloat(inv.quantity) || 0);
+                });
+            } catch (e) { }
         }
         else if (groupUpper === 'GLASS') {
-            // Get glass inventory
+            // ✅ SYNCED with GET /api/project-materials/inventory/glass
             try {
-                // ✅ FIX: Use 'name' column instead of 'glass_type' (glass_type doesn't exist in glass_items table!)
-                const [glassRows] = await db.query(`
-                    SELECT code, name, quantity FROM glass_items
-                `);
+                const [glassRows] = await db.query(`SELECT code, name, quantity FROM glass_items`);
                 console.log(`📦 Glass stock: Found ${glassRows.length} items in glass_items`);
                 glassRows.forEach(g => {
-                    // Use g.name instead of g.glass_type
                     const rawCode = g.code || g.name || '';
                     const rawKey = rawCode.toLowerCase();
                     const normalizedKey = normalizeCode(rawCode);
                     const qty = parseFloat(g.quantity) || 0;
 
-                    // Store both raw and normalized keys for flexible lookup
                     stockMap[rawKey] = (stockMap[rawKey] || 0) + qty;
                     if (normalizedKey && normalizedKey !== rawKey) {
                         stockMap[normalizedKey] = (stockMap[normalizedKey] || 0) + qty;
                     }
+                    // Also store by name for name-based lookups
+                    if (g.name) {
+                        const nameKey = g.name.toLowerCase();
+                        if (nameKey !== rawKey) {
+                            stockMap[nameKey] = (stockMap[nameKey] || 0) + qty;
+                        }
+                    }
                 });
-                console.log(`📦 Glass stockMap keys: ${Object.keys(stockMap).slice(0, 10).join(', ')}`);
             } catch (e) {
                 console.log('glass_items table not found, skipping:', e.message);
             }
@@ -1898,29 +2128,52 @@ exports.getMaterialDetails = async (req, res) => {
                 }
             });
         }
-        else if (groupUpper === 'HARDWARE' || groupUpper === 'ACCESSORY') {
-            // Get accessories stock
-            const [accRows] = await db.query(`
-                SELECT id, code, name, stock_quantity, unit FROM accessories
-            `);
+        else if (groupUpper === 'HARDWARE') {
+            // ✅ SYNCED: Phụ kiện = accessories WHERE category NOT IN vật tư phụ categories
+            const vatTuPhuCategories = ['Ke', 'Gioăng', 'Nhựa ốp', 'Keo', 'Khác'];
+            const [accRows] = await db.query(`SELECT id, code, name, stock_quantity, category, unit FROM accessories`);
             accRows.forEach(acc => {
-                const keyCode = (acc.code || '').toLowerCase();
-                const keyName = (acc.name || '').toLowerCase();
-                const stock = parseFloat(acc.stock_quantity) || 0;
-                if (keyCode) stockMap[keyCode] = stock;
-                if (keyName) stockMap[keyName] = stock;
-                stockMap[`id_${acc.id}`] = stock;
+                // Only include non-vật-tư-phụ accessories (same as Kiểm tra kho)
+                if (!vatTuPhuCategories.includes(acc.category)) {
+                    const keyCode = (acc.code || '').toLowerCase();
+                    const keyName = (acc.name || '').toLowerCase();
+                    const stock = parseFloat(acc.stock_quantity) || 0;
+                    if (keyCode) stockMap[keyCode] = stock;
+                    if (keyName) stockMap[keyName] = stock;
+                    stockMap[`id_${acc.id}`] = stock;
+                }
+            });
+        }
+        else if (groupUpper === 'ACCESSORY') {
+            // ✅ SYNCED: Vật tư phụ = accessories WHERE category IN vật tư phụ categories
+            // + fallback from inventory table for other consumables
+            const vatTuPhuCategories = ['Ke', 'Gioăng', 'Nhựa ốp', 'Keo', 'Khác'];
+            const [accRows] = await db.query(`SELECT id, code, name, stock_quantity, category, unit FROM accessories`);
+            accRows.forEach(acc => {
+                // Only include vật tư phụ categories (same as GET /api/project-materials/inventory/other)
+                if (vatTuPhuCategories.includes(acc.category)) {
+                    const keyCode = (acc.code || '').toLowerCase();
+                    const keyName = (acc.name || '').toLowerCase();
+                    const stock = parseFloat(acc.stock_quantity) || 0;
+                    if (keyCode) stockMap[keyCode] = stock;
+                    if (keyName) stockMap[keyName] = stock;
+                    stockMap[`id_${acc.id}`] = stock;
+                }
             });
 
             // Also check inventory for consumables
-            const [invRows] = await db.query(`
-                SELECT item_code, item_name, quantity FROM inventory 
-                WHERE item_type IN ('consumable', 'gasket', 'glue', 'sealant', 'accessory', 'hardware')
-            `);
-            invRows.forEach(inv => {
-                const key = (inv.item_code || '').toLowerCase();
-                stockMap[key] = (stockMap[key] || 0) + (parseFloat(inv.quantity) || 0);
-            });
+            try {
+                const [invRows] = await db.query(`
+                    SELECT item_code, item_name, quantity FROM inventory 
+                    WHERE item_type IN ('consumable', 'gasket', 'glue', 'sealant', 'other')
+                `);
+                invRows.forEach(inv => {
+                    const key = (inv.item_code || '').toLowerCase();
+                    if (!stockMap[key]) {
+                        stockMap[key] = (parseFloat(inv.quantity) || 0);
+                    }
+                });
+            } catch (e) { }
         }
 
         // ================================================

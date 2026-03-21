@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Production Excel View - Standard Logic Implementation
  * Synced 100% with Kanban, proper enums and computed fields from backend
  */
@@ -48,6 +48,12 @@ const MATERIAL_LABEL = {
     CUSTOMER_PROVIDED: "Khách cấp"
 };
 
+const EXPORT_LABEL = {
+    NONE: "Chưa xuất",
+    PARTIAL: "Đang xuất",
+    FULL: "Đã xuất đủ"
+};
+
 const MATERIAL_GROUPS = ["GLASS", "ALUMINUM", "HARDWARE", "ACCESSORY"];
 const MATERIAL_GROUP_LABEL = {
     GLASS: "Kính",
@@ -73,6 +79,7 @@ let columnSettings = {
     createdAt: true,
     deliveryDate: true,
     materialStatus: true,
+    exportStatus: true,
     materialDate: true,
     fixCompatible: true,
     note: true
@@ -389,6 +396,7 @@ function createMainRow(order) {
         <td data-col="createdAt">${createdAt}</td>
         <td data-col="deliveryDate">${deliveryPlanDate} ${overdueBadge}</td>
         <td data-col="materialStatus" class="material-status-cell cursor-pointer hover:bg-blue-50" onclick="event.stopPropagation(); openMaterialSummaryModal(${order.id})">${materialBadge}</td>
+        <td data-col="exportStatus" class="material-status-cell cursor-pointer hover:bg-blue-50" onclick="event.stopPropagation(); openMaterialSummaryModal(${order.id})">${getExportBadge(order.exportStatus)}</td>
         <td data-col="materialDate" class="material-date-cell cursor-pointer hover:bg-blue-50" onclick="event.stopPropagation(); openMaterialSummaryModal(${order.id})">${materialPlanDate}</td>
         <td data-col="fixCompatible" class="editable-cell" onclick="event.stopPropagation();" ondblclick="editCell(this, ${order.id}, 'fixCompatible')">${order.fixCompatible || ''}</td>
         <td data-col="note" class="editable-cell" onclick="event.stopPropagation();" ondblclick="editCell(this, ${order.id}, 'note')">${order.note || ''}</td>
@@ -447,6 +455,12 @@ function createMaterialRow(orderId, material) {
         <td data-col="quantity" class="editable-cell text-xs text-gray-600 cursor-pointer hover:bg-blue-50" ondblclick="editMaterialField(${orderId}, '${material.group}', 'quantity', this)">${escapeHtml(quantity)}</td>
         <td data-col="workforce" colspan="3"></td>
         <td data-col="materialStatus" class="material-detail-cell cursor-pointer hover:bg-blue-50" onclick="event.stopPropagation(); openMaterialDetailModal(${orderId}, '${material.group}')">${statusBadge}</td>
+        <td data-col="exportStatus" class="material-status-cell cursor-pointer hover:bg-blue-50" onclick="event.stopPropagation(); openMaterialDetailModal(${orderId}, '${material.group}')">
+            <div class="flex flex-col items-center">
+                ${getExportBadge(material.exportStatus)}
+                <span class="text-[10px] text-gray-500 mt-0.5">${material.exportRatio || '--'}</span>
+            </div>
+        </td>
         <td data-col="materialDate">${planDate}</td>
         <td data-col="fixCompatible"></td>
         <td data-col="note" class="editable-cell" ondblclick="editMaterialNote(${orderId}, '${material.group}')">${material.note || ''}</td>
@@ -579,6 +593,14 @@ function getMaterialBadgeClass(status) {
         case 'CUSTOMER_PROVIDED': return 'status-customer';
         default: return 'status-pending';
     }
+}
+
+function getExportBadge(status) {
+    const label = EXPORT_LABEL[status] || status || 'Chưa xuất';
+    let badgeClass = 'status-pending';
+    if (status === 'PARTIAL') badgeClass = 'status-ordered';
+    if (status === 'FULL') badgeClass = 'status-ok';
+    return `<span class="status-badge ${badgeClass}">${label}</span>`;
 }
 
 // ============================================
@@ -1215,6 +1237,7 @@ async function openMaterialDetailModal(orderId, group) {
             tableRows = items.map((item, idx) => {
                 const statusClass = getStockStatusClass(item.status);
                 const statusLabel = getStockStatusLabel(item.status);
+                const exportedQty = item.exportedQty || 0;
                 return `
                     <tr class="hover:bg-gray-50 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}">
                         <td class="px-3 py-3 text-sm font-mono text-blue-600">${escapeHtml(item.code)}</td>
@@ -1223,6 +1246,7 @@ async function openMaterialDetailModal(orderId, group) {
                         <td class="px-3 py-3 text-sm text-center font-medium">${item.required || 0}</td>
                         <td class="px-3 py-3 text-sm text-center">${item.stock || 0}</td>
                         <td class="px-3 py-3 text-sm text-center font-medium ${item.shortage > 0 ? 'text-red-600' : ''}">${item.shortage || 0}</td>
+                        <td class="px-3 py-3 text-sm text-center font-medium text-emerald-600">${exportedQty}</td>
                         <td class="px-3 py-3 text-sm text-center">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClass}">
                                 ${statusLabel}
@@ -1279,9 +1303,10 @@ async function openMaterialDetailModal(orderId, group) {
                                 <th class="px-3 py-3 text-left text-xs font-medium uppercase">Tên vật tư</th>
                                 <th class="px-3 py-3 text-center text-xs font-medium uppercase">ĐVT</th>
                                 <th class="px-3 py-3 text-center text-xs font-medium uppercase">Cần</th>
-                                <th class="px-3 py-3 text-center text-xs font-medium uppercase">Tồn kho</th>
+                                <th class="px-3 py-3 text-center text-xs font-medium uppercase">Kho</th>
                                 <th class="px-3 py-3 text-center text-xs font-medium uppercase">Thiếu</th>
-                                <th class="px-3 py-3 text-center text-xs font-medium uppercase">Trạng thái</th>
+                                <th class="px-3 py-3 text-center text-xs font-medium uppercase bg-emerald-700">Đã xuất</th>
+                                <th class="px-3 py-3 text-center text-xs font-medium uppercase">Trạng Thái</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
@@ -1381,6 +1406,13 @@ function openMaterialSummaryModal(orderId) {
                     <div class="flex items-center justify-between mb-2">
                         <span class="font-bold text-lg ${statusColor.text}">${groupLabel}</span>
                         ${statusBadge}
+                    </div>
+                    <div class="flex items-center justify-between text-sm mb-2">
+                        <span class="text-gray-500">Tình trạng XK:</span>
+                        <div class="flex items-center gap-2">
+                            ${getExportBadge(mat.exportStatus)}
+                            <span class="text-xs font-medium text-gray-600">${mat.exportRatio || '--'}</span>
+                        </div>
                     </div>
                     <div class="text-sm text-gray-600">
                         <span>Lịch giao: </span>
@@ -1646,7 +1678,7 @@ function renderCustomerDetailModal(modal, c, projects, crmData) {
     const initial = (c.name || 'K').charAt(0).toUpperCase();
     const inProgress = projects.filter(p => !['completed', 'cancelled', 'handover'].includes(p.status)).length;
     const completed = projects.filter(p => ['completed', 'handover'].includes(p.status)).length;
-    const totalValue = projects.reduce((sum, p) => sum + (parseFloat(p.total_amount) || 0), 0);
+    const totalValue = projects.reduce((sum, p) => sum + (parseFloat(p.total_value) || 0), 0);
 
     // Merge CRM timeline
     const interactions = crmData.interactions || [];
@@ -1690,7 +1722,7 @@ function renderCustomerDetailModal(modal, c, projects, crmData) {
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="text-xs font-medium text-gray-600">${fmtCurrency(p.total_amount)}</span>
+                    <span class="text-xs font-medium text-gray-600">${fmtCurrency(p.total_value)}</span>
                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusColor[p.status] || 'bg-gray-100 text-gray-600'}">${statusLabel[p.status] || p.status || '--'}</span>
                 </div>
             </div>

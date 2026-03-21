@@ -1142,10 +1142,14 @@ exports.delete = async (req, res) => {
         }
 
         // 4. XÃ³a BOM items cá»§a táº¥t cáº£ door_designs trong project
-        await connection.query(`
+        try {
+
+            await connection.query(`
             DELETE FROM bom_items 
             WHERE design_id IN (SELECT id FROM door_designs WHERE project_id = ?)
         `, [id]);
+
+        } catch(e) { console.log('error bom_items'); }
         console.log('  âœ“ Deleted BOM items');
 
         // 5. XÃ³a item_bom_lines vÃ  item_bom_versions
@@ -1164,31 +1168,47 @@ exports.delete = async (req, res) => {
         }
 
         // 6. XÃ³a door_drawings cá»§a táº¥t cáº£ door_designs trong project
-        await connection.query(`
+        try {
+
+            await connection.query(`
             DELETE FROM door_drawings 
             WHERE door_design_id IN (SELECT id FROM door_designs WHERE project_id = ?)
         `, [id]);
+
+        } catch(e) { console.log('error door_drawings'); }
         console.log('  âœ“ Deleted door drawings');
 
         // 7. XÃ³a door_designs
-        await connection.query(
+        try {
+
+            await connection.query(
             "DELETE FROM door_designs WHERE project_id = ?",
             [id]
         );
+
+        } catch(e) { console.log('error door_designs'); }
         console.log('  âœ“ Deleted door designs');
 
         // 8. XÃ³a quotation_items cá»§a táº¥t cáº£ quotations trong project
-        await connection.query(`
+        try {
+
+            await connection.query(`
             DELETE FROM quotation_items 
             WHERE quotation_id IN (SELECT id FROM quotations WHERE project_id = ?)
         `, [id]);
+
+        } catch(e) { console.log('error quotation_items'); }
         console.log('  âœ“ Deleted quotation items');
 
         // 9. XÃ³a quotations
-        await connection.query(
+        try {
+
+            await connection.query(
             "DELETE FROM quotations WHERE project_id = ?",
             [id]
         );
+
+        } catch(e) { console.log('error quotations'); }
         console.log('  âœ“ Deleted quotations');
 
         // 10. XÃ³a production_order_bom vÃ  production_order_doors
@@ -1229,10 +1249,14 @@ exports.delete = async (req, res) => {
         }
 
         // 13. XÃ³a production_orders
-        await connection.query(
+        try {
+
+            await connection.query(
             "DELETE FROM production_orders WHERE project_id = ?",
             [id]
         );
+
+        } catch(e) { console.log('error production_orders'); }
         console.log('  âœ“ Deleted production orders');
 
         // 14. XÃ³a project_items (háº¡ng má»¥c dá»± Ã¡n)
@@ -1431,7 +1455,7 @@ exports.delete = async (req, res) => {
                 'project_activity_logs', 'product_completion', 'product_manufacturing', 
                 'installation_progress', 'project_material_status', 'product_materials', 
                 'handover_info', 'design_purchase_requests', 'design_inventory_reservations', 
-                'aluminum_scraps', 'design_revisions'
+                'aluminum_scraps', 'design_revisions', 'production_orders', 'production_order_doors', 'production_progress', 'decals', 'door_drawings', 'cutting_optimizations', 'customer_interactions'
             ];
             for (const t of extraTables) {
                 try {
