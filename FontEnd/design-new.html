@@ -6345,6 +6345,12 @@
                             updatePhukienSummary();
                             console.log(`✅ Loaded ${bocTachData.phukien.length} phụ kiện items`);
                         }
+
+                        // ✅ Tự động lưu nếu dữ liệu được load từ fallback (chưa có trong project_materials)
+                        if (result.isFallback) {
+                            console.log('⚠️ Dữ liệu BOM được tải từ fallback, tự động lưu vào database để đồng bộ...');
+                            autoSaveBOMData();
+                        }
                     }
                 } catch (error) {
                     // Chỉ log warning, không throw error vì có thể chưa có dữ liệu
@@ -11835,6 +11841,7 @@
                         const nhomItems = [];
                         const kinhItems = [];
                         const vattuItems = [];
+                        const phukienItems = [];
 
                         if (bomData.items) {
                             bomData.items.forEach(item => {
@@ -11843,22 +11850,40 @@
                                     nhomItems.push(item);
                                 } else if (type === 'glass' || type.includes('kính')) {
                                     kinhItems.push(item);
+                                } else if (type === 'accessory' || type === 'hardware' || type === 'phukien' || type === 'gasket' || type === 'glue') {
+                                    phukienItems.push(item);
                                 } else {
                                     vattuItems.push(item);
                                 }
                             });
                         }
 
+                        // ✅ Cập nhật vào global bocTachData
+                        bocTachData = {
+                            nhom: nhomItems,
+                            kinh: kinhItems,
+                            vattu: vattuItems,
+                            phukien: phukienItems
+                        };
+
                         // Render to tables
                         renderBocTachNhomTable(nhomItems);
                         renderBocTachKinhTable(kinhItems);
                         renderBocTachVatTuTable(vattuItems);
+                        if (typeof renderBocTachPhukienTable === 'function') {
+                            renderBocTachPhukienTable(phukienItems);
+                            if (typeof updatePhukienSummary === 'function') updatePhukienSummary();
+                        }
+
+                        // ✅ Tự động lưu sau khi bóc tách xong
+                        console.log('🔄 Đang tự động lưu kết quả bóc tách...');
+                        autoSaveBOMData();
 
                         // Update status
-                        const total = nhomItems.length + kinhItems.length + vattuItems.length;
+                        const total = nhomItems.length + kinhItems.length + vattuItems.length + phukienItems.length;
                         document.getElementById('bocTachStatusText').textContent = `Đã bóc tách ${total} loại vật tư`;
 
-                        alert(`Bóc tách BOM hoàn thành!\n- Nhôm: ${nhomItems.length} loại\n- Kính: ${kinhItems.length} loại\n- Vật tư phụ: ${vattuItems.length} loại`);
+                        alert(`Bóc tách BOM hoàn thành!\n- Nhôm: ${nhomItems.length} loại\n- Kính: ${kinhItems.length} loại\n- Vật tư phụ: ${vattuItems.length} loại\n- Phụ kiện: ${phukienItems.length} loại`);
                     } else {
                         document.getElementById('bocTachStatusText').textContent = 'Bóc tách không thành công';
                         alert('Không thể bóc tách BOM: ' + (result.message || 'Lỗi không xác định'));

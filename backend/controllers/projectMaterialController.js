@@ -2378,6 +2378,7 @@ exports.getBOMData = async (req, res) => {
         const kinh = [];
         const vattu = [];
         const phukien = [];
+        let isFallback = false;
 
         if (rows.length > 0) {
             // âœ… DÃ¹ng project_materials (Ä‘Ã£ lÆ°u tá»« trang thiáº¿t káº¿)
@@ -2454,6 +2455,7 @@ exports.getBOMData = async (req, res) => {
 
         res.json({
             success: true,
+            isFallback: isFallback,
             data: { nhom, kinh, vattu, phukien }
         });
 

@@ -1994,32 +1994,37 @@ exports.getMaterialDetails = async (req, res) => {
         if (bomRows.length === 0) {
             console.log(`📦 project_materials empty → fallback to bom_items`);
             try {
-                // Map group to bom_items item_type filters
-                const groupToBomTypes = {
-                    'ALUMINUM': ['frame', 'mullion', 'sash', 'bead', 'profile', 'aluminum'],
-                    'GLASS': ['glass'],
-                    'HARDWARE': ['hardware', 'lock', 'handle', 'hinge'],
-                    'ACCESSORY': ['accessory', 'gasket', 'glue', 'sealant', 'other']
-                };
-                const bomItemTypes = groupToBomTypes[groupUpper] || [];
-                
-                const [fallbackRows] = await db.query(`
-                    SELECT 
-                        NULL as id,
-                        COALESCE(bi.profile_code, bi.item_code) as material_code,
-                        COALESCE(bi.item_name, bi.profile_code) as material_name,
-                        SUM(bi.quantity) as quantity,
-                        bi.unit,
-                        NULL as notes
-                    FROM bom_items bi
-                    INNER JOIN door_designs dd ON dd.id = bi.design_id
-                    WHERE dd.project_id = ? AND LOWER(bi.item_type) IN (?)
-                    GROUP BY bi.item_code, bi.item_name, bi.profile_code, bi.unit
-                    ORDER BY bi.item_name
-                `, [id, bomItemTypes]);
-                
-                bomRows = fallbackRows;
-                console.log(`📦 bom_items fallback found ${bomRows.length} items`);
+                // ✅ FIX: Use exact same fallback conditions as getBOMData (projectMaterialController.js:2438)
+                let fallbackWhere = '';
+                if (groupUpper === 'ALUMINUM') {
+                    fallbackWhere = `LOWER(bi.item_type) IN ('frame', 'mullion', 'sash', 'bead', 'profile', 'aluminum')`;
+                } else if (groupUpper === 'GLASS') {
+                    fallbackWhere = `LOWER(bi.item_type) = 'glass'`;
+                } else if (groupUpper === 'HARDWARE') {
+                    fallbackWhere = `LOWER(bi.item_type) IN ('accessory', 'hardware', 'gasket', 'glue')`;
+                } else if (groupUpper === 'ACCESSORY') {
+                    fallbackWhere = `(bi.item_type IS NULL OR bi.item_type = '' OR LOWER(bi.item_type) NOT IN ('frame', 'mullion', 'sash', 'bead', 'profile', 'aluminum', 'glass', 'accessory', 'hardware', 'gasket', 'glue'))`;
+                }
+
+                if (fallbackWhere) {
+                    const [fallbackRows] = await db.query(`
+                        SELECT 
+                            NULL as id,
+                            COALESCE(bi.profile_code, bi.item_code) as material_code,
+                            COALESCE(bi.item_name, bi.profile_code) as material_name,
+                            SUM(bi.quantity) as quantity,
+                            bi.unit,
+                            NULL as notes
+                        FROM bom_items bi
+                        INNER JOIN door_designs dd ON dd.id = bi.design_id
+                        WHERE dd.project_id = ? AND ${fallbackWhere}
+                        GROUP BY bi.item_code, bi.item_name, bi.profile_code, bi.unit
+                        ORDER BY bi.item_name
+                    `, [id]);
+                    
+                    bomRows = fallbackRows;
+                    console.log(`📦 bom_items fallback found ${bomRows.length} items`);
+                }
             } catch (bomErr) {
                 console.warn('⚠️ bom_items fallback failed:', bomErr.message);
             }
@@ -2204,14 +2209,21 @@ exports.getMaterialDetails = async (req, res) => {
                 exportLines.forEach(el => {
                     const codeKey = (el.item_code || '').toLowerCase();
                     const nameKey = (el.item_name || '').toLowerCase();
-                    const qty = parseFloat(el.total_exported) || 0;
-                    if (codeKey) exportedItemsMap[codeKey] = (exportedItemsMap[codeKey] || 0) + qty;
-                    if (nameKey) exportedItemsMap[nameKey] = (exportedItemsMap[nameKey] || 0) + qty;
-                    // Also store normalized keys
                     const normCode = normalizeCode(el.item_code || '');
                     const normName = normalizeCode(el.item_name || '');
-                    if (normCode) exportedItemsMap[normCode] = (exportedItemsMap[normCode] || 0) + qty;
-                    if (normName) exportedItemsMap[normName] = (exportedItemsMap[normName] || 0) + qty;
+                    const qty = parseFloat(el.total_exported) || 0;
+                    
+                    // Deduplicate keys for THIS specific database row
+                    const uniqueKeys = new Set();
+                    if (codeKey) uniqueKeys.add(codeKey);
+                    if (nameKey) uniqueKeys.add(nameKey);
+                    if (normCode) uniqueKeys.add(normCode);
+                    if (normName) uniqueKeys.add(normName);
+                    
+                    // Add qty strictly ONCE to each distinct key representation
+                    uniqueKeys.forEach(key => {
+                        exportedItemsMap[key] = (exportedItemsMap[key] || 0) + qty;
+                    });
                 });
                 console.log(`📦 Export history: Found ${exportLines.length} exported item types for project ${id}`);
             }
