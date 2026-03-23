@@ -1,0 +1,13 @@
+🧹 BẮT ĐẦU DỌN DẸP DỮ LIỆU MỒ CÔI...
+
+✅ order_material_status: đã xóa 41 orphan rows
+✅ product_manufacturing: đã xóa 32 orphan rows
+✅ installation_progress: đã xóa 9 orphan rows
+✅ product_materials: đã xóa 9 orphan rows
+✅ project_material_status: đã xóa 8 orphan rows
+⚠️  purchase_requests: Unknown column 'request_id' in 'where clause'
+⚠️  material_requests: Unknown column 'request_id' in 'where clause'
+✅ export_slips: đã xóa 1 orphan rows
+✅ project_activity_logs: đã xóa 6 orphan rows
+
+✅ HOÀN THÀNH! Tất cả dữ liệu mồ côi đã được dọn sạch.

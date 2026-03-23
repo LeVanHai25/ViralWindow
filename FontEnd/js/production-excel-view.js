@@ -75,6 +75,9 @@ let columnSettings = {
     featuredProducts: true,
     customer: true,
     quantity: true,
+    projectValue: true,
+    advanceAmount: true,
+    remaining: true,
     workforce: true,
     createdAt: true,
     deliveryDate: true,
@@ -163,7 +166,7 @@ async function loadOrders() {
     if (tbody) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="13" class="text-center py-8">
+                <td colspan="16" class="text-center py-8">
                     <div class="flex items-center justify-center gap-3">
                         <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
                         <span class="text-gray-500">Đang tải dữ liệu...</span>
@@ -329,7 +332,7 @@ function renderGrid(orders) {
     tbody.innerHTML = '';
 
     if (!orders || orders.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="13" class="text-center py-8 text-gray-500">Không có dữ liệu</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="16" class="text-center py-8 text-gray-500">Không có dữ liệu</td></tr>';
         return;
     }
 
@@ -385,6 +388,12 @@ function createMainRow(order) {
         ? (/[a-zA-Z]/.test(order.quantity) ? order.quantity : `${parseFloat(order.quantity).toFixed(2)} kg`)
         : '';
 
+    // Finance columns
+    const totalValue = parseFloat(order.totalValue) || 0;
+    const advanceAmount = parseFloat(order.advanceAmount) || 0;
+    const remaining = totalValue - advanceAmount;
+    const remainingClass = remaining < 0 ? 'text-red-600' : (remaining === 0 && totalValue === 0 ? 'text-gray-400' : 'text-green-700');
+
     tr.innerHTML = `
         <td class="expand-cell"><button class="expand-btn">${expandIcon}</button></td>
         <td data-col="orderCode"><a href="#" onclick="event.stopPropagation(); openDetail(${order.id})" class="text-blue-600 font-semibold">${escapeHtml(order.orderCode)}</a></td>
@@ -392,6 +401,9 @@ function createMainRow(order) {
         <td data-col="featuredProducts"></td>
         <td data-col="customer" class="customer-cell" onclick="event.stopPropagation(); openCustomerModal(${order.id})" title="${escapeHtml(branchCustomer)}">${escapeHtml(branchCustomer)}</td>
         <td data-col="quantity" data-value="${order.quantity || ''}" class="text-right font-medium text-blue-600 editable-cell" onclick="event.stopPropagation();" ondblclick="editCell(this, ${order.id}, 'quantity')">${quantityDisplay}</td>
+        <td data-col="projectValue" data-raw="${totalValue}" class="text-right font-medium text-blue-700 editable-cell" onclick="event.stopPropagation();" ondblclick="editCurrencyCell(this, ${order.id}, 'totalValue')">${formatCurrency(totalValue)}</td>
+        <td data-col="advanceAmount" data-raw="${advanceAmount}" class="text-right font-medium text-orange-600 editable-cell" onclick="event.stopPropagation();" ondblclick="editCurrencyCell(this, ${order.id}, 'advanceAmount')">${formatCurrency(advanceAmount)}</td>
+        <td data-col="remaining" class="text-right font-bold ${remainingClass}">${formatCurrency(remaining)}</td>
         <td data-col="workforce" class="editable-cell" onclick="event.stopPropagation();" ondblclick="editCell(this, ${order.id}, 'workforce')" title="Double-click để nhập nhân lực">${escapeHtml(order.workforce || '')}</td>
         <td data-col="createdAt">${createdAt}</td>
         <td data-col="deliveryDate">${deliveryPlanDate} ${overdueBadge}</td>
@@ -492,6 +504,9 @@ function createMaterialRow(orderId, material) {
         <td data-col="featuredProducts" class="editable-cell text-xs text-gray-600 cursor-pointer hover:bg-blue-50" ondblclick="editMaterialField(${orderId}, '${material.group}', 'featuredProducts', this)">${escapeHtml(featuredProducts)}</td>
         <td data-col="customer"></td>
         <td data-col="quantity" class="editable-cell text-xs text-gray-600 cursor-pointer hover:bg-blue-50" ondblclick="editMaterialField(${orderId}, '${material.group}', 'quantity', this)">${escapeHtml(quantity)}</td>
+        <td data-col="projectValue"></td>
+        <td data-col="advanceAmount"></td>
+        <td data-col="remaining"></td>
         <td data-col="workforce" colspan="3"></td>
         <td data-col="materialStatus" class="material-detail-cell cursor-pointer hover:bg-blue-50" onclick="event.stopPropagation(); openMaterialDetailModal(${orderId}, '${material.group}')">${statusBadge}</td>
         <td data-col="exportStatus" class="material-status-cell cursor-pointer hover:bg-blue-50" onclick="event.stopPropagation(); openMaterialDetailModal(${orderId}, '${material.group}')">
@@ -749,6 +764,103 @@ async function loadOrderHistory(orderId) {
 }
 
 // ============================================
+// FORMAT CURRENCY
+// ============================================
+function formatCurrency(value) {
+    const num = parseFloat(value);
+    if (isNaN(num)) return '—';
+    if (num === 0) return '—';
+    return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND',
+        maximumFractionDigits: 0
+    }).format(num);
+}
+
+// ============================================
+// INLINE EDITING (Currency fields)
+// ============================================
+function editCurrencyCell(td, orderId, field) {
+    // Get raw numeric value from data-raw attribute
+    const currentRaw = parseFloat(td.dataset.raw) || 0;
+
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.value = currentRaw > 0 ? currentRaw : '';
+    input.className = 'w-full border rounded px-2 py-1 text-right';
+    input.placeholder = 'Nhập số tiền...';
+    input.min = '0';
+    input.step = '1000';
+
+    td.innerHTML = '';
+    td.appendChild(input);
+    input.focus();
+    input.select();
+
+    const saveEdit = async () => {
+        const newValue = parseFloat(input.value) || 0;
+        // Update display
+        td.dataset.raw = newValue;
+        td.textContent = formatCurrency(newValue);
+
+        // Recalculate remaining column in the same row
+        const row = td.closest('tr');
+        if (row) {
+            const pvCell = row.querySelector('[data-col="projectValue"]');
+            const aaCell = row.querySelector('[data-col="advanceAmount"]');
+            const rmCell = row.querySelector('[data-col="remaining"]');
+            if (pvCell && aaCell && rmCell) {
+                const tv = parseFloat(pvCell.dataset.raw) || 0;
+                const aa = parseFloat(aaCell.dataset.raw) || 0;
+                const remaining = tv - aa;
+                rmCell.textContent = formatCurrency(remaining);
+                rmCell.className = rmCell.className.replace(/text-(red|green|gray)-\d+/g, '');
+                rmCell.classList.add(remaining < 0 ? 'text-red-600' : (remaining === 0 && tv === 0 ? 'text-gray-400' : 'text-green-700'));
+            }
+        }
+
+        if (newValue !== currentRaw) {
+            try {
+                const response = await fetch(`${API_BASE}/production/excel/orders/${orderId}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ [field]: newValue })
+                });
+                const result = await response.json();
+                if (!result.success) {
+                    console.error('Save failed:', result.error);
+                    td.dataset.raw = currentRaw;
+                    td.textContent = formatCurrency(currentRaw);
+                } else {
+                    // Update in-memory data
+                    const order = ordersData.find(o => o.id === orderId);
+                    if (order) {
+                        if (field === 'totalValue') order.totalValue = newValue;
+                        if (field === 'advanceAmount') order.advanceAmount = newValue;
+                    }
+                }
+            } catch (error) {
+                console.error('Error saving:', error);
+                td.dataset.raw = currentRaw;
+                td.textContent = formatCurrency(currentRaw);
+            }
+        }
+    };
+
+    input.addEventListener('blur', saveEdit);
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            saveEdit();
+        }
+        if (e.key === 'Escape') {
+            td.dataset.raw = currentRaw;
+            td.textContent = formatCurrency(currentRaw);
+        }
+    });
+}
+
+// ============================================
 // INLINE EDITING
 // ============================================
 function editCell(td, orderId, field) {
@@ -928,8 +1040,9 @@ function openColumnSettings() {
     }
 
     // Sync checkboxes with current settings
-    const columnKeys = ['orderCode', 'orderName', 'featuredProducts', 'customer', 'quantity', 'workshop',
-        'createdAt', 'deliveryDate', 'materialStatus', 'materialDate',
+    const columnKeys = ['orderCode', 'orderName', 'featuredProducts', 'customer', 'quantity',
+        'projectValue', 'advanceAmount', 'remaining',
+        'workforce', 'createdAt', 'deliveryDate', 'materialStatus', 'exportStatus', 'materialDate',
         'fixCompatible', 'note'];
 
     columnKeys.forEach(key => {
@@ -949,8 +1062,9 @@ function closeColumnSettings() {
 
 function applyColumnSettings() {
     // Read checkbox values
-    const columnKeys = ['orderCode', 'orderName', 'featuredProducts', 'customer', 'quantity', 'workshop',
-        'createdAt', 'deliveryDate', 'materialStatus', 'materialDate',
+    const columnKeys = ['orderCode', 'orderName', 'featuredProducts', 'customer', 'quantity',
+        'projectValue', 'advanceAmount', 'remaining',
+        'workforce', 'createdAt', 'deliveryDate', 'materialStatus', 'exportStatus', 'materialDate',
         'fixCompatible', 'note'];
 
     columnKeys.forEach(key => {
@@ -975,8 +1089,9 @@ function applyColumnSettings() {
 
 function resetColumnSettings() {
     // Reset all to true
-    const columnKeys = ['orderCode', 'orderName', 'featuredProducts', 'customer', 'quantity', 'workshop',
-        'createdAt', 'deliveryDate', 'materialStatus', 'materialDate',
+    const columnKeys = ['orderCode', 'orderName', 'featuredProducts', 'customer', 'quantity',
+        'projectValue', 'advanceAmount', 'remaining',
+        'workforce', 'createdAt', 'deliveryDate', 'materialStatus', 'exportStatus', 'materialDate',
         'fixCompatible', 'note'];
 
     columnKeys.forEach(key => {

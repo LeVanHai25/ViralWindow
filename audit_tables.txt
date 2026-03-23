@@ -1,0 +1,22 @@
+=== ORPHAN ROW AUDIT (rows where project no longer exists) ===
+
+✅ OK  export_slips: total=0, orphan=0
+✅ OK  financial_transactions: total=6, orphan=0
+✅ OK  installation_progress: total=0, orphan=0
+✅ OK  material_requests: total=0, orphan=0
+✅ OK  product_manufacturing: total=30, orphan=0
+✅ OK  product_materials: total=0, orphan=0
+✅ OK  project_activity_logs: total=3, orphan=0
+✅ OK  project_material_status: total=1, orphan=0
+✅ OK  project_materials: total=46, orphan=0
+✅ OK  purchase_requests: total=13, orphan=0
+✅ OK  quotations: total=2, orphan=0
+✅ OK  stock_document_lines: total=15, orphan=0
+✅ OK  stock_documents: total=8, orphan=0
+✅ OK  order_material_status (order_id): total=16, orphan=0
+
+=== TABLES MISSING FROM DELETE FUNCTION ===
+  All tables appear to be covered!
+
+⚠️  order_material_status uses order_id (= project.id) - NOT project_id.
+   Check if it is deleted in the delete function...

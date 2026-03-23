@@ -1923,7 +1923,8 @@ exports.getExportedMaterials = async (req, res) => {
                 c.full_name as customer_name
              FROM projects p
              LEFT JOIN customers c ON p.customer_id = c.id
-             WHERE p.status = 'in_production' OR p.progress_percent >= 60
+             WHERE (p.status = 'in_production' OR p.progress_percent >= 60)
+             AND p.status != 'completed'
              ORDER BY p.updated_at DESC, p.created_at DESC`
         );
 

@@ -86,7 +86,7 @@ exports.getInstallationProjects = async (req, res) => {
                 ) AS UNSIGNED), 0) AS total_products
             FROM projects p
             LEFT JOIN customers c ON p.customer_id = c.id
-            WHERE p.status IN ('installation', 'handover', 'completed')
+            WHERE p.status IN ('installation', 'handover')
             ORDER BY p.created_at DESC
         `);
 

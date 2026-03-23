@@ -79,7 +79,7 @@ router.get('/projects', async (req, res) => {
                 c.email as customer_email
             FROM projects p
             LEFT JOIN customers c ON p.customer_id = c.id
-            WHERE p.status IN ('handover', 'completed')
+            WHERE p.status = 'handover'
             ORDER BY p.updated_at DESC
         `;
 

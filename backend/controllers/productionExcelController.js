@@ -914,7 +914,12 @@ async function getOrdersData(req, options = {}) {
             p.manual_weight AS manualWeight,
             COALESCE(p.excel_note, '') AS note,
             COALESCE(p.fix_compatible, '') AS fixCompatible,
-            COALESCE(p.workforce, '') AS workforce
+            COALESCE(p.workforce, '') AS workforce,
+            COALESCE(p.total_value, 0) AS totalValue,
+            COALESCE(
+                (SELECT q.advance_amount FROM quotations q WHERE q.project_id = p.id ORDER BY q.created_at DESC LIMIT 1),
+                0
+            ) AS advanceAmount
         FROM projects p
         LEFT JOIN customers c ON c.id = p.customer_id
         LEFT JOIN agencies a ON a.id = c.agency_id
@@ -1123,6 +1128,8 @@ async function getOrdersData(req, options = {}) {
             note: row.note || '',
             fixCompatible: row.fixCompatible || '',
             workforce: row.workforce || '',
+            totalValue: parseFloat(row.totalValue) || 0,
+            advanceAmount: parseFloat(row.advanceAmount) || 0,
 
             // Computed fields
             isOverdue,
@@ -1393,7 +1400,7 @@ exports.getOrderDetail = async (req, res) => {
 exports.updateOrder = async (req, res) => {
     try {
         const { id } = req.params;
-        const { deliveryPlanDate, note, fixCompatible, workforce } = req.body;
+        const { deliveryPlanDate, note, fixCompatible, workforce, totalValue, advanceAmount } = req.body;
         const userId = req.user?.id || 1;
 
         const updates = [];
@@ -1425,9 +1432,23 @@ exports.updateOrder = async (req, res) => {
             params.push(req.body.quantity || '');
         }
 
+        // ✅ MỚI: Cập nhật Giá trị dự án
+        if (totalValue !== undefined) {
+            updates.push('total_value = ?');
+            params.push(parseFloat(totalValue) || 0);
+        }
+
         if (updates.length > 0) {
             params.push(id);
             await db.query(`UPDATE projects SET ${updates.join(', ')} WHERE id = ?`, params);
+        }
+
+        // ✅ MỚI: Cập nhật Số tiền tạm ứng vào báo giá mới nhất
+        if (advanceAmount !== undefined) {
+            await db.query(
+                `UPDATE quotations SET advance_amount = ? WHERE project_id = ? ORDER BY created_at DESC LIMIT 1`,
+                [parseFloat(advanceAmount) || 0, id]
+            );
         }
 
         // Log audit event

@@ -121,7 +121,7 @@ exports.getManufacturingProjects = async (req, res) => {
             FROM projects p
             LEFT JOIN customers c ON p.customer_id = c.id
             WHERE p.status NOT IN ('cancelled', 'closed')
-            AND p.status IN ('in_production', 'installation', 'handover', 'completed')
+            AND p.status IN ('in_production', 'installation', 'handover')
             ORDER BY p.created_at DESC
         `);
 
