@@ -32,7 +32,16 @@ function playNotificationSound(){
 function initChat(){
     const token=sessionStorage.getItem('token');
     if(!token){window.location.href='login.html';return;}
-    try{const p=JSON.parse(atob(token.split('.')[1]));const u=JSON.parse(sessionStorage.getItem('user')||'{}');currentUserId=String(u.id||p.id||'');currentUserName=u.full_name||p.full_name||'Tôi';currentUserAvatar=u.avatar_url||'';console.log('[Chat] currentUserId=',currentUserId,'from JWT id=',p.id,'from user.id=',u.id);}catch(e){console.error('[Chat] init error:',e);}
+    // Read user info from sessionStorage FIRST (reliable, no atob needed)
+    const u=JSON.parse(sessionStorage.getItem('user')||'{}');
+    currentUserId=String(u.id||'');
+    currentUserName=u.full_name||'Tôi';
+    currentUserAvatar=u.avatar_url||'';
+    // Fallback: try JWT decode if sessionStorage user has no id
+    if(!currentUserId||currentUserId==='undefined'||currentUserId==='null'||currentUserId===''){
+        try{let payload=token.split('.')[1];payload=payload.replace(/-/g,'+').replace(/_/g,'/');const p=JSON.parse(atob(payload));currentUserId=String(p.id||'');currentUserName=currentUserName||p.full_name||'Tôi';}catch(e){console.error('[Chat] JWT decode fallback error:',e);}
+    }
+    console.log('[Chat] currentUserId=',currentUserId,'type=',typeof currentUserId);
 
     socket=io(SOCKET_URL,{auth:{token},reconnectionDelay:1000,reconnectionDelayMax:5000,reconnectionAttempts:10});
     socket.on('connect',()=>{const el=document.getElementById('connectionStatus');if(el){el.textContent='🟢 Đã kết nối';el.style.color='#22c55e';}});
