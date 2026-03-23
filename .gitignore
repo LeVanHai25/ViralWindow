@@ -8,6 +8,8 @@ temp_code.txt
 *.xlsx
 *.xls
 *.csv
+# Allow backend Excel templates (required for server-side export on Render)
+!backend/templates/*.xlsx
 
 # Gemini Antigravity
 .gemini/

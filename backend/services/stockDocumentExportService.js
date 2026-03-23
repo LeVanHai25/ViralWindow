@@ -18,18 +18,25 @@ class StockDocumentExportService {
      */
     async exportSingleDocument(doc, lines) {
         const workbook = new ExcelJS.Workbook();
+        let worksheet;
 
-        if (!fs.existsSync(this.templatePath)) {
-            throw new Error(`Template not found at: ${this.templatePath}`);
+        if (fs.existsSync(this.templatePath)) {
+            try {
+                await workbook.xlsx.readFile(this.templatePath);
+                // Remove extra sheets, keep only the first one
+                while (workbook.worksheets.length > 1) {
+                    workbook.removeWorksheet(workbook.worksheets[1].id);
+                }
+                worksheet = workbook.getWorksheet(1);
+            } catch (err) {
+                console.warn(`Error reading template, using blank workbook: ${err.message}`);
+                worksheet = workbook.addWorksheet('Phieu');
+            }
+        } else {
+            console.warn(`Template not found at ${this.templatePath}. Using blank workbook.`);
+            worksheet = workbook.addWorksheet('Phieu');
         }
 
-        await workbook.xlsx.readFile(this.templatePath);
-
-        // 1. Ensure only ONE sheet exists and it is clean
-        while (workbook.worksheets.length > 1) {
-            workbook.removeWorksheet(workbook.worksheets[1].id);
-        }
-        const worksheet = workbook.getWorksheet(1);
         worksheet.name = doc.doc_no || 'Phieu';
 
         // Clear all rows to ensure professional layout
