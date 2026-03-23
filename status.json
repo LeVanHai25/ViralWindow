@@ -1,0 +1,18 @@
+[
+  {
+    "id": 149,
+    "order_id": 17,
+    "material_type": "GLASS",
+    "status": "NONE",
+    "plan_date": null,
+    "actual_date": "2026-03-21",
+    "source_type": "stock_document",
+    "source_id": 104,
+    "note": "",
+    "featured_products": "r545",
+    "quantity": null,
+    "updated_by": 1,
+    "updated_at": "2026-03-21 23:27:18",
+    "created_at": "2026-03-04 22:27:57"
+  }
+]

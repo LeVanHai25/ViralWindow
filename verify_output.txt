@@ -1,0 +1,5 @@
+=== Export Status Results for Project 17 ===
+  GLASS: required=5, exported=5, items=2/2, status=FULL
+  ALUMINUM: required=6, exported=6, items=2/2, status=FULL
+  HARDWARE: required=7, exported=7, items=3/3, status=FULL
+  ACCESSORY: required=11, exported=11, items=3/3, status=FULL

@@ -1,0 +1,35 @@
+{
+  "success": true,
+  "data": {
+    "group": "GLASS",
+    "groupLabel": "Kính",
+    "overallStatus": "PARTIAL",
+    "summary": {
+      "total": 2,
+      "sufficient": 1,
+      "partial": 0,
+      "shortage": 1,
+      "issued": 0
+    },
+    "items": [
+      {
+        "code": "KL02",
+        "name": "8.38 mm Flim Grey",
+        "unit": "tấm",
+        "required": 4,
+        "stock": 13,
+        "shortage": 0,
+        "status": "sufficient"
+      },
+      {
+        "code": "K_KL_003",
+        "name": "Kính dán an toàn 2 lớp 24.76mm",
+        "unit": "tấm",
+        "required": 1,
+        "stock": 0,
+        "shortage": 1,
+        "status": "shortage"
+      }
+    ]
+  }
+}

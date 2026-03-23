@@ -1,0 +1,64 @@
+{
+  "lines": [
+    {
+      "item_code": "KL02",
+      "item_name": "8.38 mm Flim Grey",
+      "total_exported": "4.000"
+    },
+    {
+      "item_code": "C102",
+      "item_name": "Sập đế vách kính hộp",
+      "total_exported": "1.000"
+    },
+    {
+      "item_code": "VR022",
+      "item_name": "Bộ chốt cánh phụ 5 thứ xingfa",
+      "total_exported": "1.000"
+    },
+    {
+      "item_code": "VRPK-M-0134",
+      "item_name": "đầu khóa biên cao 7mm",
+      "total_exported": "5.000"
+    },
+    {
+      "item_code": "VR002",
+      "item_name": "Tay nắm cửa đi Galaxy",
+      "total_exported": "2.000"
+    },
+    {
+      "item_code": "VRPK-M-0120",
+      "item_name": "Bản lề cối Cmech hệ 65",
+      "total_exported": "5.000"
+    },
+    {
+      "item_code": "K_KL_003",
+      "item_name": "Kính dán an toàn 2 lớp 24.76mm",
+      "total_exported": "1.000"
+    },
+    {
+      "item_code": "AL5506",
+      "item_name": "Đố T",
+      "total_exported": "5.000"
+    },
+    {
+      "item_code": "VR001",
+      "item_name": "Lưỡi gà dài",
+      "total_exported": "4.000"
+    },
+    {
+      "item_code": "VRPK-M-0117",
+      "item_name": "Bản lề 4D Cmech màu bạc (010)",
+      "total_exported": "1.000"
+    }
+  ],
+  "bom": [
+    {
+      "material_code": "K_KL_003",
+      "material_name": "Kính dán an toàn 2 lớp 24.76mm"
+    },
+    {
+      "material_code": "KL02",
+      "material_name": "8.38 mm Flim Grey"
+    }
+  ]
+}

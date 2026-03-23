@@ -429,6 +429,45 @@ function applyColumnVisibilityToRow(row) {
     });
 }
 
+/**
+ * Get material date display with arrival/export context
+ * Handles multiple export dates when materials were exported across different days
+ */
+function getMaterialDateDisplay(material) {
+    const groupLabel = MATERIAL_GROUP_LABEL[material.group] || material.group;
+
+    if (material.status === 'ISSUED' || material.status === 'ARRIVED' || material.status === 'DELIVERED') {
+        let statusText = 'đã về';
+        if (material.status === 'ISSUED') statusText = 'đã xuất';
+        if (material.status === 'DELIVERED') statusText = 'đã giao';
+
+        // Check if we have multiple export dates from backend
+        if (material.exportDates && material.exportDates.length > 1) {
+            const dateLines = material.exportDates.map(ed => {
+                const d = formatDate(ed.date);
+                return `<div class="leading-tight">${d} <span class="text-gray-400">(${ed.qty})</span></div>`;
+            }).join('');
+            return `<div class="text-emerald-600 text-xs font-medium">
+                <div class="mb-0.5">${groupLabel} - ${statusText}:</div>
+                ${dateLines}
+            </div>`;
+        }
+
+        // Single date
+        const dateStr = material.exportDates && material.exportDates.length === 1
+            ? formatDate(material.exportDates[0].date)
+            : formatDate(material.actualDate || material.planDate);
+
+        if (dateStr) {
+            return `<span class="text-emerald-600 text-xs font-medium">${groupLabel} - ${statusText} ngày ${dateStr}</span>`;
+        }
+        return `<span class="text-emerald-600 text-xs font-medium">${groupLabel} - ${statusText}</span>`;
+    }
+
+    // Default: show plan date only
+    return formatDate(material.planDate);
+}
+
 function createMaterialRow(orderId, material) {
     const tr = document.createElement('tr');
     tr.className = 'material-row';
@@ -440,7 +479,7 @@ function createMaterialRow(orderId, material) {
         ? getMaterialBadgesSimple(material.itemStatuses)
         : getMaterialBadge(material.status);
 
-    const planDate = formatDate(material.planDate);
+    const planDateDisplay = getMaterialDateDisplay(material);
 
     // Sản phẩm đặc chưng cho loại vật tư này
     const featuredProducts = material.featuredProducts || '';
@@ -461,7 +500,7 @@ function createMaterialRow(orderId, material) {
                 <span class="text-[10px] text-gray-500 mt-0.5">${material.exportRatio || '--'}</span>
             </div>
         </td>
-        <td data-col="materialDate">${planDate}</td>
+        <td data-col="materialDate">${planDateDisplay}</td>
         <td data-col="fixCompatible"></td>
         <td data-col="note" class="editable-cell" ondblclick="editMaterialNote(${orderId}, '${material.group}')">${material.note || ''}</td>
     `;

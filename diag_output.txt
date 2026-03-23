@@ -1,0 +1,29 @@
+=== Export lines for project 17 ===
+  type: accessory, code: VR022, name: Bộ chốt cánh phụ 5 thứ xingfa, qty: 1.000
+  type: accessory, code: VR002, name: Tay nắm cửa đi Galaxy, qty: 2.000
+  type: accessory, code: VR001, name: Lưỡi gà dài, qty: 4.000
+  type: aluminum, code: AL5506, name: Đố T, qty: 5.000
+  type: aluminum, code: C102, name: Sập đế vách kính hộp, qty: 1.000
+  type: glass, code: KL02, name: 8.38 mm Flim Grey, qty: 4.000
+  type: glass, code: K_KL_003, name: Kính dán an toàn 2 lớp 24.76mm, qty: 1.000
+  type: other, code: VRPK-M-0120, name: Bản lề cối Cmech hệ 65, qty: 5.000
+  type: other, code: VRPK-M-0134, name: đầu khóa biên cao 7mm, qty: 5.000
+  type: other, code: VRPK-M-0117, name: Bản lề 4D Cmech màu bạc (010), qty: 1.000
+
+=== project_materials groups for project 17 ===
+  type: other, count: 3
+  type: phukien, count: 3
+  type: glass, count: 2
+  type: aluminum, count: 2
+
+=== order_material_status for project 17 ===
+  type: GLASS, status: ISSUED, source: stock_document, date: 2026-03-21
+  type: ALUMINUM, status: ISSUED, source: stock_document, date: 2026-03-21
+  type: HARDWARE, status: ISSUED, source: stock_document, date: 2026-03-21
+  type: ACCESSORY, status: ISSUED, source: stock_document, date: 2026-03-21
+
+=== BOM required quantities for project 17 ===
+  type: glass, total_qty: 5.00, items: 2
+  type: aluminum, total_qty: 6.00, items: 2
+  type: other, total_qty: 11.00, items: 3
+  type: phukien, total_qty: 7.00, items: 3

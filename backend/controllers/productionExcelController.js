@@ -732,7 +732,7 @@ async function getExportStatusForProjects(projectIds) {
     projectIds.forEach(pid => {
         map[pid] = {};
         MATERIAL_GROUPS.forEach(g => {
-            map[pid][g] = { exported: 0, required: 0, ratio: '0/0', status: 'NONE' };
+            map[pid][g] = { exported: 0, required: 0, ratio: '0/0', status: 'NONE', exportDates: [] };
         });
     });
 
@@ -741,11 +741,11 @@ async function getExportStatusForProjects(projectIds) {
         const [bomRows] = await db.query(`
             SELECT project_id, material_type, COUNT(*) as item_count, SUM(COALESCE(quantity, 0)) as total_qty
             FROM project_materials
-            WHERE project_id IN (?) AND material_type IN ('aluminum', 'glass', 'accessory', 'phukien')
+            WHERE project_id IN (?) AND material_type IN ('aluminum', 'glass', 'accessory', 'phukien', 'other')
             GROUP BY project_id, material_type
         `, [projectIds]);
 
-        const typeToGroup = { aluminum: 'ALUMINUM', glass: 'GLASS', phukien: 'HARDWARE', accessory: 'ACCESSORY' };
+        const typeToGroup = { aluminum: 'ALUMINUM', glass: 'GLASS', phukien: 'HARDWARE', accessory: 'ACCESSORY', other: 'ACCESSORY' };
         bomRows.forEach(row => {
             const g = typeToGroup[row.material_type];
             if (g && map[row.project_id]) {
@@ -774,7 +774,8 @@ async function getExportStatusForProjects(projectIds) {
             'aluminum': 'ALUMINUM', 'profile': 'ALUMINUM', 'frame': 'ALUMINUM',
             'glass': 'GLASS',
             'accessory': 'HARDWARE', 'hardware': 'HARDWARE',
-            'consumable': 'ACCESSORY', 'gasket': 'ACCESSORY', 'glue': 'ACCESSORY', 'sealant': 'ACCESSORY'
+            'consumable': 'ACCESSORY', 'gasket': 'ACCESSORY', 'glue': 'ACCESSORY', 'sealant': 'ACCESSORY',
+            'other': 'ACCESSORY'
         };
 
         exportRows.forEach(row => {
@@ -786,7 +787,34 @@ async function getExportStatusForProjects(projectIds) {
             }
         });
 
-        // 3. Calculate ratios and statuses
+        // 3. Get distinct export dates per project per material group
+        const [dateRows] = await db.query(`
+            SELECT 
+                COALESCE(l.project_id, d.project_id) as project_id,
+                l.item_type,
+                DATE(d.posted_at) as export_date,
+                SUM(l.qty) as qty_on_date
+            FROM stock_document_lines l
+            JOIN stock_documents d ON l.document_id = d.id
+            WHERE d.doc_type = 'export'
+              AND d.status = 'posted'
+              AND COALESCE(l.project_id, d.project_id) IN (?)
+            GROUP BY COALESCE(l.project_id, d.project_id), l.item_type, DATE(d.posted_at)
+            ORDER BY DATE(d.posted_at) ASC
+        `, [projectIds]);
+
+        dateRows.forEach(row => {
+            const pid = row.project_id;
+            const g = itemTypeToGroup[(row.item_type || '').toLowerCase()];
+            if (g && map[pid]) {
+                map[pid][g].exportDates.push({
+                    date: row.export_date,
+                    qty: parseFloat(row.qty_on_date) || 0
+                });
+            }
+        });
+
+        // 4. Calculate ratios and statuses
         for (const pid of projectIds) {
             if (!map[pid]) continue;
             MATERIAL_GROUPS.forEach(g => {
@@ -1046,7 +1074,8 @@ async function getOrdersData(req, options = {}) {
                 exportStatus: exportData.status,
                 exportRatio: exportData.ratio,
                 exportedQty: exportData.exported,
-                requiredQty: exportData.required
+                requiredQty: exportData.required,
+                exportDates: exportData.exportDates || []
             };
         });
 
@@ -1446,7 +1475,7 @@ exports.updateMaterialStatus = async (req, res) => {
         // Now includes featured_products and quantity columns
         await db.query(`
             INSERT INTO order_material_status (order_id, material_type, status, plan_date, note, featured_products, quantity, updated_by, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+            VALUES (?, ?, COALESCE(?, 'NONE'), ?, ?, ?, ?, ?, NOW())
             ON DUPLICATE KEY UPDATE
                 status = COALESCE(VALUES(status), status),
                 plan_date = COALESCE(VALUES(plan_date), plan_date),
@@ -1455,7 +1484,16 @@ exports.updateMaterialStatus = async (req, res) => {
                 quantity = COALESCE(VALUES(quantity), quantity),
                 updated_by = VALUES(updated_by),
                 updated_at = NOW()
-        `, [id, groupUpper, status || 'NONE', planDate || null, note || '', featuredProducts || null, quantity || null, userId]);
+        `, [
+            id, 
+            groupUpper, 
+            status !== undefined ? status : null, 
+            planDate !== undefined ? planDate : null, 
+            note !== undefined ? note : null, 
+            featuredProducts !== undefined ? featuredProducts : null, 
+            quantity !== undefined ? quantity : null, 
+            userId
+        ]);
 
         // Log audit event
         await db.query(`
