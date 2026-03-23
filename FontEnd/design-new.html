@@ -14194,8 +14194,75 @@
             }
 
             function editPhukienItem(index) {
-                // Simple inline edit - user can edit in table
-                showToast('Tính năng sửa phụ kiện đang được phát triển', 'info');
+                const item = bocTachData.phukien[index];
+                if (!item) return;
+
+                if (currentEditingRow.type && currentEditingRow.index !== null) {
+                    saveCurrentEdit();
+                }
+
+                currentEditingRow = { type: 'phukien', index };
+
+                const tbody = document.getElementById('phukienTableBody');
+                const rows = tbody.querySelectorAll('tr');
+                const row = rows[index];
+                if (!row) return;
+
+                row.innerHTML = `
+                    <td class="px-2 py-1">
+                        <input type="text" id="editPhukienName_${index}" value="${escapeHtml(item.name || '')}"
+                               class="w-full px-2 py-1 border border-blue-300 rounded text-sm focus:ring-2 focus:ring-blue-500" />
+                    </td>
+                    <td class="px-2 py-1">
+                        <input type="text" id="editPhukienCode_${index}" value="${escapeHtml(item.code || item.item_code || '')}"
+                               class="w-full px-2 py-1 border border-gray-300 rounded text-sm text-center" />
+                    </td>
+                    <td class="px-2 py-1">
+                        <input type="text" id="editPhukienCategory_${index}" value="${escapeHtml(item.category || '')}"
+                               class="w-full px-2 py-1 border border-gray-300 rounded text-sm text-center" />
+                    </td>
+                    <td class="px-2 py-1 text-center">${escapeHtml(item.unit || 'cái')}</td>
+                    <td class="px-2 py-1">
+                        <input type="number" id="editPhukienQty_${index}" value="${item.quantity || 1}" min="1"
+                               class="w-14 px-2 py-1 border border-gray-300 rounded text-sm text-center font-medium" />
+                    </td>
+                    <td class="px-2 py-1">
+                        <input type="text" id="editPhukienNotes_${index}" value="${escapeHtml(item.notes || '')}"
+                               placeholder="Ghi chú..."
+                               class="w-full px-2 py-1 border border-gray-300 rounded text-sm" />
+                    </td>
+                    <td class="px-2 py-1 text-center">
+                        <div class="flex justify-center gap-1">
+                            <button onclick="savePhukienItem(${index})" class="px-2 py-1 text-xs text-green-600 border border-green-400 rounded hover:bg-green-50 font-medium">Lưu</button>
+                            <button onclick="cancelEditPhukien(${index})" class="px-2 py-1 text-xs text-gray-600 border border-gray-300 rounded hover:bg-gray-50">Hủy</button>
+                        </div>
+                    </td>
+                `;
+
+                document.getElementById(`editPhukienName_${index}`)?.focus();
+            }
+
+            function savePhukienItem(index) {
+                const name = document.getElementById(`editPhukienName_${index}`)?.value || '';
+                const code = document.getElementById(`editPhukienCode_${index}`)?.value || '';
+                const category = document.getElementById(`editPhukienCategory_${index}`)?.value || '';
+                const qty = parseInt(document.getElementById(`editPhukienQty_${index}`)?.value) || 1;
+                const notes = document.getElementById(`editPhukienNotes_${index}`)?.value || '';
+
+                bocTachData.phukien[index] = {
+                    ...bocTachData.phukien[index],
+                    name, code, item_code: code, category, quantity: qty, notes
+                };
+
+                currentEditingRow = { type: null, index: null };
+                renderBocTachPhukienTable();
+                saveBocTachToStorage();
+                showToast('Đã lưu thay đổi', 'success');
+            }
+
+            function cancelEditPhukien(index) {
+                currentEditingRow = { type: null, index: null };
+                renderBocTachPhukienTable();
             }
 
 
@@ -14305,7 +14372,7 @@
 
                 row.innerHTML = `
                     <td class="px-2 py-1">
-                        <input type="text" id="editKinhCode_${index}" value="${escapeHtml(item.code || '')}" 
+                        <input type="text" id="editKinhCode_${index}" value="${escapeHtml(item.code || item.glass_code || '')}" 
                                class="w-full px-2 py-1 border border-gray-300 rounded text-sm" />
                     </td>
                     <td class="px-2 py-1">
@@ -14357,7 +14424,7 @@
 
                 bocTachData.kinh[index] = {
                     ...bocTachData.kinh[index],
-                    code, glass_type: glassType, name: glassType, thickness, width, height, quantity: qty, location
+                    code, glass_code: code, item_code: code, glass_type: glassType, name: glassType, thickness, width, height, quantity: qty, location
                 };
 
                 currentEditingRow = { type: null, index: null };
@@ -14392,7 +14459,7 @@
                                class="w-full px-2 py-1 border border-blue-300 rounded text-sm focus:ring-2 focus:ring-blue-500" />
                     </td>
                     <td class="px-2 py-1">
-                        <input type="text" id="editVattuCode_${index}" value="${escapeHtml(item.code || '')}" 
+                        <input type="text" id="editVattuCode_${index}" value="${escapeHtml(item.code || item.item_code || '')}"
                                class="w-full px-2 py-1 border border-gray-300 rounded text-sm text-center" />
                     </td>
                     <td class="px-2 py-1">
@@ -14429,7 +14496,7 @@
 
                 bocTachData.vattu[index] = {
                     ...bocTachData.vattu[index],
-                    name, code, category, quantity: qty, notes
+                    name, code, item_code: code, category, quantity: qty, notes
                 };
 
                 currentEditingRow = { type: null, index: null };
@@ -14452,6 +14519,8 @@
                     saveKinhItem(currentEditingRow.index);
                 } else if (currentEditingRow.type === 'vattu') {
                     saveVattuItem(currentEditingRow.index);
+                } else if (currentEditingRow.type === 'phukien') {
+                    savePhukienItem(currentEditingRow.index);
                 }
             }
 
