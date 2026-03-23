@@ -32,7 +32,7 @@ function playNotificationSound(){
 function initChat(){
     const token=sessionStorage.getItem('token');
     if(!token){window.location.href='login.html';return;}
-    try{const p=JSON.parse(atob(token.split('.')[1]));currentUserId=p.id;const u=JSON.parse(sessionStorage.getItem('user')||'{}');currentUserName=u.full_name||p.full_name||'Tôi';currentUserAvatar=u.avatar_url||'';}catch(e){}
+    try{const p=JSON.parse(atob(token.split('.')[1]));currentUserId=parseInt(p.id);const u=JSON.parse(sessionStorage.getItem('user')||'{}');currentUserName=u.full_name||p.full_name||'Tôi';currentUserAvatar=u.avatar_url||'';}catch(e){}
 
     socket=io(SOCKET_URL,{auth:{token},reconnectionDelay:1000,reconnectionDelayMax:5000,reconnectionAttempts:10});
     socket.on('connect',()=>{const el=document.getElementById('connectionStatus');if(el){el.textContent='🟢 Đã kết nối';el.style.color='#22c55e';}});
@@ -114,7 +114,7 @@ async function loadMessages(convId,loadMore=false){
 
 function renderMessage(msg){
     if(msg.type==='system')return `<div class="chat-msg-system">📌 ${escHtml(msg.content)}</div>`;
-    const isMe=msg.sender_id===currentUserId;
+    const isMe=parseInt(msg.sender_id)===parseInt(currentUserId);
     const colors=['#6366f1','#8b5cf6','#ec4899','#14b8a6','#f97316','#06b6d4'];
     const avCol=colors[(msg.sender_id||0)%colors.length];
     const avUrl=msg.sender_avatar?resolveFileUrl(msg.sender_avatar):'';
