@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -1290,7 +1290,12 @@
 
         // Xác nhận và xóa dự án đã hoàn thành
         async function confirmDeleteCompletedProject(projectId, projectCode, projectName) {
-            if (!confirm(`Bạn có chắc chắn muốn xóa dự án "${projectName}" (${projectCode})?\n\nDự án này sẽ bị xóa vĩnh viễn và không thể khôi phục.`)) {
+            const confirmed = await VWModal.confirm(
+                'Xác nhận xóa vĩnh viễn',
+                `Bạn có chắc chắn muốn xóa dự án "<b>${projectName}</b>" (${projectCode})?<br><br>⚠️ Dự án này sẽ bị xóa vĩnh viễn và không thể khôi phục.`,
+                { confirmText: 'Xóa vĩnh viễn', cancelText: 'Huỷ' }
+            );
+            if (!confirmed) {
                 return;
             }
 
