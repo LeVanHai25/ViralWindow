@@ -32,7 +32,7 @@ function playNotificationSound(){
 function initChat(){
     const token=sessionStorage.getItem('token');
     if(!token){window.location.href='login.html';return;}
-    try{const p=JSON.parse(atob(token.split('.')[1]));currentUserId=parseInt(p.id);const u=JSON.parse(sessionStorage.getItem('user')||'{}');currentUserName=u.full_name||p.full_name||'Tôi';currentUserAvatar=u.avatar_url||'';}catch(e){}
+    try{const p=JSON.parse(atob(token.split('.')[1]));const u=JSON.parse(sessionStorage.getItem('user')||'{}');currentUserId=String(u.id||p.id||'');currentUserName=u.full_name||p.full_name||'Tôi';currentUserAvatar=u.avatar_url||'';console.log('[Chat] currentUserId=',currentUserId,'from JWT id=',p.id,'from user.id=',u.id);}catch(e){console.error('[Chat] init error:',e);}
 
     socket=io(SOCKET_URL,{auth:{token},reconnectionDelay:1000,reconnectionDelayMax:5000,reconnectionAttempts:10});
     socket.on('connect',()=>{const el=document.getElementById('connectionStatus');if(el){el.textContent='🟢 Đã kết nối';el.style.color='#22c55e';}});
@@ -114,7 +114,8 @@ async function loadMessages(convId,loadMore=false){
 
 function renderMessage(msg){
     if(msg.type==='system')return `<div class="chat-msg-system">📌 ${escHtml(msg.content)}</div>`;
-    const isMe=parseInt(msg.sender_id)===parseInt(currentUserId);
+    const isMe=String(msg.sender_id)===String(currentUserId);
+    if(!isMe && msg.sender_name && msg.sender_name===currentUserName) console.warn('[Chat] Name match but ID mismatch! sender_id=',msg.sender_id,typeof msg.sender_id,'currentUserId=',currentUserId,typeof currentUserId);
     const colors=['#6366f1','#8b5cf6','#ec4899','#14b8a6','#f97316','#06b6d4'];
     const avCol=colors[(msg.sender_id||0)%colors.length];
     const avUrl=msg.sender_avatar?resolveFileUrl(msg.sender_avatar):'';
@@ -249,7 +250,7 @@ function updatePresenceUI(){
     }
 }
 
-function handleNewMessage(msg){try{if(msg.conversation_id===currentConversationId){const area=document.getElementById('messagesArea');if(area){area.insertAdjacentHTML('beforeend',renderMessage(msg));area.scrollTop=area.scrollHeight;}socket.emit('message_read',{messageId:msg.id,conversationId:msg.conversation_id});}const conv=conversations.find(c=>c.id===msg.conversation_id);if(conv){conv.last_message_at=msg.created_at;conv.last_message_preview=msg.type==='text'?`${msg.sender_name}: ${(msg.content||'').substring(0,50)}`:`${msg.sender_name}: 📎 ${msg.file_name||'File'}`;if(msg.conversation_id!==currentConversationId)conv.unread_count=(conv.unread_count||0)+1;conversations.sort((a,b)=>new Date(b.last_message_at||0)-new Date(a.last_message_at||0));renderConversations();}else loadConversations();if(msg.sender_id!==currentUserId)playNotificationSound();if(window.updateChatBadge)window.updateChatBadge();}catch(e){}}
+function handleNewMessage(msg){try{if(msg.conversation_id===currentConversationId){const area=document.getElementById('messagesArea');if(area){area.insertAdjacentHTML('beforeend',renderMessage(msg));area.scrollTop=area.scrollHeight;}socket.emit('message_read',{messageId:msg.id,conversationId:msg.conversation_id});}const conv=conversations.find(c=>c.id===msg.conversation_id);if(conv){conv.last_message_at=msg.created_at;conv.last_message_preview=msg.type==='text'?`${msg.sender_name}: ${(msg.content||'').substring(0,50)}`:`${msg.sender_name}: 📎 ${msg.file_name||'File'}`;if(msg.conversation_id!==currentConversationId)conv.unread_count=(conv.unread_count||0)+1;conversations.sort((a,b)=>new Date(b.last_message_at||0)-new Date(a.last_message_at||0));renderConversations();}else loadConversations();if(String(msg.sender_id)!==String(currentUserId))playNotificationSound();if(window.updateChatBadge)window.updateChatBadge();}catch(e){}}
 
 let typingUsers=new Map();
 function handleTyping(d){if(d.conversationId!==currentConversationId)return;typingUsers.set(d.userId,d.userName);updateTypingUI();}
