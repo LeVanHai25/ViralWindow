@@ -691,7 +691,7 @@ exports.create = async (req, res) => {
 exports.update = async (req, res) => {
     try {
         const { id } = req.params;
-        const { item_name, item_type, unit, quantity, stock_quantity, min_stock_level, max_stock_level, unit_price, description, notes, supplier_id } = req.body;
+        const { item_code, item_name, item_type, unit, quantity, stock_quantity, min_stock_level, max_stock_level, unit_price, description, notes, supplier_id } = req.body;
 
         // Hỗ trợ cả quantity và stock_quantity - đảm bảo là number
         let qty = 0;
@@ -717,16 +717,16 @@ exports.update = async (req, res) => {
         let query, params;
         if (image_url !== undefined) {
             query = `UPDATE inventory 
-                 SET item_name = ?, item_type = ?, unit = ?, quantity = ?, 
+                 SET item_code = ?, item_name = ?, item_type = ?, unit = ?, quantity = ?, 
                  min_stock_level = ?, max_stock_level = ?, unit_price = ?, notes = ?, image_url = ?, supplier_id = ? 
                  WHERE id = ?`;
-            params = [item_name, item_type, unit, qty, minStock, maxStock, price, notes || description || null, image_url, supplierId, id];
+            params = [item_code, item_name, item_type, unit, qty, minStock, maxStock, price, notes || description || null, image_url, supplierId, id];
         } else {
             query = `UPDATE inventory 
-                 SET item_name = ?, item_type = ?, unit = ?, quantity = ?, 
+                 SET item_code = ?, item_name = ?, item_type = ?, unit = ?, quantity = ?, 
                  min_stock_level = ?, max_stock_level = ?, unit_price = ?, notes = ?, supplier_id = ? 
                  WHERE id = ?`;
-            params = [item_name, item_type, unit, qty, minStock, maxStock, price, notes || description || null, supplierId, id];
+            params = [item_code, item_name, item_type, unit, qty, minStock, maxStock, price, notes || description || null, supplierId, id];
         }
 
         const [result] = await db.query(query, params);
