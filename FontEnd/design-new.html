@@ -3040,6 +3040,8 @@
 
                 // Clear old design files when switching projects
                 uploadedDesignFiles = [];
+                // ✅ FIX: Xoá sạch dữ liệu BOM để tránh đem dữ liệu dự án cũ sang dự án mới
+                bocTachData = { nhom: [], kinh: [], vattu: [], phukien: [] };
                 sessionStorage.removeItem('uploadedDesignFiles');
                 sessionStorage.removeItem('uploadedDesignFiles_projectId');
 
@@ -5145,6 +5147,8 @@
                 // Clear session when going back to step 1
                 if (stepNumber === 1) {
                     currentProject = null;
+                    // ✅ FIX: Xoá sạch dữ liệu BOM để tránh đem dữ liệu dự án cũ sang dự án mới
+                    bocTachData = { nhom: [], kinh: [], vattu: [], phukien: [] };
                     uploadedDesignFiles = [];
                     sessionStorage.removeItem('currentProject');
                     sessionStorage.removeItem('uploadedDesignFiles');
@@ -6352,6 +6356,16 @@
                         // Nếu 404, không có dữ liệu đã lưu, không cần báo lỗi
                         if (response.status === 404) {
                             console.log('ℹ️ Chưa có dữ liệu BOM đã lưu cho project này');
+                            // ✅ FIX: Reset BOM data to prevent cross-project leakage and clear UI
+                            bocTachData = { nhom: [], kinh: [], vattu: [], phukien: [] };
+                            
+                            // Phải render lại bảng trống để ghi đè giao diện của dự án cũ (nếu có giữ lại)
+                            if (typeof renderBocTachNhomTable === 'function') renderBocTachNhomTable(bocTachData.nhom);
+                            if (typeof renderBocTachKinhTable === 'function') renderBocTachKinhTable(bocTachData.kinh);
+                            if (typeof renderBocTachVatTuTable === 'function') renderBocTachVatTuTable(bocTachData.vattu);
+                            if (typeof renderBocTachPhukienTable === 'function') renderBocTachPhukienTable(bocTachData.phukien);
+                            if (typeof updatePhukienSummary === 'function') updatePhukienSummary();
+                            
                             return;
                         }
                         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
