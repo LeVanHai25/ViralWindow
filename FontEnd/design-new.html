@@ -5042,7 +5042,8 @@
 
             async function loadAluminumSystems() {
                 try {
-                    const response = await fetch(`${API_BASE}/aluminum-systems`);
+                    const tkn = sessionStorage.getItem('token') || '';
+                    const response = await fetch(`${API_BASE}/aluminum-systems`, { headers: tkn ? { 'Authorization': `Bearer ${tkn}` } : {} });
                     const result = await response.json();
                     if (result.success && result.data) {
                         const select = document.getElementById('aluminumSystem');
@@ -12627,7 +12628,9 @@
             async function loadMaterialsCache() {
                 try {
                     // Load Aluminum
-                    const nhomRes = await fetch(`${API_BASE}/aluminum-systems`);
+                    const authToken2 = sessionStorage.getItem('token') || '';
+                    const authHeaders2 = authToken2 ? { 'Authorization': `Bearer ${authToken2}` } : {};
+                    const nhomRes = await fetch(`${API_BASE}/aluminum-systems`, { headers: authHeaders2 });
                     const nhomData = await nhomRes.json();
                     if (nhomData.success && nhomData.data) {
                         materialsCache.nhom = nhomData.data.map(item => ({
@@ -12644,7 +12647,7 @@
                     }
 
                     // Load Glass
-                    const kinhRes = await fetch(`${API_BASE}/project-materials/inventory/glass`);
+                    const kinhRes = await fetch(`${API_BASE}/project-materials/inventory/glass`, { headers: authHeaders });
                     const kinhData = await kinhRes.json();
                     console.log('🔍 Glass API response:', kinhData);
                     if (kinhData.success && kinhData.data && kinhData.data.length > 0) {
@@ -12694,7 +12697,7 @@
                     // 1. Load from Unified Supplementary Materials API (returns both accessories and inventory)
                     try {
                         console.log('🔄 Fetching unified supplementary materials...');
-                        const vatTuPhuRes = await fetch(`${API_BASE}/project-materials/inventory/other`);
+                        const vatTuPhuRes = await fetch(`${API_BASE}/project-materials/inventory/other`, { headers: authHeaders });
                         const vatTuPhuData = await vatTuPhuRes.json();
 
                         if (vatTuPhuData.success && vatTuPhuData.data) {
@@ -12856,6 +12859,14 @@
                 clearTimeout(searchDebounceTimer);
                 const clearBtn = document.getElementById('nhomClearBtn');
                 if (clearBtn) clearBtn.classList.toggle('hidden', !query);
+                // Auto-reload cache if empty
+                if (!materialsCache.nhom || materialsCache.nhom.length === 0) {
+                    console.log('\u26a0\ufe0f materialsCache.nhom is empty, reloading...');
+                    loadMaterialsCache();
+                    const dropdown = document.getElementById('nhomSuggestionsDropdown');
+                    if (dropdown) { dropdown.innerHTML = '<div class="p-3 text-sm text-gray-500 text-center">\u23f3 \u0110ang t\u1ea3i d\u1eef li\u1ec7u nh\u00f4m...</div>'; dropdown.classList.remove('hidden'); }
+                    return;
+                }
 
                 searchDebounceTimer = setTimeout(() => {
                     const dropdown = document.getElementById('nhomSuggestionsDropdown');
@@ -12923,6 +12934,14 @@
                 clearTimeout(searchDebounceTimer);
                 const clearBtn = document.getElementById('vattuClearBtn');
                 if (clearBtn) clearBtn.classList.toggle('hidden', !query);
+                // Auto-reload cache if empty
+                if (!materialsCache.vattu || materialsCache.vattu.length === 0) {
+                    console.log('\u26a0\ufe0f materialsCache.vattu is empty, reloading...');
+                    loadMaterialsCache();
+                    const dropdown = document.getElementById('vattuSuggestionsDropdown');
+                    if (dropdown) { dropdown.innerHTML = '<div class="p-3 text-sm text-gray-500 text-center">\u23f3 \u0110ang t\u1ea3i d\u1eef li\u1ec7u v\u1eadt t\u01b0...</div>'; dropdown.classList.remove('hidden'); }
+                    return;
+                }
 
                 searchDebounceTimer = setTimeout(() => {
                     const dropdown = document.getElementById('vattuSuggestionsDropdown');
