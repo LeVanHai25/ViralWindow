@@ -153,7 +153,7 @@ exports.update = async (req, res) => {
     try {
         const { id } = req.params;
         const {
-            name, category, unit, purchase_price, sale_price, stock_quantity, min_stock_level, max_stock_level, description,
+            code, name, category, unit, purchase_price, sale_price, stock_quantity, min_stock_level, max_stock_level, description,
             supplier, supplier_code, application_types, usage_rules
         } = req.body;
 
@@ -166,12 +166,12 @@ exports.update = async (req, res) => {
         let query, params;
         if (image_path !== undefined) {
             query = `UPDATE accessories 
-                 SET name = ?, category = ?, unit = ?, purchase_price = ?, sale_price = ?, 
+                 SET code = ?, name = ?, category = ?, unit = ?, purchase_price = ?, sale_price = ?, 
                      stock_quantity = ?, min_stock_level = ?, max_stock_level = ?, description = ?,
                      supplier = ?, supplier_code = ?, application_types = ?, usage_rules = ?, image_path = ?
                  WHERE id = ?`;
             params = [
-                name, category, unit, purchase_price, sale_price, stock_quantity, min_stock_level, max_stock_level, description || null,
+                code, name, category, unit, purchase_price, sale_price, stock_quantity, min_stock_level, max_stock_level, description || null,
                 supplier || null, supplier_code || null,
                 application_types ? JSON.stringify(application_types) : null,
                 usage_rules ? JSON.stringify(usage_rules) : null,
@@ -180,12 +180,12 @@ exports.update = async (req, res) => {
             ];
         } else {
             query = `UPDATE accessories 
-                 SET name = ?, category = ?, unit = ?, purchase_price = ?, sale_price = ?, 
+                 SET code = ?, name = ?, category = ?, unit = ?, purchase_price = ?, sale_price = ?, 
                      stock_quantity = ?, min_stock_level = ?, max_stock_level = ?, description = ?,
                      supplier = ?, supplier_code = ?, application_types = ?, usage_rules = ?
                  WHERE id = ?`;
             params = [
-                name, category, unit, purchase_price, sale_price, stock_quantity, min_stock_level, max_stock_level, description || null,
+                code, name, category, unit, purchase_price, sale_price, stock_quantity, min_stock_level, max_stock_level, description || null,
                 supplier || null, supplier_code || null,
                 application_types ? JSON.stringify(application_types) : null,
                 usage_rules ? JSON.stringify(usage_rules) : null,
