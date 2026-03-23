@@ -928,12 +928,12 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                                     </svg>
-                                    📥 Nhập Excel
+                                    Nhập từ Excel
                                 </button>
                                 <input type="file" id="importNhomFile" accept=".xlsx,.xls" class="hidden" onchange="importBocTachExcel('nhom', this)">
                                 <button onclick="downloadBocTachTemplate('nhom')"
                                     class="px-3 py-2 bg-gray-500 text-white rounded-lg font-medium hover:bg-gray-600 flex items-center gap-1 text-sm">
-                                    📄 Tải mẫu
+                                    Tải mẫu Excel nhập
                                 </button>
                             </div>
                         </div>
@@ -3052,11 +3052,14 @@
                 uploadedDesignFiles = [];
                 // ✅ FIX: Xoá sạch dữ liệu BOM để tránh đem dữ liệu dự án cũ sang dự án mới
                 bocTachData = { nhom: [], kinh: [], vattu: [], phukien: [] };
+                quotationItemsForDesign = [];
+                sessionStorage.removeItem('quotationItemsForDesign');
                 sessionStorage.removeItem('uploadedDesignFiles');
                 sessionStorage.removeItem('uploadedDesignFiles_projectId');
 
                 // Save to session
                 sessionStorage.setItem('currentProject', JSON.stringify(currentProject));
+                sessionStorage.setItem('currentProjectId', String(currentProject.id));
                 console.log(' Saved currentProject to sessionStorage');
 
                 // Update selected project name if element exists
@@ -5164,6 +5167,9 @@
                     sessionStorage.removeItem('uploadedDesignFiles');
                     sessionStorage.removeItem('uploadedDesignFiles_projectId');
                     sessionStorage.removeItem('currentStep');
+                    sessionStorage.removeItem('currentProjectId');
+                    quotationItemsForDesign = [];
+                    sessionStorage.removeItem('quotationItemsForDesign');
                     console.log('🧹 Cleared session data (returned to step 1)');
                 }
 
@@ -6384,9 +6390,8 @@
                     const result = await response.json();
                     if (result.success && result.data) {
                         // Khởi tạo bocTachData nếu chưa có (bao gồm phukien)
-                        if (!bocTachData) {
-                            bocTachData = { nhom: [], kinh: [], vattu: [], phukien: [] };
-                        }
+                        // FIX: LUON reset bocTachData truoc khi gan data moi
+                        bocTachData = { nhom: [], kinh: [], vattu: [], phukien: [] };
 
                         if (result.data.nhom && result.data.nhom.length > 0) {
                             bocTachData.nhom = result.data.nhom;
