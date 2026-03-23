@@ -93,6 +93,7 @@
     <script src="js/permission-guard.js"></script>
     <script src="js/config.js"></script>
     <script src="js/vw-modal.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 
 <body>
@@ -911,6 +912,19 @@
                                     </svg>
                                     Xuất Excel Nhôm
                                 </button>
+                                <button onclick="document.getElementById('importNhomFile').click()"
+                                    class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 flex items-center gap-2 text-sm">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                    </svg>
+                                    📥 Nhập Excel
+                                </button>
+                                <input type="file" id="importNhomFile" accept=".xlsx,.xls" class="hidden" onchange="importBocTachExcel('nhom', this)">
+                                <button onclick="downloadBocTachTemplate('nhom')"
+                                    class="px-3 py-2 bg-gray-500 text-white rounded-lg font-medium hover:bg-gray-600 flex items-center gap-1 text-sm">
+                                    📄 Tải mẫu
+                                </button>
                             </div>
                         </div>
 
@@ -1029,6 +1043,15 @@
                                 <button onclick="exportBocTachKinhExcel()"
                                     class="px-4 py-2 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 text-sm">
                                     Xuất Excel Kính
+                                </button>
+                                <button onclick="document.getElementById('importKinhFile').click()"
+                                    class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 flex items-center gap-2 text-sm">
+                                    📥 Nhập Excel
+                                </button>
+                                <input type="file" id="importKinhFile" accept=".xlsx,.xls" class="hidden" onchange="importBocTachExcel('kinh', this)">
+                                <button onclick="downloadBocTachTemplate('kinh')"
+                                    class="px-3 py-2 bg-gray-500 text-white rounded-lg font-medium hover:bg-gray-600 text-sm">
+                                    📄 Tải mẫu
                                 </button>
                             </div>
                         </div>
@@ -1150,6 +1173,15 @@
                                     class="px-4 py-2 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 text-sm">
                                     Xuất Excel
                                 </button>
+                                <button onclick="document.getElementById('importVattuFile').click()"
+                                    class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 flex items-center gap-2 text-sm">
+                                    📥 Nhập Excel
+                                </button>
+                                <input type="file" id="importVattuFile" accept=".xlsx,.xls" class="hidden" onchange="importBocTachExcel('vattu', this)">
+                                <button onclick="downloadBocTachTemplate('vattu')"
+                                    class="px-3 py-2 bg-gray-500 text-white rounded-lg font-medium hover:bg-gray-600 text-sm">
+                                    📄 Tải mẫu
+                                </button>
                             </div>
                         </div>
 
@@ -1256,6 +1288,15 @@
                                 <button onclick="exportBocTachPhukienExcel()"
                                     class="px-4 py-2 bg-pink-600 text-white rounded-lg font-medium hover:bg-pink-700 text-sm">
                                     Xuất Excel
+                                </button>
+                                <button onclick="document.getElementById('importPhukienFile').click()"
+                                    class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 flex items-center gap-2 text-sm">
+                                    📥 Nhập Excel
+                                </button>
+                                <input type="file" id="importPhukienFile" accept=".xlsx,.xls" class="hidden" onchange="importBocTachExcel('phukien', this)">
+                                <button onclick="downloadBocTachTemplate('phukien')"
+                                    class="px-3 py-2 bg-gray-500 text-white rounded-lg font-medium hover:bg-gray-600 text-sm">
+                                    📄 Tải mẫu
                                 </button>
                             </div>
                         </div>
@@ -13397,6 +13438,386 @@
                 document.getElementById('vattuMaterialSearch')?.focus();
             }
 
+
+            // =============================================
+            // IMPORT EXCEL CHO BÓC TÁCH VẬT TƯ
+            // =============================================
+
+            /**
+             * Import Excel file into BOM tab
+             * @param {string} tabType - 'nhom', 'kinh', 'vattu', 'phukien'
+             * @param {HTMLInputElement} inputEl - file input element
+             */
+            function importBocTachExcel(tabType, inputEl) {
+                const file = inputEl.files[0];
+                if (!file) return;
+
+                // Reset input so same file can be selected again
+                inputEl.value = '';
+
+                if (!window.XLSX) {
+                    showToast('Thư viện SheetJS chưa tải xong. Vui lòng thử lại sau.', 'error');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    try {
+                        const workbook = XLSX.read(e.target.result, { type: 'array' });
+
+                        // Try to find the matching sheet
+                        const sheetMap = {
+                            nhom: ['NHOM', 'Nhôm', 'Nhom', 'ALUMINUM', 'Sheet1'],
+                            kinh: ['KINH', 'Kính', 'Kinh', 'GLASS', 'Sheet1'],
+                            vattu: ['VATTU', 'Vật tư', 'Vattu', 'VatTuPhu', 'ACCESSORY', 'Sheet1'],
+                            phukien: ['PHUKIEN', 'Phụ kiện', 'Phukien', 'PhuKien', 'HARDWARE', 'Sheet1']
+                        };
+
+                        let sheetName = null;
+                        const tryNames = sheetMap[tabType] || ['Sheet1'];
+                        for (const name of tryNames) {
+                            if (workbook.SheetNames.includes(name)) {
+                                sheetName = name;
+                                break;
+                            }
+                        }
+                        // Fallback: use first sheet
+                        if (!sheetName) sheetName = workbook.SheetNames[0];
+
+                        const sheet = workbook.Sheets[sheetName];
+                        const jsonData = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+                        if (!jsonData || jsonData.length === 0) {
+                            showToast('File Excel không có dữ liệu!', 'error');
+                            return;
+                        }
+
+                        // Parse rows based on tab type
+                        const parsedItems = parseExcelRows(tabType, jsonData);
+
+                        if (parsedItems.length === 0) {
+                            showToast('Không tìm thấy dữ liệu hợp lệ trong file!', 'error');
+                            return;
+                        }
+
+                        // Show preview modal
+                        showImportPreview(tabType, parsedItems);
+
+                    } catch (err) {
+                        console.error('Import Excel error:', err);
+                        showToast('Lỗi đọc file Excel: ' + err.message, 'error');
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            }
+
+            /**
+             * Parse Excel rows into BOM items based on tab type
+             */
+            function parseExcelRows(tabType, rows) {
+                const items = [];
+
+                // Column name mapping (flexible matching)
+                const colMap = {
+                    code: ['Mã VT', 'Ma VT', 'MaVT', 'Mã kính', 'Ma kinh', 'MaKinh', 'Code', 'code', 'material_code'],
+                    name: ['Tên vật tư', 'Ten vat tu', 'Tên phụ kiện', 'Ten phu kien', 'Loại kính', 'Loai kinh', 'Name', 'name', 'material_name', 'Tên', 'Ten'],
+                    unit: ['ĐVT', 'DVT', 'Đơn vị tính', 'Don vi tinh', 'Unit', 'unit'],
+                    quantity: ['SL', 'Số lượng', 'So luong', 'Quantity', 'quantity', 'Qty'],
+                    density: ['Tỷ trọng', 'Ty trong', 'TyTrong', 'Density', 'density', 'kg/m'],
+                    length: ['Dài (m)', 'Dai (m)', 'Dài', 'Dai', 'Length', 'length', 'Met dai'],
+                    notes: ['Ghi chú', 'Ghi chu', 'GhiChu', 'Notes', 'notes', 'Note'],
+                    thickness: ['Độ dày', 'Do day', 'Thickness', 'thickness', 'Độ dày (mm)'],
+                    width: ['Rộng (mm)', 'Rong (mm)', 'Rộng', 'Rong', 'Width', 'width'],
+                    height: ['Cao (mm)', 'Cao', 'Height', 'height'],
+                    location: ['Vị trí', 'Vi tri', 'ViTri', 'Location', 'location'],
+                    category: ['Loại', 'Loai', 'Type', 'type', 'Category', 'category'],
+                    glass_type: ['Loại kính', 'Loai kinh', 'Glass Type', 'glass_type']
+                };
+
+                function findCol(row, keys) {
+                    for (const key of keys) {
+                        if (row[key] !== undefined && row[key] !== '') return row[key];
+                    }
+                    return '';
+                }
+
+                for (const row of rows) {
+                    const code = String(findCol(row, colMap.code)).trim();
+                    const name = String(findCol(row, colMap.name)).trim();
+                    const qty = parseFloat(findCol(row, colMap.quantity)) || 0;
+
+                    // Skip empty rows
+                    if (!code && !name && qty === 0) continue;
+
+                    if (tabType === 'nhom') {
+                        items.push({
+                            code: code,
+                            name: name || '(Chưa có tên)',
+                            unit: String(findCol(row, colMap.unit)).trim() || 'cây',
+                            density: parseFloat(findCol(row, colMap.density)) || 0,
+                            length: parseFloat(findCol(row, colMap.length)) || 6,
+                            quantity: qty || 1,
+                            notes: String(findCol(row, colMap.notes)).trim()
+                        });
+                    } else if (tabType === 'kinh') {
+                        items.push({
+                            code: code,
+                            glass_type: name || String(findCol(row, colMap.glass_type)).trim() || '(Chưa có tên)',
+                            name: name || String(findCol(row, colMap.glass_type)).trim() || '(Chưa có tên)',
+                            thickness: String(findCol(row, colMap.thickness)).trim() || '',
+                            width: parseFloat(findCol(row, colMap.width)) || 0,
+                            height: parseFloat(findCol(row, colMap.height)) || 0,
+                            unit: String(findCol(row, colMap.unit)).trim() || 'tấm',
+                            quantity: qty || 1,
+                            location: String(findCol(row, colMap.location)).trim(),
+                            stock: 0
+                        });
+                    } else {
+                        // vattu or phukien - same structure
+                        items.push({
+                            code: code,
+                            name: name || '(Chưa có tên)',
+                            category: String(findCol(row, colMap.category)).trim() || '',
+                            unit: String(findCol(row, colMap.unit)).trim() || 'cái',
+                            quantity: qty || 1,
+                            notes: String(findCol(row, colMap.notes)).trim()
+                        });
+                    }
+                }
+
+                return items;
+            }
+
+            /**
+             * Show import preview modal with matched/unmatched indicators
+             */
+            function showImportPreview(tabType, items) {
+                // Remove existing modal
+                let modal = document.getElementById('importPreviewModal');
+                if (modal) modal.remove();
+
+                const tabNames = { nhom: 'Nhôm', kinh: 'Kính', vattu: 'Vật tư Phụ', phukien: 'Phụ kiện' };
+                const tabColors = { nhom: 'blue', kinh: 'cyan', vattu: 'amber', phukien: 'rose' };
+                const color = tabColors[tabType] || 'blue';
+
+                // Build preview table rows
+                let tableHeaders = '';
+                let tableRows = '';
+
+                if (tabType === 'nhom') {
+                    tableHeaders = '<th class="px-3 py-2 text-left">Mã VT</th><th class="px-3 py-2 text-left">Tên vật tư</th><th class="px-3 py-2 text-center">Tỷ trọng</th><th class="px-3 py-2 text-center">Dài (m)</th><th class="px-3 py-2 text-center">ĐVT</th><th class="px-3 py-2 text-center">SL</th><th class="px-3 py-2 text-left">Ghi chú</th>';
+                    tableRows = items.map((item, i) => {
+                        const hasCode = item.code && item.code.length > 0;
+                        const statusIcon = hasCode ? '✅' : '⚠️';
+                        const rowBg = hasCode ? '' : 'bg-yellow-50';
+                        return `<tr class="${rowBg} hover:bg-gray-50">
+                            <td class="px-3 py-2 font-mono text-sm">${statusIcon} ${escapeHtml(item.code || '-')}</td>
+                            <td class="px-3 py-2">${escapeHtml(item.name)}</td>
+                            <td class="px-3 py-2 text-center">${item.density || '-'}</td>
+                            <td class="px-3 py-2 text-center">${item.length || '-'}</td>
+                            <td class="px-3 py-2 text-center">${escapeHtml(item.unit)}</td>
+                            <td class="px-3 py-2 text-center font-medium">${item.quantity}</td>
+                            <td class="px-3 py-2 text-sm text-gray-500">${escapeHtml(item.notes)}</td>
+                        </tr>`;
+                    }).join('');
+                } else if (tabType === 'kinh') {
+                    tableHeaders = '<th class="px-3 py-2 text-left">Mã kính</th><th class="px-3 py-2 text-left">Loại kính</th><th class="px-3 py-2 text-center">Độ dày</th><th class="px-3 py-2 text-center">Rộng</th><th class="px-3 py-2 text-center">Cao</th><th class="px-3 py-2 text-center">ĐVT</th><th class="px-3 py-2 text-center">SL</th><th class="px-3 py-2 text-left">Vị trí</th>';
+                    tableRows = items.map((item, i) => {
+                        const hasCode = item.code && item.code.length > 0;
+                        const statusIcon = hasCode ? '✅' : '⚠️';
+                        const rowBg = hasCode ? '' : 'bg-yellow-50';
+                        return `<tr class="${rowBg} hover:bg-gray-50">
+                            <td class="px-3 py-2 font-mono text-sm">${statusIcon} ${escapeHtml(item.code || '-')}</td>
+                            <td class="px-3 py-2">${escapeHtml(item.glass_type || item.name)}</td>
+                            <td class="px-3 py-2 text-center">${item.thickness || '-'}</td>
+                            <td class="px-3 py-2 text-center">${item.width || '-'}</td>
+                            <td class="px-3 py-2 text-center">${item.height || '-'}</td>
+                            <td class="px-3 py-2 text-center">${escapeHtml(item.unit)}</td>
+                            <td class="px-3 py-2 text-center font-medium">${item.quantity}</td>
+                            <td class="px-3 py-2 text-sm">${escapeHtml(item.location || '')}</td>
+                        </tr>`;
+                    }).join('');
+                } else {
+                    tableHeaders = '<th class="px-3 py-2 text-left">Mã VT</th><th class="px-3 py-2 text-left">Tên</th><th class="px-3 py-2 text-center">Loại</th><th class="px-3 py-2 text-center">ĐVT</th><th class="px-3 py-2 text-center">SL</th><th class="px-3 py-2 text-left">Ghi chú</th>';
+                    tableRows = items.map((item, i) => {
+                        const hasCode = item.code && item.code.length > 0;
+                        const statusIcon = hasCode ? '✅' : '⚠️';
+                        const rowBg = hasCode ? '' : 'bg-yellow-50';
+                        return `<tr class="${rowBg} hover:bg-gray-50">
+                            <td class="px-3 py-2 font-mono text-sm">${statusIcon} ${escapeHtml(item.code || '-')}</td>
+                            <td class="px-3 py-2">${escapeHtml(item.name)}</td>
+                            <td class="px-3 py-2 text-center">${escapeHtml(item.category || '-')}</td>
+                            <td class="px-3 py-2 text-center">${escapeHtml(item.unit)}</td>
+                            <td class="px-3 py-2 text-center font-medium">${item.quantity}</td>
+                            <td class="px-3 py-2 text-sm text-gray-500">${escapeHtml(item.notes)}</td>
+                        </tr>`;
+                    }).join('');
+                }
+
+                const withCode = items.filter(i => i.code && i.code.length > 0).length;
+                const noCode = items.length - withCode;
+
+                modal = document.createElement('div');
+                modal.id = 'importPreviewModal';
+                modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4';
+                modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+
+                modal.innerHTML = `
+                    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+                        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-4 flex justify-between items-center flex-shrink-0">
+                            <div>
+                                <h3 class="text-lg font-bold">📥 Xem trước Import - ${tabNames[tabType]}</h3>
+                                <p class="text-sm text-purple-200 mt-1">${items.length} dòng dữ liệu • ✅ Có mã: ${withCode} • ⚠️ Thiếu mã: ${noCode}</p>
+                            </div>
+                            <button onclick="document.getElementById('importPreviewModal').remove()" class="text-white hover:text-gray-200 text-2xl">&times;</button>
+                        </div>
+
+                        ${noCode > 0 ? `
+                            <div class="px-6 py-3 bg-yellow-50 border-b border-yellow-200 flex-shrink-0">
+                                <p class="text-sm text-yellow-800">⚠️ <strong>${noCode} dòng</strong> không có Mã VT — sẽ được nhập nhưng không thể kiểm tra tồn kho tự động. Bạn có thể sửa mã sau khi import.</p>
+                            </div>
+                        ` : ''}
+
+                        <div class="flex-1 overflow-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-gray-100 sticky top-0">
+                                    <tr>${tableHeaders}</tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    ${tableRows}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="border-t px-6 py-4 flex justify-between items-center bg-gray-50 flex-shrink-0">
+                            <div class="flex items-center gap-3">
+                                <label class="flex items-center gap-2 text-sm text-gray-600">
+                                    <input type="checkbox" id="importClearExisting" class="rounded">
+                                    Xóa dữ liệu cũ trước khi import
+                                </label>
+                            </div>
+                            <div class="flex gap-3">
+                                <button onclick="document.getElementById('importPreviewModal').remove()" class="px-5 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 text-sm font-medium">Hủy</button>
+                                <button onclick="confirmImport('${tabType}')" class="px-5 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium flex items-center gap-2">
+                                    ✅ Xác nhận Import (${items.length} dòng)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Store items for confirm step
+                modal._importItems = items;
+                document.body.appendChild(modal);
+            }
+
+            /**
+             * Confirm import - push data to bocTachData and re-render
+             */
+            function confirmImport(tabType) {
+                const modal = document.getElementById('importPreviewModal');
+                if (!modal || !modal._importItems) return;
+
+                const items = modal._importItems;
+                const clearExisting = document.getElementById('importClearExisting')?.checked || false;
+
+                // Ensure bocTachData structure
+                if (!bocTachData) bocTachData = { nhom: [], kinh: [], vattu: [], phukien: [] };
+                if (!bocTachData[tabType]) bocTachData[tabType] = [];
+
+                // Clear or append
+                if (clearExisting) {
+                    bocTachData[tabType] = [];
+                }
+
+                // Push all items
+                for (const item of items) {
+                    bocTachData[tabType].push(item);
+                }
+
+                // Re-render the appropriate table
+                const renderFns = {
+                    nhom: renderBocTachNhomTable,
+                    kinh: renderBocTachKinhTable,
+                    vattu: renderBocTachVatTuTable,
+                    phukien: renderBocTachPhukienTable
+                };
+                if (renderFns[tabType]) renderFns[tabType]();
+
+                // Save to storage
+                saveBocTachToStorage();
+
+                // Auto-save to server
+                if (typeof autoSaveBOMData === 'function') {
+                    autoSaveBOMData();
+                }
+
+                // Close modal
+                modal.remove();
+
+                const tabNames = { nhom: 'Nhôm', kinh: 'Kính', vattu: 'Vật tư Phụ', phukien: 'Phụ kiện' };
+                showToast(`✅ Import thành công ${items.length} dòng vào ${tabNames[tabType]}!`, 'success');
+            }
+
+            /**
+             * Download Excel template for a specific tab
+             */
+            function downloadBocTachTemplate(tabType) {
+                if (!window.XLSX) {
+                    showToast('Thư viện SheetJS chưa tải xong. Vui lòng thử lại sau.', 'error');
+                    return;
+                }
+
+                const wb = XLSX.utils.book_new();
+                let ws, sheetName, fileName;
+
+                if (tabType === 'nhom') {
+                    sheetName = 'NHOM';
+                    fileName = 'Mau_Import_Nhom.xlsx';
+                    const header = ['Mã VT', 'Tên vật tư', 'Tỷ trọng', 'Dài (m)', 'ĐVT', 'SL', 'Ghi chú'];
+                    const example = [
+                        ['VD-K22', 'Nhôm khung cánh K22', 0.85, 6, 'cây', 10, 'Màu trắng'],
+                        ['VD-TH30', 'Nhôm thanh đứng TH30', 1.2, 6, 'cây', 5, '']
+                    ];
+                    ws = XLSX.utils.aoa_to_sheet([header, ...example]);
+                    // Set column widths
+                    ws['!cols'] = [{ wch: 12 }, { wch: 30 }, { wch: 12 }, { wch: 10 }, { wch: 8 }, { wch: 8 }, { wch: 20 }];
+                } else if (tabType === 'kinh') {
+                    sheetName = 'KINH';
+                    fileName = 'Mau_Import_Kinh.xlsx';
+                    const header = ['Mã kính', 'Loại kính', 'Độ dày (mm)', 'Rộng (mm)', 'Cao (mm)', 'ĐVT', 'SL', 'Vị trí'];
+                    const example = [
+                        ['VD-K8CL', 'Kính cường lực 8mm', 8, 1200, 900, 'tấm', 4, 'Phòng khách'],
+                        ['VD-K10DL', 'Kính dán 10mm', 10, 2440, 1500, 'tấm', 2, 'Cửa chính']
+                    ];
+                    ws = XLSX.utils.aoa_to_sheet([header, ...example]);
+                    ws['!cols'] = [{ wch: 12 }, { wch: 25 }, { wch: 14 }, { wch: 12 }, { wch: 12 }, { wch: 8 }, { wch: 8 }, { wch: 18 }];
+                } else if (tabType === 'vattu') {
+                    sheetName = 'VATTU';
+                    fileName = 'Mau_Import_VatTuPhu.xlsx';
+                    const header = ['Mã VT', 'Tên vật tư', 'Loại', 'ĐVT', 'SL', 'Ghi chú'];
+                    const example = [
+                        ['VD-GT200', 'Gioăng EPDM 200', 'Gioăng', 'm', 50, ''],
+                        ['VD-KE01', 'Ke góc nhựa 40x40', 'Ke', 'cái', 20, '']
+                    ];
+                    ws = XLSX.utils.aoa_to_sheet([header, ...example]);
+                    ws['!cols'] = [{ wch: 12 }, { wch: 28 }, { wch: 12 }, { wch: 8 }, { wch: 8 }, { wch: 20 }];
+                } else {
+                    sheetName = 'PHUKIEN';
+                    fileName = 'Mau_Import_PhuKien.xlsx';
+                    const header = ['Mã VT', 'Tên phụ kiện', 'Loại', 'ĐVT', 'SL', 'Ghi chú'];
+                    const example = [
+                        ['VD-BL01', 'Bản lề 4 tấc inox', 'banle', 'bộ', 10, ''],
+                        ['VD-KH03', 'Khóa tay gạt cao cấp', 'khoa', 'cái', 5, '']
+                    ];
+                    ws = XLSX.utils.aoa_to_sheet([header, ...example]);
+                    ws['!cols'] = [{ wch: 12 }, { wch: 28 }, { wch: 12 }, { wch: 8 }, { wch: 8 }, { wch: 20 }];
+                }
+
+                XLSX.utils.book_append_sheet(wb, ws, sheetName);
+                XLSX.writeFile(wb, fileName);
+                showToast(`📄 Đã tải file mẫu ${fileName}`, 'success');
+            }
 
             // =============================================
             // RENDER BÓC TÁCH TABLES

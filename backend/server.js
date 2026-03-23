@@ -495,14 +495,17 @@ async function runChatMigrations() {
     }
 }
 
-// Run migrations on startup (Async, non-blocking)
-console.log(`[${new Date().toISOString()}] 🛠️ Đang khởi chạy migrations...`);
-Promise.all([
-    runStartupMigrations(),
-    runChatMigrations()
-])
-    .then(() => console.log(`[${new Date().toISOString()}] ✅ Hoàn tất migrations`))
-    .catch(err => console.error(`[${new Date().toISOString()}] ❌ Migration error:`, err));
+// Run migrations DELAYED 5s (so health check responds immediately during cold start)
+console.log(`[${new Date().toISOString()}] 🛠️ Migrations sẽ chạy sau 5s (để health check trả lời trước)...`);
+setTimeout(() => {
+    console.log(`[${new Date().toISOString()}] 🛠️ Bắt đầu chạy migrations...`);
+    Promise.all([
+        runStartupMigrations(),
+        runChatMigrations()
+    ])
+        .then(() => console.log(`[${new Date().toISOString()}] ✅ Hoàn tất migrations`))
+        .catch(err => console.error(`[${new Date().toISOString()}] ❌ Migration error:`, err));
+}, 5000);
 
 
 // ============================================
@@ -522,6 +525,25 @@ const server = httpServer.listen(PORT, '0.0.0.0', () => {
     console.log("   GET  /api/chat/conversations/:id/messages");
     console.log("   POST /api/chat/conversations/:id/messages");
     console.log("   WS   Socket.io (cùng port)");
+
+    // ============================================
+    // KEEP-ALIVE: Prevent Render Free Tier Spin Down
+    // Ping /api/health every 14 minutes to keep instance alive
+    // ============================================
+    const KEEP_ALIVE_INTERVAL = 14 * 60 * 1000; // 14 phút
+    const RENDER_URL = process.env.RENDER_EXTERNAL_URL;
+    if (RENDER_URL) {
+        console.log(`[${new Date().toISOString()}] 🏓 Keep-Alive enabled: Ping ${RENDER_URL}/api/health mỗi 14 phút`);
+        setInterval(() => {
+            const url = `${RENDER_URL}/api/health`;
+            fetch(url)
+                .then(r => r.json())
+                .then(d => console.log(`[Keep-Alive] ✅ Ping OK - Uptime: ${Math.round(d.uptime)}s`))
+                .catch(e => console.log(`[Keep-Alive] ⚠️ Ping failed: ${e.message}`));
+        }, KEEP_ALIVE_INTERVAL);
+    } else {
+        console.log(`[${new Date().toISOString()}] ℹ️ Keep-Alive disabled (set RENDER_EXTERNAL_URL to enable)`);
+    }
 });
 
 // Handle port already in use
