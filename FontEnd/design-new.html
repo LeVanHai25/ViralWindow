@@ -3052,6 +3052,16 @@
                 uploadedDesignFiles = [];
                 // ✅ FIX: Xoá sạch dữ liệu BOM để tránh đem dữ liệu dự án cũ sang dự án mới
                 bocTachData = { nhom: [], kinh: [], vattu: [], phukien: [] };
+                // ✅ FIX: Xoá TẤT CẢ localStorage bocTachData cũ
+                try {
+                    const keysToRemove = [];
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const k = localStorage.key(i);
+                        if (k && k.startsWith('bocTachData_')) keysToRemove.push(k);
+                    }
+                    keysToRemove.forEach(k => localStorage.removeItem(k));
+                    console.log('🧹 Cleared', keysToRemove.length, 'old bocTachData localStorage keys');
+                } catch(e) { console.warn('Error clearing localStorage:', e); }
                 quotationItemsForDesign = [];
                 sessionStorage.removeItem('quotationItemsForDesign');
                 sessionStorage.removeItem('uploadedDesignFiles');
@@ -5163,6 +5173,15 @@
                     currentProject = null;
                     // ✅ FIX: Xoá sạch dữ liệu BOM để tránh đem dữ liệu dự án cũ sang dự án mới
                     bocTachData = { nhom: [], kinh: [], vattu: [], phukien: [] };
+                    // ✅ FIX: Xoá localStorage bocTachData cũ
+                    try {
+                        const keysToRemove2 = [];
+                        for (let i = 0; i < localStorage.length; i++) {
+                            const k = localStorage.key(i);
+                            if (k && k.startsWith('bocTachData_')) keysToRemove2.push(k);
+                        }
+                        keysToRemove2.forEach(k => localStorage.removeItem(k));
+                    } catch(e) {}
                     uploadedDesignFiles = [];
                     sessionStorage.removeItem('currentProject');
                     sessionStorage.removeItem('uploadedDesignFiles');
@@ -5221,39 +5240,20 @@
                         if (currentProject) {
                             updateProjectInfo(3); // Update project info
 
-                            // Load from localStorage first
-                            const loadedFromStorage = loadBocTachFromStorage();
-                            if (loadedFromStorage && bocTachData &&
-                                (bocTachData.nhom.length > 0 || bocTachData.kinh.length > 0 || bocTachData.vattu.length > 0 || (bocTachData.phukien && bocTachData.phukien.length > 0))) {
-                                // Có data từ localStorage → render và không load từ server
-                                console.log('✅ Using data from localStorage, skip server load');
-                                renderBocTachNhomTable();
-                                renderBocTachKinhTable();
-                                renderBocTachVatTuTable();
-                                renderBocTachPhukienTable(bocTachData.phukien || []);  // ✅ Thêm render phukien
-                                updatePhukienSummary();  // ✅ Cập nhật summary
-                            } else {
-                                // Không có data trong localStorage → load từ server
-                                console.log('ℹ️ No localStorage data, loading from server...');
-                                loadAllProductsBOM();
-                                loadBOMDataFromServer();
-                            }
+                            // ✅ FIX: LUÔN load từ server để tránh dữ liệu dự án cũ từ localStorage
+                            console.log('📥 Loading BOM data from server for project:', currentProject.id);
+                            bocTachData = { nhom: [], kinh: [], vattu: [], phukien: [] };
+                            loadAllProductsBOM();
+                            loadBOMDataFromServer();
                         }
                     } else if (stepNumber === 4) {
                         // Step 4: Kiểm Kho (Final Step)
                         if (currentProject) {
                             updateProjectInfo(4); // Update project info
 
-                            // Load from localStorage first
-                            const loadedFromStorage = loadBocTachFromStorage();
-                            if (!loadedFromStorage || !bocTachData ||
-                                (!bocTachData.nhom.length && !bocTachData.kinh.length && !bocTachData.vattu.length && !(bocTachData.phukien && bocTachData.phukien.length))) {
-                                // Không có data trong localStorage → load từ server
-                                console.log('ℹ️ Step 4: No localStorage data, loading from server...');
-                                loadBOMDataFromServer();
-                            } else {
-                                console.log('✅ Step 4: Using data from localStorage');
-                            }
+                            // ✅ FIX: LUÔN load từ server
+                            console.log('📥 Step 4: Loading BOM data from server for project:', currentProject.id);
+                            loadBOMDataFromServer();
 
                             // Load và kiểm tra kho sau khi load BOM data
                             setTimeout(() => {
