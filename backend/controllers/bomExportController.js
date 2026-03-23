@@ -148,6 +148,13 @@ exports.exportAluminumBreakdown = async (req, res) => {
         worksheet.mergeCells(`B${currentRow}:D${currentRow}`);
         worksheet.getCell(`B${currentRow}`).value = project.location || project.address || '';
         worksheet.getCell(`B${currentRow}`).font = { name: 'Times New Roman', size: 11 };
+        currentRow++;
+
+        worksheet.getCell(`A${currentRow}`).value = 'Màu sắc nhôm:';
+        worksheet.getCell(`A${currentRow}`).font = { name: 'Times New Roman', size: 11, bold: true };
+        worksheet.mergeCells(`B${currentRow}:D${currentRow}`);
+        worksheet.getCell(`B${currentRow}`).value = req.body.color || 'Xám sần';
+        worksheet.getCell(`B${currentRow}`).font = { name: 'Times New Roman', size: 11, bold: true, color: { argb: 'FF0000FF' } };
         currentRow += 2;
 
         // Header row
@@ -732,6 +739,13 @@ exports.exportCombinedBreakdown = async (req, res) => {
             nhomSheet.getCell(`A${nhomRow}`).alignment = { vertical: 'middle', horizontal: 'center' };
             nhomSheet.getCell(`A${nhomRow}`).font = { name: 'Times New Roman', size: 16, bold: true };
             nhomSheet.getRow(nhomRow).height = 30;
+            nhomRow++;
+
+            nhomSheet.mergeCells(`A${nhomRow}:I${nhomRow}`);
+            nhomSheet.getCell(`A${nhomRow}`).value = `MÀU SẮC NHÔM: ${req.body.color || 'Xám sần'}`;
+            nhomSheet.getCell(`A${nhomRow}`).alignment = { vertical: 'middle', horizontal: 'center' };
+            nhomSheet.getCell(`A${nhomRow}`).font = { name: 'Times New Roman', size: 12, bold: true, italic: true, color: { argb: 'FF0000FF' } };
+            nhomSheet.getRow(nhomRow).height = 20;
             nhomRow += 2;
 
             // Header

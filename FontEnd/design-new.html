@@ -861,6 +861,16 @@
                             </div>
                         </div>
 
+                        <!-- Global Color Selector -->
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-4 flex items-center gap-4">
+                            <label for="globalNhomColor" class="font-medium text-gray-700">Màu sắc Nhôm dự án:</label>
+                            <select id="globalNhomColor" class="px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm" onchange="updateGlobalNhomColor()">
+                                <option value="Xám sần">Xám sần</option>
+                                <option value="Xám đá">Xám đá</option>
+                            </select>
+                            <span class="text-xs text-gray-500 italic">* Màu này được áp dụng chung khi xuất báo cáo Excel</span>
+                        </div>
+
                         <!-- Actions Row -->
                         <div class="flex justify-between items-center mb-4">
                             <div class="flex gap-2">
@@ -11625,6 +11635,15 @@
             }
 
             // Export functions
+            function updateGlobalNhomColor() {
+                if (typeof bocTachData !== 'undefined') {
+                    bocTachData.nhomColor = document.getElementById('globalNhomColor')?.value || 'Xám sần';
+                    if (typeof saveBocTachToStorage === 'function') {
+                        saveBocTachToStorage();
+                    }
+                }
+            }
+
             async function exportBocTachNhomExcel() {
                 if (!bocTachData.nhom || bocTachData.nhom.length === 0) {
                     alert('Chưa có dữ liệu nhôm để xuất!');
@@ -11650,7 +11669,8 @@
                             'Authorization': `Bearer ${token}` // ✅ Thêm Authorization header
                         },
                         body: JSON.stringify({
-                            data: bocTachData.nhom
+                            data: bocTachData.nhom,
+                            color: ((typeof bocTachData !== 'undefined' && bocTachData.nhomColor) || document.getElementById('globalNhomColor')?.value || 'Xám sần')
                         })
                     });
 
@@ -11833,7 +11853,8 @@
                         body: JSON.stringify({
                             nhom: bocTachData.nhom || [],
                             kinh: bocTachData.kinh || [],
-                            vattu: bocTachData.vattu || []
+                            vattu: bocTachData.vattu || [],
+                            color: ((typeof bocTachData !== 'undefined' && bocTachData.nhomColor) || document.getElementById('globalNhomColor')?.value || 'Xám sần')
                         })
                     });
 
