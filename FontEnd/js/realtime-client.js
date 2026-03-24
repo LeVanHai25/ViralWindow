@@ -2,44 +2,44 @@
  * =====================================================
  * REALTIME CLIENT — Socket.IO cho toàn hệ thống ViralWindow
  * =====================================================
- * Tự động kết nối Socket.IO, lắng nghe data_changed events,
- * và gọi callback để refresh UI realtime.
- *
- * ĐẶC BIỆT: Tối ưu cho Render Free Plan
- *   - Auto-reconnect khi server ngủ (15 phút không hoạt động)
- *   - Keepalive ping mỗi 8 phút để giữ server thức
- *   - Polling fallback khi WebSocket không khả dụng
+ * Tối ưu cho Render Free Plan:
+ *   - Kết nối êm, không spam console
+ *   - Tự dùng API_BASE url cho socket connection
+ *   - Keepalive ping mỗi 8 phút
  *   - Graceful degradation (trang vẫn hoạt động khi offline)
- *
- * CÁCH DÙNG:
- *   <script src="/socket.io/socket.io.js"></script>
- *   <script src="js/realtime-client.js"></script>
- *   <script>
- *     VWRealtime.init({
- *       modules: ['projects', 'inventory'],
- *       onDataChanged: function(payload) {
- *         // payload = { module, action, data, timestamp }
- *         if (payload.module === 'projects') refreshProjectList();
- *       }
- *     });
- *   </script>
  */
 
 (function () {
     'use strict';
 
     // =====================================================
-    // CONFIG
+    // CONFIG — Tự detect Socket URL từ API_BASE
     // =====================================================
-    const SOCKET_URL = window.SOCKET_URL ||
-        (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? `http://${window.location.host}`
-            : window.location.origin);
+    function getSocketUrl() {
+        // 1. Nếu user set thủ công
+        if (window.SOCKET_URL) return window.SOCKET_URL;
 
-    const KEEPALIVE_INTERVAL = 8 * 60 * 1000; // 8 phút (< Render 15-min timeout)
-    const RECONNECT_DELAY_BASE = 1000;         // 1 giây
-    const RECONNECT_MAX_DELAY = 30000;          // 30 giây max
-    const RECONNECT_MAX_ATTEMPTS = 50;          // Thử lại 50 lần
+        // 2. Dùng API_BASE (đã config trong config.js)
+        if (window.API_BASE) {
+            // API_BASE = "http://localhost:3001/api" → socket = "http://localhost:3001"
+            // API_BASE = "https://viralwindow.onrender.com/api" → socket = "https://viralwindow.onrender.com"
+            try {
+                const url = new URL(window.API_BASE);
+                return url.origin;
+            } catch (e) { }
+        }
+
+        // 3. Fallback: nếu đang trên production domain
+        if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            return window.location.origin;
+        }
+
+        // 4. Local dev: port 3001
+        return 'http://localhost:3001';
+    }
+
+    const KEEPALIVE_INTERVAL = 8 * 60 * 1000; // 8 phút
+    const MAX_SILENT_RETRIES = 5;              // Chỉ thử 5 lần rồi dừng
 
     // =====================================================
     // STATE
@@ -50,6 +50,7 @@
     let onDataChangedCallback = null;
     let keepaliveTimer = null;
     let reconnectAttempts = 0;
+    let hasLoggedError = false;
     let statusIndicator = null;
 
     // =====================================================
@@ -60,14 +61,11 @@
         onDataChangedCallback = options.onDataChanged || null;
 
         const token = sessionStorage.getItem('token');
-        if (!token) {
-            console.warn('⚠️ [Realtime] Chưa đăng nhập, không kết nối Socket.IO');
-            return;
-        }
+        if (!token) return; // Chưa đăng nhập → không kết nối (im lặng)
 
-        // Check if socket.io client lib is loaded
         if (typeof io === 'undefined') {
-            console.warn('⚠️ [Realtime] socket.io client chưa được load. Thêm: <script src="/socket.io/socket.io.js"></script>');
+            // Log 1 lần duy nhất, không spam
+            console.info('[Realtime] Socket.IO chưa sẵn sàng — trang vẫn hoạt động bình thường');
             return;
         }
 
@@ -81,81 +79,87 @@
     function connect(token) {
         if (socket && socket.connected) return;
 
+        const socketUrl = getSocketUrl();
+
         try {
-            socket = io(SOCKET_URL, {
+            socket = io(socketUrl, {
                 auth: { token },
-                transports: ['websocket', 'polling'], // WebSocket ưu tiên, polling fallback
+                transports: ['websocket', 'polling'],
                 reconnection: true,
-                reconnectionAttempts: RECONNECT_MAX_ATTEMPTS,
-                reconnectionDelay: RECONNECT_DELAY_BASE,
-                reconnectionDelayMax: RECONNECT_MAX_DELAY,
-                timeout: 10000
+                reconnectionAttempts: MAX_SILENT_RETRIES,
+                reconnectionDelay: 3000,       // 3 giây giữa các lần thử
+                reconnectionDelayMax: 30000,    // Max 30 giây
+                timeout: 8000                   // 8 giây timeout
             });
 
-            // --- Connection events ---
+            // --- Kết nối thành công ---
             socket.on('connect', () => {
                 isConnected = true;
                 reconnectAttempts = 0;
-                console.log('🟢 [Realtime] Đã kết nối Socket.IO');
+                hasLoggedError = false;
+                console.log('🟢 [Realtime] Đã kết nối');
                 updateStatusIndicator('online');
 
-                // Join module rooms
                 modules.forEach(mod => {
                     socket.emit('join_module', { module: mod });
                 });
 
-                // Start keepalive
                 startKeepalive();
             });
 
+            // --- Mất kết nối ---
             socket.on('disconnect', (reason) => {
                 isConnected = false;
-                console.warn('🔴 [Realtime] Mất kết nối:', reason);
                 updateStatusIndicator('offline');
                 stopKeepalive();
-            });
-
-            socket.on('connect_error', (err) => {
-                reconnectAttempts++;
-                console.warn(`⚠️ [Realtime] Lỗi kết nối (lần ${reconnectAttempts}):`, err.message);
-                updateStatusIndicator('reconnecting');
-
-                // Nếu server ngủ (Render Free Plan), chờ lâu hơn
-                if (err.message.includes('xhr poll error') || err.message.includes('timeout')) {
-                    console.log('💤 [Realtime] Server có thể đang ngủ (Render Free Plan). Đợi wake up...');
+                // Chỉ log nếu trước đó đã connected
+                if (!hasLoggedError) {
+                    console.info('[Realtime] Mất kết nối:', reason);
                 }
             });
 
-            socket.io.on('reconnect', (attempt) => {
-                console.log(`🔄 [Realtime] Đã reconnect sau ${attempt} lần thử`);
+            // --- Lỗi kết nối (KHÔNG SPAM) ---
+            socket.on('connect_error', () => {
+                reconnectAttempts++;
+                updateStatusIndicator('reconnecting');
+
+                // Chỉ log 1 lần duy nhất
+                if (!hasLoggedError) {
+                    hasLoggedError = true;
+                    console.info('[Realtime] Không thể kết nối Socket.IO — trang vẫn hoạt động bình thường');
+                }
+
+                // Sau MAX_SILENT_RETRIES lần → dừng hẳn
+                if (reconnectAttempts >= MAX_SILENT_RETRIES) {
+                    socket.disconnect();
+                    updateStatusIndicator('offline');
+                }
+            });
+
+            // --- Reconnect thành công ---
+            socket.io.on('reconnect', () => {
+                console.log('🟢 [Realtime] Đã kết nối lại');
                 updateStatusIndicator('online');
             });
 
             // --- Data change events ---
             socket.on('data_changed', (payload) => {
-                console.log('📡 [Realtime] Data changed:', payload.module, payload.action);
-
                 if (onDataChangedCallback) {
                     try {
                         onDataChangedCallback(payload);
-                    } catch (e) {
-                        console.error('❌ [Realtime] Error in onDataChanged callback:', e);
-                    }
+                    } catch (e) { }
                 }
             });
 
-            // Keepalive ack
-            socket.on('keepalive_ack', () => {
-                // Server is alive
-            });
+            socket.on('keepalive_ack', () => { });
 
         } catch (e) {
-            console.error('❌ [Realtime] Không thể kết nối:', e);
+            // Im lặng — trang vẫn hoạt động
         }
     }
 
     // =====================================================
-    // KEEPALIVE (Render Free Plan)
+    // KEEPALIVE
     // =====================================================
     function startKeepalive() {
         stopKeepalive();
@@ -174,7 +178,7 @@
     }
 
     // =====================================================
-    // STATUS INDICATOR (Góc dưới phải)
+    // STATUS INDICATOR
     // =====================================================
     function createStatusIndicator() {
         if (statusIndicator) return;
@@ -186,62 +190,36 @@
             background: #9ca3af; transition: background 0.3s;
             cursor: pointer; opacity: 0.7;
         `;
-        statusIndicator.title = 'Realtime: Đang kết nối...';
-        statusIndicator.addEventListener('click', () => {
-            const status = isConnected ? '🟢 Online' : '🔴 Offline';
-            const mods = modules.join(', ') || 'none';
-            console.log(`📡 Realtime Status: ${status} | Modules: ${mods} | Reconnects: ${reconnectAttempts}`);
-        });
+        statusIndicator.title = 'Realtime';
         document.body.appendChild(statusIndicator);
     }
 
     function updateStatusIndicator(status) {
         if (!statusIndicator) return;
         const colors = { online: '#22c55e', offline: '#ef4444', reconnecting: '#f59e0b' };
-        const titles = { online: 'Realtime: Đang kết nối ✅', offline: 'Realtime: Mất kết nối ❌', reconnecting: 'Realtime: Đang kết nối lại...' };
         statusIndicator.style.background = colors[status] || '#9ca3af';
-        statusIndicator.title = titles[status] || 'Realtime';
+        statusIndicator.title = status === 'online' ? 'Realtime ✅' : status === 'reconnecting' ? 'Đang kết nối...' : 'Offline';
     }
 
     // =====================================================
     // PUBLIC API
     // =====================================================
-    function joinModule(mod) {
-        if (!modules.includes(mod)) modules.push(mod);
-        if (socket && socket.connected) {
-            socket.emit('join_module', { module: mod });
-        }
-    }
-
-    function leaveModule(mod) {
-        modules = modules.filter(m => m !== mod);
-        if (socket && socket.connected) {
-            socket.emit('leave_module', { module: mod });
-        }
-    }
-
-    function isOnline() {
-        return isConnected;
-    }
-
-    function disconnect() {
-        stopKeepalive();
-        if (socket) {
-            socket.disconnect();
-            socket = null;
-        }
-        isConnected = false;
-    }
-
-    // =====================================================
-    // EXPORT
-    // =====================================================
     window.VWRealtime = {
         init,
-        joinModule,
-        leaveModule,
-        isOnline,
-        disconnect
+        joinModule(mod) {
+            if (!modules.includes(mod)) modules.push(mod);
+            if (socket && socket.connected) socket.emit('join_module', { module: mod });
+        },
+        leaveModule(mod) {
+            modules = modules.filter(m => m !== mod);
+            if (socket && socket.connected) socket.emit('leave_module', { module: mod });
+        },
+        isOnline() { return isConnected; },
+        disconnect() {
+            stopKeepalive();
+            if (socket) { socket.disconnect(); socket = null; }
+            isConnected = false;
+        }
     };
 
 })();
