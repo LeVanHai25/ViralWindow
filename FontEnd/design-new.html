@@ -12628,9 +12628,9 @@
             async function loadMaterialsCache() {
                 try {
                     // Load Aluminum
-                    const authToken2 = sessionStorage.getItem('token') || '';
-                    const authHeaders2 = authToken2 ? { 'Authorization': `Bearer ${authToken2}` } : {};
-                    const nhomRes = await fetch(`${API_BASE}/aluminum-systems`, { headers: authHeaders2 });
+                    const authToken = sessionStorage.getItem('token') || '';
+                    const authHeaders = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
+                    const nhomRes = await fetch(`${API_BASE}/aluminum-systems`, { headers: authHeaders });
                     const nhomData = await nhomRes.json();
                     if (nhomData.success && nhomData.data) {
                         materialsCache.nhom = nhomData.data.map(item => ({
