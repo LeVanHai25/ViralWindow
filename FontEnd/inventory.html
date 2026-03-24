@@ -3194,9 +3194,16 @@
                         </div>
                     </div>
 
-                    <!-- Search Materials -->
-                    <div class="mb-4">
-                        <div class="relative">
+                    <!-- Category/System Filter + Search -->
+                    <div class="mb-4 flex gap-3 items-center">
+                        <div class="flex-shrink-0">
+                            <select id="stocktakeCategoryFilter"
+                                class="px-3 py-2 border border-orange-300 rounded-lg text-sm font-semibold text-orange-700 bg-orange-50 min-w-[180px]"
+                                onchange="renderStocktakeItems()">
+                                <option value="">-- Tất cả danh mục --</option>
+                            </select>
+                        </div>
+                        <div class="relative flex-1">
                             <span
                                 class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 pointer-events-none">
                                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -6470,20 +6477,21 @@
                     else if (result.success && result.accessories) items = result.accessories;
 
                     stocktakeItems = items.map(item => {
-                        // Lấy đúng cột số lượng tồn kho theo loại vật tư
-                        // Ưu tiên trường 'quantity' hoặc 'stock' đã được backend xử lý theo kho
                         let qtySystem = (item.quantity !== undefined) ? parseFloat(item.quantity) : (parseFloat(item.stock) || 0);
-                        
-                        // Chỉ FALLBACK sang tổng tồn nếu KHÔNG có warehouse_id (chọn 'Tất cả' hoặc không truyền lên)
-                        // Tuy nhiên backend getInventoryByType hiện tại đã gán quantity = stock theo context rồi
 
-                        // Lấy mã vật tư - glass_items có cột code trong database
                         let itemCode = '';
                         if (itemType === 'glass') {
-                            // ✅ FIX: Dùng code thay vì structure, fallback sang 'K-' + id nếu code trống
                             itemCode = item.code || ('K-' + item.id);
                         } else {
                             itemCode = item.code || item.product_code || item.item_code || '';
+                        }
+
+                        // Lấy danh mục/hệ để dùng bộ lọc
+                        let itemCategory = '';
+                        if (itemType === 'aluminum') {
+                            itemCategory = (item.aluminum_system || item.system_type || '').trim();
+                        } else {
+                            itemCategory = (item.category || '').trim();
                         }
 
                         return {
@@ -6491,11 +6499,22 @@
                             item_id: item.id,
                             item_code: itemCode,
                             item_name: item.name || item.product_name || item.item_name || '',
+                            item_category: itemCategory,
                             qty_system: qtySystem,
                             qty_actual: null,
                             qty_diff: 0
                         };
                     });
+
+                    // Populate category filter dropdown
+                    const filterSelect = document.getElementById('stocktakeCategoryFilter');
+                    const categories = [...new Set(stocktakeItems.map(i => i.item_category).filter(c => c))].sort();
+                    const filterLabel = itemType === 'aluminum' ? 'hệ nhôm' : 'danh mục';
+                    filterSelect.innerHTML = `<option value="">-- Tất cả ${filterLabel} (${stocktakeItems.length}) --</option>` +
+                        categories.map(c => {
+                            const count = stocktakeItems.filter(i => i.item_category === c).length;
+                            return `<option value="${c}">${c} (${count})</option>`;
+                        }).join('');
 
                     renderStocktakeItems();
                 } catch (error) {
@@ -6506,6 +6525,7 @@
 
             function renderStocktakeItems() {
                 const searchTerm = document.getElementById('stocktakeSearchInput')?.value.toLowerCase() || '';
+                const categoryFilter = document.getElementById('stocktakeCategoryFilter')?.value || '';
                 const tbody = document.getElementById('stocktakeItemsTable');
                 let totalMissing = 0, totalExtra = 0;
 
@@ -6516,26 +6536,35 @@
                     if (diff > 0) totalExtra += diff;
                 });
 
-                // Filter items for display
-                const filteredItems = stocktakeItems.filter(item =>
-                    item.item_code.toLowerCase().includes(searchTerm) ||
-                    item.item_name.toLowerCase().includes(searchTerm)
-                );
+                // Filter by category first, then by search
+                let filteredItems = stocktakeItems;
+                if (categoryFilter) {
+                    filteredItems = filteredItems.filter(item => item.item_category === categoryFilter);
+                }
+                if (searchTerm) {
+                    filteredItems = filteredItems.filter(item =>
+                        item.item_code.toLowerCase().includes(searchTerm) ||
+                        item.item_name.toLowerCase().includes(searchTerm)
+                    );
+                }
 
                 if (filteredItems.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-6 text-center text-gray-400">Không tìm thấy vật tư phù hợp "${searchTerm}"</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-6 text-center text-gray-400">Không tìm thấy vật tư phù hợp</td></tr>`;
                 } else {
                     tbody.innerHTML = filteredItems.map((item) => {
                         const originalIdx = stocktakeItems.indexOf(item);
                         const diff = (item.qty_actual !== null) ? (item.qty_actual - item.qty_system) : 0;
                         const diffClass = diff > 0 ? 'text-green-600' : diff < 0 ? 'text-red-600' : 'text-gray-600';
                         const diffText = diff > 0 ? '+' + diff : diff;
+                        const catBadge = item.item_category
+                            ? `<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] bg-blue-50 text-blue-600">${item.item_category}</span>`
+                            : '';
 
                         return `
                             <tr class="hover:bg-gray-50">
-                                <td class="px-3 py-2 text-sm font-medium">${item.item_code}</td>
-                                <td class="px-3 py-2 text-sm">${item.item_name}</td>
-                                <td class="px-3 py-2 text-center text-sm">${item.qty_system}</td>
+                                <td class="px-3 py-2 text-sm font-medium text-blue-700">${item.item_code}</td>
+                                <td class="px-3 py-2 text-sm">${item.item_name}${catBadge}</td>
+                                <td class="px-3 py-2 text-center text-sm font-medium">${item.qty_system}</td>
                                 <td class="px-3 py-2 text-center">
                                     <input type="number" value="${item.qty_actual ?? ''}" min="0" placeholder="?"
                                         class="w-20 px-2 py-1 border rounded text-sm text-center"
