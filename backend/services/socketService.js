@@ -219,6 +219,29 @@ function initSocketIO(httpServer) {
         });
 
         // -------------------------------------------------
+        // MODULE ROOMS (Realtime data updates)
+        // -------------------------------------------------
+        socket.on('join_module', (data) => {
+            const mod = data.module;
+            if (mod && typeof mod === 'string') {
+                socket.join(`module_${mod}`);
+                console.log(`📡 ${userName} joined module: ${mod}`);
+            }
+        });
+
+        socket.on('leave_module', (data) => {
+            const mod = data.module;
+            if (mod && typeof mod === 'string') {
+                socket.leave(`module_${mod}`);
+            }
+        });
+
+        // keepalive pong (Render Free Plan: prevent 15-min sleep)
+        socket.on('keepalive', () => {
+            socket.emit('keepalive_ack', { ts: Date.now() });
+        });
+
+        // -------------------------------------------------
         // DISCONNECT
         // -------------------------------------------------
         socket.on('disconnect', async () => {
@@ -228,7 +251,7 @@ function initSocketIO(httpServer) {
         });
     });
 
-    console.log('💬 Socket.io Chat Server đã khởi tạo');
+    console.log('💬 Socket.io Chat + Realtime Server đã khởi tạo');
     return io;
 }
 
@@ -236,4 +259,28 @@ function getIO() {
     return io;
 }
 
-module.exports = { initSocketIO, getIO };
+/**
+ * Emit a data change event to all clients listening on a module.
+ * Usage from any controller:
+ *   const { emitDataChange } = require('../services/socketService');
+ *   emitDataChange('projects', 'created', { id: 1, name: 'Test' });
+ *
+ * @param {string} module - Module name: projects, inventory, quotations, finance, orders, bom
+ * @param {string} action - Action: created, updated, deleted, status_changed
+ * @param {object} data - Payload (partial data, e.g. { id, name })
+ * @param {object} [options] - { excludeSocketId, room }
+ */
+function emitDataChange(module, action, data, options = {}) {
+    if (!io) return;
+    const event = 'data_changed';
+    const payload = { module, action, data, timestamp: Date.now() };
+
+    if (options.room) {
+        io.to(options.room).emit(event, payload);
+    } else {
+        // Emit to module room + broadcast globally
+        io.to(`module_${module}`).emit(event, payload);
+    }
+}
+
+module.exports = { initSocketIO, getIO, emitDataChange };

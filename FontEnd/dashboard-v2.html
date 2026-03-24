@@ -1623,6 +1623,24 @@
             alert('Cập nhật vật tư thành công!');
         }
     </script>
+
+    <!-- Realtime Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/realtime-client.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            VWRealtime.init({
+                modules: ['projects', 'finance'],
+                onDataChanged: function(payload) {
+                    console.log('📡 Realtime update:', payload.module, payload.action);
+                    // Auto-refresh data khi có thay đổi
+                    if (typeof loadDashboardData === 'function') {
+                        loadDashboardData();
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>

@@ -905,6 +905,24 @@
     <script src="js/sidebar-enterprise.js"></script>
     <script src="js/notification-system.js"></script>
     <script src="js/notification-header.js"></script>
+
+    <!-- Realtime Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/realtime-client.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            VWRealtime.init({
+                modules: ['finance'],
+                onDataChanged: function(payload) {
+                    console.log('📡 Realtime update:', payload.module, payload.action);
+                    // Auto-refresh data khi có thay đổi
+                    if (typeof loadFinanceDashboard === 'function') {
+                        loadFinanceDashboard();
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>

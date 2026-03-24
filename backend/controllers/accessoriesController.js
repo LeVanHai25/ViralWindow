@@ -1,4 +1,5 @@
 const db = require("../config/db");
+const { emitDataChange } = require('../services/socketService');
 
 // GET all accessories
 exports.getAllAccessories = async (req, res) => {

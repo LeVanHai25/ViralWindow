@@ -1,5 +1,6 @@
 const db = require("../config/db");
 
+const { emitDataChange } = require('../services/socketService');
 // GET all aluminum systems
 exports.getAllSystems = async (req, res) => {
     try {
@@ -171,6 +172,8 @@ exports.create = async (req, res) => {
             message: "Thêm kho nhôm thành công",
             data: { id: result.insertId }
         });
+            // Realtime: Thông báo thay đổi dữ liệu
+            try { emitDataChange('inventory', 'created', { id: result.insertId, type: 'aluminum' }); } catch(e) {}
     } catch (err) {
         console.error('Error creating aluminum system:', err);
         if (err.code === 'ER_DUP_ENTRY') {
@@ -310,6 +313,8 @@ exports.update = async (req, res) => {
             success: true,
             message: "Cập nhật kho nhôm thành công"
         });
+            // Realtime: Thông báo thay đổi dữ liệu
+            try { emitDataChange('inventory', 'updated', { id: req.params.id, type: 'aluminum' }); } catch(e) {}
     } catch (err) {
         console.error('Error updating aluminum system:', err);
         if (err.code === 'ER_BAD_FIELD_ERROR') {
@@ -417,6 +422,8 @@ exports.delete = async (req, res) => {
             success: true,
             message: "Xóa kho nhôm thành công"
         });
+            // Realtime: Thông báo thay đổi dữ liệu
+            try { emitDataChange('inventory', 'deleted', { id: req.params.id, type: 'aluminum' }); } catch(e) {}
     } catch (err) {
         console.error(err);
         res.status(500).json({
