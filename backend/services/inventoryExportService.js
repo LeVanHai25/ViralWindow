@@ -63,7 +63,7 @@ class InventoryExportService {
         const dynamicHeaders = {
             'accessory': ['STT', 'Mã phụ kiện', 'Tên phụ kiện', 'Đơn vị', 'Tồn kho', 'Min', 'Max', 'Cần nhập', 'Giá trị', 'Tổng giá trị'],
             'other': ['STT', 'Mã vật tư', 'Tên vật tư', 'Đơn vị', 'Tồn kho', 'Min', 'Max', 'Cần nhập', 'Giá trị', 'Tổng giá trị'],
-            'aluminum': ['STT', 'Mã cây', 'Tên thanh nhôm', 'Màu sắc', 'Tỉ trọng thô', 'Mét dài(m)', 'SL(thanh)', 'Tổng số mét dài(m)', 'Tổng khối lượng(Kg)', 'Min', 'Max', 'Cần nhập', 'Giá trị', 'Tổng giá trị'],
+            'aluminum': ['STT', 'Mã cây', 'Hệ', 'Tên thanh nhôm', 'Màu sắc', 'Tỉ trọng thô', 'Mét dài(m)', 'SL(thanh)', 'Tổng số mét dài(m)', 'Tổng khối lượng(Kg)', 'Min', 'Max', 'Cần nhập', 'Giá trị', 'Tổng giá trị'],
             'glass': ['STT', 'Mã kính', 'Tên kính', 'Nhà cung cấp', 'Độ dày(mm)', 'Kích thước(DxR)', 'Diện tích(m2)', 'Giá', 'Tồn kho', 'Tổng giá trị'],
             'scraps': ['STT', 'Mã phế liệu', 'Tên phế liệu', 'Đơn vị', 'Tồn kho', 'Min', 'Max', 'Cần nhập', 'Giá trị', 'Tổng giá trị']
         };
@@ -181,18 +181,19 @@ class InventoryExportService {
                 const totalWeight = totalM * density;
 
                 row.getCell(2).value = item.code || ''; // Mã cây
-                row.getCell(3).value = item.name || ''; // Tên thanh nhôm
-                row.getCell(4).value = item.color || ''; // Màu sắc
-                row.getCell(5).value = density; // Tỉ trọng thô
-                row.getCell(6).value = lengthM; // Mét dài(m)
-                row.getCell(7).value = stock; // SL(thanh)
-                row.getCell(8).value = totalM; // Tổng số mét dài(m)
-                row.getCell(9).value = totalWeight; // Tổng khối lượng(Kg)
-                row.getCell(10).value = min; // Min
-                row.getCell(11).value = max; // Max
-                row.getCell(12).value = max > stock ? (max - stock) : 0; // Cần nhập
-                row.getCell(13).value = price; // Giá trị
-                row.getCell(14).value = stock * price; // Tổng giá trị
+                row.getCell(3).value = item.aluminum_system || ''; // Hệ
+                row.getCell(4).value = item.name || ''; // Tên thanh nhôm
+                row.getCell(5).value = item.color || ''; // Màu sắc
+                row.getCell(6).value = density; // Tỉ trọng thô
+                row.getCell(7).value = lengthM; // Mét dài(m)
+                row.getCell(8).value = stock; // SL(thanh)
+                row.getCell(9).value = totalM; // Tổng số mét dài(m)
+                row.getCell(10).value = totalWeight; // Tổng khối lượng(Kg)
+                row.getCell(11).value = min; // Min
+                row.getCell(12).value = max; // Max
+                row.getCell(13).value = max > stock ? (max - stock) : 0; // Cần nhập
+                row.getCell(14).value = price; // Giá trị
+                row.getCell(15).value = stock * price; // Tổng giá trị
             } else if (itemType === 'glass') {
                 const stock = Number(item.stock) || 0;
                 const price = Number(item.price) || 0;
@@ -256,9 +257,9 @@ class InventoryExportService {
 
                     // Specific number formatting
                     if (itemType === 'aluminum') {
-                        if (colNumber === 5 || colNumber === 6 || colNumber === 9 || colNumber >= 13) {
+                        if (colNumber === 6 || colNumber === 7 || colNumber === 10 || colNumber >= 14) {
                             cell.numFmt = '#,##0.00';
-                        } else if (colNumber >= 7 && colNumber <= 12) {
+                        } else if (colNumber >= 8 && colNumber <= 13) {
                             cell.numFmt = '#,##0';
                         }
                     } else if (itemType === 'glass') {
@@ -315,7 +316,7 @@ class InventoryExportService {
                 cell.alignment = { horizontal: 'right' };
             });
         } else if (itemType === 'aluminum') {
-            const sumCols = [7, 8, 9, 14]; // SL(thanh), Tổng số mét dài(m), Tổng khối lượng(Kg), Tổng giá trị
+            const sumCols = [8, 9, 10, 15]; // SL(thanh), Tổng mét dài, Tổng KL, Tổng giá trị
             sumCols.forEach(col => {
                 let sum = 0;
                 data.forEach(item => {
@@ -324,15 +325,15 @@ class InventoryExportService {
                     const density = Number(item.density) || 0;
                     const price = Number(item.price) || 0;
 
-                    if (col === 7) sum += stock;
-                    if (col === 8) sum += stock * lengthM;
-                    if (col === 9) sum += stock * lengthM * density;
-                    if (col === 14) sum += stock * price;
+                    if (col === 8) sum += stock;
+                    if (col === 9) sum += stock * lengthM;
+                    if (col === 10) sum += stock * lengthM * density;
+                    if (col === 15) sum += stock * price;
                 });
                 const cell = totalRow.getCell(col);
                 cell.value = sum;
                 cell.font = { bold: true };
-                cell.numFmt = (col === 7 || col === 8) ? '#,##0' : '#,##0.00';
+                cell.numFmt = (col === 8 || col === 9) ? '#,##0' : '#,##0.00';
                 cell.alignment = { horizontal: 'right' };
             });
         } else if (itemType === 'glass') {
@@ -374,7 +375,7 @@ class InventoryExportService {
         currentRowIndex += 3;
         const footerColsArr = {
             'movement': [{ col: 2, text: 'NGƯỜI TẠO PHIẾU' }, { col: 5, text: 'KẾ TOÁN' }, { col: 9, text: 'CÔNG TY CỔ PHẦN VIRALWINDOW' }],
-            'aluminum': [{ col: 4, text: 'NGƯỜI TẠO PHIẾU' }, { col: 8, text: 'KẾ TOÁN' }, { col: 13, text: 'CÔNG TY CỔ PHẦN VIRALWINDOW' }],
+            'aluminum': [{ col: 4, text: 'NGƯỜI TẠO PHIẾU' }, { col: 9, text: 'KẾ TOÁN' }, { col: 14, text: 'CÔNG TY CỔ PHẦN VIRALWINDOW' }],
             'glass': [{ col: 3, text: 'NGƯỜI TẠO PHIẾU' }, { col: 6, text: 'KẾ TOÁN' }, { col: 9, text: 'CÔNG TY CỔ PHẦN VIRALWINDOW' }],
             'default': [{ col: 2, text: 'NGƯỜI TẠO PHIẾU' }, { col: 5, text: 'KẾ TOÁN' }, { col: 9, text: 'CÔNG TY CỔ PHẦN VIRALWINDOW' }]
         };

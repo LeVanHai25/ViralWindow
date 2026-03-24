@@ -3,11 +3,11 @@ const inventoryExportService = require('../services/inventoryExportService');
 
 /**
  * Export inventory to Excel by item type (warehouse)
- * GET /api/inventory/export-excel?item_type=...&search=...&category=...
+ * GET /api/inventory/export-excel?item_type=...&search=...&category=...&system=...&warehouse_id=...
  */
 exports.exportInventory = async (req, res) => {
     try {
-        const { item_type, search, category, system } = req.query;
+        const { item_type, search, category, system, warehouse_id } = req.query;
 
         if (!item_type || !['aluminum', 'accessory', 'glass', 'other', 'scraps'].includes(item_type)) {
             return res.status(400).json({
@@ -26,6 +26,7 @@ exports.exportInventory = async (req, res) => {
                     SELECT 
                         code,
                         name,
+                        TRIM(aluminum_system) AS aluminum_system,
                         color,
                         COALESCE(density, weight_per_meter) AS density,
                         length_m,
@@ -34,15 +35,19 @@ exports.exportInventory = async (req, res) => {
                         max_stock_level,
                         unit_price
                     FROM aluminum_systems
-                    WHERE 1=1
+                    WHERE is_active = 1
                 `;
                 if (search) {
                     sql += ` AND (code LIKE ? OR name LIKE ? OR aluminum_system LIKE ?)`;
                     params.push(`%${search}%`, `%${search}%`, `%${search}%`);
                 }
                 if (system) {
-                    sql += ` AND aluminum_system = ?`;
+                    sql += ` AND TRIM(aluminum_system) = ?`;
                     params.push(system);
+                }
+                if (warehouse_id) {
+                    sql += ` AND warehouse_id = ?`;
+                    params.push(warehouse_id);
                 }
                 sql += ` ORDER BY aluminum_system, code`;
                 break;
@@ -159,6 +164,7 @@ exports.exportInventory = async (req, res) => {
             return {
                 code: row.code,
                 name: row.name,
+                aluminum_system: row.aluminum_system || '',
                 unit: row.unit,
                 color: row.color,
                 supplier_name: row.supplier_name,
@@ -182,9 +188,15 @@ exports.exportInventory = async (req, res) => {
             scraps: 'Phế liệu'
         };
 
+        // Xây tiêu đề chi tiết dựa trên filter
+        let reportTitle = `BÁO CÁO TỒN KHO ${warehouseNames[item_type]}`;
+        if (system) reportTitle += ` - ${system}`;
+
         const buffer = await inventoryExportService.exportToExcel(item_type, exportData, {
-            title: `BÁO CÁO TỒN KHO ${warehouseNames[item_type]}`,
-            generatedBy: req.user?.full_name || req.user?.username || 'Admin'
+            title: reportTitle,
+            generatedBy: req.user?.full_name || req.user?.username || 'Admin',
+            filterSystem: system || null,
+            filterWarehouseId: warehouse_id || null
         });
 
         // Filenames

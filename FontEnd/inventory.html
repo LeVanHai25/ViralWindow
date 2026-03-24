@@ -6828,6 +6828,22 @@
                     if (search) url += `&search=${encodeURIComponent(search)}`;
                     if (category && category !== 'all') url += `&category=${encodeURIComponent(category)}`;
 
+                    // Aluminum: truyền Hệ nhôm + kho đang chọn
+                    if (itemType === 'aluminum') {
+                        if (typeof selectedAluminumSystem !== 'undefined' && selectedAluminumSystem) {
+                            url += `&system=${encodeURIComponent(selectedAluminumSystem)}`;
+                        }
+                        if (typeof currentAluminumWarehouseId !== 'undefined' && currentAluminumWarehouseId && currentAluminumWarehouseId !== 'total') {
+                            url += `&warehouse_id=${currentAluminumWarehouseId}`;
+                        }
+                    }
+                    // Vật tư phụ: truyền danh mục
+                    if (itemType === 'other') {
+                        const otherCatEl = document.getElementById('otherCategoryFilter');
+                        const otherCat = otherCatEl ? otherCatEl.value : '';
+                        if (otherCat && otherCat !== 'all') url += `&category=${encodeURIComponent(otherCat)}`;
+                    }
+
                     // Show loading indicator
                     const btn = event.target.closest('button');
                     const originalText = btn.innerHTML;
