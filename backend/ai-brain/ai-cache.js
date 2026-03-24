@@ -12,15 +12,21 @@ let isRedisConnected = false;
 
 // Chỉ kết nối Redis nếu có REDIS_HOST hợp lệ
 const REDIS_HOST = process.env.REDIS_HOST;
-const REDIS_ENABLED = REDIS_HOST && REDIS_HOST !== '127.0.0.1' && REDIS_HOST !== 'localhost';
+const REDIS_URL = process.env.REDIS_URL;
+const REDIS_ENABLED = (REDIS_URL && REDIS_URL.length > 10) || (REDIS_HOST && REDIS_HOST !== '127.0.0.1' && REDIS_HOST !== 'localhost');
 
 if (REDIS_ENABLED) {
     try {
         const Redis = require('ioredis');
-        redis = new Redis({
-            host: REDIS_HOST,
-            port: process.env.REDIS_PORT || 6379,
-            password: process.env.REDIS_PASSWORD || undefined,
+        // Ưu tiên REDIS_URL (Upstash dùng URL format), fallback sang host/port
+        const redisConfig = REDIS_URL
+            ? REDIS_URL
+            : {
+                host: REDIS_HOST,
+                port: process.env.REDIS_PORT || 6379,
+                password: process.env.REDIS_PASSWORD || undefined,
+            };
+        redis = new Redis(redisConfig, {
             retryStrategy: (times) => {
                 if (times > 2) {
                     console.warn('[AI Cache] ⚠️ Redis không khả dụng sau 2 lần thử. Dùng Local Cache.');
@@ -30,7 +36,7 @@ if (REDIS_ENABLED) {
             },
             maxRetriesPerRequest: 1,
             connectTimeout: 5000,
-            lazyConnect: true // Không tự kết nối ngay
+            lazyConnect: true
         });
 
         redis.on('ready', () => {
