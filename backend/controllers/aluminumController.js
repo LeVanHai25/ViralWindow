@@ -58,7 +58,7 @@ exports.getAllSystems = async (req, res) => {
                 ...row,
                 cross_section_image: row.cross_section_image || null,
                 density: row.density || null,
-                aluminum_system: row.aluminum_system || null,
+                aluminum_system: row.aluminum_system ? row.aluminum_system.trim() : null,
                 stocks: systemStocks,
                 total_quantity: total_quantity,
                 // Overwrite legacy quantity for backward compatibility in "Total" view

@@ -11322,7 +11322,7 @@
                 // Thống kê tổng hợp (luôn tính trên toàn bộ để vẽ card)
                 const systemStats = {};
                 systems.forEach(system => {
-                    const sysName = system.aluminum_system || system.system_type || 'Khác';
+                    const sysName = (system.aluminum_system || system.system_type || 'Khác').trim();
                     if (!systemStats[sysName]) {
                         systemStats[sysName] = { weight: 0, value: 0, count: 0, bars: 0 };
                     }
@@ -11354,7 +11354,7 @@
                 let totalBars = 0;
 
                 const rows = sortedSystems.map(system => {
-                    const systemName = system.aluminum_system || system.system_type || 'Khác';
+                    const systemName = (system.aluminum_system || system.system_type || 'Khác').trim();
                     let quantity = 0;
                     if (currentAluminumWarehouseId === 'total') {
                         quantity = parseInt(system.total_quantity || system.quantity || 0);
