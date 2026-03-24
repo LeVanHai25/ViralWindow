@@ -1,151 +1,162 @@
-const Redis = require('ioredis');
 const NodeCache = require('node-cache');
 
-// 1. KHỞI TẠO REDIS (Chính) & NODE-CACHE (Dự phòng)
-// Khuyến cáo của Senior: Thường thì web app Node.js kết nối cùng máy với Redis.
-const redis = new Redis({
-    host: process.env.REDIS_HOST || '127.0.0.1',
-    port: process.env.REDIS_PORT || 6379,
-    retryStrategy: (times) => {
-        if (times > 3) {
-            console.warn('[AI Cache] ⚠️ Tắt auto-reconnect Redis sau 3 lần thử. Hoàn toàn dùng Local Cache dự phòng để tránh spam log nhắn.');
-            return null; // Trả về null để ioredis NGỪNG việc cố gắng kết nối lại (chống spam log Render)
-        }
-        return Math.min(times * 500, 2000); // Thử lại sau 0.5s -> 2s
-    },
-    maxRetriesPerRequest: 1 // Không treo request lâu
-});
+// =====================================================
+// REDIS + LOCAL CACHE — AI Cache Layer
+// =====================================================
+// Render Free Plan: Redis (Upstash) có thể hết hạn hoặc không khả dụng
+// → Tự động dùng Local Cache (node-cache) trên RAM khi Redis không có
+// =====================================================
 
-// Cache dự phòng trên RAM (khi Redis chết)
+let redis = null;
+let isRedisConnected = false;
+
+// Chỉ kết nối Redis nếu có REDIS_HOST hợp lệ
+const REDIS_HOST = process.env.REDIS_HOST;
+const REDIS_ENABLED = REDIS_HOST && REDIS_HOST !== '127.0.0.1' && REDIS_HOST !== 'localhost';
+
+if (REDIS_ENABLED) {
+    try {
+        const Redis = require('ioredis');
+        redis = new Redis({
+            host: REDIS_HOST,
+            port: process.env.REDIS_PORT || 6379,
+            password: process.env.REDIS_PASSWORD || undefined,
+            retryStrategy: (times) => {
+                if (times > 2) {
+                    console.warn('[AI Cache] ⚠️ Redis không khả dụng sau 2 lần thử. Dùng Local Cache.');
+                    return null;
+                }
+                return Math.min(times * 500, 2000);
+            },
+            maxRetriesPerRequest: 1,
+            connectTimeout: 5000,
+            lazyConnect: true // Không tự kết nối ngay
+        });
+
+        redis.on('ready', () => {
+            isRedisConnected = true;
+            console.log('[AI Cache] 🟢 Redis đã kết nối thành công.');
+        });
+        redis.on('error', (err) => {
+            isRedisConnected = false;
+            // Chỉ log 1 lần, không spam
+            if (!redis._errorLogged) {
+                console.warn('[AI Cache] 🔴 Redis lỗi:', err.message, '→ Dùng Local Cache');
+                redis._errorLogged = true;
+            }
+        });
+        redis.on('close', () => { isRedisConnected = false; });
+
+        // Thử kết nối (không throw nếu thất bại)
+        redis.connect().catch(() => {
+            console.log('[AI Cache] ℹ️ Redis không khả dụng. Hoàn toàn dùng Local Cache.');
+        });
+    } catch (e) {
+        console.log('[AI Cache] ℹ️ ioredis không có sẵn. Dùng Local Cache.');
+        redis = null;
+    }
+} else {
+    console.log('[AI Cache] ℹ️ REDIS_HOST không được cấu hình. Dùng Local Cache (đủ cho Render Free Plan).');
+}
+
+// Cache dự phòng trên RAM (luôn sẵn sàng)
 const localCache = new NodeCache({ stdTTL: 600, checkperiod: 120 });
 
-// Trạng thái kết nối Redis
-let isRedisConnected = false;
-redis.on('ready', () => {
-    isRedisConnected = true;
-    console.log('[AI Cache] 🟢 Redis đã kết nối thành công và sẵn sàng phục vụ.');
-});
-redis.on('error', (err) => {
-    isRedisConnected = false;
-    console.error('[AI Cache] 🔴 Lỗi kết nối Redis (Sẽ dùng Local Cache dự phòng):', err.message);
-});
-
-// 2. KỸ THUẬT CHỐNG CACHE STAMPEDE (Thundering Herd Prevention)
-// Nếu 50 user truy cập cùng lúc và Cache đang rỗng, chỉ 1 request được gọi API Gemini.
-// 49 request còn lại sẽ nằm chờ (pending) và nhận kết quả từ request 1.
+// Chống Cache Stampede
 const pendingRequests = new Map();
 
 /**
- * Lớp vỏ bọc (Wrapper) thông minh cho việc gọi AI (Thiết kế Phase 10: Redis + Stampede Prevention).
- * Giúp giảm tải 90-99% request lên Gemini, chống lỗi 429 Too Many Requests hiệu quả tuyệt đối.
- * 
- * @param {string} key - Khoá Cache (VD: 'ai:dashboard_insights')
- * @param {function} generateFn - Hàm async chạy thực tế gọi Gemini nếu Cache Miss.
- * @param {number} ttlSeconds - Thời gian tồn tại của Cache (giây). Mặc định 600s (10 phút).
- * @returns {Promise<any>} - Dữ liệu trả về từ AI hoặc Cache.
+ * Lấy dữ liệu AI với caching thông minh
+ * Redis (nếu có) → Local Cache → Gọi API
  */
 async function getCachedAI(key, generateFn, ttlSeconds = 600) {
     try {
-        // --- BƯỚC 0: KIỂM TRA CẦU DAO (Circuit Breaker Phase 11) ---
-        // Nếu API Key đã hết tiền, Redis sẽ giữ thẻ 'ai:circuit_breaker'
-        if (isRedisConnected) {
+        // Circuit Breaker
+        if (isRedisConnected && redis) {
             const isShattered = await redis.get('ai:circuit_breaker');
             if (isShattered) {
-                console.warn(`[AI Circuit Breaker] 🛑 Cầu dao đang MỞ. Bỏ qua API tự lùi về Fallback cục bộ cho Key: ${key}`);
-                throw new Error('CIRCUIT_BREAKER_ACTIVE'); // Ném lỗi văng thẳng ra catch để fallback tĩnh
+                console.warn(`[AI Circuit Breaker] 🛑 Cầu dao đang MỞ. Fallback cho: ${key}`);
+                throw new Error('CIRCUIT_BREAKER_ACTIVE');
             }
         }
 
-        // --- BƯỚC 1: KIỂM TRA PENDING REQUESTS (Chống Stampede) ---
+        // Chống Stampede
         if (pendingRequests.has(key)) {
-            console.log(`[AI Cache] ⏳ STAMPEDE PREVENTED: Request đang nằm chờ kết quả chép lại... -> ${key}`);
             return await pendingRequests.get(key);
         }
 
-        // --- BƯỚC 2: KIỂM TRA REDIS (Dữ liệu đã có sẵn rải rác trên nhiều servers) ---
-        if (isRedisConnected) {
+        // Check Redis
+        if (isRedisConnected && redis) {
             try {
                 const cachedData = await redis.get(key);
                 if (cachedData) {
-                    console.log(`[AI Cache] ⚡ REDIS HIT: Trả về kết quả tức thì (~1ms) cho -> ${key}`);
+                    console.log(`[AI Cache] ⚡ REDIS HIT → ${key}`);
                     return JSON.parse(cachedData);
                 }
             } catch (redisErr) {
-                console.error(`[AI Cache] Xảy ra lỗi khi đọc thẻ Redis cho ${key}, lùi về Local:`, redisErr.message);
+                // Silent fallback to local
             }
         }
 
-        // --- BƯỚC 3: KIỂM TRA LOCAL CACHE (Khi Redis mất kết nối) ---
+        // Check Local Cache
         const localHit = localCache.get(key);
         if (localHit) {
-            console.log(`[AI Cache] ⚡ LOCAL HIT (Dự phòng): Trả về kết quả thay thế cho -> ${key}`);
+            console.log(`[AI Cache] ⚡ LOCAL HIT → ${key}`);
             return localHit;
         }
 
-        console.log(`[AI Cache] 🐢 CACHE MISS: Gọi Gemini API để phân tích -> ${key}`);
+        console.log(`[AI Cache] 🐢 CACHE MISS → Gọi AI API: ${key}`);
 
-        // --- BƯỚC 4: GỌI HÀM VÀ ĐƯA VÀO PENDING HÀNG ĐỢI ---
-        // Biến quá trình gọi API thành một Promise dùng chung
+        // Gọi API và cache kết quả
         const promise = generateFn().then(async (result) => {
             if (result) {
-                // Lưu vào Redis hoặc Local
-                if (isRedisConnected) {
+                if (isRedisConnected && redis) {
                     try {
-                        // "EX" = Giây
                         await redis.set(key, JSON.stringify(result), 'EX', ttlSeconds);
-                    } catch (e) { console.error('[AI Cache] Không lưu được Redis:', e.message); }
-                } else {
-                    localCache.set(key, result, ttlSeconds);
+                    } catch (e) { /* fallback to local */ }
                 }
+                localCache.set(key, result, ttlSeconds);
             }
             return result;
         }).finally(() => {
-            // Khi lấy xong Data, phải mở khoá / xóa thẻ chờ
             pendingRequests.delete(key);
         });
 
-        // Đổ móng Promise này vào túi (Cho người thứ 2 tới xài ké)
         pendingRequests.set(key, promise);
-
         return await promise;
 
     } catch (error) {
-        // Lỗi bét nhè thì gỡ khoá Stampede để thử lại lần sau
         pendingRequests.delete(key);
 
-        // --- BƯỚC 5: XỬ LÝ LỖI SẬP CẦU DAO TỪ AI SERVICE ---
         if (error.code === 'QUOTA_EXHAUSTED') {
-            if (isRedisConnected) {
-                // Sập cầu dao cục bộ toàn server trong 1 giờ (3600s)
-                console.error(`[AI Circuit Breaker] 💥 API KEY HẾT QUOTA! Kích hoạt Cầu Dao Điện tắt AI trong 1 giờ tới.`);
+            if (isRedisConnected && redis) {
+                console.error(`[AI Circuit Breaker] 💥 API KEY HẾT QUOTA! Tắt AI trong 1 giờ.`);
                 await redis.set('ai:circuit_breaker', 'true', 'EX', 3600);
             }
-            throw new Error('Cầu dao AI đã đóng do hết Quota.'); // Chặn đứng và nhường cho Fallback
+            throw new Error('Cầu dao AI đã đóng do hết Quota.');
         }
 
-        // Nếu bản thân lỗi ném ra từ Circuit Breaker, ta quăng lại cho Controller bắt Fallback
         if (error.message === 'CIRCUIT_BREAKER_ACTIVE') {
             throw error;
         }
 
-        console.error(`[AI Cache] Lỗi rớt mạch xử lý chóp bu ${key}:`, error);
-        return await generateFn(); // Lỗi lặt vặt khác đâm thẳng tự chịu trách nhiệm
+        console.error(`[AI Cache] Lỗi xử lý ${key}:`, error.message);
+        return await generateFn();
     }
 }
 
 /**
- * Tính năng phá Cache (Invalidation) thủ công khi dữ liệu thay đổi đột ngột
- * @param {string} pattern - Pattern tìm key (VD: 'ai:dashboard*')
+ * Xoá cache theo pattern
  */
 async function invalidateAICache(pattern) {
-    // 1. Xoá Local Cache
+    // Xoá Local Cache
     try {
-        const localKeys = localCache.keys().filter(k => k.indexOf(pattern.replace('*','')) !== -1);
+        const localKeys = localCache.keys().filter(k => k.indexOf(pattern.replace('*', '')) !== -1);
         if (localKeys.length > 0) localCache.del(localKeys);
-    } catch(e) {}
+    } catch (e) { }
 
-    // 2. Xoá Redis Cache bằng SCAN thay vì KEYS (chống block RAM)
-    if (isRedisConnected) {
+    // Xoá Redis Cache
+    if (isRedisConnected && redis) {
         try {
             let cursor = '0';
             let totalDeleted = 0;
@@ -158,15 +169,13 @@ async function invalidateAICache(pattern) {
                     totalDeleted += keys.length;
                 }
             } while (cursor !== '0');
-            console.log(`[AI Cache] 🗑️ Redis: Đã dọn dẹp ${totalDeleted} keys chứa pattern: ${pattern}`);
-        } catch (e) {
-            console.error(`[AI Cache] 🔴 Lỗi Xóa Redis pattern ${pattern}:`, e.message);
-        }
+            if (totalDeleted > 0) console.log(`[AI Cache] 🗑️ Đã xoá ${totalDeleted} Redis keys: ${pattern}`);
+        } catch (e) { }
     }
 }
 
 module.exports = {
     getCachedAI,
     invalidateAICache,
-    redisClient: redis // Xuất cho tiện Debug nếu cần
+    redisClient: redis
 };
