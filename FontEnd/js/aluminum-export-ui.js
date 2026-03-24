@@ -120,6 +120,10 @@
 
                 // If this is an item type selector that includes aluminum
                 if (options.includes('aluminum') || options.includes('nhom')) {
+                    // ✅ Chỉ attach vào select bên trong Export modal, KHÔNG phải Stocktake/Kiểm kho
+                    const parentModal = select.closest('#exportModal, [id*="export"], [id*="Export"]');
+                    if (!parentModal) continue;  // Skip nếu không nằm trong Export modal
+                    
                     this.attachToTypeSelector(select);
                 }
             }
@@ -131,11 +135,11 @@
 
             select.addEventListener('change', (e) => {
                 const value = e.target.value?.toLowerCase();
-                this.toggleMeterInput(value === 'aluminum' || value === 'nhom');
+                this.toggleMeterInput(value === 'aluminum' || value === 'nhom', select);
             });
         },
 
-        toggleMeterInput: function (show) {
+        toggleMeterInput: function (show, triggerSelect) {
             const existingPanel = document.getElementById('aluminumExportPanel');
 
             if (!show) {
@@ -149,13 +153,19 @@
                 return;
             }
 
-            // Create and inject panel
-            this.injectMeterInputPanel();
+            // Create and inject panel — only inside the export modal
+            this.injectMeterInputPanel(triggerSelect);
         },
 
-        injectMeterInputPanel: function () {
+        injectMeterInputPanel: function (triggerSelect) {
+            // Tìm modal container chứa select đã trigger
+            const modal = triggerSelect 
+                ? triggerSelect.closest('#exportModal, [id*="export"], [id*="Export"]')
+                : null;
+            const searchContainer = modal || document;
+
             // Find the quantity input row in the modal
-            const qtyInputs = document.querySelectorAll('input[type="number"]');
+            const qtyInputs = searchContainer.querySelectorAll('input[type="number"]');
             let targetRow = null;
 
             for (const input of qtyInputs) {
@@ -167,7 +177,6 @@
             }
 
             if (!targetRow) {
-                console.log('Could not find quantity row to inject meter panel');
                 return;
             }
 
