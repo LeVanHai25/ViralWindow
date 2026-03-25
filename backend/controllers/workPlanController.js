@@ -9,7 +9,9 @@ exports.getAllWorkPlans = async (req, res, next) => {
         
         let query = `
             SELECT wp.*, 
-                   u.full_name as creator_name
+                   u.full_name as creator_name,
+                   (SELECT COUNT(*) FROM work_plan_checklists WHERE work_plan_id = wp.id) as chk_total,
+                   (SELECT COUNT(*) FROM work_plan_checklists WHERE work_plan_id = wp.id AND is_completed = 1) as chk_completed
             FROM work_plans wp
             LEFT JOIN users u ON wp.created_by = u.id
         `;
@@ -53,7 +55,9 @@ exports.getWorkPlanById = async (req, res, next) => {
         const role = req.user.role;
 
         const [plans] = await db.query(`
-            SELECT wp.*, u.full_name as creator_name
+            SELECT wp.*, u.full_name as creator_name,
+                   (SELECT COUNT(*) FROM work_plan_checklists WHERE work_plan_id = wp.id) as chk_total,
+                   (SELECT COUNT(*) FROM work_plan_checklists WHERE work_plan_id = wp.id AND is_completed = 1) as chk_completed
             FROM work_plans wp
             LEFT JOIN users u ON wp.created_by = u.id
             WHERE wp.id = ?

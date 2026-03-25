@@ -166,7 +166,7 @@ const WorkPlanModule = {
                 this.customers = data.data || [];
                 const sel = document.getElementById('p_customer_name');
                 if(sel) {
-                    sel.innerHTML = '<option value="">-- Chọn khách hàng --</option>' + this.customers.map(c => `<option value="${c.id}">${c.full_name} - ${c.phone||''}</option>`).join('');
+                    sel.innerHTML = '<option value="">-- Chọn khách hàng --</option>' + this.customers.map(c => `<option value="${this.escapeHTML(c.full_name)}">${this.escapeHTML(c.full_name)} - ${this.escapeHTML(c.phone||'')}</option>`).join('');
                 }
             }
         } catch (e) { console.error(e); }
@@ -653,7 +653,20 @@ const WorkPlanModule = {
                                 </div>
                                 <div class="text-xs text-gray-500 flex items-center gap-4">
                                     ${p.location ? `<span class="flex items-center gap-1 truncation"><i class="fa-solid fa-location-dot text-gray-400"></i> ${p.location}</span>` : ''}
-                                    ${p.customer_name ? `<span class="flex items-center gap-1 truncation"><i class="fa-regular fa-user text-gray-400"></i> ${p.customer_name}</span>` : ''}
+                                    ${(() => {
+                                        let cName = p.customer_name;
+                                        if (cName && !isNaN(cName)) {
+                                            const found = this.customers && this.customers.find(c => c.id == cName);
+                                            if (found) cName = found.full_name;
+                                        }
+                                        let pName = '';
+                                        if (p.project_id) {
+                                            const foundP = this.projects && this.projects.find(x => x.id === p.project_id);
+                                            pName = foundP ? `[${foundP.project_code}] ${foundP.project_name}` : `ID: ${p.project_id}`;
+                                        }
+                                        let comb = [cName, pName].filter(Boolean).join(' - ');
+                                        return comb ? `<span class="flex items-center gap-1 truncation"><i class="fa-solid fa-building text-gray-400"></i> ${comb}</span>` : '';
+                                    })()}
                                 </div>
                                 ${avatarsHtml}
                             </div>
@@ -732,24 +745,25 @@ const WorkPlanModule = {
         if (plan.status === 'completed') statusBadge = `<span class="px-2 py-0.5 rounded bg-green-50 text-green-700 text-[10px] font-bold border border-green-100">Hoàn thành</span>`;
         if (plan.status === 'cancelled') statusBadge = `<span class="px-2 py-0.5 rounded bg-red-50 text-red-700 text-[10px] font-bold border border-red-100">Đã hủy</span>`;
 
-        let projectHtml = '';
+        let subtitleHtml = '';
         if (plan.project_id || plan.customer_name) {
-            projectHtml = `
-            <div class="mb-5 border border-gray-100 rounded-xl overflow-hidden shadow-sm">
-                <div class="bg-gray-50 px-4 py-2 border-b border-gray-100 flex items-center gap-2 text-[10px] font-extrabold text-gray-500 uppercase tracking-wide">
-                    <i class="fa-solid fa-building text-gray-400"></i> CÔNG TRÌNH / KHÁCH
-                </div>
-                <div class="bg-white p-4">
-                    <h4 class="text-[14px] font-extrabold text-gray-800 mb-2 truncate" title="${plan.customer_name || 'ID: ' + plan.project_id}">${plan.customer_name || 'Dự án ID: ' + plan.project_id}</h4>
-                    <div class="flex items-center justify-between text-[11px] font-bold text-gray-500 mb-1.5">
-                        <span>Tiến độ</span>
-                        <span>0%</span>
-                    </div>
-                    <div class="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                        <div class="h-full bg-teal-500 rounded-full" style="width: 0%"></div>
-                    </div>
-                </div>
-            </div>`;
+            let cName = plan.customer_name;
+            if (cName && !isNaN(cName)) {
+                // Handle legacy saved ID
+                const found = this.customers && this.customers.find(c => c.id == cName);
+                if (found) cName = found.full_name;
+            }
+            
+            let pName = '';
+            if (plan.project_id) {
+                const foundP = this.projects && this.projects.find(p => p.id === plan.project_id);
+                pName = foundP ? `[${foundP.project_code}] ${foundP.project_name || foundP.customer_name}` : `Dự án ID: ${plan.project_id}`;
+            }
+
+            const displayName = [cName, pName].filter(Boolean).join(' - ');
+            if (displayName) {
+                subtitleHtml = `<div class="text-[14px] font-bold text-teal-800 bg-white/60 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg mb-4 border border-teal-100 shadow-sm"><i class="fa-solid fa-building text-teal-600/70"></i> ${displayName}</div>`;
+            }
         }
 
         const dateObj = new Date(plan.start_time);
@@ -843,11 +857,12 @@ const WorkPlanModule = {
             </div>
         </div>
         
-        <h2 class="text-2xl font-extrabold text-gray-800 leading-snug mb-5">${plan.title}</h2>
+        <h2 class="text-2xl font-extrabold text-gray-800 leading-snug ${subtitleHtml ? 'mb-2' : 'mb-5'}">${plan.title}</h2>
+        ${subtitleHtml}
         
-        <div class="flex items-center justify-between text-[11px] font-bold text-gray-500 mb-3">
+        <div class="flex items-center justify-between text-[11px] font-bold text-gray-500 mb-3" id="headerChecklistProgressContainer" ${plan.chk_total > 0 ? '' : 'style="display:none;"'}>
             <span>Tiến độ checklist</span>
-            <span>0/5</span>
+            <span id="headerChkText">${plan.chk_completed || 0}/${plan.chk_total || 0}</span>
         </div>
         
         <!-- Status Pills -->
@@ -885,7 +900,6 @@ const WorkPlanModule = {
         
         <!-- Tab: Thông tin -->
         <div id="detailTab-info" class="detail-tab-content">
-            ${projectHtml}
             ${dateTimeHtml}
 
             <!-- Tags -->
@@ -1098,6 +1112,21 @@ const WorkPlanModule = {
 
         document.querySelector('.bg-teal-50 .text-xs.font-bold.text-teal-700').innerHTML = `<span id="checklistProgressText">${ptg}%</span> (${completed}/${total})`;
         
+        // Update the header progress independently
+        const headerText = document.getElementById('headerChkText');
+        if (headerText) headerText.textContent = `${completed}/${total}`;
+        const headerContainer = document.getElementById('headerChecklistProgressContainer');
+        if (headerContainer) headerContainer.style.display = total > 0 ? '' : 'none';
+        
+        // Sync to memory
+        if (this.plans) {
+            const plan = this.plans.find(p => p.id == planId);
+            if (plan) {
+                plan.chk_completed = completed;
+                plan.chk_total = total;
+            }
+        }
+        
         if (total === 0) {
             container.innerHTML = '<div class="text-center text-gray-400 italic text-[11px] my-5 bg-gray-50 p-3 rounded-lg border border-dashed border-gray-200">Chưa có công việc nào cần làm.</div>';
             return;
@@ -1292,7 +1321,14 @@ const WorkPlanModule = {
             
             document.getElementById('p_location').value = plan.location || '';
             document.getElementById('p_project_id').value = plan.project_id || '';
-            document.getElementById('p_customer_name').value = plan.customer_name || '';
+            
+            let cName = plan.customer_name || '';
+            if (cName && !isNaN(cName)) {
+                const found = this.customers && this.customers.find(c => c.id == cName);
+                if (found) cName = found.full_name;
+            }
+            document.getElementById('p_customer_name').value = cName;
+
             document.getElementById('p_description').value = plan.description || plan.meeting_note || '';
 
             const pIds = (plan.participants || []).map(p => p.user_id.toString());
