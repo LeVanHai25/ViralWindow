@@ -64,6 +64,23 @@ const SIDEBAR_MENU_HTML = `
         <span>TỔNG QUAN</span>
     </a>
 
+    <!-- THEO DÕI DỰ ÁN -->
+    <a href="production-excel-view.html" class="nav-item" data-page="production-excel-view">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <span>THEO DÕI DỰ ÁN</span>
+    </a>
+
+    <!-- KẾ HOẠCH CÔNG VIỆC -->
+    <a href="work-plan.html" class="nav-item" data-page="work-plan">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <span>KẾ HOẠCH CÔNG VIỆC</span>
+    </a>
+
     <!-- KINH DOANH -->
     <div class="nav-item has-submenu" data-menu="kinhdoanh">
         <div class="flex items-center gap-3 flex-1">
@@ -99,13 +116,6 @@ const SIDEBAR_MENU_HTML = `
                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
             </svg>
             <span>Quy trình dự án</span>
-        </a>
-        <a href="production-excel-view.html" class="submenu-item" data-page="production-excel-view">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <span>Theo dõi dự án</span>
         </a>
         <a href="product-catalog-v2.html" class="submenu-item" data-page="product-catalog-v2">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">

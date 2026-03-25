@@ -36,10 +36,40 @@ class EnterpriseSidebar {
         // Find QUẢN TRỊ section to insert before it
         const allNavItems = nav.querySelectorAll(':scope > .nav-item, :scope > a.nav-item, :scope > div.nav-item');
         let quantriEl = null;
+        let kinhDoanhEl = null;
         allNavItems.forEach(item => {
             const text = item.textContent || '';
             if (text.includes('QUẢN TRỊ')) quantriEl = item;
+            if (text.includes('KINH DOANH')) kinhDoanhEl = item;
         });
+
+        // Check if KẾ HOẠCH CÔNG VIỆC already exists
+        const hasWorkPlan = nav.innerHTML.includes('work-plan.html');
+        if (!hasWorkPlan) {
+            const workPlanLink = document.createElement('a');
+            workPlanLink.href = 'work-plan.html';
+            workPlanLink.className = 'nav-item';
+            
+            const isWorkPlanPage = this.currentPage === 'work-plan.html';
+            if (isWorkPlanPage) {
+                workPlanLink.classList.add('active');
+                workPlanLink.style.background = 'rgba(255,255,255,0.1)';
+            }
+
+            workPlanLink.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span>KẾ HOẠCH CÔNG VIỆC</span>`;
+                
+            if (kinhDoanhEl) {
+                nav.insertBefore(workPlanLink, kinhDoanhEl);
+            } else if (quantriEl) {
+                nav.insertBefore(workPlanLink, quantriEl);
+            } else {
+                nav.appendChild(workPlanLink);
+            }
+        }
 
         // Check if TRỢ LÝ AI already exists
         const hasAI = nav.innerHTML.includes('reports-ai.html');
@@ -391,6 +421,17 @@ class EnterpriseSidebar {
             if (avatarImage) {
                 avatarImage.classList.add('hidden');
             }
+        }
+
+        // --- NEW: Handle Manager-Only Menu Items ---
+        if (user.role === 'admin' || user.role === 'manager' || user.role === 'super_admin' || user.user_type === 'admin') {
+            document.querySelectorAll('.manager-only').forEach(el => {
+                el.style.display = '';
+            });
+        } else {
+            document.querySelectorAll('.manager-only').forEach(el => {
+                el.style.display = 'none';
+            });
         }
     }
 

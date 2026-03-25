@@ -274,6 +274,11 @@ console.log('✅ Route /api/product-catalog đã được đăng ký (Nhóm SP +
 app.use("/api/inventory-warehouses", warehouseRoutes);
 console.log('✅ Route /api/inventory-warehouses đã được đăng ký');
 
+// NEW: Work Plan (Kế hoạch công việc - Module Quản lý)
+const workPlanRoutes = require("./routes/work-plans");
+app.use("/api/work-plans", workPlanRoutes);
+console.log('✅ Route /api/work-plans đã được đăng ký (Kế hoạch công việc)');
+
 
 
 // ============================================
