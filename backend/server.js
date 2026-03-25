@@ -279,6 +279,11 @@ const workPlanRoutes = require("./routes/work-plans");
 app.use("/api/work-plans", workPlanRoutes);
 console.log('✅ Route /api/work-plans đã được đăng ký (Kế hoạch công việc)');
 
+// NEW: Work Plan Types (Loại kế hoạch)
+const workPlanTypeRoutes = require("./routes/work-plan-types");
+app.use("/api/work-plan-types", workPlanTypeRoutes);
+console.log('✅ Route /api/work-plan-types đã được đăng ký (Loại kế hoạch)');
+
 
 
 // ============================================

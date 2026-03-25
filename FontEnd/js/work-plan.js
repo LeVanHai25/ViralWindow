@@ -9,11 +9,29 @@ const SOCKET_URL = window.location.hostname === 'localhost' || window.location.h
 const WorkPlanModule = {
     calendar: null,
     plans: [],
+    planTypes: [],
     users: [],
     currentPlanId: null,
     selectedPlanId: null,
     socket: null,
     currentUser: null,
+    
+    availableIcons: [
+        'fa-users', 'fa-handshake', 'fa-ruler-combined', 'fa-helmet-safety', 
+        'fa-list-check', 'fa-briefcase', 'fa-folder-open', 'fa-file-lines', 
+        'fa-calendar-check', 'fa-comments', 'fa-star', 'fa-bullhorn', 
+        'fa-truck', 'fa-hammer', 'fa-wrench', 'fa-laptop-code', 'fa-phone', 'fa-video'
+    ],
+    typeColorThemes: {
+        teal: { name: 'Xanh ngọc', color: 'text-teal-700', bg: 'bg-teal-100', bg_class: 'bg-teal-500', border_class: 'border-teal-400', hex_bg: '#e6fffa' },
+        amber: { name: 'Vàng', color: 'text-amber-700', bg: 'bg-amber-100', bg_class: 'bg-amber-500', border_class: 'border-amber-400', hex_bg: '#fef3c7' },
+        rose: { name: 'Đỏ hồng', color: 'text-rose-700', bg: 'bg-rose-100', bg_class: 'bg-rose-500', border_class: 'border-rose-400', hex_bg: '#ffe4e6' },
+        orange: { name: 'Cam', color: 'text-orange-700', bg: 'bg-orange-100', bg_class: 'bg-orange-500', border_class: 'border-orange-400', hex_bg: '#ffedd5' },
+        slate: { name: 'Xám', color: 'text-slate-700', bg: 'bg-slate-200', bg_class: 'bg-slate-500', border_class: 'border-slate-400', hex_bg: '#f1f5f9' },
+        blue: { name: 'Xanh biển', color: 'text-blue-700', bg: 'bg-blue-100', bg_class: 'bg-blue-500', border_class: 'border-blue-400', hex_bg: '#eff6ff' },
+        purple: { name: 'Tím', color: 'text-purple-700', bg: 'bg-purple-100', bg_class: 'bg-purple-500', border_class: 'border-purple-400', hex_bg: '#f3e8ff' },
+        green: { name: 'Xanh lá', color: 'text-green-700', bg: 'bg-green-100', bg_class: 'bg-green-500', border_class: 'border-green-400', hex_bg: '#f0fdf4' }
+    },
     
     // View State
     currentView: 'dashboard', 
@@ -50,6 +68,7 @@ const WorkPlanModule = {
         await this.loadUsers();
         await this.loadCustomers(); // Added
         await this.loadProjects();   // Added
+        await this.loadTypes();
         await this.loadPlans();
         this.initSocket();
     },
@@ -168,6 +187,76 @@ const WorkPlanModule = {
         } catch (e) { console.error(e); }
     },
     
+    loadTypes: async function() {
+        try {
+            const token = window.AuthHelper.getToken();
+            const res = await fetch(`${API_BASE}/work-plan-types`, { headers: { 'Authorization': `Bearer ${token}` }});
+            if (res.ok) {
+                const data = await res.json();
+                this.planTypes = data.data || [];
+                this.renderTypeFilters();
+                this.renderFormTypeRadios();
+            }
+        } catch (e) { console.error('Lỗi tải nhóm loại kế hoạch:', e); }
+    },
+
+    renderFormTypeRadios: function() {
+        const container = document.getElementById('type-radio-group');
+        if (!container) return;
+        
+        let html = '';
+        this.planTypes.forEach((t) => {
+            html += `
+                <div class="type-radio-card btn-radio transition-all duration-200" data-type="${t.type_code}" onclick="WorkPlanModule.selectType('${t.type_code}')">
+                    <span class="${t.color} flex items-center justify-center w-6 h-6 rounded ${t.bg}">${t.icon}</span> 
+                    <span class="font-semibold text-[13px]">${t.name}</span> 
+                    <i class="fa-solid fa-check ml-auto text-teal-600 hidden check-icon"></i>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+        if(this.planTypes.length > 0) {
+           this.selectType(this.planTypes[0].type_code);
+        }
+    },
+
+    renderTypeFilters: function() {
+        const container = document.getElementById('filter-types-container');
+        if (!container) return;
+        
+        let html = `
+            <button class="filter-btn flex justify-between items-center px-3 py-2 rounded-lg text-gray-600 active" data-filter="type" data-value="all">
+                <div class="flex items-center gap-2"><i class="fa-solid fa-layer-group w-5 text-center text-teal-600"></i> Tất cả</div>
+                <span class="filter-type-count bg-teal-600 text-white" id="count-all">0</span>
+            </button>
+        `;
+        
+        this.planTypes.forEach(t => {
+            html += `
+            <button class="filter-btn flex justify-between items-center px-3 py-2 rounded-lg text-gray-600" data-filter="type" data-value="${t.type_code}">
+                <div class="flex items-center gap-2 type-${t.type_code} ${t.color}">${t.icon} ${t.name}</div>
+                <span class="filter-type-count ${t.bg} ${t.color}" id="count-${t.type_code}">0</span>
+            </button>`;
+        });
+        container.innerHTML = html;
+        
+        // Re-bind events for new buttons
+        container.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const type = btn.dataset.filter;
+                const val = btn.dataset.value;
+                if (type === 'type') {
+                    document.querySelectorAll('[data-filter="type"]').forEach(b => { b.classList.remove('active', 'bg-teal-50', 'text-teal-700', 'font-semibold'); b.classList.add('text-gray-600'); });
+                    btn.classList.add('active', 'bg-teal-50', 'text-teal-700', 'font-semibold');
+                    btn.classList.remove('text-gray-600');
+                    this.filterType = val;
+                    this.renderAllViews();
+                    this.closeDetailPanel();
+                }
+            });
+        });
+    },
+
     loadPlans: async function() {
         try {
             const token = window.AuthHelper.getToken();
@@ -181,6 +270,7 @@ const WorkPlanModule = {
         } finally {
             this.renderAllViews();
             if(this.selectedPlanId) this.openDetailPanel(this.selectedPlanId, true);
+            else this.switchMainView('dashboard');
         }
     },
 
@@ -205,12 +295,13 @@ const WorkPlanModule = {
         if (el) el.textContent = `${filtered.length} kế hoạch`;
 
         // Sidebar Stats
-        let counts = { meeting: 0, client: 0, survey: 0, supervision: 0, internal: 0, all: total };
-        this.plans.forEach(p => { if (counts[p.type] !== undefined) counts[p.type]++; });
+        let counts = { all: total };
+        this.planTypes.forEach(t => counts[t.type_code] = 0);
+        this.plans.forEach(p => { if (counts[p.type] !== undefined) counts[p.type]++; else counts[p.type] = 1; });
         
-        ['all', 'meeting', 'client', 'survey', 'supervision', 'internal'].forEach(k => {
+        ['all', ...this.planTypes.map(t => t.type_code)].forEach(k => {
             const cEl = document.getElementById('count-' + k);
-            if(cEl) cEl.textContent = counts[k];
+            if(cEl) cEl.textContent = counts[k] || 0;
         });
 
         this.updateCalendarData(filtered);
@@ -357,13 +448,11 @@ const WorkPlanModule = {
 
     renderTypeStats: function(plans, total) {
         if(total === 0) return '<div class="text-xs text-center text-gray-400 py-4">Chưa có dữ liệu</div>';
-        const st = { 
-            meeting: { c:0, color: 'text-teal-600', bg: 'bg-teal-100', name: 'Hợp công ty', icon: 'fa-users' }, 
-            client: { c:0, color: 'text-amber-600', bg: 'bg-amber-100', name: 'Gặp khách hàng', icon: 'fa-handshake' }, 
-            survey: { c:0, color: 'text-rose-600', bg: 'bg-rose-100', name: 'Đo đạc / Khảo sát', icon: 'fa-ruler-combined' }, 
-            supervision: { c:0, color: 'text-orange-600', bg: 'bg-orange-100', name: 'Giám sát CT', icon: 'fa-helmet-safety' },
-            internal: { c:0, color: 'text-slate-600', bg: 'bg-slate-200', name: 'Nội bộ', icon: 'fa-list-check' },
-        };
+        const st = {};
+        this.planTypes.forEach(t => {
+            st[t.type_code] = { c:0, color: t.color, bg: t.bg, name: t.name, icon: t.icon || '<i class="fa-solid fa-folder"></i>' };
+        });
+        
         plans.forEach(p => { if(st[p.type]) st[p.type].c++; });
 
         let html = '<div class="flex flex-col gap-3">';
@@ -374,7 +463,7 @@ const WorkPlanModule = {
             html += `
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full ${row.bg} ${row.color} flex items-center justify-center text-sm"><i class="fa-solid ${row.icon}"></i></div>
+                        <div class="w-8 h-8 rounded-full ${row.bg} ${row.color} flex items-center justify-center text-sm">${row.icon}</div>
                         <span class="text-xs font-bold text-gray-700">${row.name}</span>
                     </div>
                     <div class="text-xs font-bold text-gray-700 flex items-center gap-2">${row.c} <span class="text-[10px] text-gray-400 font-normal w-6 text-right">${pct}%</span></div>
@@ -602,7 +691,7 @@ const WorkPlanModule = {
             plan.participants.forEach(pa => {
                 participantsHtml += `
                     <div class="flex items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-100 shadow-sm">
-                        <div class="w-10 h-10 rounded-full bg-teal-100 text-teal-700 font-bold flex items-center justify-center text-lg shadow-inner shrink-0">${(pa.full_name || pa.username || '?').charAt(0).toUpperCase()}</div>
+                        ${pa.avatar ? `<img src="${pa.avatar}" class="w-10 h-10 rounded-full object-cover shadow-inner shrink-0 border border-gray-200" alt="${pa.full_name || pa.username}">` : `<div class="w-10 h-10 rounded-full bg-teal-100 text-teal-700 font-bold flex items-center justify-center text-lg shadow-inner shrink-0">${(pa.full_name || pa.username || '?').charAt(0).toUpperCase()}</div>`}
                         <div class="min-w-0">
                             <div class="text-[13px] font-bold text-gray-800 truncate leading-snug">${pa.full_name || pa.username}</div>
                             <div class="text-[10px] text-gray-500 flex items-center gap-1 mt-0.5"><i class="fa-solid fa-briefcase text-gray-400"></i> ${pa.role || 'Thành viên'}</div>
@@ -1138,13 +1227,20 @@ const WorkPlanModule = {
     },
 
     getTypeConfig: function(type) {
-        switch(type) {
-            case 'meeting': return { name: 'Hợp công ty', icon: '<i class="fa-solid fa-users"></i>', color: 'text-teal-700', bgClass: 'bg-teal-500', borderClass: 'border-teal-400', hexBg: '#e6fffa', bg: 'bg-teal-100' };
-            case 'client': return { name: 'Gặp khách hàng', icon: '<i class="fa-solid fa-handshake"></i>', color: 'text-amber-700', bgClass: 'bg-amber-500', borderClass: 'border-amber-400', hexBg: '#fef3c7', bg: 'bg-amber-100' };
-            case 'survey': return { name: 'Đo đạc / Khảo sát', icon: '<i class="fa-solid fa-ruler-combined"></i>', color: 'text-rose-700', bgClass: 'bg-rose-500', borderClass: 'border-rose-400', hexBg: '#ffe4e6', bg: 'bg-rose-100' };
-            case 'supervision': return { name: 'Giám sát CT', icon: '<i class="fa-solid fa-helmet-safety"></i>', color: 'text-orange-700', bgClass: 'bg-orange-500', borderClass: 'border-orange-400', hexBg: '#ffedd5', bg: 'bg-orange-100' };
-            default: return { name: 'Công việc nội bộ', icon: '<i class="fa-solid fa-list-check"></i>', color: 'text-slate-700', bgClass: 'bg-slate-500', borderClass: 'border-slate-400', hexBg: '#f1f5f9', bg: 'bg-slate-200' };
+        if (!this.planTypes) return { name: 'Công việc nội bộ', icon: '<i class="fa-solid fa-list-check"></i>', color: 'text-slate-700', bgClass: 'bg-slate-500', borderClass: 'border-slate-400', hexBg: '#f1f5f9', bg: 'bg-slate-200' };
+        const found = this.planTypes.find(t => t.type_code === type);
+        if (found) {
+            return {
+                name: found.name,
+                icon: found.icon,
+                color: found.color || 'text-slate-700',
+                bgClass: found.bg_class || 'bg-slate-500',
+                borderClass: found.border_class || 'border-slate-400',
+                hexBg: found.hex_bg || '#f1f5f9',
+                bg: found.bg || 'bg-slate-200'
+            };
         }
+        return { name: 'Chưa phân loại', icon: '<i class="fa-solid fa-folder"></i>', color: 'text-slate-700', bgClass: 'bg-slate-500', borderClass: 'border-slate-400', hexBg: '#f1f5f9', bg: 'bg-slate-200' };
     },
 
 
@@ -1439,7 +1535,7 @@ const WorkPlanModule = {
             const isMine = c.user_id === this.currentUser.id;
             html += `
                 <div class="flex ${isMine ? 'justify-end' : 'justify-start'} mb-2 w-full">
-                    ${!isMine ? `<div class="w-8 h-8 rounded-full bg-slate-200 mr-2 flex items-center justify-center text-xs font-bold shrink-0">${c.full_name.charAt(0)}</div>` : ''}
+                    ${!isMine ? (c.avatar ? `<img src="${c.avatar}" class="w-8 h-8 rounded-full object-cover shrink-0 mr-2 border border-gray-200" title="${c.full_name}">` : `<div class="w-8 h-8 rounded-full bg-slate-200 mr-2 flex items-center justify-center text-xs font-bold shrink-0" title="${c.full_name}">${c.full_name.charAt(0)}</div>`) : ''}
                     <div class="max-w-[75%]">
                         ${!isMine ? `<div class="text-[10px] font-bold text-gray-500 ml-1 mb-0.5">${c.full_name}</div>` : ''}
                         <div class="p-3 ${isMine ? 'bg-teal-100 text-teal-900 rounded-br-none' : 'bg-white border text-gray-800 rounded-bl-none'} rounded-2xl text-[13px] leading-relaxed break-words">${this.escapeHTML(c.message)}</div>
@@ -1481,7 +1577,7 @@ const WorkPlanModule = {
         const isMine = c.user_id === this.currentUser.id;
         const cHtml = `
             <div class="flex ${isMine ? 'justify-end' : 'justify-start'} mb-2 w-full">
-                ${!isMine ? `<div class="w-8 h-8 rounded-full bg-slate-200 mr-2 flex items-center justify-center text-xs font-bold shrink-0">${(c.full_name||'?').charAt(0)}</div>` : ''}
+                ${!isMine ? (c.avatar ? `<img src="${c.avatar}" class="w-8 h-8 rounded-full object-cover shrink-0 mr-2 border border-gray-200" title="${c.full_name}">` : `<div class="w-8 h-8 rounded-full bg-slate-200 mr-2 flex items-center justify-center text-xs font-bold shrink-0" title="${c.full_name}">${(c.full_name||'?').charAt(0)}</div>`) : ''}
                 <div class="max-w-[75%]">
                     ${!isMine ? `<div class="text-[10px] font-bold text-gray-500 ml-1 mb-0.5">${c.full_name}</div>` : ''}
                     <div class="p-3 ${isMine ? 'bg-teal-100 text-teal-900 rounded-br-none' : 'bg-white border text-gray-800 rounded-bl-none'} rounded-2xl text-[13px] leading-relaxed break-words">${this.escapeHTML(c.message)}</div>
@@ -1518,6 +1614,223 @@ const WorkPlanModule = {
 
     escapeHTML: function(str) {
         return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+    },
+
+    // ===================================
+    // TYPE MANAGER (Quản lý loại kế hoạch)
+    // ===================================
+    openTypeManagerModal: function() {
+        document.getElementById('typeManagerModal').classList.remove('hidden');
+        this.renderTypeManagerList();
+        this.closeTypeForm();
+    },
+
+    renderTypeManagerList: function() {
+        const tbody = document.getElementById('type-list-tbody');
+        if (!tbody) return;
+        
+        if (this.planTypes.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center p-4 text-gray-500 italic">Chưa có loại kế hoạch nào.</td></tr>';
+            return;
+        }
+
+        let html = '';
+        this.planTypes.forEach(t => {
+            html += `
+                <tr class="border-b last:border-0 hover:bg-gray-50/50 transition">
+                    <td class="p-3 font-mono text-xs text-gray-500">${t.type_code}</td>
+                    <td class="p-3 font-bold text-gray-800">${t.name}</td>
+                    <td class="p-3">
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded flex items-center justify-center text-xs ${t.bg} ${t.color}">${t.icon}</span>
+                            <span class="text-[10px] text-gray-400 font-mono hidden sm:inline-block">${t.hex_bg}</span>
+                        </div>
+                    </td>
+                    <td class="p-3 text-center">
+                        <button class="text-teal-600 hover:text-teal-800 p-1 rounded hover:bg-teal-50" onclick="WorkPlanModule.editType(${t.id})" title="Sửa"><i class="fa-solid fa-pen"></i></button>
+                        <button class="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 ml-1" onclick="WorkPlanModule.deleteType(${t.id})" title="Xóa"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+    },
+
+    openTypeForm: function() {
+        document.getElementById('typeForm').reset();
+        document.getElementById('t_id').value = '';
+        document.getElementById('type-form-title').innerText = 'Thêm Loại Mới';
+        document.getElementById('t_code').readOnly = false;
+        
+        this.renderTypeFormSelectors();
+        
+        document.getElementById('type-list-view').classList.add('hidden');
+        document.getElementById('type-form-view').classList.remove('hidden');
+    },
+
+    renderTypeFormSelectors: function() {
+        // Render Icons
+        const iconGrid = document.getElementById('icon-selector-grid');
+        let iconHtml = '';
+        this.availableIcons.forEach(icon => {
+            iconHtml += `
+            <button type="button" class="icon-selector-btn flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-teal-600 transition outline-none" data-icon="${icon}" onclick="WorkPlanModule.selectFormIcon('${icon}')">
+                <i class="fa-solid ${icon} text-lg"></i>
+            </button>`;
+        });
+        iconGrid.innerHTML = iconHtml;
+
+        // Render Themes
+        const themeGrid = document.getElementById('theme-selector-grid');
+        let themeHtml = '';
+        Object.keys(this.typeColorThemes).forEach(key => {
+            const t = this.typeColorThemes[key];
+            themeHtml += `
+            <button type="button" class="theme-selector-btn flex flex-col items-center justify-center w-14 h-14 rounded-xl border border-gray-200 hover:border-gray-400 transition outline-none" data-theme="${key}" onclick="WorkPlanModule.selectFormTheme('${key}')" title="${t.name}">
+                <div class="w-6 h-6 rounded-full ${t.bg_class} mb-1"></div>
+            </button>`;
+        });
+        themeGrid.innerHTML = themeHtml;
+
+        // Default selection
+        this.selectFormIcon(this.availableIcons[0]);
+        this.selectFormTheme('teal');
+    },
+
+    selectFormIcon: function(icon) {
+        document.querySelectorAll('.icon-selector-btn').forEach(btn => {
+            btn.classList.remove('border-teal-500', 'bg-teal-50', 'text-teal-600', 'ring-2', 'ring-teal-200');
+            btn.classList.add('border-gray-200', 'text-gray-500');
+        });
+        const btn = document.querySelector(`.icon-selector-btn[data-icon="${icon}"]`);
+        if (btn) {
+            btn.classList.remove('border-gray-200', 'text-gray-500');
+            btn.classList.add('border-teal-500', 'bg-teal-50', 'text-teal-600', 'ring-2', 'ring-teal-200');
+        }
+        document.getElementById('t_icon').value = `<i class="fa-solid ${icon}"></i>`;
+    },
+
+    selectFormTheme: function(themeKey) {
+        document.querySelectorAll('.theme-selector-btn').forEach(btn => {
+            btn.classList.remove('border-teal-500', 'ring-2', 'ring-teal-200', 'bg-gray-50');
+            btn.classList.add('border-gray-200');
+        });
+        const btn = document.querySelector(`.theme-selector-btn[data-theme="${themeKey}"]`);
+        if (btn) {
+            btn.classList.remove('border-gray-200');
+            btn.classList.add('border-teal-500', 'ring-2', 'ring-teal-200', 'bg-gray-50');
+        }
+
+        const t = this.typeColorThemes[themeKey];
+        if (t) {
+            document.getElementById('t_theme_key').value = themeKey;
+            document.getElementById('t_color').value = t.color;
+            document.getElementById('t_bg').value = t.bg;
+            document.getElementById('t_bg_class').value = t.bg_class;
+            document.getElementById('t_border_class').value = t.border_class;
+            document.getElementById('t_hex_bg').value = t.hex_bg;
+        }
+    },
+
+    closeTypeForm: function() {
+        document.getElementById('type-list-view').classList.remove('hidden');
+        document.getElementById('type-form-view').classList.add('hidden');
+    },
+
+    editType: function(id) {
+        const t = this.planTypes.find(x => x.id === id);
+        if(!t) return;
+        
+        document.getElementById('t_id').value = t.id;
+        document.getElementById('t_code').value = t.type_code;
+        document.getElementById('t_code').readOnly = true;
+        document.getElementById('t_name').value = t.name;
+
+        this.renderTypeFormSelectors();
+        
+        // Match icon
+        const iconMatch = t.icon.match(/fa-([a-z0-9-]+)/);
+        if (iconMatch && this.availableIcons.includes(iconMatch[0])) {
+            this.selectFormIcon(iconMatch[0]);
+        } else {
+            document.getElementById('t_icon').value = t.icon;
+        }
+
+        // Match theme by background class
+        const themeKey = Object.keys(this.typeColorThemes).find(key => this.typeColorThemes[key].bg_class === t.bg_class);
+        if (themeKey) {
+            this.selectFormTheme(themeKey);
+        } else {
+            // Fallback if custom
+            document.getElementById('t_color').value = t.color;
+            document.getElementById('t_bg').value = t.bg;
+            document.getElementById('t_bg_class').value = t.bg_class;
+            document.getElementById('t_border_class').value = t.border_class;
+            document.getElementById('t_hex_bg').value = t.hex_bg;
+        }
+
+        document.getElementById('type-form-title').innerText = 'Sửa Loại Kế Hoạch';
+        document.getElementById('type-list-view').classList.add('hidden');
+        document.getElementById('type-form-view').classList.remove('hidden');
+    },
+
+    saveType: async function() {
+        const id = document.getElementById('t_id').value;
+        const payload = {
+            type_code: document.getElementById('t_code').value.trim(),
+            name: document.getElementById('t_name').value.trim(),
+            icon: document.getElementById('t_icon').value.trim() || '<i class="fa-solid fa-folder"></i>',
+            color: document.getElementById('t_color').value.trim() || 'text-slate-700',
+            bg: document.getElementById('t_bg').value.trim() || 'bg-slate-200',
+            bg_class: document.getElementById('t_bg_class').value.trim() || 'bg-slate-500',
+            border_class: document.getElementById('t_border_class').value.trim() || 'border-slate-400',
+            hex_bg: document.getElementById('t_hex_bg').value.trim() || '#f1f5f9'
+        };
+
+        try {
+            const token = window.AuthHelper.getToken();
+            const url = id ? `${API_BASE}/work-plan-types/${id}` : `${API_BASE}/work-plan-types`;
+            const method = id ? 'PUT' : 'POST';
+            
+            const res = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            
+            if (res.ok && data.success) {
+                await this.loadTypes();
+                this.renderTypeManagerList();
+                this.closeTypeForm();
+                if(window.showToast) window.showToast('Lưu lại thành công', 'success');
+                this.renderAllViews();
+            } else {
+                if(window.showToast) window.showToast(data.message || 'Lỗi lưu dữ liệu', 'error');
+                else alert(data.message || 'Lỗi lưu dữ liệu');
+            }
+        } catch (e) { console.error('Lỗi saveType:', e); }
+    },
+
+    deleteType: async function(id) {
+        const confirmFn = window.confirm.bind(window);
+        if(!confirmFn('Bạn có chắc chắn muốn xóa loại kế hoạch này? Lưu ý: Các kế hoạch công việc cũ sẽ tự động trở về giao diện mặc định.')) return;
+        try {
+            const token = window.AuthHelper.getToken();
+            const res = await fetch(`${API_BASE}/work-plan-types/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                await this.loadTypes();
+                this.renderTypeManagerList();
+                if(window.showToast) window.showToast('Đã xóa', 'success');
+                this.renderAllViews();
+            } else {
+                if(window.showToast) window.showToast(data.message || 'Lỗi xóa phần tử', 'error');
+            }
+        } catch (e) { console.error('Lỗi deleteType:', e); }
     }
 };
 

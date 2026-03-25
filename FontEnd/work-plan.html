@@ -168,33 +168,10 @@
                         <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5 flex-1">
                             <i class="fa-solid fa-filter"></i> LỌC THEO LOẠI
                         </h3>
-                        <i class="fa-solid fa-chevron-up text-[10px] text-gray-400"></i>
+                        <button onclick="WorkPlanModule.openTypeManagerModal()" class="text-[10px] text-teal-600 font-bold hover:underline" title="Quản lý Loại kế hoạch"><i class="fa-solid fa-gear"></i> Quản lý</button>
                     </div>
                     <div class="flex flex-col gap-1" id="filter-types-container">
-                        <button class="filter-btn flex justify-between items-center px-3 py-2 rounded-lg text-gray-600 active" data-filter="type" data-value="all">
-                            <div class="flex items-center gap-2"><i class="fa-solid fa-layer-group w-5 text-center text-teal-600"></i> Tất cả</div>
-                            <span class="filter-type-count bg-teal-600 text-white" id="count-all">0</span>
-                        </button>
-                        <button class="filter-btn flex justify-between items-center px-3 py-2 rounded-lg text-gray-600" data-filter="type" data-value="meeting">
-                            <div class="flex items-center gap-2 type-meeting"><i class="fa-solid fa-users w-5 text-center"></i> Hợp công ty</div>
-                            <span class="filter-type-count bg-teal-100 text-teal-800" id="count-meeting">0</span>
-                        </button>
-                        <button class="filter-btn flex justify-between items-center px-3 py-2 rounded-lg text-gray-600" data-filter="type" data-value="client">
-                            <div class="flex items-center gap-2 type-client"><i class="fa-solid fa-handshake w-5 text-center"></i> Gặp khách hàng</div>
-                            <span class="filter-type-count bg-amber-100 text-amber-800" id="count-client">0</span>
-                        </button>
-                        <button class="filter-btn flex justify-between items-center px-3 py-2 rounded-lg text-gray-600" data-filter="type" data-value="survey">
-                            <div class="flex items-center gap-2 type-survey"><i class="fa-solid fa-ruler-combined w-5 text-center"></i> Đo đạc / Khảo sát</div>
-                            <span class="filter-type-count bg-rose-100 text-rose-800" id="count-survey">0</span>
-                        </button>
-                        <button class="filter-btn flex justify-between items-center px-3 py-2 rounded-lg text-gray-600" data-filter="type" data-value="supervision">
-                            <div class="flex items-center gap-2 type-supervision"><i class="fa-solid fa-helmet-safety w-5 text-center"></i> Giám sát công trình</div>
-                            <span class="filter-type-count bg-orange-100 text-orange-800" id="count-supervision">0</span>
-                        </button>
-                        <button class="filter-btn flex justify-between items-center px-3 py-2 rounded-lg text-gray-600" data-filter="type" data-value="internal">
-                            <div class="flex items-center gap-2 type-internal"><i class="fa-solid fa-list-check w-5 text-center"></i> Công việc nội bộ</div>
-                            <span class="filter-type-count bg-slate-200 text-slate-800" id="count-internal">0</span>
-                        </button>
+                        <!-- JS Generated -->
                     </div>
                 </div>
 
@@ -224,7 +201,7 @@
             <div class="flex-1 overflow-hidden relative" id="layout-center">
                 
                 <!-- DASHBOARD VIEW -->
-                <div id="view-dashboard" class="view-panel scrollable-body h-full p-6">
+                <div id="view-dashboard" class="view-panel scrollable-body h-full p-6 overflow-y-auto">
                     <!-- Rendered by JS to match Dashboard Mockup -->
                 </div>
 
@@ -301,22 +278,8 @@
 
                                 <div>
                                     <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Loại kế hoạch <span class="text-red-500">*</span></label>
-                                    <div class="flex flex-col gap-2" id="type-radio-group">
-                                        <div class="type-radio-card btn-radio" data-type="meeting" onclick="WorkPlanModule.selectType('meeting')">
-                                            <i class="fa-solid fa-users text-teal-600 w-5"></i> <span>Hợp công ty</span> <i class="fa-solid fa-check ml-auto text-teal-600 hidden check-icon"></i>
-                                        </div>
-                                        <div class="type-radio-card btn-radio" data-type="client" onclick="WorkPlanModule.selectType('client')">
-                                            <i class="fa-solid fa-handshake text-amber-600 w-5"></i> <span>Gặp khách hàng</span> <i class="fa-solid fa-check ml-auto text-teal-600 hidden check-icon"></i>
-                                        </div>
-                                        <div class="type-radio-card btn-radio" data-type="survey" onclick="WorkPlanModule.selectType('survey')">
-                                            <i class="fa-solid fa-ruler-combined text-rose-600 w-5"></i> <span>Đo đạc / Khảo sát</span> <i class="fa-solid fa-check ml-auto text-teal-600 hidden check-icon"></i>
-                                        </div>
-                                        <div class="type-radio-card btn-radio" data-type="supervision" onclick="WorkPlanModule.selectType('supervision')">
-                                            <i class="fa-solid fa-helmet-safety text-orange-600 w-5"></i> <span>Giám sát công trình</span> <i class="fa-solid fa-check ml-auto text-teal-600 hidden check-icon"></i>
-                                        </div>
-                                        <div class="type-radio-card btn-radio selected" data-type="internal" onclick="WorkPlanModule.selectType('internal')">
-                                            <i class="fa-solid fa-list-check text-slate-600 w-5"></i> <span>Công việc nội bộ</span> <i class="fa-solid fa-check ml-auto text-teal-600 check-icon"></i>
-                                        </div>
+                                    <div class="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1 custom-scrollbar" id="type-radio-group">
+                                        <!-- JS Generated -->
                                     </div>
                                 </div>
                                 
@@ -423,6 +386,90 @@
         </div>
     </div>
 
+
+
+    <!-- Type Manager Modal -->
+    <div id="typeManagerModal" class="fixed inset-0 bg-gray-900/50 hidden z-[60] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl flex flex-col max-h-[90vh] overflow-hidden">
+            <!-- Header -->
+            <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
+                <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2"><i class="fa-solid fa-layer-group text-teal-600"></i> Quản lý Loại kế hoạch</h2>
+                <button type="button" class="text-gray-400 hover:text-red-500 transition focus:outline-none" onclick="document.getElementById('typeManagerModal').classList.add('hidden')">
+                    <i class="fa-solid fa-xmark text-xl w-6 h-6 flex items-center justify-center"></i>
+                </button>
+            </div>
+            <!-- Body -->
+            <div class="p-6 flex-1 overflow-y-auto">
+                <div class="flex justify-end mb-4">
+                    <button class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm flex items-center gap-2" onclick="WorkPlanModule.openTypeForm()">
+                        <i class="fa-solid fa-plus"></i> Thêm loại mới
+                    </button>
+                </div>
+                <!-- List View -->
+                <div id="type-list-view">
+                    <table class="w-full text-left text-sm text-gray-700 border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-500 uppercase text-xs">
+                                <th class="p-3 border-b rounded-tl-lg">Mã</th>
+                                <th class="p-3 border-b">Tên loại</th>
+                                <th class="p-3 border-b">Icon / Màu sắc</th>
+                                <th class="p-3 border-b rounded-tr-lg text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="type-list-tbody">
+                            <!-- JS Generated -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Form View (Hidden by default) -->
+                <div id="type-form-view" class="hidden bg-gray-50 p-5 rounded-xl border border-gray-200">
+                    <h3 class="font-bold text-gray-800 mb-4" id="type-form-title">Thêm Loại Mới</h3>
+                    <form id="typeForm" onsubmit="event.preventDefault(); WorkPlanModule.saveType();">
+                        <input type="hidden" id="t_id">
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Mã loại <span class="text-red-500">*</span></label>
+                                <input type="text" id="t_code" required class="w-full text-sm p-2 bg-white border border-gray-300 rounded-lg focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none" placeholder="VD: meeting, bug_fix...">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Tên hiển thị <span class="text-red-500">*</span></label>
+                                <input type="text" id="t_name" required class="w-full text-sm p-2 bg-white border border-gray-300 rounded-lg focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none" placeholder="VD: Hợp công ty">
+                            </div>
+                            <!-- Icon Selector -->
+                            <div class="col-span-2 mt-2">
+                                <label class="block text-xs font-bold text-gray-700 mb-2">Chọn Biểu tượng (Icon) <span class="text-red-500">*</span></label>
+                                <div id="icon-selector-grid" class="flex flex-wrap gap-2">
+                                    <!-- JS Generated -->
+                                </div>
+                                <input type="hidden" id="t_icon" required>
+                            </div>
+                            
+                            <!-- Color Theme Selector -->
+                            <div class="col-span-2 mt-2">
+                                <label class="block text-xs font-bold text-gray-700 mb-2">Chọn Màu sắc <span class="text-red-500">*</span></label>
+                                <div id="theme-selector-grid" class="flex flex-wrap gap-3">
+                                    <!-- JS Generated -->
+                                </div>
+                                <input type="hidden" id="t_theme_key" required>
+                                
+                                <!-- Hidden inputs for DB compatibility -->
+                                <input type="hidden" id="t_color">
+                                <input type="hidden" id="t_bg">
+                                <input type="hidden" id="t_bg_class">
+                                <input type="hidden" id="t_border_class">
+                                <input type="hidden" id="t_hex_bg">
+                            </div>
+                        </div>
+                        <div class="flex gap-3 justify-end mt-4 pt-4 border-t border-gray-200">
+                            <button type="button" class="px-4 py-2 rounded-lg text-gray-600 bg-white border border-gray-300 hover:bg-gray-100 text-sm font-bold" onclick="WorkPlanModule.closeTypeForm()">Hủy</button>
+                            <button type="submit" class="px-4 py-2 rounded-lg bg-teal-600 text-white hover:bg-teal-700 text-sm font-bold shadow-sm">Lưu lại</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
     <!-- Scripts -->
