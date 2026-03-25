@@ -1,0 +1,36 @@
+{
+  "agencies": [
+    "id",
+    "code",
+    "name",
+    "address",
+    "phone",
+    "email",
+    "region",
+    "manager_name",
+    "manager_phone",
+    "logo_url",
+    "notes",
+    "status",
+    "created_at",
+    "updated_at"
+  ],
+  "config": [
+    "id",
+    "company_name",
+    "tax_code",
+    "address",
+    "phone",
+    "email",
+    "website",
+    "logo_path",
+    "signature_footer",
+    "signer_name",
+    "default_profit_margin",
+    "quote_validity_days",
+    "terms_conditions",
+    "created_at",
+    "updated_at",
+    "registration_code"
+  ]
+}

@@ -284,6 +284,23 @@ const workPlanTypeRoutes = require("./routes/work-plan-types");
 app.use("/api/work-plan-types", workPlanTypeRoutes);
 console.log('✅ Route /api/work-plan-types đã được đăng ký (Loại kế hoạch)');
 
+// NEW: Attendance System
+const attendanceRoutes = require("./routes/attendance");
+app.use("/api/attendance", attendanceRoutes);
+console.log('✅ Route /api/attendance đã được đăng ký (Chấm công)');
+
+const leaveRequestRoutes = require("./routes/leave-requests");
+app.use("/api/leave-requests", leaveRequestRoutes);
+console.log('✅ Route /api/leave-requests đã được đăng ký (Xin phép/Nghỉ phép)');
+
+const shiftRoutes = require("./routes/shifts");
+app.use("/api/shifts", shiftRoutes);
+console.log('✅ Route /api/shifts đã được đăng ký (Ca làm việc)');
+
+const holidayRoutes = require("./routes/holidays");
+app.use("/api/holidays", holidayRoutes);
+console.log('✅ Route /api/holidays đã được đăng ký (Ngày lễ)');
+
 
 
 // ============================================
