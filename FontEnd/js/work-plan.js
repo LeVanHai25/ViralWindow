@@ -42,6 +42,16 @@ const WorkPlanModule = {
     init: async function() {
         this.currentUser = window.AuthHelper && window.AuthHelper.getUser() ? window.AuthHelper.getUser() : { id: 999, full_name: 'Test Administrator' };
 
+        const userType = this.currentUser.user_type || '';
+        const roleName = this.currentUser.role_name || '';
+        this.isManager = userType === 'admin' || roleName === 'Super Admin' || roleName === 'Quản lý';
+
+        if (!this.isManager) {
+            document.querySelectorAll('[onclick="WorkPlanModule.openCreateModal()"]').forEach(btn => btn.style.display = 'none');
+            const manageTypeBtn = document.querySelector('[onclick="WorkPlanModule.openManageTypesModal()"]');
+            if (manageTypeBtn) manageTypeBtn.style.display = 'none';
+        }
+
         this.bindEvents();
         this.initMiniCalendar();
 
@@ -531,13 +541,13 @@ const WorkPlanModule = {
 
     renderWorkloadTable: function(plans) {
         const userStats = {};
-        this.users.forEach(u => userStats[u.id] = { name: u.full_name || u.username, active: 0, done: 0, total: 0 });
+        this.users.forEach(u => userStats[u.id] = { name: u.full_name || u.username, avatar: u.avatar_url || u.avatar, active: 0, done: 0, total: 0 });
 
         plans.forEach(p => {
             if (!p.participants) return;
             p.participants.forEach(pa => {
                 const uid = pa.user_id;
-                if (!userStats[uid]) userStats[uid] = { name: pa.full_name || 'NV', active: 0, done: 0, total: 0 };
+                if (!userStats[uid]) userStats[uid] = { name: pa.full_name || 'NV', avatar: pa.avatar_url || pa.avatar, active: 0, done: 0, total: 0 };
                 userStats[uid].total++;
                 if (p.status === 'completed') userStats[uid].done++;
                 else if (p.status === 'planned' || p.status === 'in_progress') userStats[uid].active++;
@@ -545,7 +555,7 @@ const WorkPlanModule = {
         });
 
         let html = '';
-        const sorted = Object.values(userStats).sort((a,b) => b.total - a.total).slice(0, 5);
+        const sorted = Object.values(userStats).sort((a,b) => b.active - a.active || b.total - a.total);
         if (sorted.length === 0) return '<tr><td colspan="5" class="py-4 text-center text-xs text-gray-400">Chưa có báo cáo nhân sự</td></tr>';
 
         sorted.forEach(u => {
@@ -553,10 +563,14 @@ const WorkPlanModule = {
             const barPct = Math.min(loadPct, 100);
             const barColor = barPct > 80 ? 'bg-red-500' : (barPct > 50 ? 'bg-amber-500' : 'bg-teal-500');
 
+            let avatarHtml = u.avatar ? 
+                `<img src="${u.avatar}" class="w-6 h-6 rounded-full object-cover shadow-sm border border-gray-100 bg-slate-50">` : 
+                `<div class="w-6 h-6 rounded-full bg-slate-200 flex justify-center items-center text-[10px] font-bold text-slate-600">${u.name.charAt(0)}</div>`;
+
             html += `
                 <tr class="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition">
                     <td class="py-3 items-center gap-2 flex">
-                        <div class="w-6 h-6 rounded-full bg-slate-200 flex justify-center items-center text-[10px] font-bold text-slate-600">${u.name.charAt(0)}</div>
+                        ${avatarHtml}
                         <span class="font-bold text-xs truncate w-32">${u.name}</span>
                     </td>
                     <td class="py-3 text-center text-amber-600 font-bold">${u.active}</td>
@@ -728,10 +742,11 @@ const WorkPlanModule = {
         
         let statusPillsHtml = '';
         statuses.forEach(s => {
+            const disableAttr = !this.isManager ? 'disabled style="pointer-events: none; opacity: 0.8;"' : '';
             if (s.v === plan.status) {
-                statusPillsHtml += `<button class="px-3 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap bg-teal-50 text-teal-700 border border-teal-200 shadow-sm" onclick="WorkPlanModule.updatePlanStatus(${plan.id}, '${s.v}')">${s.label}</button>`;
+                statusPillsHtml += `<button ${disableAttr} class="px-3 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap bg-teal-50 text-teal-700 border border-teal-200 shadow-sm" onclick="WorkPlanModule.updatePlanStatus(${plan.id}, '${s.v}')">${s.label}</button>`;
             } else {
-                statusPillsHtml += `<button class="px-3 py-1.5 rounded-full text-[11px] font-semibold whitespace-nowrap bg-white text-gray-500 border border-gray-200 hover:border-gray-300 transition" onclick="WorkPlanModule.updatePlanStatus(${plan.id}, '${s.v}')">${s.label}</button>`;
+                statusPillsHtml += `<button ${disableAttr} class="px-3 py-1.5 rounded-full text-[11px] font-semibold whitespace-nowrap bg-white text-gray-500 border border-gray-200 hover:border-gray-300 transition" onclick="WorkPlanModule.updatePlanStatus(${plan.id}, '${s.v}')">${s.label}</button>`;
             }
         });
 
@@ -847,6 +862,7 @@ const WorkPlanModule = {
                 </div>
             </div>
             
+            ${this.isManager ? `
             <div class="flex gap-2 shrink-0">
                 <button class="h-10 px-4 flex items-center justify-center gap-2 rounded-xl border-2 border-teal-500 text-teal-600 font-bold hover:bg-teal-50 transition shadow-sm bg-white text-sm" onclick="WorkPlanModule.openEditModal(${plan.id})">
                     <i class="fa-solid fa-pen"></i> Sửa Kế Hoạch
@@ -855,6 +871,7 @@ const WorkPlanModule = {
                     <i class="fa-solid fa-trash-can"></i>
                 </button>
             </div>
+            ` : ''}
         </div>
         
         <h2 class="text-2xl font-extrabold text-gray-800 leading-snug ${subtitleHtml ? 'mb-2' : 'mb-5'}">${plan.title}</h2>

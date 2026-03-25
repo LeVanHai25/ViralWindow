@@ -17,7 +17,15 @@ exports.getAllWorkPlans = async (req, res, next) => {
         `;
         let queryParams = [];
 
-        // Employee restriction removed, everyone sees all plans
+        // Role-Based Access Control
+        const roleName = req.user.role_name || '';
+        const userType = req.user.user_type || '';
+        const isSuperAdmin = userType === 'admin' || roleName === 'Super Admin';
+        
+        if (!isSuperAdmin) {
+            query += ` WHERE wp.created_by = ? OR wp.id IN (SELECT work_plan_id FROM work_plan_participants WHERE user_id = ?)`;
+            queryParams.push(userId, userId);
+        }
 
         query += ' ORDER BY wp.start_time DESC';
 
@@ -79,7 +87,18 @@ exports.getWorkPlanById = async (req, res, next) => {
 
         plan.participants = participants;
 
-        // Participant restriction removed, everyone can view details
+        // Role-Based Access Control
+        const roleName = req.user.role_name || '';
+        const userType = req.user.user_type || '';
+        const isSuperAdmin = userType === 'admin' || roleName === 'Super Admin';
+        
+        if (!isSuperAdmin) {
+            const isCreator = plan.created_by === userId;
+            const isParticipant = participants.some(p => p.user_id === userId);
+            if (!isCreator && !isParticipant) {
+                return res.status(403).json({ success: false, message: 'Bạn không có quyền truy cập kế hoạch này' });
+            }
+        }
 
         // Parse JSON fields
         if (typeof plan.survey_data === 'string') plan.survey_data = JSON.parse(plan.survey_data);
@@ -119,8 +138,15 @@ exports.createWorkPlan = async (req, res, next) => {
 
         const planId = result.insertId;
 
+        // Ensure creator is always a participant
+        if (!participants) participants = [];
+        const hasCreator = participants.some(p => (typeof p === 'object' ? p.user_id : p) == created_by);
+        if (!hasCreator) {
+            participants.push({ user_id: created_by, role: 'owner' });
+        }
+
         // Add Participants
-        if (participants && participants.length > 0) {
+        if (participants.length > 0) {
             for (const p of participants) {
                 const uid = typeof p === 'object' ? p.user_id : p;
                 const rRole = typeof p === 'object' ? (p.role || 'member') : 'member';
@@ -192,6 +218,16 @@ exports.updateWorkPlan = async (req, res, next) => {
 
         // Update participants if provided
         if (participants) {
+            // Ensure creator is always preserved in participants
+            const [planData] = await connection.query('SELECT created_by FROM work_plans WHERE id = ?', [id]);
+            if (planData.length > 0) {
+                const creatorId = planData[0].created_by;
+                const hasCreator = participants.some(p => (typeof p === 'object' ? p.user_id : p) == creatorId);
+                if (!hasCreator) {
+                    participants.push({ user_id: creatorId, role: 'owner' });
+                }
+            }
+
             // Delete old
             await connection.query('DELETE FROM work_plan_participants WHERE work_plan_id = ?', [id]);
             // Insert new
