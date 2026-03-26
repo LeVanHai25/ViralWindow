@@ -1,6 +1,21 @@
 const db = require('../config/db');
 const { emitDataChange } = require('../services/socketService');
 
+// Haversine distance algorithm (Meters)
+function getDistance(lat1, lon1, lat2, lon2) {
+    if (!lat1 || !lon1 || !lat2 || !lon2) return 999999;
+    const R = 6371e3; // metres
+    const φ1 = lat1 * Math.PI/180;
+    const φ2 = lat2 * Math.PI/180;
+    const Δφ = (lat2-lat1) * Math.PI/180;
+    const Δλ = (lon2-lon1) * Math.PI/180;
+    const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+              Math.cos(φ1) * Math.cos(φ2) *
+              Math.sin(Δλ/2) * Math.sin(Δλ/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+}
+
 // =============================================
 // CHECK-IN
 // =============================================
@@ -10,6 +25,35 @@ exports.checkIn = async (req, res) => {
         const { note, lat, lng } = req.body;
         const today = new Date().toISOString().split('T')[0];
         const now = new Date();
+
+        // ---------------------------------------------
+        // ANTI-FRAUD: GPS Geofencing & IP Check
+        // ---------------------------------------------
+        const [configData] = await db.query('SELECT office_lat, office_lng, office_radius, allowed_ips FROM company_config ORDER BY id DESC LIMIT 1');
+        const config = configData.length > 0 ? configData[0] : null;
+        
+        if (config && config.office_lat && config.office_lng) {
+            if (!lat || !lng) {
+                return res.status(403).json({ success: false, message: 'Chống gian lận: Bạn phải cấp quyền truy cập Vị trí (GPS) trên trình duyệt để chấm công.' });
+            }
+            const distance = getDistance(parseFloat(lat), parseFloat(lng), parseFloat(config.office_lat), parseFloat(config.office_lng));
+            if (distance > (config.office_radius || 100)) {
+                return res.status(403).json({ 
+                    success: false, 
+                    message: `Gian lận vị trí: Hiện tại bạn đang cách văn phòng ${Math.round(distance)} mét. Vui lòng đến công ty để chấm công!` 
+                });
+            }
+        }
+        
+        if (config && config.allowed_ips) {
+            const clientIp = req.ip || req.connection.remoteAddress || '';
+            const ips = config.allowed_ips.split(',').map(ip => ip.trim());
+            const ipClean = clientIp.replace('::ffff:', '');
+            if (ipClean !== '127.0.0.1' && ipClean !== '::1' && !ips.includes(ipClean)) {
+                return res.status(403).json({ success: false, message: 'Gian lận mạng: Bạn đang dùng Wifi ngoài luồng công ty.' });
+            }
+        }
+        // ---------------------------------------------
 
         // Prevent duplicate check-in
         const [existing] = await db.query(
@@ -93,6 +137,35 @@ exports.checkOut = async (req, res) => {
         const { note, lat, lng } = req.body;
         const today = new Date().toISOString().split('T')[0];
         const now = new Date();
+
+        // ---------------------------------------------
+        // ANTI-FRAUD: GPS Geofencing & IP Check
+        // ---------------------------------------------
+        const [configData] = await db.query('SELECT office_lat, office_lng, office_radius, allowed_ips FROM company_config ORDER BY id DESC LIMIT 1');
+        const config = configData.length > 0 ? configData[0] : null;
+        
+        if (config && config.office_lat && config.office_lng) {
+            if (!lat || !lng) {
+                return res.status(403).json({ success: false, message: 'Chống gian lận: Bạn phải cấp quyền truy cập Vị trí (GPS) trên trình duyệt để kết thúc ca.' });
+            }
+            const distance = getDistance(parseFloat(lat), parseFloat(lng), parseFloat(config.office_lat), parseFloat(config.office_lng));
+            if (distance > (config.office_radius || 100)) {
+                return res.status(403).json({ 
+                    success: false, 
+                    message: `Gian lận vị trí: Hiện tại bạn đang cách văn phòng ${Math.round(distance)} mét. Vui lòng đến công ty để check-out!` 
+                });
+            }
+        }
+
+        if (config && config.allowed_ips) {
+            const clientIp = req.ip || req.connection.remoteAddress || '';
+            const ips = config.allowed_ips.split(',').map(ip => ip.trim());
+            const ipClean = clientIp.replace('::ffff:', '');
+            if (ipClean !== '127.0.0.1' && ipClean !== '::1' && !ips.includes(ipClean)) {
+                return res.status(403).json({ success: false, message: 'Gian lận mạng: Bạn đang dùng Wifi ngoài luồng công ty.' });
+            }
+        }
+        // ---------------------------------------------
 
         // Must have checked in first
         const [existing] = await db.query(

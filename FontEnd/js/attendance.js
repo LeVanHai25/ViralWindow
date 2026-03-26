@@ -20,7 +20,7 @@ async function init() {
 
     // Check if user is Admin or HR to show Admin Tab
     const isAdmin = currentUser.user_type === 'admin' || 
-                    (currentUser.role_name && ['Super Admin', 'Admin', 'Giám đốc', 'Manager', 'Nhân sự'].includes(currentUser.role_name));
+                    (currentUser.role_name && ['Super Admin', 'Admin', 'Giám đốc', 'Manager', 'Quản lý', 'Nhân sự'].includes(currentUser.role_name));
     
     if (isAdmin) {
         renderAdminTab();
@@ -156,22 +156,35 @@ function renderCheckInPanel(record, defaultShift) {
     if (!record || (!record.check_in && !record.check_out)) {
         // Cần Check In
         btnContainer.innerHTML = `
-            <button onclick="handleCheckIn()" class="btn-checkin w-48 h-48 rounded-full bg-gradient-to-tr from-green-500 to-emerald-400 text-white shadow-[0_0_40px_rgba(34,197,94,0.3)] hover:shadow-[0_0_60px_rgba(34,197,94,0.5)] transition-all flex flex-col items-center justify-center gap-2 transform hover:scale-105 active:scale-95">
-                <i data-lucide="fingerprint" class="w-16 h-16"></i>
-                <span class="text-xl font-bold uppercase tracking-widest">Check In</span>
-            </button>
+            <div class="flex flex-col items-center gap-4">
+                <button onclick="handleCheckIn()" class="btn-checkin w-48 h-48 rounded-full bg-gradient-to-tr from-green-500 to-emerald-400 text-white shadow-[0_0_40px_rgba(34,197,94,0.3)] hover:shadow-[0_0_60px_rgba(34,197,94,0.5)] transition-all flex flex-col items-center justify-center gap-2 transform hover:scale-105 active:scale-95">
+                    <i data-lucide="fingerprint" class="w-16 h-16"></i>
+                    <span class="text-xl font-bold uppercase tracking-widest">Check In</span>
+                </button>
+                <div class="text-slate-500 text-sm font-medium bg-slate-50 px-4 py-2 rounded-full border border-slate-200">
+                    Chưa bắt đầu làm việc
+                </div>
+            </div>
         `;
+        if (window.liveWorkInterval) clearInterval(window.liveWorkInterval);
     } else if (record.check_in && !record.check_out) {
         // Đã IN, chờ OUT
         document.getElementById('lbl-checkin-time').textContent = new Date(record.check_in).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
         document.getElementById('lbl-checkin-status').innerHTML = getStatusBadge(record.status);
 
         btnContainer.innerHTML = `
-            <button onclick="handleCheckOut()" class="btn-checkin w-48 h-48 rounded-full bg-gradient-to-tr from-rose-500 to-red-400 text-white shadow-[0_0_40px_rgba(244,63,94,0.3)] hover:shadow-[0_0_60px_rgba(244,63,94,0.5)] transition-all flex flex-col items-center justify-center gap-2 transform hover:scale-105 active:scale-95">
-                <i data-lucide="log-out" class="w-16 h-16"></i>
-                <span class="text-xl font-bold uppercase tracking-widest">Check Out</span>
-            </button>
+            <div class="flex flex-col items-center gap-4">
+                <button onclick="handleCheckOut()" class="btn-checkin w-48 h-48 rounded-full bg-gradient-to-tr from-rose-500 to-red-400 text-white shadow-[0_0_40px_rgba(244,63,94,0.3)] hover:shadow-[0_0_60px_rgba(244,63,94,0.5)] transition-all flex flex-col items-center justify-center gap-2 transform hover:scale-105 active:scale-95">
+                    <i data-lucide="log-out" class="w-16 h-16"></i>
+                    <span class="text-xl font-bold uppercase tracking-widest">Check Out</span>
+                </button>
+                <div id="live-work-hours" class="text-slate-700 text-sm font-semibold bg-blue-50 px-4 py-2 rounded-full border border-blue-100 shadow-sm flex items-center gap-2">
+                    <i data-lucide="timer" class="w-4 h-4 text-blue-500"></i>
+                    <span>Đang tính giờ...</span>
+                </div>
+            </div>
         `;
+        startLiveWorkCounter(record.check_in);
     } else if (record.check_in && record.check_out) {
         // Hoàn thành
         document.getElementById('lbl-checkin-time').textContent = new Date(record.check_in).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
@@ -193,7 +206,35 @@ function renderCheckInPanel(record, defaultShift) {
     lucide.createIcons();
 }
 
+window.liveWorkInterval = null;
+function startLiveWorkCounter(checkInStr) {
+    if (window.liveWorkInterval) clearInterval(window.liveWorkInterval);
+    const checkInTime = new Date(checkInStr).getTime();
+    
+    function updateCounter() {
+        const now = new Date().getTime();
+        let diffMins = Math.floor((now - checkInTime) / 60000);
+        const hours = Math.floor(diffMins / 60);
+        const mins = diffMins % 60;
+        const el = document.getElementById('live-work-hours');
+        if (el) {
+            el.innerHTML = `<i data-lucide="timer" class="w-4 h-4 text-blue-500"></i> <span>Thời gian làm: <span class="text-blue-700">${hours} giờ ${mins} phút</span></span>`;
+            lucide.createIcons();
+        }
+    }
+    
+    updateCounter();
+    window.liveWorkInterval = setInterval(updateCounter, 60000); // Update every minute
+}
+
 async function handleCheckIn() {
+    if (!currentPos.lat || !currentPos.lng) {
+        VWModal.error('Để chống gian lận, bạn phải bấm Cho Phép trình duyệt truy cập Vị trí (Location) mới có thể chấm công.');
+        // Retry getting location
+        getGeolocation();
+        return;
+    }
+
     const isConfirm = await VWModal.confirm('Chấm Công Vào', 'Xác nhận chấm công vào lúc này?', {
         confirmText: 'Có, Check-in ngay',
         cancelText: 'Hủy'
@@ -228,6 +269,12 @@ async function handleCheckIn() {
 }
 
 async function handleCheckOut() {
+    if (!currentPos.lat || !currentPos.lng) {
+        VWModal.error('Để chống gian lận, bạn phải bấm Cho Phép trình duyệt truy cập Vị trí (Location) mới có thể kết thúc ca.');
+        getGeolocation();
+        return;
+    }
+
     const isConfirm = await VWModal.confirm('Chấm Công Ra', 'Xác nhận chấm công ra kết thúc ca làm việc?', {
         confirmText: 'Có, Check-out ngay',
         cancelText: 'Hủy'

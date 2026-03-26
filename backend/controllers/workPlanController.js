@@ -407,6 +407,8 @@ exports.addChecklistItem = async (req, res, next) => {
             VALUES (?, ?)
         `, [id, title]);
 
+        emitDataChange('work_plans', 'checklist_added', { work_plan_id: id, id: result.insertId });
+
         res.status(201).json({ success: true, data: { id: result.insertId, title, is_completed: 0 } });
     } catch (error) {
         next(error);
@@ -428,6 +430,8 @@ exports.toggleChecklistItem = async (req, res, next) => {
             WHERE id = ? AND work_plan_id = ?
         `, [is_completed, completedBy, completedAt, itemId, id]);
 
+        emitDataChange('work_plans', 'checklist_toggled', { work_plan_id: id, checklist_id: itemId });
+
         res.json({ success: true });
     } catch (error) {
         next(error);
@@ -438,6 +442,9 @@ exports.deleteChecklistItem = async (req, res, next) => {
     try {
         const { id, itemId } = req.params;
         await db.query(`DELETE FROM work_plan_checklists WHERE id = ? AND work_plan_id = ?`, [itemId, id]);
+        
+        emitDataChange('work_plans', 'checklist_deleted', { work_plan_id: id, checklist_id: itemId });
+        
         res.json({ success: true });
     } catch (error) {
         next(error);

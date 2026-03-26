@@ -406,27 +406,6 @@ const WorkPlanModule = {
                     </div>
                 </div>
             </div>
-            
-            <!-- Employee Workload Table -->
-            <div class="bg-white border rounded-xl p-5 shadow-sm mt-6 mb-10">
-                <h3 class="font-bold text-gray-800 mb-1 text-sm"><i class="fa-solid fa-users-gear text-blue-600 mr-2"></i> Khối lượng công việc</h3>
-                <p class="text-xs text-gray-400 mb-4">Số kế hoạch đang active & leader của từng nhân sự</p>
-                
-                <table class="w-full text-left font-medium text-sm text-gray-700">
-                    <thead>
-                        <tr class="text-[10px] text-gray-400 uppercase border-b border-gray-100">
-                            <th class="pb-3 w-1/3">Nhân viên</th>
-                            <th class="pb-3 text-center">Active</th>
-                            <th class="pb-3 text-center">Hoàn thành</th>
-                            <th class="pb-3 text-center">Tổng</th>
-                            <th class="pb-3 w-1/4">Tải</th>
-                        </tr>
-                    </thead>
-                    <tbody id="workload-table">
-                        ${this.renderWorkloadTable(this.plans)}
-                    </tbody>
-                </table>
-            </div>
         `;
 
         container.innerHTML = html;
@@ -534,52 +513,6 @@ const WorkPlanModule = {
                         </div>
                     </div>
                 </div>
-            `;
-        });
-        return html;
-    },
-
-    renderWorkloadTable: function(plans) {
-        const userStats = {};
-        this.users.forEach(u => userStats[u.id] = { name: u.full_name || u.username, avatar: u.avatar_url || u.avatar, active: 0, done: 0, total: 0 });
-
-        plans.forEach(p => {
-            if (!p.participants) return;
-            p.participants.forEach(pa => {
-                const uid = pa.user_id;
-                if (!userStats[uid]) userStats[uid] = { name: pa.full_name || 'NV', avatar: pa.avatar_url || pa.avatar, active: 0, done: 0, total: 0 };
-                userStats[uid].total++;
-                if (p.status === 'completed') userStats[uid].done++;
-                else if (p.status === 'planned' || p.status === 'in_progress') userStats[uid].active++;
-            });
-        });
-
-        let html = '';
-        const sorted = Object.values(userStats).sort((a,b) => b.active - a.active || b.total - a.total);
-        if (sorted.length === 0) return '<tr><td colspan="5" class="py-4 text-center text-xs text-gray-400">Chưa có báo cáo nhân sự</td></tr>';
-
-        sorted.forEach(u => {
-            const loadPct = u.total > 0 ? (u.active / 10) * 100 : 0;
-            const barPct = Math.min(loadPct, 100);
-            const barColor = barPct > 80 ? 'bg-red-500' : (barPct > 50 ? 'bg-amber-500' : 'bg-teal-500');
-
-            let avatarHtml = u.avatar ? 
-                `<img src="${u.avatar}" class="w-6 h-6 rounded-full object-cover shadow-sm border border-gray-100 bg-slate-50">` : 
-                `<div class="w-6 h-6 rounded-full bg-slate-200 flex justify-center items-center text-[10px] font-bold text-slate-600">${u.name.charAt(0)}</div>`;
-
-            html += `
-                <tr class="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition">
-                    <td class="py-3 items-center gap-2 flex">
-                        ${avatarHtml}
-                        <span class="font-bold text-xs truncate w-32">${u.name}</span>
-                    </td>
-                    <td class="py-3 text-center text-amber-600 font-bold">${u.active}</td>
-                    <td class="py-3 text-center text-green-600 font-bold">${u.done}</td>
-                    <td class="py-3 text-center text-gray-800 font-bold">${u.total}</td>
-                    <td class="py-3">
-                        <div class="w-full bg-gray-100 rounded-full h-1.5"><div class="h-1.5 rounded-full ${barColor}" style="width: ${barPct}%"></div></div>
-                    </td>
-                </tr>
             `;
         });
         return html;
@@ -1657,7 +1590,16 @@ const WorkPlanModule = {
         });
 
         this.socket.on('data_changed', (payload) => {
-            if (payload.module === 'work_plans') this.loadPlans();
+            if (payload.module === 'work_plans') {
+                if (['checklist_added', 'checklist_toggled', 'checklist_deleted'].includes(payload.action)) {
+                    // Update checklist if looking at the same plan
+                    if (this.selectedPlanId != null && this.selectedPlanId == payload.data.work_plan_id) {
+                        this.loadChecklist(this.selectedPlanId);
+                    }
+                }
+                // Always refresh plans to update main views (Dashboard, List, Calendar) without interrupting the user
+                this.loadPlans();
+            }
         });
 
         this.socket.on('new_comment', (comment) => {
