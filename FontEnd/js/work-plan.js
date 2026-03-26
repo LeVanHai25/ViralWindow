@@ -23,7 +23,7 @@ const WorkPlanModule = {
         'fa-truck', 'fa-hammer', 'fa-wrench', 'fa-laptop-code', 'fa-phone', 'fa-video'
     ],
     typeColorThemes: {
-        teal: { name: 'Xanh ngọc', color: 'text-teal-700', bg: 'bg-teal-100', bg_class: 'bg-teal-500', border_class: 'border-teal-400', hex_bg: '#e6fffa' },
+        teal: { name: 'Xanh ngọc', color: 'text-blue-700', bg: 'bg-blue-100', bg_class: 'bg-blue-500', border_class: 'border-blue-400', hex_bg: '#eff6ff' },
         amber: { name: 'Vàng', color: 'text-amber-700', bg: 'bg-amber-100', bg_class: 'bg-amber-500', border_class: 'border-amber-400', hex_bg: '#fef3c7' },
         rose: { name: 'Đỏ hồng', color: 'text-rose-700', bg: 'bg-rose-100', bg_class: 'bg-rose-500', border_class: 'border-rose-400', hex_bg: '#ffe4e6' },
         orange: { name: 'Cam', color: 'text-orange-700', bg: 'bg-orange-100', bg_class: 'bg-orange-500', border_class: 'border-orange-400', hex_bg: '#ffedd5' },
@@ -38,6 +38,8 @@ const WorkPlanModule = {
     filterType: 'all',
     filterStatus: 'all',
     searchQuery: '',
+    minicalMonth: new Date(),
+    filterDate: null,
 
     init: async function() {
         this.currentUser = window.AuthHelper && window.AuthHelper.getUser() ? window.AuthHelper.getUser() : { id: 999, full_name: 'Test Administrator' };
@@ -97,8 +99,8 @@ const WorkPlanModule = {
                 const type = btn.dataset.filter;
                 const val = btn.dataset.value;
                 if (type === 'type') {
-                    document.querySelectorAll('[data-filter="type"]').forEach(b => { b.classList.remove('active', 'bg-teal-50', 'text-teal-700', 'font-semibold'); b.classList.add('text-gray-600'); });
-                    btn.classList.add('active', 'bg-teal-50', 'text-teal-700', 'font-semibold');
+                    document.querySelectorAll('[data-filter="type"]').forEach(b => { b.classList.remove('active', 'bg-blue-50', 'text-blue-700', 'font-semibold'); b.classList.add('text-gray-600'); });
+                    btn.classList.add('active', 'bg-blue-50', 'text-blue-700', 'font-semibold');
                     btn.classList.remove('text-gray-600');
                     this.filterType = val;
                 } else if (type === 'status') {
@@ -122,18 +124,70 @@ const WorkPlanModule = {
     },
 
     initMiniCalendar: function() {
-        const today = new Date();
-        document.getElementById('mini-cal-month').innerText = `Tháng ${today.getMonth() + 1} năm ${today.getFullYear()}`;
+        const d = new Date(this.minicalMonth || new Date());
+        const year = d.getFullYear();
+        const month = d.getMonth();
+        
+        document.getElementById('mini-cal-month').innerText = `Tháng ${month + 1} năm ${year}`;
+        
+        // 0 = Sun, 1 = Mon ... 6 = Sat
+        let firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        // Shift map so Monday is the first column
+        let emptyCells = firstDay === 0 ? 6 : firstDay - 1;
+        
         const grid = document.getElementById('mini-cal-grid');
         let html = '';
-        for(let i=1; i<=31; i++) {
-            if (i === today.getDate()) {
-                html += `<div class="w-6 h-6 flex items-center justify-center bg-teal-600 text-white rounded-full mx-auto cursor-pointer shadow-sm">${i}</div>`;
+        
+        for (let i = 0; i < emptyCells; i++) {
+            html += `<div></div>`;
+        }
+        
+        const today = new Date();
+        const getLocalYYYYMMDD = (dt) => dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+        
+        const todayStr = getLocalYYYYMMDD(today);
+        const selStr = this.filterDate ? getLocalYYYYMMDD(this.filterDate) : null;
+        
+        for(let i=1; i<=daysInMonth; i++) {
+            const cellDate = new Date(year, month, i);
+            const dateStr = getLocalYYYYMMDD(cellDate);
+            
+            let btnClass = "w-6 h-6 flex items-center justify-center rounded-full mx-auto cursor-pointer text-xs font-bold transition-all ";
+            
+            if (dateStr === selStr) {
+                btnClass += "bg-blue-600 text-white shadow-md transform scale-110";
+            } else if (dateStr === todayStr) {
+                btnClass += "bg-blue-100 text-blue-700 font-extrabold";
             } else {
-                html += `<div class="w-6 h-6 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-full mx-auto cursor-pointer">${i}</div>`;
+                btnClass += "text-gray-500 hover:bg-gray-200";
             }
+            
+            html += `<div class="${btnClass}" onclick="WorkPlanModule.toggleDateFilter('${dateStr}')">${i}</div>`;
         }
         grid.innerHTML = html;
+    },
+
+    toggleDateFilter: function(dateStr) {
+        const d = new Date(dateStr);
+        if (this.filterDate && this.filterDate.getTime() === d.getTime()) {
+            this.filterDate = null; // Toggle off
+        } else {
+            this.filterDate = d;
+        }
+        this.initMiniCalendar();
+        this.renderAllViews();
+    },
+
+    prevMonthMiniCal: function() {
+        this.minicalMonth = new Date(this.minicalMonth.getFullYear(), this.minicalMonth.getMonth() - 1, 1);
+        this.initMiniCalendar();
+    },
+
+    nextMonthMiniCal: function() {
+        this.minicalMonth = new Date(this.minicalMonth.getFullYear(), this.minicalMonth.getMonth() + 1, 1);
+        this.initMiniCalendar();
     },
 
     switchMainView: function(viewName) {
@@ -220,7 +274,7 @@ const WorkPlanModule = {
                 <div class="type-radio-card btn-radio transition-all duration-200" data-type="${t.type_code}" onclick="WorkPlanModule.selectType('${t.type_code}')">
                     <span class="${t.color} flex items-center justify-center w-6 h-6 rounded ${t.bg}">${t.icon}</span> 
                     <span class="font-semibold text-[13px]">${t.name}</span> 
-                    <i class="fa-solid fa-check ml-auto text-teal-600 hidden check-icon"></i>
+                    <i class="fa-solid fa-check ml-auto text-blue-600 hidden check-icon"></i>
                 </div>
             `;
         });
@@ -236,8 +290,8 @@ const WorkPlanModule = {
         
         let html = `
             <button class="filter-btn flex justify-between items-center px-3 py-2 rounded-lg text-gray-600 active" data-filter="type" data-value="all">
-                <div class="flex items-center gap-2"><i class="fa-solid fa-layer-group w-5 text-center text-teal-600"></i> Tất cả</div>
-                <span class="filter-type-count bg-teal-600 text-white" id="count-all">0</span>
+                <div class="flex items-center gap-2"><i class="fa-solid fa-layer-group w-5 text-center text-blue-600"></i> Tất cả</div>
+                <span class="filter-type-count bg-blue-600 text-white" id="count-all">0</span>
             </button>
         `;
         
@@ -256,8 +310,8 @@ const WorkPlanModule = {
                 const type = btn.dataset.filter;
                 const val = btn.dataset.value;
                 if (type === 'type') {
-                    document.querySelectorAll('[data-filter="type"]').forEach(b => { b.classList.remove('active', 'bg-teal-50', 'text-teal-700', 'font-semibold'); b.classList.add('text-gray-600'); });
-                    btn.classList.add('active', 'bg-teal-50', 'text-teal-700', 'font-semibold');
+                    document.querySelectorAll('[data-filter="type"]').forEach(b => { b.classList.remove('active', 'bg-blue-50', 'text-blue-700', 'font-semibold'); b.classList.add('text-gray-600'); });
+                    btn.classList.add('active', 'bg-blue-50', 'text-blue-700', 'font-semibold');
                     btn.classList.remove('text-gray-600');
                     this.filterType = val;
                     this.renderAllViews();
@@ -288,12 +342,21 @@ const WorkPlanModule = {
         return this.plans.filter(p => {
             const matchType = this.filterType === 'all' || p.type === this.filterType;
             const matchStatus = this.filterStatus === 'all' || p.status === this.filterStatus;
+            
+            let matchDate = true;
+            if (this.filterDate) {
+                const getLocalYYYYMMDD = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+                const pDateStr = getLocalYYYYMMDD(new Date(p.start_time));
+                const fDateStr = getLocalYYYYMMDD(this.filterDate);
+                matchDate = (pDateStr === fDateStr);
+            }
+
             let matchSearch = true;
             if (this.searchQuery) {
                 const txt = `${p.title} ${p.location} ${p.customer_name}`.toLowerCase();
                 matchSearch = txt.includes(this.searchQuery);
             }
-            return matchType && matchStatus && matchSearch;
+            return matchType && matchStatus && matchDate && matchSearch;
         });
     },
 
@@ -341,8 +404,8 @@ const WorkPlanModule = {
         let html = `
             <div class="grid grid-cols-4 gap-5 mb-8">
                 <div class="kpi-card">
-                    <div class="kpi-title flex items-center gap-2"><div class="w-8 h-8 rounded bg-teal-50 text-teal-600 flex items-center justify-center"><i class="fa-regular fa-calendar"></i></div> Tổng kế hoạch</div>
-                    <div class="kpi-value text-teal-700">${rawTotal}</div>
+                    <div class="kpi-title flex items-center gap-2"><div class="w-8 h-8 rounded bg-blue-50 text-blue-600 flex items-center justify-center"><i class="fa-regular fa-calendar"></i></div> Tổng kế hoạch</div>
+                    <div class="kpi-value text-blue-700">${rawTotal}</div>
                     <div class="kpi-sub">trong hệ thống</div>
                 </div>
                 <div class="kpi-card">
@@ -368,7 +431,7 @@ const WorkPlanModule = {
                     <div class="bg-white border rounded-xl p-5 shadow-sm">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="font-bold text-gray-800 flex items-center gap-2"><i class="fa-regular fa-sun text-amber-500"></i> Hôm nay <span class="text-xs text-gray-400 font-normal">Thứ Ba, 24 tháng 3</span></h3>
-                            <span class="w-6 h-6 rounded-full bg-teal-100 text-teal-700 text-xs font-bold flex items-center justify-center">${todayPlans.length}</span>
+                            <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center">${todayPlans.length}</span>
                         </div>
                         <div class="flex flex-col gap-3">
                             ${this.renderTodayRows(todayPlans)}
@@ -393,7 +456,7 @@ const WorkPlanModule = {
                 <div class="flex flex-col gap-6">
                     <!-- Trạng thái -->
                     <div class="bg-white border rounded-xl p-5 shadow-sm">
-                        <h3 class="font-bold text-gray-800 mb-1 text-sm"><i class="fa-solid fa-chart-pie text-teal-600 mr-2"></i> Trạng thái</h3>
+                        <h3 class="font-bold text-gray-800 mb-1 text-sm"><i class="fa-solid fa-chart-pie text-blue-600 mr-2"></i> Trạng thái</h3>
                         <p class="text-xs text-gray-400 mb-5">Phân loại tiến độ dự án</p>
                         ${this.renderStatusBars(this.plans, rawTotal)}
                     </div>
@@ -414,7 +477,7 @@ const WorkPlanModule = {
     renderStatusBars: function(plans, total) {
         if(total === 0) return '<div class="text-xs text-center text-gray-400 py-4">Chưa có dữ liệu</div>';
         const st = { 
-            planned: { c:0, color: 'bg-teal-500', name: 'Đã lên lịch', icon: 'fa-regular fa-calendar-check' }, 
+            planned: { c:0, color: 'bg-blue-500', name: 'Đã lên lịch', icon: 'fa-regular fa-calendar-check' }, 
             in_progress: { c:0, color: 'bg-amber-500', name: 'Đang diễn ra', icon: 'fa-solid fa-rotate' }, 
             completed: { c:0, color: 'bg-green-500', name: 'Hoàn thành', icon: 'fa-regular fa-circle-check' }, 
             cancelled: { c:0, color: 'bg-red-500', name: 'Đã hủy', icon: 'fa-solid fa-xmark' }
@@ -531,14 +594,16 @@ const WorkPlanModule = {
             return;
         }
 
+        const getLocalYYYYMMDD = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        
         const grouped = {};
         plans.sort((a,b) => new Date(b.start_time) - new Date(a.start_time)).forEach(p => {
-            const dateStr = p.start_time.split('T')[0];
+            const dateStr = getLocalYYYYMMDD(new Date(p.start_time));
             if (!grouped[dateStr]) grouped[dateStr] = [];
             grouped[dateStr].push(p);
         });
 
-        const todayStr = new Date().toISOString().split('T')[0];
+        const todayStr = getLocalYYYYMMDD(new Date());
         
         let html = '';
         Object.keys(grouped).sort((a,b) => new Date(b) - new Date(a)).forEach(dateStr => {
@@ -549,13 +614,13 @@ const WorkPlanModule = {
             const wday = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'][d.getDay()];
             const dText = `${d.getDate()} tháng ${d.getMonth()+1}, ${d.getFullYear()}`;
             
-            if (dateStr === todayStr) label = '<span class="text-teal-600">Hôm nay</span>';
+            if (dateStr === todayStr) label = '<span class="text-blue-600">Hôm nay</span>';
             else label = wday;
 
             html += `
                 <div class="border-b border-gray-200 pb-2 mb-4 mt-8 flex justify-between items-baseline">
                     <span class="text-[15px] font-extrabold text-gray-800">${label} <span class="text-xs font-normal text-gray-400 ml-2">${dText}</span></span>
-                    <span class="text-xs font-bold text-teal-600 bg-teal-50 px-2 py-0.5 rounded border border-teal-100">${groupPlans.length} kế hoạch</span>
+                    <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">${groupPlans.length} kế hoạch</span>
                 </div>
             `;
 
@@ -583,7 +648,7 @@ const WorkPlanModule = {
                 else if (p.status === 'planned') statusBadge = '<span class="px-3 py-1.5 rounded-lg text-gray-600 text-xs font-bold border border-gray-200">Đã lên lịch</span>';
 
                 const isSelected = this.selectedPlanId === p.id;
-                const selClass = isSelected ? 'border-teal-500 shadow-md transform scale-[1.01]' : 'border-gray-200 hover:shadow-md hover:border-gray-300';
+                const selClass = isSelected ? 'border-blue-500 shadow-md transform scale-[1.01]' : 'border-gray-200 hover:shadow-md hover:border-gray-300';
 
                 html += `
                     <div class="bg-white border rounded-xl flex mb-3 transition-all duration-200 cursor-pointer overflow-hidden ${selClass}" 
@@ -651,7 +716,7 @@ const WorkPlanModule = {
             plan.participants.forEach(pa => {
                 participantsHtml += `
                     <div class="flex items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-100 shadow-sm">
-                        ${pa.avatar ? `<img src="${pa.avatar}" class="w-10 h-10 rounded-full object-cover shadow-inner shrink-0 border border-gray-200" alt="${pa.full_name || pa.username}">` : `<div class="w-10 h-10 rounded-full bg-teal-100 text-teal-700 font-bold flex items-center justify-center text-lg shadow-inner shrink-0">${(pa.full_name || pa.username || '?').charAt(0).toUpperCase()}</div>`}
+                        ${pa.avatar ? `<img src="${pa.avatar}" class="w-10 h-10 rounded-full object-cover shadow-inner shrink-0 border border-gray-200" alt="${pa.full_name || pa.username}">` : `<div class="w-10 h-10 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-lg shadow-inner shrink-0">${(pa.full_name || pa.username || '?').charAt(0).toUpperCase()}</div>`}
                         <div class="min-w-0">
                             <div class="text-[13px] font-bold text-gray-800 truncate leading-snug">${pa.full_name || pa.username}</div>
                             <div class="text-[10px] text-gray-500 flex items-center gap-1 mt-0.5"><i class="fa-solid fa-briefcase text-gray-400"></i> ${pa.role || 'Thành viên'}</div>
@@ -677,7 +742,7 @@ const WorkPlanModule = {
         statuses.forEach(s => {
             const disableAttr = !this.isManager ? 'disabled style="pointer-events: none; opacity: 0.8;"' : '';
             if (s.v === plan.status) {
-                statusPillsHtml += `<button ${disableAttr} class="px-3 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap bg-teal-50 text-teal-700 border border-teal-200 shadow-sm" onclick="WorkPlanModule.updatePlanStatus(${plan.id}, '${s.v}')">${s.label}</button>`;
+                statusPillsHtml += `<button ${disableAttr} class="px-3 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap bg-blue-50 text-blue-700 border border-blue-200 shadow-sm" onclick="WorkPlanModule.updatePlanStatus(${plan.id}, '${s.v}')">${s.label}</button>`;
             } else {
                 statusPillsHtml += `<button ${disableAttr} class="px-3 py-1.5 rounded-full text-[11px] font-semibold whitespace-nowrap bg-white text-gray-500 border border-gray-200 hover:border-gray-300 transition" onclick="WorkPlanModule.updatePlanStatus(${plan.id}, '${s.v}')">${s.label}</button>`;
             }
@@ -688,7 +753,7 @@ const WorkPlanModule = {
         else if (plan.priority === 'high') priorityBadge = `<span class="px-2 py-0.5 rounded text-orange-600 bg-orange-50 text-[10px] font-bold border border-orange-100 flex items-center gap-1"><i class="fa-solid fa-arrow-up text-[8px]"></i> Cao</span>`;
 
         let currentStatusObj = statuses.find(s => s.v === plan.status) || statuses[0];
-        let statusBadge = `<span class="px-2 py-0.5 rounded bg-teal-50 text-teal-700 text-[10px] font-bold border border-teal-100">${currentStatusObj.label}</span>`;
+        let statusBadge = `<span class="px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-[10px] font-bold border border-blue-100">${currentStatusObj.label}</span>`;
         if (plan.status === 'in_progress') statusBadge = `<span class="px-2 py-0.5 rounded bg-amber-50 text-amber-700 text-[10px] font-bold border border-amber-100">Đang diễn ra</span>`;
         if (plan.status === 'completed') statusBadge = `<span class="px-2 py-0.5 rounded bg-green-50 text-green-700 text-[10px] font-bold border border-green-100">Hoàn thành</span>`;
         if (plan.status === 'cancelled') statusBadge = `<span class="px-2 py-0.5 rounded bg-red-50 text-red-700 text-[10px] font-bold border border-red-100">Đã hủy</span>`;
@@ -710,7 +775,7 @@ const WorkPlanModule = {
 
             const displayName = [cName, pName].filter(Boolean).join(' - ');
             if (displayName) {
-                subtitleHtml = `<div class="text-[14px] font-bold text-teal-800 bg-white/60 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg mb-4 border border-teal-100 shadow-sm"><i class="fa-solid fa-building text-teal-600/70"></i> ${displayName}</div>`;
+                subtitleHtml = `<div class="text-[14px] font-bold text-blue-800 bg-white/60 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg mb-4 border border-blue-100 shadow-sm"><i class="fa-solid fa-building text-blue-600/70"></i> ${displayName}</div>`;
             }
         }
 
@@ -735,10 +800,10 @@ const WorkPlanModule = {
         let defaultLocation = plan.location || (plan.project_id ? 'Tại công trình' : 'Không xác định');
         
         let dateTimeHtml = `
-            <div class="bg-gray-50 rounded-xl p-4 border border-teal-50 flex flex-col gap-4 mb-5 shadow-sm relative overflow-hidden">
-                <div class="absolute -right-6 -bottom-6 text-teal-600/5 text-9xl pointer-events-none transform -rotate-12"><i class="fa-regular fa-calendar-check"></i></div>
+            <div class="bg-gray-50 rounded-xl p-4 border border-blue-50 flex flex-col gap-4 mb-5 shadow-sm relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 text-blue-600/5 text-9xl pointer-events-none transform -rotate-12"><i class="fa-regular fa-calendar-check"></i></div>
                 <div class="flex items-start gap-4">
-                    <div class="text-teal-600 mt-0.5"><i class="fa-regular fa-calendar-check text-lg"></i></div>
+                    <div class="text-blue-600 mt-0.5"><i class="fa-regular fa-calendar-check text-lg"></i></div>
                     <div>
                         <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-1">Ngày</div>
                         <div class="text-[14px] font-extrabold text-gray-800">${dayOfWeek}, ${dateStr}</div>
@@ -746,7 +811,7 @@ const WorkPlanModule = {
                 </div>
                 
                 <div class="flex items-start gap-4">
-                    <div class="text-teal-600 mt-0.5"><i class="fa-regular fa-clock text-lg"></i></div>
+                    <div class="text-blue-600 mt-0.5"><i class="fa-regular fa-clock text-lg"></i></div>
                     <div>
                         <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-1">Thời gian</div>
                         <div class="text-[14px] font-extrabold text-gray-800">${startTimeStr} ${endTimeStr ? '— ' + endTimeStr : ''} <span class="text-gray-400 text-xs font-normal">${durationStr}</span></div>
@@ -754,11 +819,11 @@ const WorkPlanModule = {
                 </div>
 
                 <div class="flex items-start gap-4">
-                    <div class="text-teal-600 mt-0.5"><i class="fa-solid fa-location-dot text-lg"></i></div>
+                    <div class="text-blue-600 mt-0.5"><i class="fa-solid fa-location-dot text-lg"></i></div>
                     <div>
                         <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-1">Địa điểm</div>
                         <div class="text-[13px] font-semibold text-gray-800 leading-snug">${defaultLocation}</div>
-                        ${plan.location ? `<a href="https://maps.google.com/?q=${encodeURIComponent(plan.location)}" target="_blank" class="text-[11px] text-teal-600 font-bold hover:underline flex items-center gap-1 mt-1"><i class="fa-solid fa-map"></i> Xem bản đồ</a>` : ''}
+                        ${plan.location ? `<a href="https://maps.google.com/?q=${encodeURIComponent(plan.location)}" target="_blank" class="text-[11px] text-blue-600 font-bold hover:underline flex items-center gap-1 mt-1"><i class="fa-solid fa-map"></i> Xem bản đồ</a>` : ''}
                     </div>
                 </div>
 
@@ -777,7 +842,7 @@ const WorkPlanModule = {
     <!-- Header Area -->
     <div style="background-color: ${tc.hexBg};" class="px-6 pt-6 pb-5 shrink-0 relative transition-colors duration-300 border-b border-gray-200/50 shadow-sm">
         
-        <button class="flex items-center gap-2 text-[13px] font-bold text-gray-600 hover:text-teal-700 transition mb-5 hover:-translate-x-1" onclick="WorkPlanModule.closeDetailPanel()">
+        <button class="flex items-center gap-2 text-[13px] font-bold text-gray-600 hover:text-blue-700 transition mb-5 hover:-translate-x-1" onclick="WorkPlanModule.closeDetailPanel()">
             <i class="fa-solid fa-arrow-left"></i> Quay lại danh sách
         </button>
         
@@ -797,7 +862,7 @@ const WorkPlanModule = {
             
             ${this.isManager ? `
             <div class="flex gap-2 shrink-0">
-                <button class="h-10 px-4 flex items-center justify-center gap-2 rounded-xl border-2 border-teal-500 text-teal-600 font-bold hover:bg-teal-50 transition shadow-sm bg-white text-sm" onclick="WorkPlanModule.openEditModal(${plan.id})">
+                <button class="h-10 px-4 flex items-center justify-center gap-2 rounded-xl border-2 border-blue-500 text-blue-600 font-bold hover:bg-blue-50 transition shadow-sm bg-white text-sm" onclick="WorkPlanModule.openEditModal(${plan.id})">
                     <i class="fa-solid fa-pen"></i> Sửa Kế Hoạch
                 </button>
                 <button class="w-10 h-10 flex items-center justify-center rounded-xl border border-red-200 text-red-500 font-bold hover:bg-red-50 transition shadow-sm bg-white" title="Xóa" onclick="WorkPlanModule.deletePlan(${plan.id})">
@@ -823,7 +888,7 @@ const WorkPlanModule = {
 
     <!-- Tabs Row -->
     <div class="flex border-b border-gray-100 bg-white shrink-0 overflow-x-auto mini-scroll shadow-sm relative w-full px-2" id="detailTabsRow">
-        <button class="flex items-center justify-center px-4 py-3 border-b-2 border-teal-500 text-teal-600 transition shrink-0 gap-2" onclick="WorkPlanModule.switchDetailTab('info', this)">
+        <button class="flex items-center justify-center px-4 py-3 border-b-2 border-blue-500 text-blue-600 transition shrink-0 gap-2" onclick="WorkPlanModule.switchDetailTab('info', this)">
             <i class="fa-solid fa-circle-info text-sm"></i>
             <span class="text-[11px] font-bold whitespace-nowrap">Thông tin</span>
         </button>
@@ -874,27 +939,27 @@ const WorkPlanModule = {
                 <div class="text-center text-gray-400 italic text-xs my-5"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Đang tải nhật ký...</div>
             </div>
             <div class="mt-4 pt-4 border-t border-gray-100">
-                <textarea id="newLogInput" placeholder="Nhập tiến độ hoặc vấn đề phát sinh mới..." class="w-full text-sm p-3 border border-gray-200 rounded-lg outline-none focus:border-teal-500 min-h-[80px] mb-2 bg-gray-50 focus:bg-white transition"></textarea>
+                <textarea id="newLogInput" placeholder="Nhập tiến độ hoặc vấn đề phát sinh mới..." class="w-full text-sm p-3 border border-gray-200 rounded-lg outline-none focus:border-blue-500 min-h-[80px] mb-2 bg-gray-50 focus:bg-white transition"></textarea>
                 <div class="flex justify-end gap-2">
                     <select id="newLogAction" class="text-xs border border-gray-200 rounded-lg px-2 outline-none text-gray-600">
                         <option value="Báo cáo tiến độ">Báo cáo tiến độ</option>
                         <option value="Gặp sự cố">Gặp sự cố</option>
                         <option value="Hoàn thành">Hoàn thành</option>
                     </select>
-                    <button class="bg-teal-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow hover:bg-teal-700 transition" onclick="WorkPlanModule.addLog(${plan.id})"><i class="fa-solid fa-paper-plane mr-1.5"></i>Lưu nhật ký</button>
+                    <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow hover:bg-blue-700 transition" onclick="WorkPlanModule.addLog(${plan.id})"><i class="fa-solid fa-paper-plane mr-1.5"></i>Lưu nhật ký</button>
                 </div>
             </div>
         </div>
 
         <!-- Tab: Checklist -->
         <div id="detailTab-checklist" class="detail-tab-content hidden">
-            <div class="bg-teal-50 border border-teal-100 rounded-xl p-3 mb-4">
+            <div class="bg-blue-50 border border-blue-100 rounded-xl p-3 mb-4">
                 <div class="flex items-center justify-between mb-2">
-                    <h4 class="text-[11px] font-extrabold text-teal-800 uppercase">Tiến độ Checklist</h4>
-                    <div class="text-xs font-bold text-teal-700"><span id="checklistProgressText">0%</span> (0/0)</div>
+                    <h4 class="text-[11px] font-extrabold text-blue-800 uppercase">Tiến độ Checklist</h4>
+                    <div class="text-xs font-bold text-blue-700"><span id="checklistProgressText">0%</span> (0/0)</div>
                 </div>
-                <div class="w-full h-2 bg-white rounded-full overflow-hidden border border-teal-100/50">
-                    <div id="checklistProgressBar" class="h-full bg-teal-500 rounded-full transition-all duration-500 relative" style="width: 0%">
+                <div class="w-full h-2 bg-white rounded-full overflow-hidden border border-blue-100/50">
+                    <div id="checklistProgressBar" class="h-full bg-blue-500 rounded-full transition-all duration-500 relative" style="width: 0%">
                         <div class="absolute inset-0 bg-white/20 w-full h-full skew-x-12 animate-pulse"></div>
                     </div>
                 </div>
@@ -902,9 +967,9 @@ const WorkPlanModule = {
             <div id="detailChecklistList" class="flex flex-col gap-2 mb-4 mini-scroll max-h-[250px] overflow-y-auto pr-1">
                 <div class="text-center text-gray-400 italic text-xs my-5"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Đang tải checklist...</div>
             </div>
-            <div class="relative bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm focus-within:border-teal-500 focus-within:ring-2 focus-within:ring-teal-100 transition-all">
+            <div class="relative bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
                 <input type="text" id="newChecklistInput" placeholder="Thêm việc cần làm..." class="w-full text-sm p-3 pr-10 outline-none" onkeypress="if(event.key === 'Enter') WorkPlanModule.addChecklistItem(${plan.id})">
-                <button class="absolute right-1 top-1 bottom-1 w-10 text-teal-600 hover:bg-teal-50 rounded-lg transition flex items-center justify-center font-bold" onclick="WorkPlanModule.addChecklistItem(${plan.id})">
+                <button class="absolute right-1 top-1 bottom-1 w-10 text-blue-600 hover:bg-blue-50 rounded-lg transition flex items-center justify-center font-bold" onclick="WorkPlanModule.addChecklistItem(${plan.id})">
                     <i class="fa-solid fa-plus"></i>
                 </button>
             </div>
@@ -919,10 +984,10 @@ const WorkPlanModule = {
         <div id="detailTab-discussion" class="detail-tab-content hidden flex-col h-[600px] border border-gray-100 rounded-xl overflow-hidden mt-2 shadow-sm bg-gray-50 relative">
             <div class="px-4 py-3 bg-white border-b border-gray-100 flex items-center justify-between shrink-0 z-10">
                 <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center"><i class="fa-regular fa-comment-dots"></i></div>
+                    <div class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center"><i class="fa-regular fa-comment-dots"></i></div>
                     <div>
                         <h4 class="text-[13px] font-bold text-gray-800">Trao đổi nội bộ</h4>
-                        <div class="text-[10px] text-teal-600 font-semibold italic" id="chatSubtitle">Đang kết nối...</div>
+                        <div class="text-[10px] text-blue-600 font-semibold italic" id="chatSubtitle">Đang kết nối...</div>
                     </div>
                 </div>
             </div>
@@ -930,8 +995,8 @@ const WorkPlanModule = {
                 <div class="text-center text-gray-400 mt-5"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Đang tải...</div>
             </div>
             <div class="p-3 bg-white border-t flex gap-2 shrink-0 relative z-10 w-full">
-                <input type="text" id="chatInput" placeholder="Nhập tin nhắn..." class="flex-1 text-sm p-3 border border-gray-200 bg-gray-50 rounded-xl outline-none focus:border-teal-500 focus:bg-white transition" onkeypress="if(event.key === 'Enter') WorkPlanModule.sendComment()">
-                <button class="w-[48px] h-[48px] rounded-xl bg-teal-600 text-white hover:bg-teal-700 shadow flex items-center justify-center transition" onclick="WorkPlanModule.sendComment()">
+                <input type="text" id="chatInput" placeholder="Nhập tin nhắn..." class="flex-1 text-sm p-3 border border-gray-200 bg-gray-50 rounded-xl outline-none focus:border-blue-500 focus:bg-white transition" onkeypress="if(event.key === 'Enter') WorkPlanModule.sendComment()">
+                <button class="w-[48px] h-[48px] rounded-xl bg-blue-600 text-white hover:bg-blue-700 shadow flex items-center justify-center transition" onclick="WorkPlanModule.sendComment()">
                     <i class="fa-solid fa-paper-plane text-sm xl"></i>
                 </button>
             </div>
@@ -939,7 +1004,7 @@ const WorkPlanModule = {
 
     </div>
         <!-- Chat Float Button -->
-        <button class="absolute -top-[52px] right-4 w-[46px] h-[46px] rounded-full bg-teal-600 text-white flex items-center justify-center shadow-[0_5px_15px_rgba(13,148,136,0.3)] hover:bg-teal-700 hover:-translate-y-1 transition-all" onclick="WorkPlanModule.openChatModal(${plan.id})">
+        <button class="absolute -top-[52px] right-4 w-[46px] h-[46px] rounded-full bg-blue-600 text-white flex items-center justify-center shadow-[0_5px_15px_rgba(13,148,136,0.3)] hover:bg-blue-700 hover:-translate-y-1 transition-all" onclick="WorkPlanModule.openChatModal(${plan.id})">
             <i class="fa-regular fa-comment-dots text-lg"></i>
         </button>
     </div>
@@ -950,7 +1015,7 @@ const WorkPlanModule = {
     switchDetailTab: function(tabStr, btnEl) {
         document.querySelectorAll('.detail-tab-content').forEach(el => el.classList.add('hidden'));
         document.getElementById('detailTabsRow').querySelectorAll('button').forEach(b => {
-            b.classList.remove('border-teal-500', 'text-teal-600');
+            b.classList.remove('border-blue-500', 'text-blue-600');
             b.classList.add('border-transparent', 'text-gray-400');
         });
 
@@ -958,7 +1023,7 @@ const WorkPlanModule = {
         if(target) target.classList.remove('hidden');
 
         btnEl.classList.remove('border-transparent', 'text-gray-400');
-        btnEl.classList.add('border-teal-500', 'text-teal-600');
+        btnEl.classList.add('border-blue-500', 'text-blue-600');
     },
 
     loadLogs: async function(planId) {
@@ -1060,7 +1125,7 @@ const WorkPlanModule = {
         if (progressText) progressText.textContent = `${ptg}%`;
         if (progressBar) progressBar.style.width = `${ptg}%`;
 
-        document.querySelector('.bg-teal-50 .text-xs.font-bold.text-teal-700').innerHTML = `<span id="checklistProgressText">${ptg}%</span> (${completed}/${total})`;
+        document.querySelector('.bg-blue-50 .text-xs.font-bold.text-blue-700').innerHTML = `<span id="checklistProgressText">${ptg}%</span> (${completed}/${total})`;
         
         // Update the header progress independently
         const headerText = document.getElementById('headerChkText');
@@ -1084,9 +1149,9 @@ const WorkPlanModule = {
 
         let html = '';
         items.forEach(item => {
-            const checkIcon = item.is_completed ? 'fa-solid fa-circle-check text-teal-500' : 'fa-regular fa-circle text-gray-300 group-hover:text-teal-400';
+            const checkIcon = item.is_completed ? 'fa-solid fa-circle-check text-blue-500' : 'fa-regular fa-circle text-gray-300 group-hover:text-blue-400';
             const textClass = item.is_completed ? 'line-through text-gray-400 font-semibold' : 'text-gray-800 font-bold';
-            const byText = item.is_completed ? `<div class="text-[9px] text-teal-600 bg-teal-50 border border-teal-100 px-1.5 py-0.5 rounded ml-2 whitespace-nowrap inline-flex items-center"><i class="fa-solid fa-check mr-0.5"></i>${item.completed_by_name?.split(' ').pop() || 'Ai đó'}</div>` : '';
+            const byText = item.is_completed ? `<div class="text-[9px] text-blue-600 bg-blue-50 border border-blue-100 px-1.5 py-0.5 rounded ml-2 whitespace-nowrap inline-flex items-center"><i class="fa-solid fa-check mr-0.5"></i>${item.completed_by_name?.split(' ').pop() || 'Ai đó'}</div>` : '';
 
             html += `
                 <div class="flex items-center group p-2.5 rounded-lg hover:bg-gray-50 transition border border-transparent hover:border-gray-100 -mx-1">
@@ -1193,7 +1258,7 @@ const WorkPlanModule = {
             avs += '</div>';
         }
 
-        const selClass = isSelected ? 'ring-2 ring-teal-500 shadow-lg !z-50 scale-105' : '';
+        const selClass = isSelected ? 'ring-2 ring-blue-500 shadow-lg !z-50 scale-105' : '';
 
         const html = `
             <div class="h-full w-full rounded relative overflow-hidden transition-all duration-200 border-l-[3px] ${tc.borderClass} ${selClass}" style="background-color: ${tc.hexBg}; padding: 3px 4px; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.02);">
@@ -1323,12 +1388,12 @@ const WorkPlanModule = {
         document.getElementById('tabParticipantsContent').style.display = tabStr === 'participants' ? 'block' : 'none';
 
         document.getElementById('planTabsContainer').querySelectorAll('button').forEach(b => {
-            b.classList.remove('border-teal-600', 'text-teal-700');
+            b.classList.remove('border-blue-600', 'text-blue-700');
             b.classList.add('border-transparent', 'text-gray-500');
         });
         
         btnEl.classList.remove('border-transparent', 'text-gray-500');
-        btnEl.classList.add('border-teal-600', 'text-teal-700');
+        btnEl.classList.add('border-blue-600', 'text-blue-700');
     },
 
     updateParticipantCount: function() {
@@ -1349,7 +1414,7 @@ const WorkPlanModule = {
         this.users.forEach(u => {
             html += `
                 <label class="flex items-center gap-3 cursor-pointer hover:bg-white p-3 rounded-xl border border-transparent hover:border-gray-200 transition-all shadow-sm bg-gray-50">
-                    <input type="checkbox" name="plan_participants" value="${u.id}" class="rounded text-teal-600 focus:ring-teal-500 w-5 h-5 accent-teal-600">
+                    <input type="checkbox" name="plan_participants" value="${u.id}" class="rounded text-blue-600 focus:ring-blue-500 w-5 h-5 accent-blue-600">
                     <div class="flex-1 min-w-0">
                         <span class="block text-sm font-bold text-gray-800 truncate">${u.full_name || u.username}</span>
                         <span class="block text-[10px] text-gray-400">${u.role}</span>
@@ -1524,7 +1589,7 @@ const WorkPlanModule = {
                     ${!isMine ? (c.avatar ? `<img src="${c.avatar}" class="w-8 h-8 rounded-full object-cover shrink-0 mr-2 border border-gray-200" title="${c.full_name}">` : `<div class="w-8 h-8 rounded-full bg-slate-200 mr-2 flex items-center justify-center text-xs font-bold shrink-0" title="${c.full_name}">${c.full_name.charAt(0)}</div>`) : ''}
                     <div class="max-w-[75%]">
                         ${!isMine ? `<div class="text-[10px] font-bold text-gray-500 ml-1 mb-0.5">${c.full_name}</div>` : ''}
-                        <div class="p-3 ${isMine ? 'bg-teal-100 text-teal-900 rounded-br-none' : 'bg-white border text-gray-800 rounded-bl-none'} rounded-2xl text-[13px] leading-relaxed break-words">${this.escapeHTML(c.message)}</div>
+                        <div class="p-3 ${isMine ? 'bg-blue-100 text-blue-900 rounded-br-none' : 'bg-white border text-gray-800 rounded-bl-none'} rounded-2xl text-[13px] leading-relaxed break-words">${this.escapeHTML(c.message)}</div>
                         <div class="text-[9px] text-gray-400 mt-0.5 ${isMine?'text-right pr-1':'pl-1'}">${new Date(c.created_at).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})}</div>
                     </div>
                 </div>
@@ -1566,7 +1631,7 @@ const WorkPlanModule = {
                 ${!isMine ? (c.avatar ? `<img src="${c.avatar}" class="w-8 h-8 rounded-full object-cover shrink-0 mr-2 border border-gray-200" title="${c.full_name}">` : `<div class="w-8 h-8 rounded-full bg-slate-200 mr-2 flex items-center justify-center text-xs font-bold shrink-0" title="${c.full_name}">${(c.full_name||'?').charAt(0)}</div>`) : ''}
                 <div class="max-w-[75%]">
                     ${!isMine ? `<div class="text-[10px] font-bold text-gray-500 ml-1 mb-0.5">${c.full_name}</div>` : ''}
-                    <div class="p-3 ${isMine ? 'bg-teal-100 text-teal-900 rounded-br-none' : 'bg-white border text-gray-800 rounded-bl-none'} rounded-2xl text-[13px] leading-relaxed break-words">${this.escapeHTML(c.message)}</div>
+                    <div class="p-3 ${isMine ? 'bg-blue-100 text-blue-900 rounded-br-none' : 'bg-white border text-gray-800 rounded-bl-none'} rounded-2xl text-[13px] leading-relaxed break-words">${this.escapeHTML(c.message)}</div>
                 </div>
             </div>
         `;
@@ -1642,7 +1707,7 @@ const WorkPlanModule = {
                         </div>
                     </td>
                     <td class="p-3 text-center">
-                        <button class="text-teal-600 hover:text-teal-800 p-1 rounded hover:bg-teal-50" onclick="WorkPlanModule.editType(${t.id})" title="Sửa"><i class="fa-solid fa-pen"></i></button>
+                        <button class="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50" onclick="WorkPlanModule.editType(${t.id})" title="Sửa"><i class="fa-solid fa-pen"></i></button>
                         <button class="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 ml-1" onclick="WorkPlanModule.deleteType(${t.id})" title="Xóa"><i class="fa-solid fa-trash-can"></i></button>
                     </td>
                 </tr>
@@ -1669,7 +1734,7 @@ const WorkPlanModule = {
         let iconHtml = '';
         this.availableIcons.forEach(icon => {
             iconHtml += `
-            <button type="button" class="icon-selector-btn flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-teal-600 transition outline-none" data-icon="${icon}" onclick="WorkPlanModule.selectFormIcon('${icon}')">
+            <button type="button" class="icon-selector-btn flex items-center justify-center w-10 h-10 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-blue-600 transition outline-none" data-icon="${icon}" onclick="WorkPlanModule.selectFormIcon('${icon}')">
                 <i class="fa-solid ${icon} text-lg"></i>
             </button>`;
         });
@@ -1694,26 +1759,26 @@ const WorkPlanModule = {
 
     selectFormIcon: function(icon) {
         document.querySelectorAll('.icon-selector-btn').forEach(btn => {
-            btn.classList.remove('border-teal-500', 'bg-teal-50', 'text-teal-600', 'ring-2', 'ring-teal-200');
+            btn.classList.remove('border-blue-500', 'bg-blue-50', 'text-blue-600', 'ring-2', 'ring-blue-200');
             btn.classList.add('border-gray-200', 'text-gray-500');
         });
         const btn = document.querySelector(`.icon-selector-btn[data-icon="${icon}"]`);
         if (btn) {
             btn.classList.remove('border-gray-200', 'text-gray-500');
-            btn.classList.add('border-teal-500', 'bg-teal-50', 'text-teal-600', 'ring-2', 'ring-teal-200');
+            btn.classList.add('border-blue-500', 'bg-blue-50', 'text-blue-600', 'ring-2', 'ring-blue-200');
         }
         document.getElementById('t_icon').value = `<i class="fa-solid ${icon}"></i>`;
     },
 
     selectFormTheme: function(themeKey) {
         document.querySelectorAll('.theme-selector-btn').forEach(btn => {
-            btn.classList.remove('border-teal-500', 'ring-2', 'ring-teal-200', 'bg-gray-50');
+            btn.classList.remove('border-blue-500', 'ring-2', 'ring-blue-200', 'bg-gray-50');
             btn.classList.add('border-gray-200');
         });
         const btn = document.querySelector(`.theme-selector-btn[data-theme="${themeKey}"]`);
         if (btn) {
             btn.classList.remove('border-gray-200');
-            btn.classList.add('border-teal-500', 'ring-2', 'ring-teal-200', 'bg-gray-50');
+            btn.classList.add('border-blue-500', 'ring-2', 'ring-blue-200', 'bg-gray-50');
         }
 
         const t = this.typeColorThemes[themeKey];
