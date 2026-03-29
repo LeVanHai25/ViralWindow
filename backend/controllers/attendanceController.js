@@ -287,14 +287,33 @@ exports.getTodayStatus = async (req, res) => {
             WHERE ar.user_id = ? AND ar.date = ?
         `, [userId, today]);
 
-        // Get default shift info
-        const [defaultShift] = await db.query('SELECT * FROM work_shifts WHERE is_default = 1 AND is_active = 1 LIMIT 1');
+        // Lấy thông tin ca làm việc hiển thị trên Dashboard
+        const currentTime = new Date().toTimeString().slice(0, 8);
+        const [assigned] = await db.query(`
+            SELECT ws.* FROM work_shifts ws
+            INNER JOIN user_shifts us ON ws.id = us.shift_id
+            WHERE us.user_id = ? AND ws.is_active = 1
+            LIMIT 1
+        `, [userId]);
+
+        let targetShift = null;
+        if (assigned.length > 0) {
+            targetShift = assigned[0];
+        } else {
+            const [shifts] = await db.query(`
+                SELECT * FROM work_shifts 
+                WHERE is_active = 1 
+                ORDER BY is_default DESC, ABS(TIMESTAMPDIFF(MINUTE, start_time, ?)) ASC 
+                LIMIT 1
+            `, [currentTime]);
+            targetShift = shifts.length > 0 ? shifts[0] : null;
+        }
 
         res.json({
             success: true,
             data: {
                 record: records.length > 0 ? records[0] : null,
-                default_shift: defaultShift.length > 0 ? defaultShift[0] : null,
+                default_shift: targetShift,
                 server_time: new Date().toISOString()
             }
         });
