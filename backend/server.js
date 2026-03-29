@@ -411,6 +411,14 @@ async function runStartupMigrations() {
         {
             name: 'login_history AUTO_INCREMENT',
             sql: "ALTER TABLE login_history MODIFY id int(11) NOT NULL AUTO_INCREMENT"
+        },
+        {
+            name: 'add_approved_at_to_quotations',
+            sql: "ALTER TABLE quotations ADD COLUMN approved_at DATETIME NULL COMMENT 'Thời điểm chốt báo giá (hợp đồng)'"
+        },
+        {
+            name: 'backfill_approved_at_for_old_quotations',
+            sql: "UPDATE quotations SET approved_at = updated_at WHERE status = 'approved' AND approved_at IS NULL"
         }
     ];
 
@@ -419,9 +427,12 @@ async function runStartupMigrations() {
             await db.query(m.sql);
             console.log(`✅ Migration: ${m.name}`);
         } catch (err) {
-            // Ignore if already applied or table doesn't exist
-            if (!err.message.includes('already exists') && !err.message.includes("doesn't exist")) {
-                console.log(`⚠️ Migration ${m.name}: ${err.message}`);
+            // Ignore if already applied or table doesn't exist or column exists
+            const msg = err.message || '';
+            if (!msg.includes('already exists') && 
+                !msg.includes("doesn't exist") && 
+                !msg.includes("Duplicate column name")) {
+                console.log(`⚠️ Migration ${m.name} skipped/failed: ${msg}`);
             }
         }
     }
