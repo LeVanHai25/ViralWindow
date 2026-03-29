@@ -21,7 +21,11 @@ exports.getAllProjects = async (req, res) => {
                 (SELECT COUNT(*) FROM quotations WHERE project_id = p.id) AS quotation_count,
                 (SELECT status FROM quotations WHERE project_id = p.id ORDER BY created_at DESC LIMIT 1) AS quotation_status,
                 (SELECT COUNT(DISTINCT design_id) FROM bom_items 
-                 WHERE design_id IN (SELECT id FROM door_designs WHERE project_id = p.id)) AS bom_count
+                 WHERE design_id IN (SELECT id FROM door_designs WHERE project_id = p.id)) AS bom_count,
+                 COALESCE(
+                    (SELECT approved_at FROM quotations q WHERE q.project_id = p.id AND q.status = 'approved' AND q.approved_at IS NOT NULL ORDER BY q.approved_at DESC LIMIT 1),
+                    (SELECT quotation_date FROM quotations q WHERE q.project_id = p.id AND q.status = 'approved' ORDER BY q.updated_at DESC LIMIT 1)
+                 ) AS contract_date
             FROM projects p
             LEFT JOIN customers c ON p.customer_id = c.id
             LEFT JOIN agencies a ON c.agency_id = a.id
@@ -665,7 +669,11 @@ exports.getById = async (req, res) => {
                 c.phone AS customer_phone,
                 c.email AS customer_email,
                 c.address AS customer_address,
-                a.name AS agency_name
+                a.name AS agency_name,
+                COALESCE(
+                    (SELECT approved_at FROM quotations q WHERE q.project_id = p.id AND q.status = 'approved' AND q.approved_at IS NOT NULL ORDER BY q.approved_at DESC LIMIT 1),
+                    (SELECT quotation_date FROM quotations q WHERE q.project_id = p.id AND q.status = 'approved' ORDER BY q.updated_at DESC LIMIT 1)
+                ) AS contract_date
             FROM projects p
             LEFT JOIN customers c ON p.customer_id = c.id
             LEFT JOIN agencies a ON p.agency_id = a.id

@@ -903,6 +903,16 @@ async function getOrdersData(req, options = {}) {
             p.deadline AS deliveryPlanDate,
             p.created_at AS createdAt,
             p.updated_at AS updatedAt,
+            COALESCE(
+                (SELECT q.approved_at FROM quotations q 
+                 WHERE q.project_id = p.id AND q.status = 'approved' AND q.approved_at IS NOT NULL
+                 ORDER BY q.approved_at DESC LIMIT 1),
+                (SELECT q.quotation_date FROM quotations q 
+                 WHERE q.project_id = p.id AND q.status = 'approved'
+                 ORDER BY q.updated_at DESC LIMIT 1),
+                p.start_date,
+                p.created_at
+            ) AS contractDate,
             c.id AS customerId,
             c.full_name AS customerName,
             c.phone AS customerPhone,
@@ -1123,6 +1133,7 @@ async function getOrdersData(req, options = {}) {
             quantity: typeof finalWeight === 'number' ? (parseFloat(finalWeight.toFixed(2)) || 0) : finalWeight,
             status: row.status,
             createdAt: row.createdAt,
+            contractDate: row.contractDate || row.createdAt, // Ngày chốt HĐ (fallback về ngày tạo nếu chưa chốt)
             deliveryPlanDate: row.deliveryPlanDate,
             updatedAt: row.updatedAt,
             note: row.note || '',

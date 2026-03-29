@@ -874,8 +874,14 @@ exports.updateStatus = async (req, res) => {
 
         const oldStatus = quotation.status;
 
+        // Ghi thời điểm chốt HĐ chính xác khi status chuyển sang 'approved'
+        // approved_at chỉ được ghi lần đầu tiên (không overwrite nếu đã tồn tại)
+        const approvedAtClause = (status === 'approved' && oldStatus !== 'approved')
+            ? ', approved_at = NOW()'
+            : '';
+
         const [result] = await db.query(
-            "UPDATE quotations SET status = ? WHERE id = ?",
+            `UPDATE quotations SET status = ?${approvedAtClause} WHERE id = ?`,
             [status, id]
         );
 

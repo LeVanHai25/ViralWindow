@@ -370,7 +370,8 @@ function createMainRow(order) {
         : (order.customer?.name || '');
 
     // Format dates
-    const createdAt = formatDate(order.createdAt);
+    // contractDate = ngày chốt HĐ (approved_at → quotation_date → start_date → created_at)
+    const createdAt = formatDate(order.contractDate || order.createdAt);
     const deliveryPlanDate = formatDate(order.deliveryPlanDate);
     const materialPlanDate = formatDate(order.materialPlanDate);
 

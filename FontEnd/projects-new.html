@@ -1482,7 +1482,7 @@
                         </h3>
                         <div class="space-y-3">
                             <div class="flex justify-between items-center py-2 border-b border-blue-100">
-                                <span class="text-gray-600">Ngày tạo đơn</span>
+                                <span class="text-gray-600">Ngày bắt đầu</span>
                                 <span class="font-medium" id="detailCreatedDate">---</span>
                             </div>
                             <div class="flex justify-between items-center py-2 border-b border-blue-100">
@@ -2726,7 +2726,8 @@
                 const customerPhone = project.customer_phone || '';
                 const projectCode = project.project_code || `CT-${project.id}`;
                 const projectName = project.project_name || 'N/A';
-                const startDate = project.start_date ? formatDate(project.start_date) : 'N/A';
+                const actualStartDate = project.contract_date || project.created_at || project.start_date;
+                const startDate = actualStartDate ? formatDate(actualStartDate) : 'N/A';
                 const deadline = project.deadline ? formatDate(project.deadline) : 'N/A';
                 const totalValue = project.total_value ? formatCurrency(project.total_value) : '0₫';
 
@@ -2882,7 +2883,7 @@
                         <!-- Ngày & Giá trị -->
                         <div class="text-right min-w-[150px]">
                             <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
-                                <span class="text-gray-500 text-right">Ngày tạo:</span>
+                                <span class="text-gray-500 text-right">Ngày bắt đầu:</span>
                                 <span class="font-medium text-gray-700">${startDate}</span>
                                 <span class="text-gray-500 text-right">Kế hoạch giao:</span>
                                 <span class="font-medium text-orange-600">${deadline}</span>
@@ -3571,7 +3572,8 @@
                         document.getElementById('detailTotalValue').textContent = project.total_value ? formatCurrency(project.total_value) : '---';
 
                         // Timeline
-                        document.getElementById('detailCreatedDate').textContent = project.created_at ? new Date(project.created_at).toLocaleDateString('vi-VN') : '---';
+                        const actualCreatedDate = project.contract_date || project.created_at || project.start_date;
+                        document.getElementById('detailCreatedDate').textContent = actualCreatedDate ? new Date(actualCreatedDate).toLocaleDateString('vi-VN') : '---';
                         document.getElementById('detailDeadline').textContent = project.deadline ? new Date(project.deadline).toLocaleDateString('vi-VN') : '---';
                         document.getElementById('detailActualDelivery').textContent = project.actual_delivery_date ? new Date(project.actual_delivery_date).toLocaleDateString('vi-VN') : 'Chưa giao';
 
