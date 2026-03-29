@@ -1127,11 +1127,7 @@
                     }
                 }
             } catch (error) {
-                // Xử lý lỗi im lặng, không log ra console để tránh làm phiền người dùng
-                // Chỉ log trong development mode nếu cần debug
-                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                    // Chỉ log trong môi trường local
-                }
+                // Fail silently for logo loading errors
             }
         }
 

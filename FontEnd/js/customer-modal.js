@@ -5,7 +5,7 @@
  */
 
 // API Base URL
-const CUSTOMER_MODAL_API_BASE = window.API_BASE || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '/api' : window.location.origin + '/api');
+const CUSTOMER_MODAL_API_BASE = window.API_BASE || '/api';
 
 // Create modal HTML
 function createCustomerModalHTML() {

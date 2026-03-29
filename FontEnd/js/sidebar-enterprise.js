@@ -238,13 +238,7 @@ class EnterpriseSidebar {
      * Get API base URL - dynamically detect from current environment
      */
     getApiBase() {
-        // Try to use global API_BASE if defined
-        if (typeof window.API_BASE !== 'undefined') {
-            return window.API_BASE;
-        }
-        // Fallback: detect from current location
-        const port = window.location.port || '3001';
-        return `http://localhost:${port === '5500' || port === '5501' ? '3001' : port}/api`;
+        return window.API_BASE || '/api';
     }
 
     /**

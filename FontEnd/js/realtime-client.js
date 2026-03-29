@@ -16,25 +16,8 @@
     // CONFIG — Tự detect Socket URL từ API_BASE
     // =====================================================
     function getSocketUrl() {
-        // 1. Nếu user set thủ công
+        // Same-origin architecture: socket connects to current origin
         if (window.SOCKET_URL) return window.SOCKET_URL;
-
-        // 2. Dùng API_BASE (đã config trong config.js)
-        if (window.API_BASE) {
-            // API_BASE = '/api' → socket = ''
-            // API_BASE = "https://viralwindow.onrender.com/api" → socket = "https://viralwindow.onrender.com"
-            try {
-                const url = new URL(window.API_BASE);
-                return url.origin;
-            } catch (e) { }
-        }
-
-        // 3. Fallback: nếu đang trên production domain
-        if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-            return window.location.origin;
-        }
-
-        // 4. Local dev: port 3001
         return '';
     }
 

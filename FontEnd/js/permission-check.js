@@ -28,7 +28,7 @@ const PermissionCheck = {
         }
 
         try {
-            const API_BASE = window.API_BASE || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '/api' : window.location.origin + '/api');
+            const API_BASE = window.API_BASE || '/api';
             const response = await fetch(`${API_BASE}/permissions/my`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,

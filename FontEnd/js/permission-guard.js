@@ -11,7 +11,7 @@
     // Lazy getter - must be called at runtime, not at load time
     // because config.js may not have loaded yet when this IIFE runs
     function getApiBase() {
-        return window.API_BASE || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '/api' : window.location.origin + '/api');
+        return window.API_BASE || '/api';
     }
 
     // Mapping giữa page và permissions cần thiết

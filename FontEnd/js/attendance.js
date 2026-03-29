@@ -2,8 +2,7 @@
  * Controller for Attendance System UI
  */
 
-const port = window.location.port || '3001';
-const API_BASE = window.API_BASE || `http://localhost:${port === '5500' || port === '5501' ? '3001' : port}/api`;
+const API_BASE = window.API_BASE || '/api';
 let currentUser = null;
 let currentPos = { lat: null, lng: null };
 
