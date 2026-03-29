@@ -31,18 +31,29 @@ exports.checkIn = async (req, res) => {
         // ---------------------------------------------
         const [configData] = await db.query('SELECT office_lat, office_lng, office_radius, allowed_ips FROM company_config ORDER BY id DESC LIMIT 1');
         const config = configData.length > 0 ? configData[0] : null;
+
+        // Xác định phương thức định vị
+        let locationMethod = 'unknown';
+        if (lat && lng) {
+            locationMethod = 'gps';
+        } else if (req.body.location_method === 'ip') {
+            locationMethod = 'ip';
+        } else if (req.body.location_method === 'default') {
+            locationMethod = 'default';
+        }
         
         if (config && config.office_lat && config.office_lng) {
-            if (!lat || !lng) {
-                return res.status(403).json({ success: false, message: 'Chống gian lận: Bạn phải cấp quyền truy cập Vị trí (GPS) trên trình duyệt để chấm công.' });
+            if (lat && lng) {
+                // Có GPS → kiểm tra khoảng cách
+                const distance = getDistance(parseFloat(lat), parseFloat(lng), parseFloat(config.office_lat), parseFloat(config.office_lng));
+                if (distance > (config.office_radius || 200)) {
+                    return res.status(403).json({ 
+                        success: false, 
+                        message: `Gian lận vị trí: Hiện tại bạn đang cách văn phòng ${Math.round(distance)} mét. Vui lòng đến công ty để chấm công!` 
+                    });
+                }
             }
-            const distance = getDistance(parseFloat(lat), parseFloat(lng), parseFloat(config.office_lat), parseFloat(config.office_lng));
-            if (distance > (config.office_radius || 100)) {
-                return res.status(403).json({ 
-                    success: false, 
-                    message: `Gian lận vị trí: Hiện tại bạn đang cách văn phòng ${Math.round(distance)} mét. Vui lòng đến công ty để chấm công!` 
-                });
-            }
+            // Nếu không có GPS → cho phép nhưng ghi nhận source (ip/default)
         }
         
         if (config && config.allowed_ips) {
@@ -68,15 +79,28 @@ exports.checkIn = async (req, res) => {
             });
         }
 
-        // Auto-detect shift based on current time
+        // Detect shift assigned to user or fallback to auto-detect based on current time
         const currentTime = now.toTimeString().slice(0, 8); // HH:MM:SS
-        const [shifts] = await db.query(`
-            SELECT * FROM work_shifts 
-            WHERE is_active = 1 
-            ORDER BY is_default DESC, ABS(TIMESTAMPDIFF(MINUTE, start_time, ?)) ASC 
+        
+        const [assigned] = await db.query(`
+            SELECT ws.* FROM work_shifts ws
+            INNER JOIN user_shifts us ON ws.id = us.shift_id
+            WHERE us.user_id = ? AND ws.is_active = 1
             LIMIT 1
-        `, [currentTime]);
-        const shift = shifts.length > 0 ? shifts[0] : null;
+        `, [userId]);
+
+        let shift = null;
+        if (assigned.length > 0) {
+            shift = assigned[0];
+        } else {
+            const [shifts] = await db.query(`
+                SELECT * FROM work_shifts 
+                WHERE is_active = 1 
+                ORDER BY is_default DESC, ABS(TIMESTAMPDIFF(MINUTE, start_time, ?)) ASC 
+                LIMIT 1
+            `, [currentTime]);
+            shift = shifts.length > 0 ? shifts[0] : null;
+        }
 
         // Determine status: present or late
         let status = 'present';
@@ -98,15 +122,15 @@ exports.checkIn = async (req, res) => {
             await db.query(`
                 UPDATE attendance_records 
                 SET check_in = ?, check_in_lat = ?, check_in_lng = ?, check_in_note = ?, 
-                    shift_id = ?, status = ?, agency_id = ?
+                    shift_id = ?, status = ?, agency_id = ?, location_method = ?
                 WHERE id = ?
-            `, [now, lat || null, lng || null, note || null, shift?.id || null, status, agencyId, existing[0].id]);
+            `, [now, lat || null, lng || null, note || null, shift?.id || null, status, agencyId, locationMethod, existing[0].id]);
         } else {
             // Create new record
             await db.query(`
-                INSERT INTO attendance_records (user_id, shift_id, date, check_in, check_in_lat, check_in_lng, check_in_note, status, agency_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `, [userId, shift?.id || null, today, now, lat || null, lng || null, note || null, status, agencyId]);
+                INSERT INTO attendance_records (user_id, shift_id, date, check_in, check_in_lat, check_in_lng, check_in_note, status, agency_id, location_method)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `, [userId, shift?.id || null, today, now, lat || null, lng || null, note || null, status, agencyId, locationMethod]);
         }
 
         // Fetch the created/updated record
@@ -143,17 +167,26 @@ exports.checkOut = async (req, res) => {
         // ---------------------------------------------
         const [configData] = await db.query('SELECT office_lat, office_lng, office_radius, allowed_ips FROM company_config ORDER BY id DESC LIMIT 1');
         const config = configData.length > 0 ? configData[0] : null;
+
+        // Xác định phương thức định vị
+        let locationMethod = 'unknown';
+        if (lat && lng) {
+            locationMethod = 'gps';
+        } else if (req.body.location_method === 'ip') {
+            locationMethod = 'ip';
+        } else if (req.body.location_method === 'default') {
+            locationMethod = 'default';
+        }
         
         if (config && config.office_lat && config.office_lng) {
-            if (!lat || !lng) {
-                return res.status(403).json({ success: false, message: 'Chống gian lận: Bạn phải cấp quyền truy cập Vị trí (GPS) trên trình duyệt để kết thúc ca.' });
-            }
-            const distance = getDistance(parseFloat(lat), parseFloat(lng), parseFloat(config.office_lat), parseFloat(config.office_lng));
-            if (distance > (config.office_radius || 100)) {
-                return res.status(403).json({ 
-                    success: false, 
-                    message: `Gian lận vị trí: Hiện tại bạn đang cách văn phòng ${Math.round(distance)} mét. Vui lòng đến công ty để check-out!` 
-                });
+            if (lat && lng) {
+                const distance = getDistance(parseFloat(lat), parseFloat(lng), parseFloat(config.office_lat), parseFloat(config.office_lng));
+                if (distance > (config.office_radius || 200)) {
+                    return res.status(403).json({ 
+                        success: false, 
+                        message: `Gian lận vị trí: Hiện tại bạn đang cách văn phòng ${Math.round(distance)} mét. Vui lòng đến công ty để check-out!` 
+                    });
+                }
             }
         }
 

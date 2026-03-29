@@ -4,7 +4,7 @@
 
 const API_BASE = window.API_BASE || '/api';
 let currentUser = null;
-let currentPos = { lat: null, lng: null };
+let currentPos = { lat: null, lng: null, address: '', method: 'unknown' };
 
 document.addEventListener('DOMContentLoaded', () => {
     init();
@@ -31,19 +31,8 @@ async function init() {
             if (adminTab) adminTab.click();
         }, 50);
     } else {
-        // Auto load current position
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                currentPos.lat = position.coords.latitude;
-                currentPos.lng = position.coords.longitude;
-                document.getElementById('gps-status').innerHTML = '<i class="w-4 h-4 text-green-500" data-lucide="map-pin"></i> Đã lấy vị trí GPS';
-                lucide.createIcons();
-            },
-            () => {
-                document.getElementById('gps-status').innerHTML = '<i class="w-4 h-4 text-slate-400" data-lucide="map-pin-off"></i> Không tìm thấy GPS (Được phép)';
-                lucide.createIcons();
-            }
-        );
+        // Auto load current position với fallback GPS → IP → Default
+        getGeolocation();
 
         loadTodayStatus();
         loadWeeklyTimeline();
@@ -68,6 +57,8 @@ async function init() {
         } else if (target === 'panel-admin') {
             loadAdminReport();
             loadAdminKPIs();
+        } else if (target === 'panel-shifts') {
+            loadShifts();
         }
     });
 
@@ -92,26 +83,138 @@ function initClock() {
     }, 1000);
 }
 
-function getGeolocation() {
-    const locEl = document.getElementById('location-info');
-    if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                currentPos.lat = position.coords.latitude;
-                currentPos.lng = position.coords.longitude;
-                locEl.innerHTML = `<i data-lucide="map-pin" class="w-3 h-3 text-green-500"></i> <span class="text-green-600">Đã lấy vị trí GPS</span>`;
-                lucide.createIcons();
-            },
-            (err) => {
-                console.warn('GPS Error:', err.message);
-                locEl.innerHTML = `<i data-lucide="map-pin-off" class="w-3 h-3 text-orange-500"></i> <span class="text-orange-600">Không có GPS (sẽ dùng IP)</span>`;
-                lucide.createIcons();
-            },
-            { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+/**
+ * Reverse Geocoding: Chuyển tọa độ → tên địa chỉ
+ * Sử dụng Nominatim (OpenStreetMap) - miễn phí, không cần API key
+ */
+async function reverseGeocode(lat, lng) {
+    try {
+        const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=18&accept-language=vi&addressdetails=1`,
+            { signal: AbortSignal.timeout(5000) }
         );
-    } else {
-        locEl.innerHTML = `<span>Trình duyệt không hỗ trợ GPS</span>`;
+        const data = await res.json();
+        if (data && data.address) {
+            const a = data.address;
+            // Xây dựng tên ngắn gọn: đường, phường/xã, quận/huyện, thành phố
+            const parts = [
+                a.road || a.pedestrian || a.neighbourhood || '',
+                a.suburb || a.quarter || a.village || '',
+                a.city_district || a.county || a.town || '',
+                a.city || a.state || ''
+            ].filter(p => p && p.trim());
+            return parts.join(', ');
+        }
+        return data.display_name || '';
+    } catch (err) {
+        console.warn('[GEO] Reverse geocoding thất bại:', err.message);
+        return '';
     }
+}
+
+/**
+ * Lấy vị trí theo chiến lược 3 tầng:
+ * Tầng 1: GPS trình duyệt (chính xác nhất)
+ * Tầng 2: IP Geolocation qua ip-api.com (xấp xỉ theo mạng)
+ * Tầng 3: Tọa độ văn phòng mặc định từ company_config
+ * Sau khi lấy tọa độ → reverse geocode để hiển thị tên vị trí
+ */
+async function getGeolocation() {
+    const locEl = document.getElementById('location-info');
+
+    // Hiển thị trạng thái đang lấy
+    if (locEl) {
+        locEl.innerHTML = `<i data-lucide="loader" class="w-3 h-3 animate-spin text-blue-400"></i> <span class="text-slate-400">Đang xác định vị trí...</span>`;
+        lucide.createIcons();
+    }
+
+    // ─── TẦNG 1: GPS TRÌNH DUYỆT ───
+    if ('geolocation' in navigator) {
+        try {
+            const gpsPos = await new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    enableHighAccuracy: true,
+                    timeout: 8000,
+                    maximumAge: 0
+                });
+            });
+            currentPos.lat = gpsPos.coords.latitude;
+            currentPos.lng = gpsPos.coords.longitude;
+            currentPos.method = 'gps';
+            
+            // Reverse geocode để lấy tên địa chỉ
+            if (locEl) {
+                locEl.innerHTML = `<i data-lucide="loader" class="w-3 h-3 animate-spin text-green-400"></i> <span class="text-green-600 font-medium">GPS OK, đang lấy tên vị trí...</span>`;
+                lucide.createIcons();
+            }
+            const addr = await reverseGeocode(currentPos.lat, currentPos.lng);
+            currentPos.address = addr || `${currentPos.lat.toFixed(5)}, ${currentPos.lng.toFixed(5)}`;
+            if (locEl) {
+                locEl.innerHTML = `<i data-lucide="map-pin" class="w-3 h-3 text-green-500"></i> <span class="text-green-600 font-medium" title="GPS chính xác">📍 ${currentPos.address}</span>`;
+                lucide.createIcons();
+            }
+            console.log('[GPS] Vị trí GPS:', currentPos.address);
+            return;
+        } catch (gpsErr) {
+            console.warn('[GPS] Không lấy được GPS:', gpsErr.message, '→ thử IP fallback...');
+        }
+    }
+
+    // ─── TẦNG 2: IP GEOLOCATION ───
+    try {
+        const ipRes = await fetch('http://ip-api.com/json/?fields=status,lat,lon,city,regionName,query', {
+            signal: AbortSignal.timeout(5000)
+        });
+        const ipData = await ipRes.json();
+        if (ipData.status === 'success' && ipData.lat && ipData.lon) {
+            currentPos.lat = ipData.lat;
+            currentPos.lng = ipData.lon;
+            currentPos.method = 'ip';
+            
+            // Reverse geocode để lấy tên địa chỉ chi tiết hơn chỉ city
+            const addr = await reverseGeocode(currentPos.lat, currentPos.lng);
+            currentPos.address = addr || (ipData.city ? `${ipData.city}, ${ipData.regionName || ''}` : 'Vị trí theo IP');
+            if (locEl) {
+                locEl.innerHTML = `<i data-lucide="wifi" class="w-3 h-3 text-orange-400"></i> <span class="text-orange-600 font-medium" title="Vị trí ước tính từ IP mạng">📡 ${currentPos.address} <span class="text-orange-400 text-xs">(IP)</span></span>`;
+                lucide.createIcons();
+            }
+            console.log('[IP] Vị trí IP:', currentPos.address);
+            return;
+        }
+    } catch (ipErr) {
+        console.warn('[IP] IP Geolocation thất bại:', ipErr.message, '→ thử tọa độ mặc định...');
+    }
+
+    // ─── TẦNG 3: TỌA ĐỘ VĂN PHÒNG MẶC ĐỊNH ───
+    try {
+        const cfgRes = await fetch(`${API_BASE}/company-settings`, {
+            headers: { 'Authorization': `Bearer ${window.AuthHelper.getToken()}` }
+        });
+        const cfg = await cfgRes.json();
+        if (cfg.success && cfg.data && cfg.data.office_lat && cfg.data.office_lng) {
+            currentPos.lat = parseFloat(cfg.data.office_lat);
+            currentPos.lng = parseFloat(cfg.data.office_lng);
+            currentPos.method = 'default';
+            currentPos.address = cfg.data.office_address || cfg.data.address || 'Văn phòng công ty';
+            if (locEl) {
+                locEl.innerHTML = `<i data-lucide="building-2" class="w-3 h-3 text-slate-400"></i> <span class="text-slate-500" title="Vị trí mặc định văn phòng">🏢 ${currentPos.address} <span class="text-slate-400 text-xs">(VP mặc định)</span></span>`;
+                lucide.createIcons();
+            }
+            console.log('[DEFAULT] Vị trí VP mặc định:', currentPos.address);
+            return;
+        }
+    } catch (cfgErr) {
+        console.warn('[DEFAULT] Không lấy được tọa độ mặc định:', cfgErr.message);
+    }
+
+    // Mọi phương pháp đều thất bại - vẫn cho thử check-in nhưng cảnh báo
+    currentPos.method = 'unknown';
+    currentPos.address = 'Không xác định';
+    if (locEl) {
+        locEl.innerHTML = `<i data-lucide="map-pin-off" class="w-3 h-3 text-red-400"></i> <span class="text-red-500">Không xác định được vị trí</span>`;
+        lucide.createIcons();
+    }
+    console.warn('[LOCATION] Tất cả phương pháp định vị đều thất bại');
 }
 
 // ==========================================
@@ -227,14 +330,19 @@ function startLiveWorkCounter(checkInStr) {
 }
 
 async function handleCheckIn() {
+    // Nếu chưa có vị trí, thử lấy lại trước
     if (!currentPos.lat || !currentPos.lng) {
-        VWModal.error('Để chống gian lận, bạn phải bấm Cho Phép trình duyệt truy cập Vị trí (Location) mới có thể chấm công.');
-        // Retry getting location
-        getGeolocation();
-        return;
+        await getGeolocation();
     }
 
-    const isConfirm = await VWModal.confirm('Chấm Công Vào', 'Xác nhận chấm công vào lúc này?', {
+    const methodLabel = currentPos.method === 'gps' ? '📍 GPS' 
+        : currentPos.method === 'ip' ? '📡 IP mạng'
+        : currentPos.method === 'default' ? '🏢 VP mặc định'
+        : '⚠️ Không xác định';
+    const addrDisplay = currentPos.address || 'Chưa xác định vị trí';
+
+    const isConfirm = await VWModal.confirm('Chấm Công Vào', 
+        `Xác nhận chấm công vào lúc này?<br><div class="mt-2 p-2 bg-slate-50 rounded-lg border border-slate-200 text-left"><div class="text-xs text-slate-400 mb-1">${methodLabel}</div><div class="text-sm font-medium text-slate-700">${addrDisplay}</div></div>`, {
         confirmText: 'Có, Check-in ngay',
         cancelText: 'Hủy'
     });
@@ -248,8 +356,9 @@ async function handleCheckIn() {
                     'Authorization': `Bearer ${window.AuthHelper.getToken()}` 
                 },
                 body: JSON.stringify({
-                    lat: currentPos.lat,
-                    lng: currentPos.lng
+                    lat: currentPos.lat || null,
+                    lng: currentPos.lng || null,
+                    location_method: currentPos.method || 'unknown'
                 })
             });
             const data = await res.json();
@@ -268,13 +377,19 @@ async function handleCheckIn() {
 }
 
 async function handleCheckOut() {
+    // Nếu chưa có vị trí, thử lấy lại
     if (!currentPos.lat || !currentPos.lng) {
-        VWModal.error('Để chống gian lận, bạn phải bấm Cho Phép trình duyệt truy cập Vị trí (Location) mới có thể kết thúc ca.');
-        getGeolocation();
-        return;
+        await getGeolocation();
     }
 
-    const isConfirm = await VWModal.confirm('Chấm Công Ra', 'Xác nhận chấm công ra kết thúc ca làm việc?', {
+    const methodLabel = currentPos.method === 'gps' ? '📍 GPS' 
+        : currentPos.method === 'ip' ? '📡 IP mạng'
+        : currentPos.method === 'default' ? '🏢 VP mặc định'
+        : '⚠️ Không xác định';
+    const addrDisplay = currentPos.address || 'Chưa xác định vị trí';
+
+    const isConfirm = await VWModal.confirm('Chấm Công Ra', 
+        `Xác nhận chấm công ra kết thúc ca làm việc?<br><div class="mt-2 p-2 bg-slate-50 rounded-lg border border-slate-200 text-left"><div class="text-xs text-slate-400 mb-1">${methodLabel}</div><div class="text-sm font-medium text-slate-700">${addrDisplay}</div></div>`, {
         confirmText: 'Có, Check-out ngay',
         cancelText: 'Hủy'
     });
@@ -288,8 +403,9 @@ async function handleCheckOut() {
                     'Authorization': `Bearer ${window.AuthHelper.getToken()}` 
                 },
                 body: JSON.stringify({
-                    lat: currentPos.lat,
-                    lng: currentPos.lng
+                    lat: currentPos.lat || null,
+                    lng: currentPos.lng || null,
+                    location_method: currentPos.method || 'unknown'
                 })
             });
             const data = await res.json();
@@ -591,6 +707,9 @@ function renderAdminTab() {
         <div class="w-px h-6 bg-slate-200 mx-2 self-center"></div>
         <div class="nav-tab text-purple-600" data-target="panel-admin" onclick="switchTab(this)">
             <i data-lucide="shield-alert" class="w-4 h-4"></i> Admin Báo Cáo
+        </div>
+        <div class="nav-tab text-emerald-600" data-target="panel-shifts" onclick="switchTab(this)">
+            <i data-lucide="clock" class="w-4 h-4"></i> Quản lý Ca
         </div>
     `;
     lucide.createIcons();
@@ -941,3 +1060,230 @@ function getLeaveTypeText(type) {
     };
     return m[type] || type;
 }
+
+// ==========================================
+// 8. SHIFT MANAGEMENT (ADMIN ONLY)
+// ==========================================
+async function loadShifts() {
+    try {
+        const res = await fetch(`${API_BASE}/shifts`, {
+            headers: { 'Authorization': `Bearer ${window.AuthHelper.getToken()}` }
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            const tbody = document.getElementById('shifts-table-body');
+            if(!tbody) return;
+            
+            if (data.data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-slate-500">Chưa có dữ liệu ca làm việc</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = data.data.map(shift => `
+                <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                    <td class="px-4 py-3 font-medium text-slate-800 flex items-center gap-2">
+                        ${shift.name} 
+                        ${shift.is_default ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700">MẶC ĐỊNH</span>' : ''}
+                        ${!shift.is_active ? '<span class="px-2 py-0.5 rounded text-[10px] bg-red-100 text-red-600">VÔ HIỆU</span>' : ''}
+                    </td>
+                    <td class="px-4 py-3 text-slate-600">${shift.start_time.substring(0,5)}</td>
+                    <td class="px-4 py-3 text-slate-600">${shift.end_time.substring(0,5)}</td>
+                    <td class="px-4 py-3 text-slate-600">${shift.break_minutes} phút</td>
+                    <td class="px-4 py-3 text-slate-600">${shift.late_threshold_minutes} ph / ${shift.early_leave_minutes} ph</td>
+                    <td class="px-4 py-3 text-slate-500 text-xs">${shift.agency_id ? 'Chi nhánh đặc thù' : 'Tất cả'}</td>
+                    <td class="px-4 py-3 text-right">
+                        <button onclick='openShiftModal(${JSON.stringify(shift).replace(/'/g, "&#39;")})' class="text-blue-500 hover:text-blue-700 hover:bg-blue-50 p-1.5 rounded-lg transition-colors mr-1" title="Sửa ca làm">
+                            <i data-lucide="edit" class="w-4 h-4"></i>
+                        </button>
+                        ${!shift.is_default ? `
+                            <button onclick="deleteShift(${shift.id})" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded-lg transition-colors" title="Xóa ca làm">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        ` : ''}
+                    </td>
+                </tr>
+            `).join('');
+            lucide.createIcons();
+        }
+    } catch (err) {
+        console.error('Lỗi tải danh sách ca làm:', err);
+    }
+}
+
+function openShiftModal(shift = null) {
+    const form = document.getElementById('shiftForm');
+    const modal = document.getElementById('shiftModal');
+    const title = document.getElementById('shiftModalTitle');
+    
+    if (form) form.reset();
+    
+    if (shift) {
+        title.textContent = 'Cập nhật Ca Làm Việc';
+        document.getElementById('shift_id').value = shift.id;
+        document.getElementById('shift_name').value = shift.name;
+        document.getElementById('shift_start_time').value = shift.start_time.substring(0,5);
+        document.getElementById('shift_end_time').value = shift.end_time.substring(0,5);
+        document.getElementById('shift_break_minutes').value = shift.break_minutes;
+        document.getElementById('shift_late_threshold').value = shift.late_threshold_minutes;
+        document.getElementById('shift_early_leave').value = shift.early_leave_minutes;
+        document.getElementById('shift_is_default').checked = !!shift.is_default;
+        document.getElementById('shift_is_active').value = shift.is_active ? "1" : "0";
+    } else {
+        title.textContent = 'Thêm Ca Làm Việc Mới';
+        document.getElementById('shift_id').value = '';
+        document.getElementById('shift_is_default').checked = false;
+        document.getElementById('shift_is_active').value = "1";
+    }
+    
+    if (modal) modal.classList.remove('hidden');
+}
+
+window.submitShift = async function(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const id = formData.get('id');
+    
+    const payload = {
+        name: formData.get('name'),
+        start_time: formData.get('start_time'),
+        end_time: formData.get('end_time'),
+        break_minutes: parseInt(formData.get('break_minutes')) || 0,
+        late_threshold_minutes: parseInt(formData.get('late_threshold_minutes')) || 0,
+        early_leave_minutes: parseInt(formData.get('early_leave_minutes')) || 0,
+        is_default: formData.get('is_default') ? 1 : 0,
+        is_active: parseInt(formData.get('is_active')) || 0
+    };
+    
+    try {
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? `${API_BASE}/shifts/${id}` : `${API_BASE}/shifts`;
+        
+        const res = await fetch(url, {
+            method: method,
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${window.AuthHelper.getToken()}` 
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        const data = await res.json();
+        if (data.success) {
+            VWModal.success(data.message);
+            document.getElementById('shiftModal').classList.add('hidden');
+            loadShifts(); // Reload list
+        } else {
+            VWModal.error(data.message);
+        }
+    } catch (err) {
+        VWModal.error('Lỗi kết nối server');
+    }
+};
+
+window.deleteShift = async function(id) {
+    const isConfirm = await VWModal.confirm('Xóa Ca Làm', 'Xác nhận xóa ca làm việc này? Hành động này có thể ảnh hưởng đến lịch sử chấm công.', {
+        confirmText: 'Đồng ý Xóa',
+        cancelText: 'Hủy'
+    });
+    
+    if (isConfirm) {
+        try {
+            const res = await fetch(`${API_BASE}/shifts/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${window.AuthHelper.getToken()}` }
+            });
+            const data = await res.json();
+            if (data.success) {
+                VWModal.success(data.message);
+                loadShifts();
+            } else {
+                VWModal.error(data.message || 'Không thể xóa ca làm');
+            }
+        } catch(err) {
+            VWModal.error('Lỗi khi xóa ca làm');
+        }
+    }
+};
+
+// ==========================================
+// 8. SHIFT ASSIGNMENT (GÁN CA CHO NHÂN VIÊN)
+// ==========================================
+
+window.openAssignShiftModal = async function() {
+    document.getElementById('assignShiftModal').classList.remove('hidden');
+    loadShiftAssignments();
+};
+
+window.loadShiftAssignments = async function() {
+    const tbody = document.getElementById('assign-shifts-table-body');
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-slate-400"><i data-lucide="loader" class="w-6 h-6 animate-spin mx-auto mb-2"></i> Đang tải dữ liệu...</td></tr>';
+    lucide.createIcons();
+
+    try {
+        const [usersRes, shiftsRes] = await Promise.all([
+            fetch(`${API_BASE}/shifts/assignments`, { headers: { 'Authorization': `Bearer ${window.AuthHelper.getToken()}` } }),
+            fetch(`${API_BASE}/shifts`, { headers: { 'Authorization': `Bearer ${window.AuthHelper.getToken()}` } })
+        ]);
+
+        const usersData = await usersRes.json();
+        const shiftsData = await shiftsRes.json();
+
+        if (usersData.success && shiftsData.success) {
+            const users = usersData.data;
+            const shifts = shiftsData.data.filter(s => s.is_active === 1); // Only active shifts
+            
+            tbody.innerHTML = users.map(u => {
+                const currentShiftId = u.shift_id || '';
+                return `
+                <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                    <td class="py-3 px-4">
+                        <div class="font-medium text-slate-800">${u.full_name}</div>
+                        <div class="text-xs text-slate-500">${u.email}</div>
+                    </td>
+                    <td class="py-3 px-4 text-xs font-medium text-slate-600">${u.role_name || u.user_type}</td>
+                    <td class="py-3 px-4">
+                        <select id="user-shift-${u.id}" class="w-full border border-slate-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                            <option value="">-- Mặc định hệ thống --</option>
+                            ${shifts.map(s => `<option value="${s.id}" ${currentShiftId == s.id ? 'selected' : ''}>${s.name}</option>`).join('')}
+                        </select>
+                    </td>
+                    <td class="py-3 px-4 text-right">
+                        <button onclick="saveShiftAssignment(${u.id})" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-3 py-1.5 rounded text-xs font-semibold uppercase tracking-wide transition-colors">
+                            Cập nhật
+                        </button>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        } else {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-red-500">Lỗi lấy dữ liệu</td></tr>';
+        }
+    } catch(err) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-red-500">Lỗi kết nối server</td></tr>';
+    }
+};
+
+window.saveShiftAssignment = async function(userId) {
+    const shiftId = document.getElementById(`user-shift-${userId}`).value;
+    
+    try {
+        const res = await fetch(`${API_BASE}/shifts/assignments`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${window.AuthHelper.getToken()}` 
+            },
+            body: JSON.stringify({ user_id: userId, shift_id: shiftId ? parseInt(shiftId) : null })
+        });
+        
+        const data = await res.json();
+        if (data.success) {
+            VWModal.success('Đã cập nhật ca làm việc cho nhân viên');
+        } else {
+            VWModal.error(data.message);
+        }
+    } catch (err) {
+        VWModal.error('Lỗi khi lưu gán ca');
+    }
+};

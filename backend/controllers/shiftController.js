@@ -76,3 +76,49 @@ exports.deleteShift = async (req, res) => {
         res.status(500).json({ success: false, message: 'Lỗi server' });
     }
 };
+
+// Get shift assignments for all users
+exports.getAssignments = async (req, res) => {
+    try {
+        const [users] = await db.query(`
+            SELECT u.id, u.full_name, u.email, u.user_type, r.name as role_name, us.shift_id, ws.name as shift_name
+            FROM users u
+            LEFT JOIN roles r ON u.role_id = r.id
+            LEFT JOIN user_shifts us ON u.id = us.user_id
+            LEFT JOIN work_shifts ws ON us.shift_id = ws.id
+            ORDER BY u.full_name ASC
+        `);
+        res.json({ success: true, data: users });
+    } catch (error) {
+        console.error('getAssignments error:', error);
+        res.status(500).json({ success: false, message: 'Lỗi server' });
+    }
+};
+
+// Assign or Update shift for user
+exports.assignShift = async (req, res) => {
+    try {
+        const { user_id, shift_id } = req.body;
+        if (!user_id) {
+            return res.status(400).json({ success: false, message: 'Thiếu thông tin user' });
+        }
+        
+        if (!shift_id) {
+            // Unassign
+            await db.query('DELETE FROM user_shifts WHERE user_id = ?', [user_id]);
+            return res.json({ success: true, message: 'Đã gỡ ca làm việc, quay về ca mặc định' });
+        }
+
+        // Use UPSERT syntax
+        await db.query(`
+            INSERT INTO user_shifts (user_id, shift_id)
+            VALUES (?, ?)
+            ON DUPLICATE KEY UPDATE shift_id = VALUES(shift_id)
+        `, [user_id, shift_id]);
+        
+        res.json({ success: true, message: 'Cập nhật gán ca thành công' });
+    } catch (error) {
+        console.error('assignShift error:', error);
+        res.status(500).json({ success: false, message: 'Lỗi server' });
+    }
+};

@@ -419,6 +419,14 @@ async function runStartupMigrations() {
         {
             name: 'backfill_approved_at_for_old_quotations',
             sql: "UPDATE quotations SET approved_at = updated_at WHERE status = 'approved' AND approved_at IS NULL"
+        },
+        {
+            name: 'add_location_method_to_attendance',
+            sql: "ALTER TABLE attendance_records ADD COLUMN location_method VARCHAR(20) DEFAULT 'unknown' COMMENT 'gps|ip|default|unknown'"
+        },
+        {
+            name: 'add_office_address_to_company_config',
+            sql: "ALTER TABLE company_config ADD COLUMN office_address VARCHAR(500) NULL COMMENT 'Địa chỉ văn phòng hiển thị khi dùng vị trí mặc định'"
         }
     ];
 

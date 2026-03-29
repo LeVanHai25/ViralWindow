@@ -33,7 +33,8 @@ exports.createSettings = async (req, res) => {
         const {
             company_name, tax_code, address, phone, email, website,
             logo_path, logo_base64, signature_footer, signer_name, default_profit_margin,
-            quote_validity_days, terms_conditions
+            quote_validity_days, terms_conditions,
+            office_lat, office_lng, office_radius, allowed_ips, office_address
         } = req.body;
 
         console.log('Create settings - logo_base64:', logo_base64 ? 'Có (length: ' + logo_base64.length + ')' : 'Không có');
@@ -49,8 +50,9 @@ exports.createSettings = async (req, res) => {
         const [result] = await db.query(
             `INSERT INTO company_config 
              (company_name, tax_code, address, phone, email, website, logo_path, 
-              signature_footer, signer_name, default_profit_margin, quote_validity_days, terms_conditions) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              signature_footer, signer_name, default_profit_margin, quote_validity_days, terms_conditions,
+              office_lat, office_lng, office_radius, allowed_ips, office_address) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 company_name || null,
                 tax_code || null,
@@ -63,7 +65,12 @@ exports.createSettings = async (req, res) => {
                 signer_name || null,
                 default_profit_margin || 20,
                 quote_validity_days || 30,
-                terms_conditions || null
+                terms_conditions || null,
+                office_lat || null,
+                office_lng || null,
+                office_radius || 200,
+                allowed_ips || null,
+                office_address || null
             ]
         );
 
@@ -131,11 +138,15 @@ exports.updateSettings = async (req, res) => {
 
         console.log('Final logo_path to save:', finalLogoPath ? `Yes (length: ${finalLogoPath.length})` : 'null');
 
+        // Lấy các trường geofencing từ req.body
+        const { office_lat, office_lng, office_radius, allowed_ips, office_address } = req.body;
+
         const [result] = await db.query(
             `UPDATE company_config 
              SET company_name = ?, tax_code = ?, address = ?, phone = ?, email = ?, website = ?,
                  logo_path = ?, signature_footer = ?, signer_name = ?, default_profit_margin = ?,
-                 quote_validity_days = ?, terms_conditions = ?
+                 quote_validity_days = ?, terms_conditions = ?,
+                 office_lat = ?, office_lng = ?, office_radius = ?, allowed_ips = ?, office_address = ?
              WHERE id = ?`,
             [
                 company_name || null,
@@ -150,6 +161,11 @@ exports.updateSettings = async (req, res) => {
                 default_profit_margin || 20,
                 quote_validity_days || 30,
                 terms_conditions || null,
+                office_lat || null,
+                office_lng || null,
+                office_radius || 200,
+                allowed_ips || null,
+                office_address || null,
                 id
             ]
         );

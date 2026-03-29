@@ -5,6 +5,9 @@ const { authenticateToken } = require('../middleware/auth');
 
 router.use(authenticateToken);
 
+router.get('/assignments', shiftController.getAssignments);
+router.post('/assignments', shiftController.assignShift);
+
 router.get('/', shiftController.getShifts);
 router.post('/', shiftController.createShift);
 router.put('/:id', shiftController.updateShift);
