@@ -28,6 +28,27 @@ async function safeQuery(sql, params = []) {
     }
 }
 
+// Từ điển Mapping Hệ thống Trạng Thái Dữ Liệu
+const VI_STATUS = {
+    'active': 'Đang triển khai', 'in_progress': 'Đang triển khai', 'processing': 'Đang xử lý',
+    'pending': 'Chờ xử lý', 'completed': 'Hoàn thành', 'done': 'Hoàn thành',
+    'cancelled': 'Đã huỷ', 'new': 'Mới tạo', 'draft': 'Nháp',
+    'in_production': 'Đang sản xuất', 'production': 'Sản xuất',
+    'handover': 'Bàn giao', 'installation': 'Lắp đặt',
+    'import': 'Nhập kho', 'export': 'Xuất kho', 'transfer': 'Chuyển kho',
+    'posted': 'Đã duyệt', 'balanced': 'Đã cân bằng', 'paused': 'Tạm dừng',
+    'income': 'Thu', 'expense': 'Chi', 'revenue': 'Doanh thu',
+    'approved': 'Đã duyệt', 'rejected': 'Từ chối', 'sent': 'Đã gửi',
+    'confirmed': 'Đã xác nhận', 'received': 'Đã nhận', 'shipped': 'Đã giao',
+    'waiting_quotation': 'Chờ báo giá', 'quotation_approved': 'Đã chốt báo giá',
+    'designing': 'Đang thiết kế', 'design': 'Đang thiết kế', 'boc_tach': 'Đang bóc tách'
+};
+
+function vn(status) {
+    if (!status) return status;
+    return VI_STATUS[String(status).toLowerCase()] || status;
+}
+
 // =====================================================
 // 1. DASHBOARD CONTEXT
 // =====================================================
@@ -134,6 +155,7 @@ async function getDashboardContext() {
         context.error = error.message;
     }
 
+    translateContextStatuses(context);
     return context;
 }
 
@@ -244,6 +266,7 @@ async function executeSearch(parsedQuery) {
         results.push({ error: error.message });
     }
 
+    translateContextStatuses(results);
     return results;
 }
 
@@ -328,6 +351,7 @@ async function getChatContext(message) {
         context.error = error.message;
     }
 
+    translateContextStatuses(context);
     return context;
 }
 
@@ -595,7 +619,22 @@ async function getReportData(type = 'daily', filters = {}) {
         data.error = error.message;
     }
 
+    translateContextStatuses(data);
     return data;
+}
+
+// =====================================================
+// HELPER: Auto-translate all status strings
+// =====================================================
+function translateContextStatuses(obj) {
+    if (obj == null || typeof obj !== 'object') return;
+    for (const key in obj) {
+        if (key === 'status') {
+            obj[key] = vn(obj[key]);
+        } else if (typeof obj[key] === 'object') {
+            translateContextStatuses(obj[key]);
+        }
+    }
 }
 
 module.exports = {
