@@ -4,7 +4,7 @@
  */
 
 // Sử dụng API_BASE từ config hoặc fallback
-const API_BASE = window.API_BASE || 'http://localhost:3001/api';
+const API_BASE = window.API_BASE || '/api';
 
 // Check authentication
 function checkAuth() {

@@ -3,7 +3,7 @@
  * Quản lý việc tạo và hiển thị thông báo tự động trong hệ thống
  */
 
-const NOTIFICATION_API = 'http://localhost:3001/api/notifications';
+const NOTIFICATION_API = (window.API_BASE || '/api') + '/notifications';
 
 class NotificationManager {
     

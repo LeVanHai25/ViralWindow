@@ -1,11 +1,11 @@
-﻿/**
+/**
  * Customer Modal Component
  * Reusable modal component to display customer information
  * Usage: showCustomerModal(customerId, customerName)
  */
 
 // API Base URL
-const CUSTOMER_MODAL_API_BASE = window.API_BASE || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:3001/api' : window.location.origin + '/api');
+const CUSTOMER_MODAL_API_BASE = window.API_BASE || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '/api' : window.location.origin + '/api');
 
 // Create modal HTML
 function createCustomerModalHTML() {

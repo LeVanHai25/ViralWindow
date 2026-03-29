@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -963,7 +963,7 @@
             if (!projectSelect) return;
 
             try {
-                const SERVER_URL = window.SERVER_BASE || 'http://localhost:3001';
+                const SERVER_URL = window.SERVER_BASE || '';
                 const response = await fetch(`${SERVER_URL}/api/projects`);
                 const result = await response.json();
 
@@ -1345,7 +1345,7 @@
         // =============================================
         // AUTOCOMPLETE - TÌM KIẾM NHANH TỪ KHO
         // =============================================
-        const API_BASE = window.API_BASE || 'http://localhost:3001/api';
+        const API_BASE = window.API_BASE || '/api';
         let autocompleteCache = {};
         let autocompleteTimeout = null;
 
@@ -1977,7 +1977,7 @@
 
         async function exportCurrentTab() {
             const projectName = document.getElementById('projectName').value || 'Công trình';
-            const API_BASE = window.API_BASE || 'http://localhost:3001/api';
+            const API_BASE = window.API_BASE || '/api';
 
             try {
                 const projectInfo = {
@@ -2031,7 +2031,7 @@
 
         async function exportAllToExcel() {
             const projectName = document.getElementById('projectName').value || 'Công trình';
-            const API_BASE = window.API_BASE || 'http://localhost:3001/api';
+            const API_BASE = window.API_BASE || '/api';
 
             const projectInfo = {
                 projectName: document.getElementById('projectName').value || '',
@@ -2410,7 +2410,7 @@
             }
 
             try {
-                const API_BASE = window.API_BASE || 'http://localhost:3001/api';
+                const API_BASE = window.API_BASE || '/api';
                 const token = sessionStorage.getItem('token');
 
                 if (!token) {
@@ -2575,7 +2575,7 @@
             };
 
             try {
-                const API_BASE = window.API_BASE || 'http://localhost:3001/api';
+                const API_BASE = window.API_BASE || '/api';
                 const token = sessionStorage.getItem('token');
 
                 if (!token) {
@@ -2711,7 +2711,7 @@
         // Load company logo
         async function loadCompanyLogo() {
             try {
-                const API_BASE = window.API_BASE || 'http://localhost:3001/api';
+                const API_BASE = window.API_BASE || '/api';
                 const response = await fetch(`${API_BASE}/company-settings`);
                 const result = await response.json();
 

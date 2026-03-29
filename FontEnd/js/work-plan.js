@@ -3,8 +3,8 @@
  * ViralWindow - Management Calendar & Tasks
  */
 
-const API_BASE = window.API_BASE || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:3001/api' : window.location.origin + '/api');
-const SOCKET_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:3001' : window.location.origin;
+const API_BASE = window.API_BASE || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '/api' : window.location.origin + '/api');
+const SOCKET_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '' : window.location.origin;
 
 const WorkPlanModule = {
     calendar: null,

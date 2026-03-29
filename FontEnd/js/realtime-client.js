@@ -21,7 +21,7 @@
 
         // 2. Dùng API_BASE (đã config trong config.js)
         if (window.API_BASE) {
-            // API_BASE = "http://localhost:3001/api" → socket = "http://localhost:3001"
+            // API_BASE = '/api' → socket = ''
             // API_BASE = "https://viralwindow.onrender.com/api" → socket = "https://viralwindow.onrender.com"
             try {
                 const url = new URL(window.API_BASE);
@@ -35,7 +35,7 @@
         }
 
         // 4. Local dev: port 3001
-        return 'http://localhost:3001';
+        return '';
     }
 
     const KEEPALIVE_INTERVAL = 8 * 60 * 1000; // 8 phút

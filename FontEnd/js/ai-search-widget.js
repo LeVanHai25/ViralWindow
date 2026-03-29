@@ -9,7 +9,7 @@
 (function () {
     'use strict';
 
-    const API_BASE = window.API_BASE || 'http://127.0.0.1:3001/api';
+    const API_BASE = window.API_BASE || '/api';
     const SEARCH_API = `${API_BASE}/ai/search`;
 
     // =====================================================

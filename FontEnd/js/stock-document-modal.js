@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Stock Document Modal with Create Item Feature
  * Adds "Tạo vật tư mới" functionality to import document modal
  */
@@ -7,7 +7,7 @@
     'use strict';
 
     // Sử dụng API_BASE từ config hoặc fallback
-    const API_BASE = window.API_BASE || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:3001/api' : window.location.origin + '/api');
+    const API_BASE = window.API_BASE || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '/api' : window.location.origin + '/api');
 
     // Create Item Form HTML template
     function getCreateItemFormHTML() {

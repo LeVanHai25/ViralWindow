@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Nhôm Đề C UI (Aluminum Scrap / Offcut)
  * Business logic: Offcut from existing aluminum in Kho nhôm
  * - User MUST select source aluminum from Kho nhôm
@@ -10,7 +10,7 @@
     'use strict';
 
     // Sử dụng API_BASE từ config hoặc fallback
-    const API_BASE = window.API_BASE || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:3001/api' : window.location.origin + '/api');
+    const API_BASE = window.API_BASE || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '/api' : window.location.origin + '/api');
     let scrapsData = [];
     let aluminumSystemsCache = []; // Cache for dropdown
 

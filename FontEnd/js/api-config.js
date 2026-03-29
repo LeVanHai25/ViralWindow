@@ -1,48 +1,35 @@
 /**
  * API Configuration - ViralWindow
- * File này quản lý cấu hình API URL tập trung
+ * Centralized API URL management
  * 
- * Cách sử dụng:
- * 1. Include file này trong HTML: <script src="js/api-config.js"></script>
- * 2. Sử dụng: const response = await fetch(`${API_BASE}/endpoint`);
+ * Usage:
+ * 1. Include in HTML: <script src="js/api-config.js"></script>
+ * 2. Use: const response = await fetch(`${API_BASE}/endpoint`);
  * 
- * @version 1.0.0
- * @date 2026-01-22
+ * Architecture: Same-origin (frontend + backend on same domain)
+ * All API calls use relative /api paths.
+ * 
+ * @version 2.0.0
+ * @date 2026-03-29
  */
 
 (function () {
     'use strict';
 
-    // Detect environment based on hostname
-    const hostname = window.location.hostname;
-    const port = window.location.port;
+    // Same-origin: always use relative path
+    const API_BASE_URL = '/api';
 
-    let API_BASE_URL;
-
-    // Development environment (localhost)
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-        // Default development port
-        const apiPort = 3001;
-        API_BASE_URL = `http://${hostname}:${apiPort}/api`;
+    // Only set if not already set by config.js
+    if (!window.API_BASE) {
+        window.API_BASE = API_BASE_URL;
     }
-    // Production environment
-    else {
-        // In production, API is typically on same domain or configured separately
-        API_BASE_URL = '/api';
+    if (!window.SERVER_BASE && window.SERVER_BASE !== '') {
+        window.SERVER_BASE = '';
     }
-
-    // Export to global scope
-    window.API_BASE = API_BASE_URL;
 
     // Also export as module if needed
     if (typeof module !== 'undefined' && module.exports) {
         module.exports = { API_BASE: API_BASE_URL };
-    }
-
-    // Console log for debugging (only in development)
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-        console.log('🔧 API Configuration loaded:');
-        console.log('   API_BASE:', API_BASE_URL);
     }
 })();
 
@@ -73,7 +60,13 @@ async function apiCall(endpoint, options = {}) {
         options.body = JSON.stringify(options.body);
     }
 
-    return fetch(url, options);
+    try {
+        const response = await fetch(url, options);
+        return response;
+    } catch (err) {
+        console.error('[API] Request failed:', endpoint, err.message);
+        throw err;
+    }
 }
 
 /**

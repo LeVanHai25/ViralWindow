@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -603,7 +603,7 @@
 
     <script src="js/sidebar-enterprise.js"></script>
     <script>
-        const API_BASE = window.API_BASE || 'http://localhost:3001/api';
+        const API_BASE = window.API_BASE || '/api';
         let allRoles = [], allPermissions = [], currentRoleId = null, currentUserId = null, currentPage = 1, searchTimeout = null;
 
         function getAuthToken() { const t = sessionStorage.getItem('token'); if (!t) { window.location.href = 'login.html'; } return t; }

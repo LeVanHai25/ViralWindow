@@ -3820,8 +3820,8 @@
         </div>
 
         <script>
-            const API_BASE = window.API_BASE || 'http://localhost:3001/api';
-            const SERVER_BASE = window.SERVER_BASE || 'http://localhost:3001'; // Base URL for static files (uploads)
+            const API_BASE = window.API_BASE || '/api';
+            const SERVER_BASE = window.SERVER_BASE || ''; // Base URL for static files (uploads)
 
             // Helper function to get full image URL
             function getImageUrl(path) {
@@ -12219,7 +12219,7 @@
             function showImageModal(imageUrl) {
                 // Convert relative path to absolute URL if needed
                 if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('data:')) {
-                    imageUrl = `${window.SERVER_BASE || "http://localhost:3001"}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+                    imageUrl = `${window.SERVER_BASE || ''}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
                 }
 
                 // Create modal if not exists
@@ -12304,7 +12304,7 @@
                                 // Convert relative path to absolute URL
                                 const imageUrl = system.cross_section_image.startsWith('http')
                                     ? system.cross_section_image
-                                    : `${window.SERVER_BASE || "http://localhost:3001"}${system.cross_section_image.startsWith('/') ? '' : '/'}${system.cross_section_image}`;
+                                    : `${window.SERVER_BASE || ''}${system.cross_section_image.startsWith('/') ? '' : '/'}${system.cross_section_image}`;
                                 previewImg.src = imageUrl;
                             }
                             if (preview) preview.classList.remove('hidden');
@@ -12352,8 +12352,8 @@
                     if (previewImg && previewImg.src && !previewImg.src.includes('data:')) {
                         // Convert absolute URL back to relative path for saving
                         let imgSrc = previewImg.src;
-                        if (imgSrc.includes(window.SERVER_BASE || 'http://localhost:3001')) {
-                            imgSrc = imgSrc.replace(window.SERVER_BASE || 'http://localhost:3001', '');
+                        if (imgSrc.includes(window.SERVER_BASE || '')) {
+                            imgSrc = imgSrc.replace(window.SERVER_BASE || '', '');
                         }
                         return imgSrc;
                     }

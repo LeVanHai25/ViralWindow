@@ -11,7 +11,7 @@
 (function () {
     'use strict';
 
-    const API_BASE = window.API_BASE || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:3001/api' : window.location.origin + '/api');
+    const API_BASE = window.API_BASE || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '/api' : window.location.origin + '/api');
     let pollingInterval = null;
     let isDropdownOpen = false;
 

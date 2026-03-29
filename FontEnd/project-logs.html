@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -642,7 +642,7 @@
     <script>
         // Khai báo API_BASE một lần duy nhất
         if (typeof API_BASE === 'undefined') {
-            const API_BASE = window.API_BASE || 'http://localhost:3001/api';
+            const API_BASE = window.API_BASE || '/api';
             window.API_BASE = API_BASE; // Make it available globally
         }
 
@@ -781,7 +781,7 @@
             }
 
             try {
-                const apiBase = window.API_BASE || 'http://localhost:3001/api';
+                const apiBase = window.API_BASE || '/api';
 
                 // Lấy thông tin dự án
                 const projectResponse = await fetch(`${apiBase}/projects/${projectId}`);
@@ -1016,7 +1016,7 @@
 
         // Load financial timeline data
         async function loadFinancialTimeline(projectId) {
-            const apiBase = window.API_BASE || 'http://localhost:3001/api';
+            const apiBase = window.API_BASE || '/api';
             const token = sessionStorage.getItem('token');
 
             try {
@@ -1239,7 +1239,7 @@
                 const token = sessionStorage.getItem('token');
                 if (!token) return;
 
-                const apiBase = window.API_BASE || 'http://localhost:3001/api';
+                const apiBase = window.API_BASE || '/api';
                 const response = await fetch(`${apiBase}/auth/me`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -1290,7 +1290,7 @@
 
         async function loadCompanyLogo() {
             try {
-                const apiBase = window.API_BASE || 'http://localhost:3001/api';
+                const apiBase = window.API_BASE || '/api';
                 const response = await fetch(`${apiBase}/company-settings`);
                 const result = await response.json();
                 if (result.success && result.data) {

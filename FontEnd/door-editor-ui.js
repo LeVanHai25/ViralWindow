@@ -6,7 +6,7 @@
 class DoorEditorUI {
     constructor() {
         // API Configuration
-        this.API_BASE = window.API_BASE || 'http://localhost:3001/api';
+        this.API_BASE = window.API_BASE || '/api';
         
         // Canvas setup - use drawingCanvas as primary
         this.canvas = document.getElementById("drawingCanvas") || document.getElementById("doorCanvas");

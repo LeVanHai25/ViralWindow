@@ -1,7 +1,7 @@
 /**
  * CHAT CLIENT v4 — Enhanced with Status, Presence, Reactions, Mentions, Pin
  */
-const API_BASE = window.API_BASE || 'http://127.0.0.1:3001/api';
+const API_BASE = window.API_BASE || '/api';
 const SERVER_BASE = window.SERVER_BASE || API_BASE.replace('/api', '');
 const SOCKET_URL = SERVER_BASE;
 const REACTION_EMOJIS = ['👍','❤️','😂','😮','😢','🔥'];

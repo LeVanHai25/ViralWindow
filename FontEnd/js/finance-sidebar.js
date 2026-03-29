@@ -384,7 +384,7 @@ async function loadSidebarUserInfo() {
         const token = sessionStorage.getItem('token');
         if (!token) return;
 
-        const API_BASE = window.API_BASE || 'http://localhost:3000/api';
+        const API_BASE = window.API_BASE || '/api';
         const res = await fetch(`${API_BASE}/users/me`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -431,7 +431,7 @@ async function loadSidebarCompanyInfo() {
         const token = sessionStorage.getItem('token');
         if (!token) return;
 
-        const API_BASE = window.API_BASE || 'http://localhost:3000/api';
+        const API_BASE = window.API_BASE || '/api';
         const res = await fetch(`${API_BASE}/settings`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });

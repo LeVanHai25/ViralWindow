@@ -218,7 +218,7 @@
     </div>
 
     <script>
-        const API_BASE = window.API_BASE || (window.location.hostname === 'localhost' ? 'http://localhost:3001/api' : window.location.origin + '/api');
+        const API_BASE = window.API_BASE || (window.location.hostname === 'localhost' ? '/api' : window.location.origin + '/api');
         let currentPage = 1;
         let totalRecords = 0;
 
