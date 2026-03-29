@@ -133,15 +133,15 @@ function generateLocalReport(type, data, filters = {}) {
     const timeName = TIME_NAMES[filters.timeRange] || '';
 
     let html = `<div class="ai-report">
-        <h2>📊 Báo Cáo ${reportTitle} — ${now}</h2>
+        <h2><i data-lucide="bar-chart-2" class="w-5 h-5 inline-block text-indigo-500 mr-2 -mt-1"></i> Báo Cáo ${reportTitle} — ${now}</h2>
         <p class="ai-report-date">Được tạo tự động lúc ${new Date().toLocaleTimeString('vi-VN')} | Khoảng thời gian: ${timeName}</p>`;
 
     // Filter tags
     const filterTags = [];
-    if (filters.project_id) filterTags.push('🏗️ Lọc theo dự án');
-    if (filters.customer_id) filterTags.push('👥 Lọc theo khách hàng');
-    if (filters.branch_id) filterTags.push('🏢 Lọc theo chi nhánh');
-    if (filters.status) filterTags.push(`📊 Trạng thái: ${vn(filters.status)}`);
+    if (filters.project_id) filterTags.push('<i data-lucide="building-2" class="w-3 h-3 inline-block"></i> Lọc theo dự án');
+    if (filters.customer_id) filterTags.push('<i data-lucide="users" class="w-3 h-3 inline-block"></i> Lọc theo khách hàng');
+    if (filters.branch_id) filterTags.push('<i data-lucide="store" class="w-3 h-3 inline-block"></i> Lọc theo chi nhánh');
+    if (filters.status) filterTags.push(`<i data-lucide="activity" class="w-3 h-3 inline-block"></i> Trạng thái: ${vn(filters.status)}`);
     if (filterTags.length > 0) {
         html += `<p style="font-size:12px;color:#6366f1;">${filterTags.join(' | ')}</p>`;
     }
@@ -150,7 +150,7 @@ function generateLocalReport(type, data, filters = {}) {
     if (['overview', 'projects', 'hr'].includes(category)) {
         const projects = data.projects_updated || [];
         const stats = (data.project_stats || [])[0] || {};
-        html += `<div class="ai-report-section"><h3>📋 Dự Án (${projects.length})</h3>`;
+        html += `<div class="ai-report-section"><h3><i data-lucide="clipboard-list" class="w-4 h-4 inline-block text-indigo-500 mr-1.5 -mt-0.5"></i> Dự Án (${projects.length})</h3>`;
         if (stats.total > 0) {
             html += `<p>Tổng: <b>${stats.total}</b> | Đang triển khai: <b>${stats.active || 0}</b> | Hoàn thành: <b>${stats.completed || 0}</b> | <span style="color:${(stats.overdue || 0) > 0 ? '#dc2626' : '#16a34a'}">Quá hạn: <b>${stats.overdue || 0}</b></span> | Giá trị: <b>${Number(stats.total_value || 0).toLocaleString('vi-VN')}đ</b></p>`;
         }
@@ -170,11 +170,11 @@ function generateLocalReport(type, data, filters = {}) {
     if (['overview', 'inventory'].includes(category)) {
         const stockDocs = data.stock_documents || [];
         const stockSummary = data.stock_summary || [];
-        html += `<div class="ai-report-section"><h3>📦 Phiếu Kho (${stockDocs.length})</h3>`;
+        html += `<div class="ai-report-section"><h3><i data-lucide="package" class="w-4 h-4 inline-block text-indigo-500 mr-1.5 -mt-0.5"></i> Phiếu Kho (${stockDocs.length})</h3>`;
         if (stockSummary.length > 0) {
             html += '<p>';
             stockSummary.forEach(s => {
-                const icon = s.doc_type === 'import' ? '📥' : s.doc_type === 'export' ? '📤' : '📋';
+                const icon = s.doc_type === 'import' ? '<i data-lucide="arrow-down-to-line" class="w-3.5 h-3.5 inline-block text-green-500"></i>' : s.doc_type === 'export' ? '<i data-lucide="arrow-up-from-line" class="w-3.5 h-3.5 inline-block text-amber-500"></i>' : '<i data-lucide="file-text" class="w-3.5 h-3.5 inline-block text-gray-500"></i>';
                 html += `${icon} ${vn(s.doc_type)}: <b>${s.count}</b> phiếu (${Number(s.total_value || 0).toLocaleString('vi-VN')}đ) | `;
             });
             html += '</p>';
@@ -182,7 +182,7 @@ function generateLocalReport(type, data, filters = {}) {
         if (stockDocs.length > 0) {
             html += '<ul>';
             stockDocs.forEach(d => {
-                const icon = d.doc_type === 'import' ? '📥' : d.doc_type === 'export' ? '📤' : '📋';
+                const icon = d.doc_type === 'import' ? '<i data-lucide="arrow-down-to-line" class="w-3.5 h-3.5 inline-block text-green-500"></i>' : d.doc_type === 'export' ? '<i data-lucide="arrow-up-from-line" class="w-3.5 h-3.5 inline-block text-amber-500"></i>' : '<i data-lucide="file-text" class="w-3.5 h-3.5 inline-block text-gray-500"></i>';
                 html += `<li>${icon} ${vn(d.doc_type)} — ${d.doc_no} — ${Number(d.total_value || 0).toLocaleString('vi-VN')}đ — ${vn(d.status)}</li>`;
             });
             html += '</ul>';
@@ -194,7 +194,7 @@ function generateLocalReport(type, data, filters = {}) {
         // Low stock
         const lowStock = data.low_stock_items || [];
         if (lowStock.length > 0) {
-            html += `<div class="ai-report-section"><h3>⚠️ Vật Tư Tồn Thấp (${lowStock.length})</h3><ul>`;
+            html += `<div class="ai-report-section"><h3><i data-lucide="alert-triangle" class="w-4 h-4 inline-block text-rose-500 mr-1.5 -mt-0.5"></i> Vật Tư Tồn Thấp (${lowStock.length})</h3><ul>`;
             lowStock.forEach(item => {
                 html += `<li>${item.code} — ${item.name} — <span style="color:#dc2626">Còn ${item.qty}</span></li>`;
             });
@@ -204,7 +204,7 @@ function generateLocalReport(type, data, filters = {}) {
         // Inventory totals
         const totals = data.inventory_totals || {};
         if (totals.accessories || totals.aluminum || totals.glass) {
-            html += '<div class="ai-report-section"><h3>📊 Tồn Kho Tổng Quan</h3><ul>';
+            html += '<div class="ai-report-section"><h3><i data-lucide="bar-chart" class="w-4 h-4 inline-block text-indigo-500 mr-1.5 -mt-0.5"></i> Tồn Kho Tổng Quan</h3><ul>';
             if (totals.accessories) html += `<li>Phụ kiện: <b>${totals.accessories.total || 0}</b> mã | Tồn thấp: <span style="color:${(totals.accessories.low || 0) > 0 ? '#dc2626' : '#16a34a'}">${totals.accessories.low || 0}</span></li>`;
             if (totals.aluminum) html += `<li>Nhôm: <b>${totals.aluminum.total || 0}</b> mã | Tồn thấp: <span style="color:${(totals.aluminum.low || 0) > 0 ? '#dc2626' : '#16a34a'}">${totals.aluminum.low || 0}</span></li>`;
             if (totals.glass) html += `<li>Kính/VT khác: <b>${totals.glass.total || 0}</b> mã | Tồn thấp: <span style="color:${(totals.glass.low || 0) > 0 ? '#dc2626' : '#16a34a'}">${totals.glass.low || 0}</span></li>`;
@@ -215,19 +215,19 @@ function generateLocalReport(type, data, filters = {}) {
     // ========== FINANCE SECTION ==========
     if (['overview', 'finance'].includes(category)) {
         const fin = data.financial_summary || [];
-        html += `<div class="ai-report-section"><h3>💰 Tài Chính</h3>`;
+        html += `<div class="ai-report-section"><h3><i data-lucide="dollar-sign" class="w-4 h-4 inline-block text-indigo-500 mr-1.5 -mt-0.5"></i> Tài Chính</h3>`;
         if (fin.length > 0) {
             let totalIncome = 0, totalExpense = 0;
             html += '<ul>';
             fin.forEach(f => {
-                const icon = f.transaction_type === 'income' ? '💰' : '💸';
+                const icon = f.transaction_type === 'income' ? '<i data-lucide="trending-up" class="w-4 h-4 inline-block text-green-500 mr-1"></i>' : '<i data-lucide="trending-down" class="w-4 h-4 inline-block text-rose-500 mr-1"></i>';
                 const amount = Number(f.total || 0);
                 if (f.transaction_type === 'income') totalIncome += amount;
                 else totalExpense += amount;
                 html += `<li>${icon} ${vn(f.transaction_type)}: <b>${amount.toLocaleString('vi-VN')}đ</b> (${f.count} giao dịch)</li>`;
             });
             const profit = totalIncome - totalExpense;
-            html += `<li>📊 <b>Lãi/Lỗ: <span style="color:${profit >= 0 ? '#16a34a' : '#dc2626'}">${profit.toLocaleString('vi-VN')}đ</span></b></li>`;
+            html += `<li><i data-lucide="pie-chart" class="w-4 h-4 inline-block text-indigo-500 mr-1"></i> <b>Lãi/Lỗ: <span style="color:${profit >= 0 ? '#16a34a' : '#dc2626'}">${profit.toLocaleString('vi-VN')}đ</span></b></li>`;
             html += '</ul>';
         } else {
             html += '<p>Không có giao dịch trong kỳ này.</p>';
@@ -236,7 +236,7 @@ function generateLocalReport(type, data, filters = {}) {
         // Detail by category
         const finDetail = data.financial_detail || [];
         if (finDetail.length > 0) {
-            html += '<h3>📋 Chi Tiết Theo Danh Mục</h3><ul>';
+            html += '<h3><i data-lucide="file-text" class="w-4 h-4 inline-block text-indigo-500 mr-1.5 -mt-0.5"></i> Chi Tiết Theo Danh Mục</h3><ul>';
             finDetail.forEach(fd => {
                 html += `<li>${vn(fd.transaction_type)} > ${fd.category || 'Khác'}: <b>${Number(fd.total || 0).toLocaleString('vi-VN')}đ</b> (${fd.count})</li>`;
             });
@@ -248,7 +248,7 @@ function generateLocalReport(type, data, filters = {}) {
     // ========== CUSTOMERS SECTION ==========
     if (category === 'customers') {
         const customers = data.customers || [];
-        html += `<div class="ai-report-section"><h3>👥 Khách Hàng (${customers.length})</h3>`;
+        html += `<div class="ai-report-section"><h3><i data-lucide="users" class="w-4 h-4 inline-block text-indigo-500 mr-1.5 -mt-0.5"></i> Khách Hàng (${customers.length})</h3>`;
         if (customers.length > 0) {
             html += '<ul>';
             customers.forEach(c => {
@@ -262,7 +262,7 @@ function generateLocalReport(type, data, filters = {}) {
 
         const topCustomers = data.top_customers || [];
         if (topCustomers.length > 0) {
-            html += '<div class="ai-report-section"><h3>🏆 Top Khách Hàng</h3><ul>';
+            html += '<div class="ai-report-section"><h3><i data-lucide="award" class="w-4 h-4 inline-block text-amber-500 mr-1.5 -mt-0.5"></i> Top Khách Hàng</h3><ul>';
             topCustomers.forEach((c, i) => {
                 html += `<li><b>#${i + 1} ${c.full_name}</b> — ${c.projects} dự án — <b>${Number(c.revenue || 0).toLocaleString('vi-VN')}đ</b></li>`;
             });
@@ -273,7 +273,7 @@ function generateLocalReport(type, data, filters = {}) {
     // ========== HR SECTION ==========
     if (category === 'hr') {
         const workforce = data.workforce_summary || [];
-        html += `<div class="ai-report-section"><h3>👷 Nhân Lực Dự Án</h3>`;
+        html += `<div class="ai-report-section"><h3><i data-lucide="user-cog" class="w-4 h-4 inline-block text-indigo-500 mr-1.5 -mt-0.5"></i> Nhân Lực Dự Án</h3>`;
         if (workforce.length > 0) {
             html += '<ul>';
             workforce.forEach(w => {
@@ -287,7 +287,7 @@ function generateLocalReport(type, data, filters = {}) {
 
         const productivityData = data.productivity || [];
         if (productivityData.length > 0) {
-            html += '<div class="ai-report-section"><h3>📊 Phân Bổ Trạng Thái Dự Án</h3><ul>';
+            html += '<div class="ai-report-section"><h3><i data-lucide="bar-chart-3" class="w-4 h-4 inline-block text-indigo-500 mr-1.5 -mt-0.5"></i> Phân Bổ Trạng Thái Dự Án</h3><ul>';
             productivityData.forEach(pd => {
                 html += `<li>${vn(pd.status)}: <b>${pd.count}</b> dự án</li>`;
             });
@@ -295,7 +295,7 @@ function generateLocalReport(type, data, filters = {}) {
         }
     }
 
-    html += `<div class="ai-report-summary"><h3>💡 Ghi chú</h3><p>Báo cáo <b>${reportTitle}</b> được tạo từ dữ liệu hệ thống thực tế. Nhấn <b>✨ Tạo Báo Cáo AI</b> để cập nhật.</p></div></div>`;
+    html += `<div class="ai-report-summary"><h3><i data-lucide="lightbulb" class="w-4 h-4 inline-block text-amber-500 mr-1.5 -mt-0.5"></i> Ghi chú</h3><p>Báo cáo <b>${reportTitle}</b> được tạo từ dữ liệu hệ thống thực tế. Nhấn <b><i data-lucide="sparkles" class="w-3.5 h-3.5 inline-block -mt-0.5"></i> Tạo Báo Cáo AI</b> để cập nhật.</p></div></div>`;
     return html;
 }
 
