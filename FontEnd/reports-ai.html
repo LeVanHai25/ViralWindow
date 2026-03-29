@@ -12,6 +12,8 @@
         if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="css/sidebar-enterprise.css">
     <link rel="stylesheet" href="css/mobile-responsive.css">
     <link rel="stylesheet" href="css/notification-system.css">
@@ -62,7 +64,8 @@
         .panel-card h2 { margin:0 0 16px;font-size:15px;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:8px; }
         /* Active filters summary */
         .active-filters { display:flex;flex-wrap:wrap;gap:6px;margin-top:8px; }
-        .active-filter-tag { display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:8px;background:#eff6ff;color:#6366f1;font-size:11px;font-weight:600; }
+        .active-filter-tag { display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:8px;background:#eff6ff;color:#6366f1;font-size:12px;font-weight:600; }
+        .lucide { vertical-align: middle; }
     </style>
 </head>
 <body>
@@ -289,66 +292,68 @@
             <!-- Header -->
             <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px;flex-wrap:wrap;">
                 <div style="display:flex;align-items:center;gap:16px;">
-                    <div style="width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 4px 12px rgba(99,102,241,.2);">🤖</div>
+                    <div style="width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(99,102,241,.2); color:white;">
+                        <i data-lucide="bot" style="width:32px;height:32px;"></i>
+                    </div>
                     <div>
                         <h1 style="margin:0;font-size:24px;font-weight:800;color:#1e293b;">Báo Cáo AI Thông Minh</h1>
                         <p style="margin:0;font-size:13px;color:#94a3b8;">Chọn danh mục, bộ lọc và tạo báo cáo phân tích chuyên sâu theo ý muốn</p>
                     </div>
                 </div>
-                <div id="reportStatus" style="font-size:13px;color:#94a3b8;"></div>
+                <div id="reportStatus" style="font-size:13px;color:#94a3b8;display:flex;align-items:center;gap:4px;"></div>
             </div>
 
             <!-- 1. REPORT CATEGORY -->
             <div class="panel-card" style="animation:fadeIn .3s ease;">
-                <h2>📂 Danh mục báo cáo</h2>
+                <h2 style="display:flex;align-items:center;gap:8px;"><i data-lucide="folder-open" class="w-5 h-5 text-indigo-500"></i> Danh mục báo cáo</h2>
                 <div style="display:flex;flex-wrap:wrap;gap:10px;" id="categoryList">
                     <div class="cat-pill active" onclick="selectCategory('overview',this)">
-                        <div class="cat-icon" style="background:#dbeafe;">📊</div> Tổng quan hệ thống
+                        <div class="cat-icon" style="background:#dbeafe; color:#3b82f6;"><i data-lucide="pie-chart" class="w-5 h-5"></i></div> Tổng quan hệ thống
                     </div>
                     <div class="cat-pill" onclick="selectCategory('projects',this)">
-                        <div class="cat-icon" style="background:#fef3c7;">🏗️</div> Dự án & Tiến độ
+                        <div class="cat-icon" style="background:#fef3c7; color:#f59e0b;"><i data-lucide="building-2" class="w-5 h-5"></i></div> Dự án & Tiến độ
                     </div>
                     <div class="cat-pill" onclick="selectCategory('finance',this)">
-                        <div class="cat-icon" style="background:#dcfce7;">💰</div> Tài chính & Doanh thu
+                        <div class="cat-icon" style="background:#dcfce7; color:#10b981;"><i data-lucide="dollar-sign" class="w-5 h-5"></i></div> Tài chính & Doanh thu
                     </div>
                     <div class="cat-pill" onclick="selectCategory('inventory',this)">
-                        <div class="cat-icon" style="background:#fce7f3;">📦</div> Kho & Vật tư
+                        <div class="cat-icon" style="background:#fce7f3; color:#ec4899;"><i data-lucide="package" class="w-5 h-5"></i></div> Kho & Vật tư
                     </div>
                     <div class="cat-pill" onclick="selectCategory('customers',this)">
-                        <div class="cat-icon" style="background:#e0e7ff;">👥</div> Khách hàng
+                        <div class="cat-icon" style="background:#e0e7ff; color:#6366f1;"><i data-lucide="users" class="w-5 h-5"></i></div> Khách hàng
                     </div>
                     <div class="cat-pill" onclick="selectCategory('hr',this)">
-                        <div class="cat-icon" style="background:#fef9c3;">👷</div> Nhân sự & Năng suất
+                        <div class="cat-icon" style="background:#fef9c3; color:#eab308;"><i data-lucide="user-cog" class="w-5 h-5"></i></div> Nhân sự & Năng suất
                     </div>
                 </div>
             </div>
 
             <!-- 2. TIME RANGE -->
             <div class="panel-card" style="animation:fadeIn .3s ease .1s both;">
-                <h2>📅 Khoảng thời gian</h2>
+                <h2 style="display:flex;align-items:center;gap:8px;"><i data-lucide="calendar" class="w-5 h-5 text-indigo-500"></i> Khoảng thời gian</h2>
                 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
                     <div class="time-card" onclick="selectTimeRange('today',this)">
-                        <div class="tc-icon">📋</div>
-                        <div class="tc-label">Hôm nay</div>
+                        <div class="tc-icon text-indigo-500"><i data-lucide="calendar-check" class="w-6 h-6 mx-auto"></i></div>
+                        <div class="tc-label mt-2">Hôm nay</div>
                     </div>
                     <div class="time-card active" onclick="selectTimeRange('week',this)">
-                        <div class="tc-icon">📊</div>
-                        <div class="tc-label">7 ngày</div>
+                        <div class="tc-icon text-indigo-500"><i data-lucide="bar-chart-2" class="w-6 h-6 mx-auto"></i></div>
+                        <div class="tc-label mt-2">7 ngày</div>
                         <div class="tc-desc">Tuần này</div>
                     </div>
                     <div class="time-card" onclick="selectTimeRange('month',this)">
-                        <div class="tc-icon">📈</div>
-                        <div class="tc-label">30 ngày</div>
+                        <div class="tc-icon text-indigo-500"><i data-lucide="trending-up" class="w-6 h-6 mx-auto"></i></div>
+                        <div class="tc-label mt-2">30 ngày</div>
                         <div class="tc-desc">Tháng này</div>
                     </div>
                     <div class="time-card" onclick="selectTimeRange('quarter',this)">
-                        <div class="tc-icon">📉</div>
-                        <div class="tc-label">Quý</div>
+                        <div class="tc-icon text-indigo-500"><i data-lucide="calendar-days" class="w-6 h-6 mx-auto"></i></div>
+                        <div class="tc-label mt-2">Quý</div>
                         <div class="tc-desc">3 tháng</div>
                     </div>
                     <div class="time-card" onclick="selectTimeRange('custom',this)">
-                        <div class="tc-icon">🔧</div>
-                        <div class="tc-label">Tuỳ chọn</div>
+                        <div class="tc-icon text-indigo-500"><i data-lucide="settings-2" class="w-6 h-6 mx-auto"></i></div>
+                        <div class="tc-label mt-2">Tuỳ chọn</div>
                         <div class="tc-desc">Chọn ngày</div>
                     </div>
                 </div>
@@ -367,22 +372,22 @@
 
             <!-- 3. ADVANCED FILTERS -->
             <div class="panel-card" style="animation:fadeIn .3s ease .2s both;">
-                <h2>🔍 Bộ lọc nâng cao <span style="font-size:11px;color:#94a3b8;font-weight:400;margin-left:8px;">(tuỳ chọn — để trống sẽ báo cáo toàn hệ thống)</span></h2>
+                <h2 style="display:flex;align-items:center;gap:8px;"><i data-lucide="filter" class="w-5 h-5 text-indigo-500"></i> Bộ lọc nâng cao <span style="font-size:11px;color:#94a3b8;font-weight:400;margin-left:8px;">(tuỳ chọn — để trống sẽ báo cáo toàn hệ thống)</span></h2>
                 <div class="filter-row">
                     <div class="filter-group">
-                        <label>🏗️ Dự án</label>
+                        <label class="flex items-center gap-1.5"><i data-lucide="building-2" class="w-3.5 h-3.5 text-amber-500"></i> Dự án</label>
                         <select id="filterProject">
                             <option value="">Tất cả dự án</option>
                         </select>
                     </div>
                     <div class="filter-group">
-                        <label>👥 Khách hàng</label>
+                        <label class="flex items-center gap-1.5"><i data-lucide="users" class="w-3.5 h-3.5 text-indigo-500"></i> Khách hàng</label>
                         <select id="filterCustomer">
                             <option value="">Tất cả khách hàng</option>
                         </select>
                     </div>
                     <div class="filter-group">
-                        <label>🏢 Chi nhánh</label>
+                        <label class="flex items-center gap-1.5"><i data-lucide="store" class="w-3.5 h-3.5 text-emerald-500"></i> Chi nhánh</label>
                         <select id="filterBranch">
                             <option value="">Tất cả chi nhánh</option>
                         </select>
@@ -390,7 +395,7 @@
                 </div>
                 <div class="filter-row">
                     <div class="filter-group">
-                        <label>📊 Trạng thái dự án</label>
+                        <label class="flex items-center gap-1.5"><i data-lucide="activity" class="w-3.5 h-3.5 text-blue-500"></i> Trạng thái dự án</label>
                         <select id="filterStatus">
                             <option value="">Tất cả</option>
                             <option value="pending">Chờ xử lý</option>
@@ -400,7 +405,7 @@
                         </select>
                     </div>
                     <div class="filter-group">
-                        <label>📋 Định dạng báo cáo</label>
+                        <label class="flex items-center gap-1.5"><i data-lucide="file-text" class="w-3.5 h-3.5 text-purple-500"></i> Định dạng báo cáo</label>
                         <select id="filterFormat">
                             <option value="detailed">Chi tiết (đầy đủ)</option>
                             <option value="summary">Tóm tắt ngắn gọn</option>
@@ -409,7 +414,7 @@
                     </div>
                     <div class="filter-group" style="justify-content:flex-end;">
                         <label>&nbsp;</label>
-                        <button type="button" onclick="resetFilters()" style="padding:10px 16px;border:1.5px solid #e2e8f0;border-radius:10px;background:white;color:#64748b;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='#fca5a5';this.style.color='#ef4444'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'">🗑️ Xóa bộ lọc</button>
+                        <button type="button" onclick="resetFilters()" style="padding:10px 16px;border:1.5px solid #e2e8f0;border-radius:10px;background:white;color:#64748b;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;justify-content:center;" onmouseover="this.style.borderColor='#fca5a5';this.style.color='#ef4444'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'"><i data-lucide="trash-2" class="w-4 h-4"></i> Xóa bộ lọc</button>
                     </div>
                 </div>
             </div>
@@ -460,8 +465,8 @@
 
             <!-- Raw Data (collapsible) -->
             <div style="margin-top:24px;" id="rawDataSection" class="hidden">
-                <div class="raw-data-toggle" onclick="document.getElementById('rawDataContent').classList.toggle('hidden')">
-                    📋 Xem dữ liệu gốc ▼
+                <div class="raw-data-toggle flex items-center gap-1.5" onclick="document.getElementById('rawDataContent').classList.toggle('hidden')">
+                    <i data-lucide="database" class="w-4 h-4"></i> Xem dữ liệu gốc ▼
                 </div>
                 <pre id="rawDataContent" class="hidden" style="margin-top:8px;padding:16px;background:#f1f5f9;border-radius:12px;font-size:12px;overflow-x:auto;max-height:400px;overflow-y:auto;"></pre>
             </div>
@@ -522,17 +527,18 @@
 
         function updateActiveFilters() {
             const tags = [];
-            tags.push(`<span class="active-filter-tag">📂 ${CATEGORY_MAP[selectedCategory]}</span>`);
-            tags.push(`<span class="active-filter-tag">📅 ${TIME_MAP[selectedTimeRange]}</span>`);
+            tags.push(`<span class="active-filter-tag"><i data-lucide="folder-open" class="w-3.5 h-3.5"></i> ${CATEGORY_MAP[selectedCategory]}</span>`);
+            tags.push(`<span class="active-filter-tag"><i data-lucide="calendar" class="w-3.5 h-3.5"></i> ${TIME_MAP[selectedTimeRange]}</span>`);
             const project = document.getElementById('filterProject');
             const customer = document.getElementById('filterCustomer');
             const branch = document.getElementById('filterBranch');
             const status = document.getElementById('filterStatus');
-            if (project && project.value) tags.push(`<span class="active-filter-tag">🏗️ ${project.options[project.selectedIndex].text}</span>`);
-            if (customer && customer.value) tags.push(`<span class="active-filter-tag">👥 ${customer.options[customer.selectedIndex].text}</span>`);
-            if (branch && branch.value) tags.push(`<span class="active-filter-tag">🏢 ${branch.options[branch.selectedIndex].text}</span>`);
-            if (status && status.value) tags.push(`<span class="active-filter-tag">📊 ${status.options[status.selectedIndex].text}</span>`);
+            if (project && project.value) tags.push(`<span class="active-filter-tag"><i data-lucide="building-2" class="w-3.5 h-3.5"></i> ${project.options[project.selectedIndex].text}</span>`);
+            if (customer && customer.value) tags.push(`<span class="active-filter-tag"><i data-lucide="users" class="w-3.5 h-3.5"></i> ${customer.options[customer.selectedIndex].text}</span>`);
+            if (branch && branch.value) tags.push(`<span class="active-filter-tag"><i data-lucide="store" class="w-3.5 h-3.5"></i> ${branch.options[branch.selectedIndex].text}</span>`);
+            if (status && status.value) tags.push(`<span class="active-filter-tag"><i data-lucide="activity" class="w-3.5 h-3.5"></i> ${status.options[status.selectedIndex].text}</span>`);
             document.getElementById('activeFilters').innerHTML = tags.join('');
+            if (window.lucide) lucide.createIcons();
         }
 
         async function loadFilterData() {
@@ -595,7 +601,8 @@
             const btn = document.getElementById('btnGenerate');
 
             btn.disabled = true;
-            status.textContent = '⏳ AI đang phân tích dữ liệu...';
+            status.innerHTML = '<i data-lucide="hourglass" class="w-4 h-4 animate-pulse"></i> AI đang phân tích dữ liệu...';
+            if (window.lucide) lucide.createIcons();
 
             // Build active filter summary for display
             const filterSummary = [];
@@ -605,7 +612,7 @@
             output.innerHTML = `
                 <div style="text-align:center;padding:60px 0;color:#94a3b8;">
                     <div class="loading-spinner"></div>
-                    <p style="margin-top:16px;font-size:14px;font-weight:600;color:#6366f1;">🤖 AI đang thu thập và phân tích dữ liệu...</p>
+                    <p style="margin-top:16px;font-size:14px;font-weight:600;color:#6366f1;display:flex;align-items:center;justify-content:center;gap:6px;"><i data-lucide="bot" class="w-5 h-5"></i> AI đang thu thập và phân tích dữ liệu...</p>
                     <p style="font-size:12px;">${filterSummary.join(' · ')}</p>
                     <p style="font-size:11px;color:#cbd5e1;">Có thể mất 10-30 giây tuỳ thuộc lượng dữ liệu</p>
                 </div>
@@ -637,7 +644,7 @@
 
                 if (result.success && result.data) {
                     output.innerHTML = `<div class="ai-report" style="animation:fadeIn .3s ease;">${result.data.report}</div>`;
-                    status.innerHTML = `✅ Báo cáo tạo lúc <strong>${new Date(result.data.generated_at).toLocaleString('vi-VN')}</strong>`;
+                    status.innerHTML = `<i data-lucide="check-circle-2" class="w-4 h-4 text-green-500"></i> Báo cáo lúc <strong>${new Date(result.data.generated_at).toLocaleString('vi-VN')}</strong>`;
 
                     // Show export/print buttons
                     document.getElementById('btnExport').style.display = 'inline-flex';
@@ -649,24 +656,26 @@
                     }
                 } else {
                     output.innerHTML = `<div style="text-align:center;padding:40px;color:#ef4444;">
-                        <div style="font-size:40px;margin-bottom:12px;">⚠️</div>
+                        <div style="margin-bottom:12px;display:flex;justify-content:center;"><i data-lucide="alert-triangle" class="w-12 h-12 text-red-500"></i></div>
                         <h3 style="margin:0 0 8px;font-size:16px;">Không thể tạo báo cáo</h3>
                         <p style="font-size:13px;">${result.message || 'Lỗi không xác định'}</p>
-                        <button type="button" onclick="generateReport()" style="margin-top:16px;padding:10px 20px;border-radius:10px;border:1.5px solid #6366f1;background:white;color:#6366f1;font-weight:600;cursor:pointer;">🔄 Thử lại</button>
+                        <button type="button" onclick="generateReport()" style="margin-top:16px;padding:10px 20px;border-radius:10px;border:1.5px solid #6366f1;background:white;color:#6366f1;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;"><i data-lucide="refresh-cw" class="w-4 h-4"></i> Thử lại</button>
                     </div>`;
-                    status.textContent = '❌ Lỗi';
+                    status.innerHTML = '<i data-lucide="x-circle" class="w-4 h-4 text-red-500"></i> Lỗi';
                 }
             } catch (error) {
                 output.innerHTML = `<div style="text-align:center;padding:40px;color:#ef4444;">
-                    <div style="font-size:40px;margin-bottom:12px;">🔌</div>
+                    <div style="margin-bottom:12px;display:flex;justify-content:center;"><i data-lucide="wifi-off" class="w-12 h-12 text-rose-500"></i></div>
                     <h3 style="margin:0 0 8px;font-size:16px;">Không thể kết nối máy chủ AI</h3>
                     <p style="font-size:13px;">${error.message}</p>
-                    <button type="button" onclick="generateReport()" style="margin-top:16px;padding:10px 20px;border-radius:10px;border:1.5px solid #6366f1;background:white;color:#6366f1;font-weight:600;cursor:pointer;">🔄 Thử lại</button>
+                    <button type="button" onclick="generateReport()" style="margin-top:16px;padding:10px 20px;border-radius:10px;border:1.5px solid #6366f1;background:white;color:#6366f1;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;"><i data-lucide="refresh-cw" class="w-4 h-4"></i> Thử lại</button>
                 </div>`;
-                status.textContent = '❌ Lỗi kết nối';
+                status.innerHTML = '<i data-lucide="wifi-off" class="w-4 h-4 text-rose-500"></i> Lỗi kết nối';
             }
 
             btn.disabled = false;
+            // Scan for any new icons injected
+            if (window.lucide) lucide.createIcons();
         }
 
         function exportReport() {
@@ -694,6 +703,8 @@
             checkAuth();
             loadFilterData();
             updateActiveFilters();
+            // Init Lucide icons
+            if (window.lucide) lucide.createIcons();
 
             // Set today's date as default for custom range
             const today = new Date().toISOString().split('T')[0];

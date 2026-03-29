@@ -73,7 +73,7 @@
                 width: 40px; height: 40px; border-radius: 12px;
                 background: rgba(255,255,255,0.2);
                 display: flex; align-items: center; justify-content: center;
-                font-size: 22px;
+                color: white;
             }
             .ai-chat-title { flex: 1; }
             .ai-chat-title h3 { margin: 0; font-size: 15px; font-weight: 700; }
@@ -194,7 +194,7 @@
         win.id = 'ai-chat-window';
         win.innerHTML = `
             <div class="ai-chat-header">
-                <div class="ai-chat-avatar">🤖</div>
+                <div class="ai-chat-avatar"><i data-lucide="bot" style="width:24px;height:24px;"></i></div>
                 <div class="ai-chat-title">
                     <h3>AI Trợ lý ViralWindow</h3>
                     <span>Hỏi bất kỳ điều gì về hệ thống</span>
@@ -203,22 +203,22 @@
             </div>
             <div class="ai-chat-messages" id="ai-chat-messages">
                 <div class="ai-msg bot">
-                    👋 <b>Xin chào!</b> Tôi là AI Trợ lý ViralWindow.<br>
+                    <i data-lucide="hand" style="display:inline;width:16px;height:16px;vertical-align:middle;color:#f59e0b;"></i> <b>Xin chào!</b> Tôi là AI Trợ lý ViralWindow.<br>
                     Tôi có thể giúp bạn:
                     <ul>
-                        <li>📦 Tra cứu tồn kho, vật tư</li>
-                        <li>📊 Phân tích dự án, tài chính</li>
-                        <li>📝 Hướng dẫn thao tác hệ thống</li>
-                        <li>🔍 Tìm kiếm thông tin nhanh</li>
+                        <li><i data-lucide="package" style="display:inline;width:13px;height:13px;vertical-align:middle;color:#ec4899;margin-right:4px;"></i> Tra cứu tồn kho, vật tư</li>
+                        <li><i data-lucide="bar-chart-2" style="display:inline;width:13px;height:13px;vertical-align:middle;color:#3b82f6;margin-right:4px;"></i> Phân tích dự án, tài chính</li>
+                        <li><i data-lucide="book-open" style="display:inline;width:13px;height:13px;vertical-align:middle;color:#10b981;margin-right:4px;"></i> Hướng dẫn thao tác hệ thống</li>
+                        <li><i data-lucide="search" style="display:inline;width:13px;height:13px;vertical-align:middle;color:#6366f1;margin-right:4px;"></i> Tìm kiếm thông tin nhanh</li>
                     </ul>
-                    Hãy hỏi tôi bất cứ điều gì! 😊
+                    Hãy hỏi tôi bất cứ điều gì! <i data-lucide="smile" style="display:inline;width:16px;height:16px;vertical-align:middle;color:#eab308;"></i>
                 </div>
             </div>
             <div class="ai-quick-actions">
-                <button class="ai-quick-btn" onclick="window._aiSendQuick('Tình hình tồn kho hiện tại?')">📦 Tồn kho</button>
-                <button class="ai-quick-btn" onclick="window._aiSendQuick('Dự án nào đang chậm tiến độ?')">📊 Tiến độ DA</button>
-                <button class="ai-quick-btn" onclick="window._aiSendQuick('Tổng hợp tài chính tháng này?')">💰 Tài chính</button>
-                <button class="ai-quick-btn" onclick="window._aiSendQuick('Hướng dẫn tạo phiếu xuất kho')">❓ Hướng dẫn</button>
+                <button class="ai-quick-btn" style="display:flex;align-items:center;gap:4px;" onclick="window._aiSendQuick('Tình hình tồn kho hiện tại?')"><i data-lucide="package" style="width:13px;height:13px;"></i> Tồn kho</button>
+                <button class="ai-quick-btn" style="display:flex;align-items:center;gap:4px;" onclick="window._aiSendQuick('Dự án nào đang chậm tiến độ?')"><i data-lucide="bar-chart-2" style="width:13px;height:13px;"></i> Tiến độ DA</button>
+                <button class="ai-quick-btn" style="display:flex;align-items:center;gap:4px;" onclick="window._aiSendQuick('Tổng hợp tài chính tháng này?')"><i data-lucide="dollar-sign" style="width:13px;height:13px;"></i> Tài chính</button>
+                <button class="ai-quick-btn" style="display:flex;align-items:center;gap:4px;" onclick="window._aiSendQuick('Hướng dẫn tạo phiếu xuất kho')"><i data-lucide="help-circle" style="width:13px;height:13px;"></i> Hướng dẫn</button>
             </div>
             <div class="ai-chat-input-area">
                 <input type="text" class="ai-chat-input" id="ai-chat-input" 
@@ -237,6 +237,16 @@
                 window._aiSendMessage();
             }
         });
+
+        // Inject Lucide script if missing
+        if (!window.lucide && !document.querySelector('script[src*="lucide"]')) {
+            const script = document.createElement('script');
+            script.src = "https://unpkg.com/lucide@latest";
+            script.onload = () => lucide.createIcons();
+            document.head.appendChild(script);
+        } else if (window.lucide) {
+            setTimeout(() => lucide.createIcons(), 50);
+        }
     }
 
     // =====================================================
@@ -292,11 +302,11 @@
                 addMessage(result.data.reply, 'bot');
                 chatHistory.push({ role: 'assistant', content: result.data.reply });
             } else {
-                addMessage('❌ ' + (result.message || 'Lỗi kết nối AI'), 'bot');
+                addMessage('<i data-lucide="alert-triangle" style="display:inline;width:15px;height:15px;color:#ef4444;vertical-align:middle;margin-right:4px;"></i> ' + (result.message || 'Lỗi kết nối AI'), 'bot');
             }
         } catch (error) {
             hideTyping();
-            addMessage('❌ Không thể kết nối đến AI server. Vui lòng thử lại.', 'bot');
+            addMessage('<i data-lucide="wifi-off" style="display:inline;width:15px;height:15px;color:#ef4444;vertical-align:middle;margin-right:4px;"></i> Không thể kết nối đến AI server. Vui lòng thử lại.', 'bot');
         }
 
         isTyping = false;
@@ -316,6 +326,9 @@
         div.className = `ai-msg ${type}`;
         if (type === 'bot') {
             div.innerHTML = content;
+            if (window.lucide) {
+                setTimeout(() => lucide.createIcons({ root: div }), 10);
+            }
         } else {
             div.textContent = content;
         }

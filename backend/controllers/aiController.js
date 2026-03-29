@@ -51,54 +51,67 @@ function generateLocalInsights(context) {
     const q = context.quotations || {};
     const mr = context.material_requests || {};
 
+    // Icon helpers (Lucide SVG inline — không phụ thuộc emoji)
+    const ICON = {
+        project:   `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:5px;color:#6366f1;"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>`,
+        building:  `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:5px;color:#f59e0b;"><path d="M6 22V4a2 2 0 012-2h8a2 2 0 012 2v18"/><path d="M6 12H4a2 2 0 00-2 2v6a2 2 0 002 2h2"/><path d="M18 9h2a2 2 0 012 2v9a2 2 0 01-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>`,
+        warning:   `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:5px;color:#ef4444;"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+        check:     `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:5px;color:#16a34a;"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+        package:   `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:5px;color:#ec4899;"><path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 002 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`,
+        file:      `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:5px;color:#6366f1;"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
+        money:     `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:5px;color:#10b981;"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>`,
+        quote:     `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:5px;color:#8b5cf6;"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`,
+        clock:     `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:5px;color:#f59e0b;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+    };
+
     // Dự án
     if (p.active > 0 || p.overdue > 0) {
-        items.push(`<div class="ai-insight-item"><span class="ai-icon">📋</span><span class="ai-text"><b>Dự án:</b> ${p.active || 0} đang triển khai, ${p.completed || 0} hoàn thành, <span style="color:${p.overdue > 0 ? '#dc2626' : '#16a34a'}">${p.overdue || 0} quá hạn</span></span></div>`);
+        items.push(`<div class="ai-insight-item"><span class="ai-icon">${ICON.project}</span><span class="ai-text"><b>Dự án:</b> ${p.active || 0} đang triển khai, ${p.completed || 0} hoàn thành, <span style="color:${p.overdue > 0 ? '#dc2626' : '#16a34a'}">${p.overdue || 0} quá hạn</span></span></div>`);
     }
 
     // Dự án gần đây
     const recent = context.recent_projects || [];
     if (recent.length > 0) {
         const names = recent.slice(0, 3).map(r => r.project_name).join(', ');
-        items.push(`<div class="ai-insight-item"><span class="ai-icon">🏗️</span><span class="ai-text"><b>DA mới nhất:</b> ${names}</span></div>`);
+        items.push(`<div class="ai-insight-item"><span class="ai-icon">${ICON.building}</span><span class="ai-text"><b>DA mới nhất:</b> ${names}</span></div>`);
     }
 
     // Kho - cảnh báo
     const totalLow = Number(acc.low_stock || 0) + Number(alu.low_stock || 0) + Number(inv.low_stock || 0);
     if (totalLow > 0) {
-        items.push(`<div class="ai-insight-item"><span class="ai-icon">⚠️</span><span class="ai-text"><b>Cảnh báo kho:</b> <span style="color:#dc2626">${totalLow} vật tư sắp hết</span> (PK: ${acc.low_stock || 0}, Nhôm: ${alu.low_stock || 0}, Kính: ${inv.low_stock || 0})</span></div>`);
+        items.push(`<div class="ai-insight-item"><span class="ai-icon">${ICON.warning}</span><span class="ai-text"><b>Cảnh báo kho:</b> <span style="color:#dc2626">${totalLow} vật tư sắp hết</span> (PK: ${acc.low_stock || 0}, Nhôm: ${alu.low_stock || 0}, Kính: ${inv.low_stock || 0})</span></div>`);
     } else {
-        items.push(`<div class="ai-insight-item"><span class="ai-icon">✅</span><span class="ai-text"><b>Kho hàng:</b> Tất cả vật tư đều đủ số lượng tối thiểu</span></div>`);
+        items.push(`<div class="ai-insight-item"><span class="ai-icon">${ICON.check}</span><span class="ai-text"><b>Kho hàng:</b> Tất cả vật tư đều đủ số lượng tối thiểu</span></div>`);
     }
 
     // Tổng kho
-    items.push(`<div class="ai-insight-item"><span class="ai-icon">📦</span><span class="ai-text"><b>Tổng kho:</b> ${acc.total_items || 0} phụ kiện, ${alu.total_items || 0} nhôm, ${inv.total_items || 0} kính/vật tư khác</span></div>`);
+    items.push(`<div class="ai-insight-item"><span class="ai-icon">${ICON.package}</span><span class="ai-text"><b>Tổng kho:</b> ${acc.total_items || 0} phụ kiện, ${alu.total_items || 0} nhôm, ${inv.total_items || 0} kính/vật tư khác</span></div>`);
 
     // Phiếu kho 7 ngày
     const docs = context.stock_docs_7days || [];
     if (docs.length > 0) {
         const docInfo = docs.map(d => `${d.doc_type === 'import' ? 'Nhập' : d.doc_type === 'export' ? 'Xuất' : d.doc_type}: ${d.count} phiếu (${Number(d.total_value || 0).toLocaleString('vi-VN')}đ)`).join(', ');
-        items.push(`<div class="ai-insight-item"><span class="ai-icon">📝</span><span class="ai-text"><b>Kho 7 ngày:</b> ${docInfo}</span></div>`);
+        items.push(`<div class="ai-insight-item"><span class="ai-icon">${ICON.file}</span><span class="ai-text"><b>Kho 7 ngày:</b> ${docInfo}</span></div>`);
     }
 
     // Tài chính
     const fin = context.financial_30days || [];
     if (fin.length > 0) {
         const finInfo = fin.map(f => {
-            const icon = f.transaction_type === 'income' ? '💰' : '💸';
-            return `${icon} ${vn(f.transaction_type)}: ${Number(f.total || 0).toLocaleString('vi-VN')}đ (${f.count} giao dịch)`;
+            const typeLabel = f.transaction_type === 'income' ? 'Thu' : 'Chi';
+            return `${typeLabel}: ${Number(f.total || 0).toLocaleString('vi-VN')}đ (${f.count} giao dịch)`;
         }).join(' | ');
-        items.push(`<div class="ai-insight-item"><span class="ai-icon">💰</span><span class="ai-text"><b>Tài chính 30 ngày:</b> ${finInfo}</span></div>`);
+        items.push(`<div class="ai-insight-item"><span class="ai-icon">${ICON.money}</span><span class="ai-text"><b>Tài chính 30 ngày:</b> ${finInfo}</span></div>`);
     }
 
     // Báo giá
     if (q.total > 0) {
-        items.push(`<div class="ai-insight-item"><span class="ai-icon">📄</span><span class="ai-text"><b>Báo giá:</b> ${q.total} tổng, ${q.pending || 0} chờ duyệt, ${q.approved || 0} đã duyệt (${Number(q.approved_value || 0).toLocaleString('vi-VN')}đ)</span></div>`);
+        items.push(`<div class="ai-insight-item"><span class="ai-icon">${ICON.quote}</span><span class="ai-text"><b>Báo giá:</b> ${q.total} tổng, ${q.pending || 0} chờ duyệt, ${q.approved || 0} đã duyệt (${Number(q.approved_value || 0).toLocaleString('vi-VN')}đ)</span></div>`);
     }
 
     // Yêu cầu VT
     if (mr.pending > 0) {
-        items.push(`<div class="ai-insight-item"><span class="ai-icon">📋</span><span class="ai-text"><b>Yêu cầu vật tư:</b> <span style="color:#f59e0b">${mr.pending} đang chờ xử lý</span></span></div>`);
+        items.push(`<div class="ai-insight-item"><span class="ai-icon">${ICON.clock}</span><span class="ai-text"><b>Yêu cầu vật tư:</b> <span style="color:#f59e0b">${mr.pending} đang chờ xử lý</span></span></div>`);
     }
 
     return items.join('\n');

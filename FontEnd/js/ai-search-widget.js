@@ -93,7 +93,8 @@
             .ai-search-item-icon {
                 width: 32px; height: 32px; border-radius: 8px;
                 background: #eff6ff; display: flex; align-items: center;
-                justify-content: center; font-size: 16px; flex-shrink: 0;
+                justify-content: center; flex-shrink: 0;
+                color: #6366f1;
             }
             .ai-search-item-text { flex: 1; }
             .ai-search-item-title { font-weight: 600; color: #1e293b; }
@@ -148,16 +149,26 @@
                 </div>
                 <div class="ai-search-results" id="ai-search-results">
                     <div class="ai-search-empty">
-                        🔍 Nhập câu hỏi rồi nhấn Enter để AI tìm kiếm<br>
+                        <i data-lucide="search" style="display:inline;width:16px;height:16px;vertical-align:middle;margin-right:6px;color:#94a3b8;"></i> Nhập câu hỏi rồi nhấn Enter để AI tìm kiếm<br>
                         <span style="font-size:12px;color:#b0bec5">Ví dụ: "dự án overdue", "tồn kho nhôm VRA-55", "chi phí tháng 3"</span>
                     </div>
                 </div>
                 <div class="ai-search-footer">
-                    <span>🤖 Powered by AI ViralWindow</span>
+                    <span style="display:flex;align-items:center;gap:6px;"><i data-lucide="bot" style="width:14px;height:14px;color:#6366f1;"></i> Powered by AI ViralWindow</span>
                     <span><b>Ctrl+K</b> để mở/đóng</span>
                 </div>
             </div>
         `;
+
+        // Inject Lucide script if missing
+        if (!window.lucide && !document.querySelector('script[src*="lucide"]')) {
+            const script = document.createElement('script');
+            script.src = "https://unpkg.com/lucide@latest";
+            script.onload = () => lucide.createIcons();
+            document.head.appendChild(script);
+        } else if (window.lucide) {
+            setTimeout(() => lucide.createIcons(), 50);
+        }
 
         // Close on click outside
         overlay.addEventListener('click', function(e) {
@@ -214,9 +225,10 @@
         resultsDiv.innerHTML = `
             <div class="ai-search-loading">
                 <div class="spinner"></div><br>
-                🤖 AI đang phân tích câu hỏi...
+                <i data-lucide="bot" style="display:inline;width:16px;height:16px;vertical-align:middle;margin-right:4px;color:#6366f1;"></i> AI đang phân tích câu hỏi...
             </div>
         `;
+        if (window.lucide) lucide.createIcons({ root: resultsDiv });
 
         try {
             const token = sessionStorage.getItem('token');
@@ -234,10 +246,12 @@
             if (result.success) {
                 displayResults(result.data);
             } else {
-                resultsDiv.innerHTML = `<div class="ai-search-empty">❌ ${result.message}</div>`;
+                resultsDiv.innerHTML = `<div class="ai-search-empty"><i data-lucide="alert-triangle" style="display:inline;width:16px;height:16px;vertical-align:middle;margin-right:6px;color:#ef4444;"></i> ${result.message}</div>`;
+                if (window.lucide) lucide.createIcons({ root: resultsDiv });
             }
         } catch (error) {
-            resultsDiv.innerHTML = `<div class="ai-search-empty">❌ Không thể kết nối AI server</div>`;
+            resultsDiv.innerHTML = `<div class="ai-search-empty"><i data-lucide="wifi-off" style="display:inline;width:16px;height:16px;vertical-align:middle;margin-right:6px;color:#ef4444;"></i> Không thể kết nối AI server</div>`;
+            if (window.lucide) lucide.createIcons({ root: resultsDiv });
         }
     }
 
@@ -245,9 +259,9 @@
     // DISPLAY RESULTS
     // =====================================================
     const TABLE_ICONS = {
-        projects: '📋', stock_documents: '📦', financial_transactions: '💰',
-        inventory: '🏪', accessories: '🔩', aluminum_systems: '🏗️',
-        customers: '👤', quotations: '📄', material_requests: '📝'
+        projects: 'clipboard-list', stock_documents: 'package', financial_transactions: 'dollar-sign',
+        inventory: 'store', accessories: 'settings', aluminum_systems: 'building-2',
+        customers: 'user', quotations: 'file-text', material_requests: 'file-signature'
     };
 
     const TABLE_NAMES = {
@@ -270,8 +284,9 @@
             for (const group of data.results) {
                 if (!group.data || group.data.length === 0) continue;
 
+                let iconName = TABLE_ICONS[group.table] || 'pin';
                 html += `<div class="ai-search-group">`;
-                html += `<div class="ai-search-group-title">${TABLE_ICONS[group.table] || '📌'} ${TABLE_NAMES[group.table] || group.table} (${group.count})</div>`;
+                html += `<div class="ai-search-group-title"><i data-lucide="${iconName}" style="display:inline;width:12px;height:12px;vertical-align:middle;margin-right:4px;"></i> ${TABLE_NAMES[group.table] || group.table} (${group.count})</div>`;
 
                 for (const item of group.data.slice(0, 5)) {
                     const title = item.project_name || item.name || item.doc_no || item.item_name || item.customer_name || item.order_code || 'N/A';
@@ -280,7 +295,7 @@
                     
                     html += `
                         <div class="ai-search-item">
-                            <div class="ai-search-item-icon">${TABLE_ICONS[group.table] || '📌'}</div>
+                            <div class="ai-search-item-icon"><i data-lucide="${iconName}" style="width:16px;height:16px;color:#6366f1;"></i></div>
                             <div class="ai-search-item-text">
                                 <div class="ai-search-item-title">${title}${extra}</div>
                                 <div class="ai-search-item-sub">${sub}</div>
@@ -293,10 +308,11 @@
         }
 
         if (!html) {
-            html = `<div class="ai-search-empty">Không tìm thấy kết quả phù hợp</div>`;
+            html = `<div class="ai-search-empty"><i data-lucide="search-x" style="display:inline;width:16px;height:16px;vertical-align:middle;margin-right:6px;color:#94a3b8;"></i> Không tìm thấy kết quả phù hợp</div>`;
         }
 
         resultsDiv.innerHTML = html;
+        if (window.lucide) lucide.createIcons({ root: resultsDiv });
     }
 
     // =====================================================
