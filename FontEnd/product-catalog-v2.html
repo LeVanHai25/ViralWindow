@@ -789,6 +789,10 @@
             <div class="toolbar">
                 <input type="text" class="search-input" id="searchProducts"
                     placeholder=" 🔍︎ Tìm theo mã, tên sản phẩm..." oninput="filterProducts()">
+                <select class="filter-select" id="filterProductGroup" onchange="filterProducts()" 
+                    style="min-width:200px;background:linear-gradient(135deg,#e0e7ff,#c7d2fe);border:2px solid #818cf8;font-weight:600">
+                    <option value="">Tất cả Nhóm SP</option>
+                </select>
                 <select class="filter-select" id="sortProducts" onchange="filterProducts()">
                     <option value="code">Sắp xếp theo Mã</option>
                     <option value="name">Sắp xếp theo Tên</option>
@@ -945,8 +949,31 @@
                 if (result.success) {
                     groups = result.data;
                     filterGroups();
+                    populateProductGroupFilter();
                 }
             } catch (e) { console.error('Error loading groups:', e); }
+        }
+
+        function populateProductGroupFilter() {
+            const select = document.getElementById('filterProductGroup');
+            if (!select) return;
+            const currentVal = select.value;
+            
+            let html = '<option value="">Tất cả Nhóm SP</option>';
+            // Sắp xếp nhóm theo mã, sau đó là tên
+            const sorted = [...groups].sort((a,b) => {
+                if(a.code !== b.code) return a.code.localeCompare(b.code);
+                return a.name.localeCompare(b.name);
+            });
+            
+            sorted.forEach(g => {
+                html += `<option value="${g.name}">${g.code} - ${g.name}</option>`;
+            });
+            select.innerHTML = html;
+            // Phục hồi giá trị cũ nếu có
+            if(Array.from(select.options).some(opt => opt.value === currentVal)) {
+                select.value = currentVal;
+            }
         }
 
         async function loadGlassFromAPI() {
@@ -1052,8 +1079,13 @@
         function filterProducts() {
             const search = document.getElementById('searchProducts').value.toLowerCase();
             const sort = document.getElementById('sortProducts').value;
+            const groupFilter = document.getElementById('filterProductGroup') ? document.getElementById('filterProductGroup').value : '';
 
-            let filtered = products.filter(p => p.code.toLowerCase().includes(search) || p.name.toLowerCase().includes(search));
+            let filtered = products.filter(p => {
+                const matchSearch = p.code.toLowerCase().includes(search) || p.name.toLowerCase().includes(search);
+                const matchGroup = !groupFilter || p.groupName === groupFilter;
+                return matchSearch && matchGroup;
+            });
 
             filtered.sort((a, b) => {
                 if (sort === 'code') return a.code.localeCompare(b.code);
