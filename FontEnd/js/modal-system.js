@@ -1,3 +1,22 @@
+﻿/**
+ * AUTH SYNC GUARD - Must run before everything else
+ * Synchronizes Remember Me token from localStorage to sessionStorage
+ * This runs inline (synchronous) to ensure auth state is available
+ * before any page script checks authentication.
+ */
+;(function _authSyncGuard() {
+    if (window.__authSyncDone) return;
+    window.__authSyncDone = true;
+    try {
+        var localToken = localStorage.getItem('token');
+        var sessionToken = sessionStorage.getItem('token');
+        if (localToken && !sessionToken) {
+            sessionStorage.setItem('token', localToken);
+            var localUser = localStorage.getItem('user');
+            if (localUser) sessionStorage.setItem('user', localUser);
+        }
+    } catch(e) {}
+})();
 /**
  * MODAL SYSTEM - ViralWindow
  * Thay thế alert(), confirm() bằng Modal đẹp

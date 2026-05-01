@@ -2,561 +2,388 @@
 <html lang="vi">
 
 <head>
-    <script src="js/modal-system.js"></script>
-    <script src="js/auth-helper.js"></script>
-    <script src="js/user-settings.js"></script>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/png" href="favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng ký Quản trị viên - Hệ thống quản lý cửa nhôm kính</title>
-    <script>
-        // Suppress TailwindCSS CDN production warning
-        if (typeof window !== 'undefined') { window.tailwind = window.tailwind || {}; window.tailwind.suppressWarning = true; }
-    </script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Đăng ký Quản trị viên - ViralWindow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        * {
-            font-family: 'Inter', sans-serif;
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; font-family: 'Inter', sans-serif; }
+        body { display: flex; min-height: 100vh; overflow-x: hidden; }
+        .hidden { display: none !important; }
+        .auth-wrapper { display: flex; width: 100%; min-height: 100vh; }
+        
+        .left-panel { 
+            position: relative; width: 45%; min-height: 100vh; 
+            background: url('images/auth_bg.png') left center / cover no-repeat; 
+            display: flex; flex-direction: column; justify-content: flex-end; 
+            padding: 48px; z-index: 1; flex-shrink: 0; overflow: hidden; 
         }
-
-        body {
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            overflow-x: hidden;
+        .left-panel::before { 
+            content: ''; position: absolute; inset: 0; 
+            background: linear-gradient(180deg, rgba(13,71,161,0.15) 0%, rgba(13,71,161,0.75) 100%); z-index: 0; 
         }
-
-        .left-panel {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #a78bfa 100%);
-            position: relative;
-            overflow: hidden;
+        
+        .features-wrap { display: flex; flex-direction: column; gap: 14px; position: relative; z-index: 2; }
+        .feat-card { 
+            background: rgba(255,255,255,0.12); backdrop-filter: blur(16px); 
+            border: 1px solid rgba(255,255,255,0.18); border-radius: 14px; 
+            padding: 16px 18px; display: flex; align-items: center; gap: 14px; color: #fff; 
+            transition: background .3s, transform .2s; 
         }
-
-        .left-panel::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
-            animation: pulse 15s infinite;
+        .feat-card:hover { background: rgba(255,255,255,0.22); transform: translateX(4px); }
+        .feat-icon { 
+            width: 46px; height: 46px; border-radius: 12px; background: rgba(255,255,255,0.18); 
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0; 
         }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                transform: scale(1);
-                opacity: 0.5;
-            }
-
-            50% {
-                transform: scale(1.1);
-                opacity: 0.3;
-            }
+        .feat-icon svg { width: 22px; height: 22px; }
+        .feat-text strong { display: block; font-size: 0.9rem; font-weight: 700; margin-bottom: 3px; }
+        .feat-text span { font-size: 0.8rem; opacity: 0.85; line-height: 1.4; display: block; }
+        
+        .contact-info { 
+            display: flex; gap: 20px; color: #fff; font-size: 0.85rem; font-weight: 500; 
+            margin-top: 28px; position: relative; z-index: 2; flex-wrap: wrap; 
         }
-
-        .glass-card {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+        .contact-info a { color: #fff; text-decoration: none; display: flex; align-items: center; gap: 6px; opacity: 0.9; }
+        
+        .wavy-edge { position: absolute; right: -1px; top: 0; height: 100%; width: 150px; z-index: 3; pointer-events: none; }
+        
+        .right-panel { 
+            flex: 1; min-height: 100vh; display: flex; align-items: center; justify-content: center; 
+            padding: 32px 40px; position: relative; background: #fff; z-index: 4; overflow-y: auto;
         }
-
-        .step-item {
-            transition: all 0.3s ease;
+        .form-container { width: 100%; max-width: 500px; margin: auto; }
+        
+        .logo-block { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 20px; }
+        .logo-icon-wrap { 
+            width: 58px; height: 58px; border-radius: 14px; background: #F0F4F8; 
+            display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.06); 
         }
-
-        .step-number {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
+        .logo-icon-wrap img { width: 38px; height: 38px; object-fit: contain; }
+        .logo-icon-wrap svg { width: 30px; height: 30px; color: #1565C0; }
+        .company-name { font-weight: 800; font-size: 1.05rem; color: #0D47A1; letter-spacing: 0.5px; text-transform: uppercase; }
+        
+        .form-title { text-align: center; font-size: 1.7rem; font-weight: 800; color: #0D47A1; margin-bottom: 4px; }
+        .form-sub { text-align: center; font-size: 0.9rem; color: #6B7280; margin-bottom: 20px; }
+        
+        .field { margin-bottom: 14px; }
+        .field-label { display: block; font-size: 0.75rem; font-weight: 700; color: #374151; margin-bottom: 5px; letter-spacing: 0.04em; text-transform: uppercase; }
+        .inp-wrap { position: relative; }
+        .inp-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9CA3AF; display: flex; }
+        .inp-icon svg { width: 16px; height: 16px; }
+        .inp { 
+            width: 100%; padding: 11px 12px 11px 38px; border: 1.8px solid #E5E7EB; border-radius: 10px; 
+            font-size: 0.88rem; color: #111827; background: #F9FAFB; outline: none; transition: all .25s; font-family: 'Inter', sans-serif; 
         }
-
-        .right-panel {
-            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+        .inp:focus { border-color: #1565C0; background: #fff; box-shadow: 0 0 0 3px rgba(21,101,192,0.1); }
+        .inp-pr { padding-right: 38px; }
+        
+        .btn-eye { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #9CA3AF; display: flex; }
+        .btn-eye:hover { color: #374151; }
+        
+        .inp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+        
+        .btn-sub { 
+            width: 100%; padding: 13px; border: none; border-radius: 12px; cursor: pointer; font-size: 1rem; font-weight: 800; color: #fff; 
+            background: linear-gradient(135deg, #1976D2 0%, #0D47A1 100%); display: flex; align-items: center; justify-content: center; gap: 10px; transition: transform .2s, box-shadow .2s; font-family: 'Inter', sans-serif; 
         }
-
-        .register-form-container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+        .btn-sub:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(21,101,192,0.35); }
+        .btn-sub:disabled { opacity: .7; cursor: not-allowed; }
+        
+        .link-alt { text-align: center; margin-top: 18px; font-size: 0.88rem; color: #6B7280; }
+        .link-alt a { color: #1565C0; font-weight: 700; text-decoration: none; }
+        
+        .alert-box { display: none; margin-bottom: 14px; padding: 11px 14px; border-radius: 10px; font-size: 0.85rem; font-weight: 500; }
+        .err { color: #EF4444; font-size: 0.75rem; margin-top: 3px; display: none; }
+        
+        .warn-box { background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; }
+        .warn-badge { background: linear-gradient(135deg,#fbbf24,#f59e0b); color:#fff; font-size:0.72rem; padding:2px 8px; border-radius:20px; font-weight:700; }
+        
+        .spinner { width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        @media (max-width: 1024px) {
+            .auth-wrapper { flex-direction: column; }
+            .left-panel { width: 100%; min-height: 220px; padding: 28px; justify-content: center; align-items: center; }
+            .features-wrap, .contact-info { display: none; }
+            .wavy-edge { display: none; }
+            .right-panel { min-height: auto; padding: 28px 20px; }
         }
-
-        .input-field {
-            transition: all 0.3s ease;
-            border: 2px solid #e5e7eb;
-        }
-
-        .input-field:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
-        }
-
-        .icon-container {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-        }
-
-        .warning-badge {
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-        }
+        @media (max-width: 640px) { .left-panel { min-height: 160px; } .inp-grid { grid-template-columns: 1fr; } .form-container { max-width: 100%; } }
     </style>
     <script src="js/config.js"></script>
-    <link rel="stylesheet" href="css/mobile-responsive.css">
     <script src="js/vw-modal.js"></script>
 </head>
 
-<body class="flex min-h-screen">
-    <!-- Left Panel - Branding -->
-    <div class="left-panel hidden lg:flex lg:w-1/2 flex-col justify-center items-center p-12 text-white relative">
-        <div class="z-10 text-center max-w-lg">
-            <!-- Logo Icon -->
-            <div class="icon-container w-24 h-24 rounded-2xl flex items-center justify-center mx-auto mb-8">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                    class="w-12 h-12">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
-            </div>
-
-            <h1 class="text-5xl font-bold mb-4" id="companyNameLeft">VIRALWINDOW</h1>
-            <p class="text-xl opacity-90 mb-12">Đăng ký tài khoản Quản trị viên để bắt đầu quản lý doanh nghiệp của bạn
-            </p>
-
-            <!-- Steps -->
-            <div class="space-y-4 text-left">
-                <div class="step-item glass-card rounded-xl p-4 flex items-start gap-4">
-                    <div class="step-number flex-shrink-0">1</div>
-                    <div>
-                        <h3 class="font-semibold text-lg">Điền thông tin</h3>
-                        <p class="text-sm opacity-80">Nhập thông tin cá nhân và công ty</p>
-                    </div>
+<body>
+    <div class="auth-wrapper">
+        <!-- LEFT PANEL -->
+        <div class="left-panel">
+            <div style="flex:1;position:relative;z-index:2;"></div>
+            <div class="features-wrap">
+                <div class="feat-card">
+                    <div class="feat-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></div>
+                    <div class="feat-text"><strong>Quản lý dự án &amp; báo giá</strong><span>Theo dõi tiến độ và doanh thu tức thời</span></div>
                 </div>
-
-                <div class="step-item glass-card rounded-xl p-4 flex items-start gap-4">
-                    <div class="step-number flex-shrink-0">2</div>
-                    <div>
-                        <h3 class="font-semibold text-lg">Xác thực hệ thống</h3>
-                        <p class="text-sm opacity-80">Nhập mã xác thực từ Quản trị viên</p>
-                    </div>
+                <div class="feat-card">
+                    <div class="feat-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div>
+                    <div class="feat-text"><strong>Quản lý nhân sự &amp; phân quyền</strong><span>Điều phối nhóm linh hoạt, chính xác</span></div>
                 </div>
-
-                <div class="step-item glass-card rounded-xl p-4 flex items-start gap-4">
-                    <div class="step-number flex-shrink-0">3</div>
-                    <div>
-                        <h3 class="font-semibold text-lg">Bắt đầu sử dụng</h3>
-                        <p class="text-sm opacity-80">Truy cập toàn bộ tính năng hệ thống</p>
-                    </div>
+                <div class="feat-card">
+                    <div class="feat-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg></div>
+                    <div class="feat-text"><strong>Kiểm soát kho hàng &amp; vật tư</strong><span>Tồn kho minh bạch, xuất nhập chính xác</span></div>
                 </div>
             </div>
+            <div class="contact-info">
+                <a href="#"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg> Viralwindow.vn</a>
+                <span style="opacity:0.5">|</span>
+                <a href="#"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg> 1800 28 28 39</a>
+            </div>
+            <svg class="wavy-edge" viewBox="0 0 150 900" preserveAspectRatio="none">
+                <path fill="rgba(255,255,255,0.12)" d="M150 0 C60 50 30 120 60 200 C90 280 20 360 60 450 C100 540 30 640 60 720 C90 800 50 850 150 900 L150 0Z"/>
+                <path fill="rgba(255,255,255,0.35)" d="M150 0 C80 60 50 130 80 210 C110 290 50 380 80 460 C110 540 50 650 80 730 C110 810 70 860 150 900 L150 0Z"/>
+                <path fill="rgba(255,255,255,0.7)" d="M150 0 C100 70 75 150 100 230 C125 310 80 400 100 480 C120 560 75 660 100 740 C125 820 90 870 150 900 L150 0Z"/>
+                <path fill="#ffffff" d="M150 0 C120 80 100 160 120 240 C140 320 105 420 120 500 C135 580 100 680 120 760 C140 840 115 880 150 900 L150 0Z"/>
+            </svg>
         </div>
-    </div>
 
-    <!-- Right Panel - Register Form -->
-    <div class="right-panel w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-8 overflow-y-auto">
-        <div class="register-form-container w-full max-w-lg p-8">
-            <div class="text-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-2">Đăng ký Quản trị viên</h2>
-                <p class="text-gray-500 text-sm">Tạo tài khoản Admin để quản lý hệ thống</p>
-            </div>
+        <!-- RIGHT PANEL -->
+        <div class="right-panel">
+            <div class="form-container">
+                <!-- Logo -->
+                <div class="logo-block">
+                    <div class="logo-icon-wrap">
+                        <img id="companyLogoLeft" src="" alt="Logo" style="display:none;">
+                        <svg id="defaultLogoIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                    </div>
+                    <span id="companyNameLeft" class="company-name">VIRALWINDOW</span>
+                </div>
 
-            <!-- Error/Success Messages -->
-            <div id="alertMessage" class="hidden mb-4 p-4 rounded-xl"></div>
+                <h2 class="form-title">Tạo tài khoản quản trị</h2>
+                <p class="form-sub">Vui lòng điền đầy đủ thông tin để khởi tạo hệ thống</p>
 
-            <!-- Register Form -->
-            <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-4">
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label for="fullName" class="block text-sm font-medium text-gray-700 mb-1">
-                            Họ và tên <span class="text-red-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor" class="w-5 h-5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                            </span>
-                            <input type="text" id="fullName" name="full_name" required placeholder="Nhập họ và tên"
-                                class="input-field w-full pl-10 pr-4 py-2.5 rounded-xl focus:outline-none text-sm">
+                <div id="alertMessage" class="alert-box"></div>
+
+                <div class="warn-box">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                        <span class="warn-badge">BẢO MẬT</span>
+                        <strong style="font-size:0.8rem;color:#92400e;">Yêu cầu mã xác thực hệ thống</strong>
+                    </div>
+                    <p style="font-size:0.75rem;color:#b45309;">Bạn cần có <strong>System Verification Code</strong> do nhà phát triển cung cấp để tạo tài khoản admin đầu tiên.</p>
+                </div>
+
+                <form id="registerForm" onsubmit="handleRegister(event)">
+                    <div class="inp-grid">
+                        <div class="field">
+                            <label class="field-label">Tài khoản (Tên đăng nhập)</label>
+                            <div class="inp-wrap">
+                                <span class="inp-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg></span>
+                                <input type="text" id="username" name="username" required placeholder="Nhập tài khoản admin" class="inp" autocomplete="username">
+                            </div>
+                            <p id="usernameError" class="err"></p>
                         </div>
-                        <p id="fullNameError" class="text-red-500 text-xs mt-1 hidden"></p>
-                    </div>
-
-                    <div>
-                        <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">
-                            Số điện thoại <span class="text-red-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor" class="w-5 h-5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                </svg>
-                            </span>
-                            <input type="tel" id="phone" name="phone" required placeholder="0912345678"
-                                pattern="[0-9]{10,11}"
-                                class="input-field w-full pl-10 pr-4 py-2.5 rounded-xl focus:outline-none text-sm">
+                        <div class="field">
+                            <label class="field-label">Họ và tên</label>
+                            <div class="inp-wrap">
+                                <span class="inp-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg></span>
+                                <input type="text" id="fullName" name="full_name" required placeholder="Ví dụ: Nguyễn Văn A" class="inp">
+                            </div>
+                            <p id="fullNameError" class="err"></p>
                         </div>
-                        <p id="phoneError" class="text-red-500 text-xs mt-1 hidden"></p>
                     </div>
-                </div>
 
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
-                        Email <span class="text-red-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor" class="w-5 h-5">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                            </svg>
-                        </span>
-                        <input type="email" id="email" name="email" required placeholder="admin@company.com"
-                            class="input-field w-full pl-10 pr-4 py-2.5 rounded-xl focus:outline-none text-sm">
-                    </div>
-                    <p id="emailError" class="text-red-500 text-xs mt-1 hidden"></p>
-                </div>
-
-                <div>
-                    <label for="address" class="block text-sm font-medium text-gray-700 mb-1">
-                        Địa chỉ
-                    </label>
-                    <textarea id="address" name="address" rows="2" placeholder="Nhập địa chỉ (tùy chọn)"
-                        class="input-field w-full px-4 py-2.5 rounded-xl focus:outline-none text-sm resize-none"></textarea>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
-                            Mật khẩu <span class="text-red-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor" class="w-5 h-5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                </svg>
-                            </span>
-                            <input type="password" id="password" name="password" required minlength="6"
-                                placeholder="Tối thiểu 6 ký tự"
-                                class="input-field w-full pl-10 pr-10 py-2.5 rounded-xl focus:outline-none text-sm">
-                            <button type="button" onclick="togglePasswordVisibility('password')"
-                                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                                <svg id="eyeIconPassword" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                            </button>
+                    <div class="inp-grid">
+                        <div class="field">
+                            <label class="field-label">Email quản trị</label>
+                            <div class="inp-wrap">
+                                <span class="inp-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></span>
+                                <input type="email" id="email" name="email" required placeholder="admin@viralwindow.vn" class="inp" autocomplete="email">
+                            </div>
+                            <p id="emailError" class="err"></p>
                         </div>
-                        <p id="passwordError" class="text-red-500 text-xs mt-1 hidden"></p>
-                    </div>
-
-                    <div>
-                        <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1">
-                            Xác nhận mật khẩu <span class="text-red-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor" class="w-5 h-5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                </svg>
-                            </span>
-                            <input type="password" id="confirmPassword" name="confirm_password" required
-                                placeholder="Nhập lại mật khẩu"
-                                class="input-field w-full pl-10 pr-10 py-2.5 rounded-xl focus:outline-none text-sm">
-                            <button type="button" onclick="togglePasswordVisibility('confirmPassword')"
-                                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                                <svg id="eyeIconConfirmPassword" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                            </button>
+                        <div class="field">
+                            <label class="field-label">Số điện thoại</label>
+                            <div class="inp-wrap">
+                                <span class="inp-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg></span>
+                                <input type="text" id="phone" name="phone" placeholder="09xxxxxxx" class="inp">
+                            </div>
+                            <p id="phoneError" class="err"></p>
                         </div>
-                        <p id="confirmPasswordError" class="text-red-500 text-xs mt-1 hidden"></p>
                     </div>
-                </div>
 
-                <!-- System Verification Code -->
-                <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="warning-badge text-white text-xs px-2 py-1 rounded-full font-medium">🔐 Mã xác thực
-                            hệ thống</span>
-                        <span class="text-red-500">*</span>
+                    <div class="inp-grid">
+                        <div class="field">
+                            <label class="field-label">Mật khẩu</label>
+                            <div class="inp-wrap">
+                                <span class="inp-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg></span>
+                                <input type="password" id="password" name="password" required minlength="6" placeholder="Tối thiểu 6 ký tự" class="inp inp-pr" autocomplete="new-password">
+                                <button type="button" class="btn-eye" onclick="toggleEye('password','eyeIconPassword')"><svg id="eyeIconPassword" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></button>
+                            </div>
+                            <p id="passwordError" class="err"></p>
+                        </div>
+                        <div class="field">
+                            <label class="field-label">Nhập lại mật khẩu</label>
+                            <div class="inp-wrap">
+                                <span class="inp-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg></span>
+                                <input type="password" id="confirmPassword" required placeholder="Xác nhận mật khẩu" class="inp inp-pr" autocomplete="new-password">
+                                <button type="button" class="btn-eye" onclick="toggleEye('confirmPassword','eyeIconConfirm')"><svg id="eyeIconConfirm" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></button>
+                            </div>
+                            <p id="confirmPasswordError" class="err"></p>
+                        </div>
                     </div>
-                    <div class="relative">
-                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor" class="w-5 h-5">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                            </svg>
-                        </span>
-                        <input type="password" id="systemCode" name="system_code" required
-                            placeholder="Nhập mã xác thực từ Admin"
-                            class="input-field w-full pl-10 pr-10 py-2.5 rounded-xl focus:outline-none text-sm">
-                        <button type="button" onclick="togglePasswordVisibility('systemCode')"
-                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                            <svg id="eyeIconSystemCode" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
-                        </button>
+
+                    <div class="field" style="margin-bottom: 24px;">
+                        <label class="field-label" style="color: #92400e; display:flex; align-items:center; gap:6px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="14" height="14"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                            Mã xác thực hệ thống (System Code)
+                        </label>
+                        <div class="inp-wrap">
+                            <input type="password" id="systemCode" name="system_code" required placeholder="Nhập mã bảo mật để tạo admin" class="inp" style="border-color:#FCD34D; background:#FFFEF9;">
+                        </div>
+                        <p id="systemCodeError" class="err"></p>
                     </div>
-                    <p class="text-amber-700 text-xs mt-2">Liên hệ Quản trị viên để nhận mã xác thực đăng ký</p>
-                    <p id="systemCodeError" class="text-red-500 text-xs mt-1 hidden"></p>
+
+                    <button type="submit" id="registerButton" class="btn-sub">
+                        <span id="buttonText">Hoàn tất đăng ký</span>
+                        <span id="buttonLoader" class="hidden"><span class="spinner"></span></span>
+                    </button>
+                </form>
+
+                <div class="link-alt">
+                    Đã có tài khoản? <a href="login.html">Đăng nhập ngay</a>
                 </div>
-
-                <div class="flex items-start">
-                    <input type="checkbox" id="agreeTerms" required
-                        class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mt-0.5">
-                    <label for="agreeTerms" class="ml-2 text-sm text-gray-600">
-                        Tôi đồng ý với <a href="#" class="text-blue-600 hover:text-blue-800">Điều khoản sử dụng</a> và
-                        <a href="#" class="text-blue-600 hover:text-blue-800">Chính sách bảo mật</a> của hệ thống
-                    </label>
-                </div>
-
-                <button type="submit" id="registerButton"
-                    class="btn-primary w-full text-white py-3 rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                    <span id="registerButtonText">Đăng ký tài khoản</span>
-                    <span id="registerButtonLoader" class="hidden">
-                        <svg class="animate-spin h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
-                            viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-                            </circle>
-                            <path class="opacity-75" fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                            </path>
-                        </svg>
-                    </span>
-                </button>
-            </form>
-
-            <div class="mt-6 text-center">
-                <p class="text-gray-600 text-sm">
-                    Đã có tài khoản?
-                    <a href="login.html" class="text-blue-600 font-semibold hover:text-blue-800">Đăng nhập ngay</a>
-                </p>
             </div>
         </div>
     </div>
 
     <script>
         const API_BASE = window.API_BASE || '/api';
-        const SYSTEM_VERIFICATION_CODE = 'viralwindow123';
 
-        function togglePasswordVisibility(fieldId) {
-            const passwordInput = document.getElementById(fieldId);
-            const eyeIcon = document.getElementById(`eyeIcon${fieldId.charAt(0).toUpperCase() + fieldId.slice(1)}`);
-
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                eyeIcon.innerHTML = `
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                `;
+        function toggleEye(fieldId, iconId) {
+            const inp = document.getElementById(fieldId);
+            const icon = document.getElementById(iconId);
+            if (inp.type === 'password') {
+                inp.type = 'text';
+                icon.innerHTML = <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>;
             } else {
-                passwordInput.type = 'password';
-                eyeIcon.innerHTML = `
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                `;
+                inp.type = 'password';
+                icon.innerHTML = <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>;
             }
         }
 
         function showAlert(message, type = 'error') {
             const alertDiv = document.getElementById('alertMessage');
-            alertDiv.className = `mb-4 p-4 rounded-xl ${type === 'error' ? 'bg-red-50 text-red-800 border border-red-200' : 'bg-green-50 text-green-800 border border-green-200'}`;
+            alertDiv.style.cssText = type === 'error'
+                ? 'display:block;background:#FEF2F2;color:#991B1B;border:1px solid #FECACA;padding:12px 16px;border-radius:12px;font-size:0.85rem;font-weight:500;margin-bottom:16px;'
+                : 'display:block;background:#F0FDF4;color:#166534;border:1px solid #BBF7D0;padding:12px 16px;border-radius:12px;font-size:0.85rem;font-weight:500;margin-bottom:16px;';
             alertDiv.textContent = message;
-            alertDiv.classList.remove('hidden');
-
-            setTimeout(() => {
-                alertDiv.classList.add('hidden');
-            }, 5000);
+            setTimeout(() => { alertDiv.style.display = 'none'; }, 6000);
         }
 
-        function validateForm() {
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            const phone = document.getElementById('phone').value;
-            const email = document.getElementById('email').value;
-            const systemCode = document.getElementById('systemCode').value;
+        function clearErrors() {
+            document.querySelectorAll('.err').forEach(el => {
+                el.textContent = '';
+                el.style.display = 'none';
+            });
+        }
 
-            let isValid = true;
-
-            // Validate system verification code
-            if (systemCode !== SYSTEM_VERIFICATION_CODE) {
-                document.getElementById('systemCodeError').textContent = 'Mã xác thực hệ thống không đúng!';
-                document.getElementById('systemCodeError').classList.remove('hidden');
-                isValid = false;
-            } else {
-                document.getElementById('systemCodeError').classList.add('hidden');
+        function showError(fieldId, message) {
+            const el = document.getElementById(fieldId + 'Error');
+            if (el) {
+                el.textContent = message;
+                el.style.display = 'block';
             }
-
-            // Validate password match
-            if (password !== confirmPassword) {
-                document.getElementById('confirmPasswordError').textContent = 'Mật khẩu xác nhận không khớp';
-                document.getElementById('confirmPasswordError').classList.remove('hidden');
-                isValid = false;
-            } else {
-                document.getElementById('confirmPasswordError').classList.add('hidden');
-            }
-
-            // Validate password length
-            if (password.length < 6) {
-                document.getElementById('passwordError').textContent = 'Mật khẩu phải có ít nhất 6 ký tự';
-                document.getElementById('passwordError').classList.remove('hidden');
-                isValid = false;
-            } else {
-                document.getElementById('passwordError').classList.add('hidden');
-            }
-
-            // Validate phone
-            if (phone && !/^[0-9]{10,11}$/.test(phone)) {
-                document.getElementById('phoneError').textContent = 'Số điện thoại không hợp lệ';
-                document.getElementById('phoneError').classList.remove('hidden');
-                isValid = false;
-            } else {
-                document.getElementById('phoneError').classList.add('hidden');
-            }
-
-            // Validate email
-            if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                document.getElementById('emailError').textContent = 'Email không hợp lệ';
-                document.getElementById('emailError').classList.remove('hidden');
-                isValid = false;
-            } else {
-                document.getElementById('emailError').classList.add('hidden');
-            }
-
-            return isValid;
         }
 
         async function handleRegister(event) {
             event.preventDefault();
+            clearErrors();
+            let hasError = false;
 
-            if (!validateForm()) {
-                return;
-            }
+            const username = document.getElementById('username').value.trim();
+            const fullName = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const systemCode = document.getElementById('systemCode').value;
 
-            const formData = {
-                full_name: document.getElementById('fullName').value,
-                phone: document.getElementById('phone').value,
-                email: document.getElementById('email').value,
-                address: document.getElementById('address').value || null,
-                password: document.getElementById('password').value,
-                user_type: 'admin'  // Chỉ cho phép đăng ký admin
-            };
+            if (username.length < 3) { showError('username', 'Tài khoản phải từ 3 ký tự'); hasError = true; }
+            if (password.length < 6) { showError('password', 'Mật khẩu phải từ 6 ký tự'); hasError = true; }
+            if (password !== confirmPassword) { showError('confirmPassword', 'Mật khẩu xác nhận không khớp'); hasError = true; }
+            if (!systemCode) { showError('systemCode', 'Vui lòng nhập mã xác thực hệ thống'); hasError = true; }
 
-            // Show loading
-            const registerButton = document.getElementById('registerButton');
-            const registerButtonText = document.getElementById('registerButtonText');
-            const registerButtonLoader = document.getElementById('registerButtonLoader');
+            if (hasError) return;
 
-            registerButton.disabled = true;
-            registerButtonText.classList.add('hidden');
-            registerButtonLoader.classList.remove('hidden');
+            const btn = document.getElementById('registerButton');
+            const btnText = document.getElementById('buttonText');
+            const btnLoader = document.getElementById('buttonLoader');
+
+            btn.disabled = true; btnText.classList.add('hidden'); btnLoader.classList.remove('hidden');
 
             try {
-                const response = await fetch(`${API_BASE}/auth/register`, {
+                const response = await fetch(${API_BASE}/auth/register, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(formData)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username, full_name: fullName, email, phone, password, system_code: systemCode
+                    })
                 });
 
                 const result = await response.json();
 
                 if (result.success) {
-                    showAlert('Đăng ký thành công! Đang chuyển đến trang đăng nhập...', 'success');
-
-                    setTimeout(() => {
-                        window.location.href = 'login.html';
-                    }, 2000);
+                    showAlert('Đăng ký thành công! Đang chuyển hướng...', 'success');
+                    setTimeout(() => { window.location.href = 'login.html'; }, 2000);
                 } else {
-                    showAlert(result.message || 'Đăng ký thất bại. Vui lòng thử lại.');
-                    registerButton.disabled = false;
-                    registerButtonText.classList.remove('hidden');
-                    registerButtonLoader.classList.add('hidden');
+                    showAlert(result.message || 'Đăng ký thất bại. Vui lòng kiểm tra lại thông tin.');
+                    if (result.message && result.message.toLowerCase().includes('mã xác thực')) {
+                        showError('systemCode', 'Mã xác thực hệ thống không hợp lệ');
+                    }
                 }
             } catch (error) {
                 console.error('Lỗi:', error);
-                showAlert('Lỗi kết nối server. Vui lòng thử lại sau.');
-                registerButton.disabled = false;
-                registerButtonText.classList.remove('hidden');
-                registerButtonLoader.classList.add('hidden');
+                showAlert('Không thể kết nối đến máy chủ. Vui lòng thử lại sau.');
+            } finally {
+                btn.disabled = false; btnText.classList.remove('hidden'); btnLoader.classList.add('hidden');
             }
         }
 
-        // Real-time validation
-        document.getElementById('confirmPassword').addEventListener('input', function () {
-            const password = document.getElementById('password').value;
-            const confirmPassword = this.value;
-
-            if (confirmPassword && password !== confirmPassword) {
-                document.getElementById('confirmPasswordError').textContent = 'Mật khẩu xác nhận không khớp';
-                document.getElementById('confirmPasswordError').classList.remove('hidden');
-            } else {
-                document.getElementById('confirmPasswordError').classList.add('hidden');
-            }
-        });
-
-        // Load company name
         async function loadCompanyName() {
             try {
-                const response = await fetch(`${API_BASE}/company-settings`);
+                const response = await fetch(${API_BASE}/company-settings);
                 const result = await response.json();
-
-                if (result.success && result.data && result.data.company_name) {
-                    document.getElementById('companyNameLeft').textContent = result.data.company_name.toUpperCase();
+                if (result.success && result.data) {
+                    if (result.data.company_name) {
+                        document.getElementById('companyNameLeft').textContent = result.data.company_name.toUpperCase();
+                    }
+                    if (result.data.logo_path) {
+                        const img = document.getElementById('companyLogoLeft');
+                        const def = document.getElementById('defaultLogoIcon');
+                        if (img && def) {
+                            img.src = result.data.logo_path;
+                            img.style.display = 'block';
+                            def.style.display = 'none';
+                        }
+                    }
                 }
             } catch (error) {
                 console.error('Lỗi load company name:', error);
             }
         }
 
-        // Check if already logged in and load company name
-        document.addEventListener('DOMContentLoaded', function () {
-            const token = sessionStorage.getItem('token');
-            if (token) {
-                window.location.href = 'index.html';
+        document.getElementById('confirmPassword').addEventListener('input', function() {
+            const pw = document.getElementById('password').value;
+            if (this.value && pw !== this.value) {
+                showError('confirmPassword', 'Mật khẩu xác nhận không khớp');
+            } else {
+                document.getElementById('confirmPasswordError').style.display = 'none';
             }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
             loadCompanyName();
         });
     </script>
 </body>
-
 </html>

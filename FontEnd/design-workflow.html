@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -657,11 +657,12 @@
         // AUTH CHECK
         // =====================================================
         function checkAuth() {
-            if (!authToken) {
-                showError('Bạn chưa đăng nhập. Đang chuyển đến trang đăng nhập...');
-                setTimeout(() => {
-                    window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.href);
-                }, 1500);
+            if (window.AuthHelper) return window.AuthHelper.checkAuth();
+            const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+            if (!token) { window.location.href = 'login.html'; return false; }
+            if (!sessionStorage.getItem('token')) { sessionStorage.setItem('token', token); const u = localStorage.getItem('user'); if (u) sessionStorage.setItem('user', u); }
+            return true;
+        }, 1500);
                 return false;
             }
             return true;

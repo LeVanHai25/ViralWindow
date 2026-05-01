@@ -1059,32 +1059,43 @@
                     <div id="weatherWidget"
                         class="live-clock-widget flex items-center gap-3 bg-white/95 backdrop-blur-md rounded-2xl px-4 py-3 shadow-xl border border-gray-100 cursor-pointer relative"
                         onclick="toggleCitySelector(event)" title="Nhấn để chọn khu vực">
-                        <div id="weatherIconWrap" class="text-3xl flex-shrink-0" style="width:40px;text-align:center">⛅
+                        <div id="weatherIconWrap" class="flex-shrink-0" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;">
+                            <svg id="weatherSvgIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#60a5fa" width="28" height="28">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+                            </svg>
                         </div>
                         <div>
                             <div class="flex items-baseline gap-1">
                                 <span id="weatherTemp" class="text-xl font-bold text-gray-800 font-mono">--°C</span>
-                                <span id="weatherWind" class="text-xs text-gray-400 hidden md:inline">💨--</span>
+                                <span id="weatherWind" class="text-xs text-gray-400 hidden md:inline" style="display:inline-flex;align-items:center;gap:2px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="11" height="11"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l1.5-4.5m0 0L9 5.5M6.5 5.5L5 10m0 0l-1 3m10-8l1.5 4.5m0 0L17 9.5m-1.5.5L17 14m0 0l1 3M9.5 19a2.5 2.5 0 005 0"/></svg>--
+                                </span>
                             </div>
                             <div class="text-xs text-gray-500" id="weatherDesc"
-                                style="max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Đang
-                                tải...</div>
+                                style="max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Đang tải...</div>
                             <div class="flex items-center gap-1.5 mt-0.5">
-                                <span id="weatherCity" class="text-xs font-semibold text-blue-600">📍 Hà Nội</span>
+                                <span id="weatherCity" class="text-xs font-semibold text-blue-600" style="display:inline-flex;align-items:center;gap:3px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="11" height="11"><path fill-rule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-2.003 3.5-4.697 3.5-8.327a8 8 0 10-16 0c0 3.63 1.556 6.326 3.5 8.327a19.583 19.583 0 002.682 2.282 16.975 16.975 0 001.144.742zM12 13.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7z" clip-rule="evenodd"/></svg>
+                                    Hà Nội
+                                </span>
                                 <span class="text-gray-300 text-xs">·</span>
-                                <span id="weatherHumidity" class="text-xs text-gray-400">💧--%</span>
+                                <span id="weatherHumidity" class="text-xs text-gray-400" style="display:inline-flex;align-items:center;gap:2px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#93c5fd" width="11" height="11"><path fill-rule="evenodd" d="M11.47 1.72a.75.75 0 011.06 0l3.75 3.75a.75.75 0 01-1.06 1.06L12 3.56 8.78 6.53a.75.75 0 01-1.06-1.06l3.75-3.75zm-3.75 9a.75.75 0 011.06 0L12 13.19l2.72-2.47a.75.75 0 111.02 1.1l-3.25 2.95a.75.75 0 01-1.02 0L8.22 11.82a.75.75 0 010-1.1z" clip-rule="evenodd"/><path d="M12 7.5a4.5 4.5 0 100 9 4.5 4.5 0 000-9z"/></svg>--%
+                                </span>
                             </div>
                         </div>
                         <div id="citySelectorDropdown" class="hidden"
                             style="position:fixed;z-index:99999;background:#fff;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,0.18);border:1px solid #e5e7eb;padding:14px;min-width:220px;"
                             onclick="event.stopPropagation()">
-                            <p
-                                style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px">
-                                📍 Chọn khu vực</p>
+                            <p style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;display:flex;align-items:center;gap:5px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#9ca3af" width="12" height="12"><path fill-rule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-2.003 3.5-4.697 3.5-8.327a8 8 0 10-16 0c0 3.63 1.556 6.326 3.5 8.327a19.583 19.583 0 002.682 2.282 16.975 16.975 0 001.144.742zM12 13.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7z" clip-rule="evenodd"/></svg>
+                                Chọn khu vực
+                            </p>
                             <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px" id="cityGrid"></div>
-                            <div
-                                style="margin-top:10px;padding-top:8px;border-top:1px solid #f3f4f6;text-align:center;font-size:10px;color:#d1d5db">
-                                🕐 Cập nhật mỗi 10 phút</div>
+                            <div style="margin-top:10px;padding-top:8px;border-top:1px solid #f3f4f6;text-align:center;font-size:10px;color:#d1d5db;display:flex;align-items:center;justify-content:center;gap:4px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="11" height="11"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                Cập nhật mỗi 10 phút
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1392,12 +1403,28 @@
     <script>
         const API_BASE = window.API_BASE || '/api';
 
-        // Check authentication
+        // Check authentication - use AuthHelper to support Remember Me (localStorage fallback)
         function checkAuth() {
-            const token = sessionStorage.getItem('token');
+            // AuthHelper syncs localStorage → sessionStorage on load (in auth-helper.js)
+            // Always use AuthHelper so Remember Me works correctly across sessions
+            if (window.AuthHelper) {
+                if (!window.AuthHelper.isAuthenticated()) {
+                    window.location.href = 'login.html';
+                    return false;
+                }
+                return true;
+            }
+            // Fallback: check both storages manually
+            const token = sessionStorage.getItem('token') || localStorage.getItem('token');
             if (!token) {
                 window.location.href = 'login.html';
                 return false;
+            }
+            // Sync to sessionStorage so other functions can read it
+            if (!sessionStorage.getItem('token')) {
+                sessionStorage.setItem('token', token);
+                const user = localStorage.getItem('user');
+                if (user) sessionStorage.setItem('user', user);
             }
             return true;
         }
@@ -1581,7 +1608,7 @@
                 {
                     id: 1,
                     type: 'info',
-                    title: '🏗️ Dự án mới được tạo',
+                    title: 'Dự án mới được tạo',
                     message: 'Dự án "Nhà S10-Anh Triệu" vừa được tạo',
                     is_read: false,
                     created_at: new Date().toISOString()
@@ -1589,7 +1616,7 @@
                 {
                     id: 2,
                     type: 'warning',
-                    title: '⚠️ Vật tư sắp hết',
+                    title: 'Vật tư sắp hết',
                     message: 'Thanh nhôm Y6501 còn 5 cây',
                     is_read: false,
                     created_at: new Date(Date.now() - 3600000).toISOString()
@@ -1597,7 +1624,7 @@
                 {
                     id: 3,
                     type: 'success',
-                    title: '✅ Sản xuất hoàn thành',
+                    title: 'Sản xuất hoàn thành',
                     message: 'LSX-2025-001 đã hoàn thành 100%',
                     is_read: true,
                     created_at: new Date(Date.now() - 86400000).toISOString()
@@ -2136,19 +2163,29 @@
                 { name: 'Huế', code: 'Hue' },
                 { name: 'Vũng Tàu', code: 'Vung+Tau' },
             ];
+            // SVG icon sets for weather: sun=sunny, cloud=cloudy, rain=rainy, snow=snow, storm=thunderstorm, fog=fog, partcloud=partly cloudy
+            const SVG_SUN = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#f59e0b" width="28" height="28"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 7a5 5 0 100 10A5 5 0 0012 7z"/></svg>';
+            const SVG_PARTCLOUD = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#60a5fa" width="28" height="28"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>';
+            const SVG_CLOUD = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#94a3b8" width="28" height="28"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>';
+            const SVG_RAIN = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#3b82f6" width="28" height="28"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 19l-1 2M12 19l-1 2M16 19l-1 2"/></svg>';
+            const SVG_SNOW = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#93c5fd" width="28" height="28"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 19l-.5 1.5M12 19v2M16 19l.5 1.5"/></svg>';
+            const SVG_STORM = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#7c3aed" width="28" height="28"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10l-3 5h4l-3 5"/></svg>';
+            const SVG_FOG = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#9ca3af" width="28" height="28"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 9h14M3 13h18M5 17h14"/></svg>';
+            const SVG_DEFAULT = SVG_PARTCLOUD;
+
             const WX_ICONS = {
-                113: '☀️', 116: '⛅', 119: '☁️', 122: '🌫️',
-                176: '🌦️', 179: '🌨️', 182: '🌧️', 185: '🌧️',
-                200: '⛈️', 227: '❄️', 230: '❄️', 248: '🌫️',
-                260: '🌫️', 263: '🌦️', 266: '🌧️', 281: '🌧️',
-                284: '🌧️', 293: '🌧️', 296: '🌧️', 299: '🌧️',
-                302: '🌧️', 305: '🌧️', 308: '🌧️', 311: '🌧️',
-                314: '🌧️', 317: '🌨️', 320: '🌨️', 323: '🌨️',
-                326: '🌨️', 329: '❄️', 332: '❄️', 335: '❄️',
-                338: '❄️', 350: '🌧️', 353: '🌦️', 356: '🌧️',
-                359: '🌧️', 362: '🌧️', 365: '🌧️', 368: '🌨️',
-                371: '❄️', 374: '🌧️', 377: '🌧️', 386: '⛈️',
-                389: '⛈️', 392: '⛈️', 395: '⛈️',
+                113: SVG_SUN,   116: SVG_PARTCLOUD, 119: SVG_CLOUD,  122: SVG_FOG,
+                176: SVG_RAIN,  179: SVG_SNOW,      182: SVG_RAIN,   185: SVG_RAIN,
+                200: SVG_STORM, 227: SVG_SNOW,      230: SVG_SNOW,   248: SVG_FOG,
+                260: SVG_FOG,   263: SVG_RAIN,      266: SVG_RAIN,   281: SVG_RAIN,
+                284: SVG_RAIN,  293: SVG_RAIN,      296: SVG_RAIN,   299: SVG_RAIN,
+                302: SVG_RAIN,  305: SVG_RAIN,      308: SVG_RAIN,   311: SVG_RAIN,
+                314: SVG_RAIN,  317: SVG_SNOW,      320: SVG_SNOW,   323: SVG_SNOW,
+                326: SVG_SNOW,  329: SVG_SNOW,      332: SVG_SNOW,   335: SVG_SNOW,
+                338: SVG_SNOW,  350: SVG_RAIN,      353: SVG_RAIN,   356: SVG_RAIN,
+                359: SVG_RAIN,  362: SVG_RAIN,      365: SVG_RAIN,   368: SVG_SNOW,
+                371: SVG_SNOW,  374: SVG_RAIN,      377: SVG_RAIN,   386: SVG_STORM,
+                389: SVG_STORM, 392: SVG_STORM,     395: SVG_STORM,
             };
 
             let city = null;
@@ -2228,21 +2265,35 @@
                     var windKm = cur.windspeedKmph;
                     var wcode = parseInt(cur.weatherCode);
                     var desc = cur.lang_vi ? cur.lang_vi[0].value : cur.weatherDesc[0].value;
-                    var icon = WX_ICONS[wcode] || '🌡️';
+                    var icon = WX_ICONS[wcode] || SVG_DEFAULT;
 
                     el('weatherTemp').textContent = temp + '°C';
                     el('weatherDesc').textContent = desc || 'Có mây';
-                    el('weatherIconWrap').textContent = icon;
-                    el('weatherHumidity').textContent = '💧' + humidity + '%';
-                    el('weatherCity').textContent = '📍 ' + city.name;
+                    el('weatherIconWrap').innerHTML = icon;
+                    // Humidity: keep SVG icon from HTML, just update number
+                    var humEl = el('weatherHumidity');
+                    if (humEl) {
+                        var humSvg = humEl.querySelector('svg');
+                        humEl.innerHTML = (humSvg ? humSvg.outerHTML : '') + humidity + '%';
+                    }
+                    // City: keep SVG icon from HTML, just update name
+                    var cityEl = el('weatherCity');
+                    if (cityEl) {
+                        var citySvg = cityEl.querySelector('svg');
+                        cityEl.innerHTML = (citySvg ? citySvg.outerHTML : '') + ' ' + city.name;
+                    }
+                    // Wind: keep SVG icon from HTML, just update speed
                     var ww = el('weatherWind');
-                    if (ww) ww.textContent = '💨' + windKm + 'km/h';
+                    if (ww) {
+                        var windSvg = ww.querySelector('svg');
+                        ww.innerHTML = (windSvg ? windSvg.outerHTML : '') + windKm + 'km/h';
+                    }
                 } catch (err) {
                     console.warn('[Weather]', err.message);
                     var d = el('weatherDesc');
                     if (d) d.textContent = 'Lỗi kết nối';
                     var iw = el('weatherIconWrap');
-                    if (iw) { iw.textContent = '🌐'; iw.classList.remove('wx-pulse'); }
+                    if (iw) { iw.innerHTML = SVG_DEFAULT; iw.classList.remove('wx-pulse'); }
                 }
 
                 if (iconEl) iconEl.classList.remove('wx-pulse');
