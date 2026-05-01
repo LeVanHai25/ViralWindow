@@ -1,4 +1,4 @@
-﻿/**
+/**
  * AUTH SYNC GUARD - Must run before everything else
  * Synchronizes Remember Me token from localStorage to sessionStorage
  * This runs inline (synchronous) to ensure auth state is available
@@ -17,6 +17,33 @@
         }
     } catch(e) {}
 })();
+
+/**
+ * RESPONSIVE MOBILE LOADER
+ * Injects responsive-mobile.js (sidebar toggle, table wrap, swipe gestures)
+ * after DOM is ready. Idempotent — won't load twice.
+ */
+;(function _responsiveLoader() {
+    if (window.__vwResponsiveLoaded) return;
+    window.__vwResponsiveLoaded = true;
+    function loadResponsive() {
+        if (document.getElementById('vw-responsive-script')) return;
+        var s = document.createElement('script');
+        s.id = 'vw-responsive-script';
+        // Resolve relative path based on current page depth
+        var pathDepth = (window.location.pathname.match(/\//g) || []).length - 1;
+        var prefix = pathDepth > 1 ? '../'.repeat(pathDepth - 1) : '';
+        s.src = prefix + 'js/responsive-mobile.js';
+        s.async = true;
+        document.head.appendChild(s);
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadResponsive);
+    } else {
+        loadResponsive();
+    }
+})();
+
 /**
  * MODAL SYSTEM - ViralWindow
  * Thay thế alert(), confirm() bằng Modal đẹp
