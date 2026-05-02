@@ -1,8 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 
 <head>
     <script src="js/auth-helper.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/vw-modal.js"></script>
     <script src="js/user-settings.js"></script>
     <meta charset="UTF-8">
     <link rel="icon" type="image/png" href="favicon.png">
@@ -138,78 +140,166 @@
             box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
         }
 
-        .card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-            gap: 16px;
+        /* ===== VIEW TOGGLE ===== */
+        .view-toggle { display:flex; gap:4px; }
+        .view-toggle button {
+            padding: 8px 12px; border: 2px solid #e2e8f0; border-radius: 8px;
+            background: white; cursor: pointer; color: #64748b; font-size: 14px;
+            transition: all 0.2s;
+        }
+        .view-toggle button.active {
+            background: #4f46e5; border-color: #4f46e5; color: white;
         }
 
+        /* ===== CARD GRID ===== */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+        #tableView { display: none; }
+
+        /* ===== PRODUCT CARD (NEW COMPACT DESIGN) ===== */
         .product-card {
             background: white;
             border-radius: 12px;
-            padding: 16px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
             border: 1px solid #e2e8f0;
             transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
         }
-
         .product-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 28px rgba(99,102,241,0.15);
             border-color: #818cf8;
         }
-
-        .product-card .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 8px;
+        /* Thumbnail area */
+        .product-card .card-thumb {
+            height: 110px;
+            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+            display: flex; align-items: center; justify-content: center;
+            position: relative;
         }
-
-        .product-card .code {
-            font-weight: 700;
+        .product-card .card-thumb .thumb-icon {
+            opacity: 0.25;
             color: #4f46e5;
-            font-size: 16px;
         }
-
-        .product-card .name {
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 12px;
-            line-height: 1.4;
-            font-size: 13px;
+        .product-card .card-thumb .thumb-icon svg {
+            width: 56px; height: 56px;
         }
+        .product-card .card-thumb .group-badge {
+            position: absolute; top: 8px; left: 8px;
+            display: flex; gap: 4px;
+        }
+        .product-card .card-body {
+            padding: 14px 16px;
+            flex: 1; display: flex; flex-direction: column; gap: 8px;
+        }
+        .product-card .card-code {
+            font-weight: 700; color: #4f46e5; font-size: 15px;
+        }
+        .product-card .card-name {
+            font-size: 13px; color: #334155; line-height: 1.5;
+            display: -webkit-box; -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .product-card .card-price-row {
+            display: flex; align-items: center; gap: 8px;
+            margin-top: auto;
+        }
+        .product-card .card-price-label {
+            font-size: 11px; color: #94a3b8;
+        }
+        .product-card .card-price-value {
+            font-size: 14px; font-weight: 700; color: #059669;
+        }
+        .product-card .card-accessories {
+            display: flex; gap: 4px; flex-wrap: wrap;
+        }
+        .product-card .acc-pill {
+            background: #ecfdf5; color: #065f46;
+            border: 1px solid #6ee7b7;
+            padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;
+        }
+        /* Card Actions */
+        .product-card .card-actions {
+            display: flex; gap: 0; border-top: 1px solid #f1f5f9;
+        }
+        .product-card .card-actions button {
+            flex: 1; padding: 10px 0; border: none; cursor: pointer;
+            font-size: 12px; font-weight: 600; transition: background 0.15s;
+        }
+        .product-card .btn-detail {
+            background: #f0f9ff; color: #0369a1;
+            border-right: 1px solid #f1f5f9 !important;
+        }
+        .product-card .btn-detail:hover { background: #e0f2fe; }
+        .product-card .btn-edit-card { background: #eef2ff; color: #4338ca; border-right: 1px solid #f1f5f9 !important; }
+        .product-card .btn-edit-card:hover { background: #e0e7ff; }
+        .product-card .btn-del-card { background: #fff5f5; color: #dc2626; }
+        .product-card .btn-del-card:hover { background: #fee2e2; }
 
-        .product-card .price-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 3px;
-            font-size: 9px;
-            max-height: 200px;
+        /* ===== DETAIL MODAL (WIDE) ===== */
+        .detail-overlay {
+            position: fixed; inset: 0;
+            background: rgba(15,23,42,0.6);
+            display: none; align-items: center; justify-content: center;
+            z-index: 2000; padding: 20px;
+        }
+        .detail-overlay.show { display: flex; }
+        .detail-modal {
+            background: white; border-radius: 20px;
+            width: 100%; max-width: 900px;
+            max-height: 90vh; overflow: hidden;
+            display: flex; flex-direction: column;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.25);
+        }
+        .detail-modal-header {
+            padding: 20px 28px; border-bottom: 1px solid #e2e8f0;
+            display: flex; justify-content: space-between; align-items: center;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white; border-radius: 20px 20px 0 0;
+        }
+        .detail-modal-header h2 { font-size: 18px; font-weight: 700; margin: 0; }
+        .detail-modal-header .dm-close {
+            background: rgba(255,255,255,0.2); border: none;
+            color: white; width: 32px; height: 32px; border-radius: 50%;
+            font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .detail-modal-body {
+            display: grid; grid-template-columns: 260px 1fr;
+            overflow: hidden; flex: 1;
+        }
+        .detail-left {
+            background: linear-gradient(180deg, #eef2ff, #f5f3ff);
+            padding: 24px; border-right: 1px solid #e2e8f0;
             overflow-y: auto;
         }
-
-        .product-card .price-item {
-            background: #f8fafc;
-            padding: 4px 6px;
-            border-radius: 4px;
-            text-align: center;
+        .detail-right {
+            padding: 24px; overflow-y: auto;
         }
-
-        .product-card .price-item .size {
-            color: #64748b;
-            font-size: 9px;
+        .detail-right h3 {
+            font-size: 13px; font-weight: 700; color: #64748b;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            margin: 0 0 12px; padding-bottom: 8px;
+            border-bottom: 2px solid #e2e8f0;
         }
-
-        .product-card .price-item .price {
-            color: #059669;
-            font-weight: 600;
-            font-size: 11px;
+        /* Price table inside modal */
+        .price-matrix {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
         }
-
-        .product-card .price-item.empty {
-            opacity: 0.5;
+        .price-matrix .pm-cell {
+            background: #f8fafc; border: 1px solid #e2e8f0;
+            border-radius: 6px; padding: 6px 8px; text-align: center;
         }
+        .price-matrix .pm-cell .pm-size { font-size: 10px; color: #94a3b8; }
+        .price-matrix .pm-cell .pm-price { font-size: 12px; font-weight: 700; color: #059669; }
+        .price-matrix .pm-cell.pm-empty { opacity: 0.4; }
 
         .product-card .actions {
             display: flex;
@@ -442,8 +532,6 @@
         }
     </style>
     <script src="js/permission-guard.js"></script>
-    <script src="js/config.js"></script>
-    <script src="js/vw-modal.js"></script>
 </head>
 
 <body>
@@ -798,6 +886,18 @@
                     <option value="name">Sắp xếp theo Tên</option>
                     <option value="price">Sắp xếp theo Giá</option>
                 </select>
+                <div class="view-toggle">
+                    <button id="btnGrid" class="active" onclick="setView('grid')" title="Dạng thẻ">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;display:block">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                        </svg>
+                    </button>
+                    <button id="btnTable" onclick="setView('table')" title="Dạng bảng">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;display:block">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
                 <button class="btn-primary" onclick="openModal('product')">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                         class="w-5 h-5">
@@ -806,6 +906,20 @@
                     Thêm sản phẩm</button>
             </div>
             <div class="card-grid" id="productsGrid"></div>
+            <!-- TABLE VIEW (hidden by default) -->
+            <div id="tableView">
+                <table class="simple-table" style="margin-top:0">
+                    <thead><tr>
+                        <th style="width:50px;text-align:center">STT</th>
+                        <th style="width:120px">Mã SP</th>
+                        <th>Tên sản phẩm</th>
+                        <th style="width:160px">Nhóm</th>
+                        <th style="width:140px;text-align:right">Giá cơ sở (0-0.25m²)</th>
+                        <th style="width:160px;text-align:center">Thao tác</th>
+                    </tr></thead>
+                    <tbody id="productsTableBody"></tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Tab 2: Groups -->
@@ -905,7 +1019,44 @@
         </div>
     </div>
 
-    <!-- Modal -->
+    <!-- DETAIL MODAL -->
+    <div class="detail-overlay" id="detailOverlay" onclick="closeDetailModal(event)">
+        <div class="detail-modal" onclick="event.stopPropagation()">
+            <div class="detail-modal-header">
+                <div>
+                    <div id="detailCode" style="font-size:13px;opacity:0.8;margin-bottom:2px"></div>
+                    <h2 id="detailTitle">Chi tiết sản phẩm</h2>
+                </div>
+                <button class="dm-close" onclick="closeDetailModal()">✕</button>
+            </div>
+            <div class="detail-modal-body">
+                <div class="detail-left">
+                    <!-- Thumbnail -->
+                    <div style="width:100%;height:150px;background:linear-gradient(135deg,#eef2ff,#e0e7ff);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;opacity:0.3;color:#4f46e5">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:80px;height:80px">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 10h18M12 3v18"/>
+                        </svg>
+                    </div>
+                    <!-- Badges -->
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px" id="detailBadges"></div>
+                    <!-- Meta info -->
+                    <div id="detailMeta" style="font-size:13px;line-height:1.8;color:#334155"></div>
+                    <!-- Accessories -->
+                    <div id="detailAccSection" style="margin-top:16px"></div>
+                </div>
+                <div class="detail-right">
+                    <h3>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:14px;height:14px;display:inline-block;vertical-align:-2px;margin-right:6px"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                        Bảng giá theo diện tích (VND/m²)
+                    </h3>
+                    <div class="price-matrix" id="detailPriceMatrix"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit/Add Modal -->
     <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
         <div class="modal" onclick="event.stopPropagation()">
             <div class="modal-header">
@@ -1097,54 +1248,129 @@
             renderProducts(filtered);
         }
 
+        let currentView = 'grid';
+
+        function setView(mode) {
+            currentView = mode;
+            document.getElementById('btnGrid').classList.toggle('active', mode === 'grid');
+            document.getElementById('btnTable').classList.toggle('active', mode === 'table');
+            document.getElementById('productsGrid').style.display = mode === 'grid' ? '' : 'none';
+            document.getElementById('tableView').style.display = mode === 'table' ? '' : 'none';
+        }
+
         function renderProducts(data) {
             const grid = document.getElementById('productsGrid');
             if (!data.length) {
                 grid.innerHTML = '<div class="empty-state"><p>Không có sản phẩm nào</p></div>';
+                document.getElementById('productsTableBody').innerHTML = '';
                 return;
             }
-            grid.innerHTML = data.map(p => `
-        <div class="product-card">
-            <div class="header">
-                <span class="code">${p.code}</span>
-                <div style="display:flex;gap:4px">
-                    <span style="background:#c4b5fd;color:#5b21b6;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600">${p.groupCode || ''}</span>
-                    <span style="background:#fef08a;color:#854d0e;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600">${p.groupName || ''}</span>
-                </div>
-            </div>
-            <div class="name" style="white-space:pre-line;font-size:12px;line-height:1.5">${p.name}</div>
-            ${(p.accessories && p.accessories.length > 0) ? `
-            <div style="margin:8px 0;padding:8px;background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-radius:8px;border-left:3px solid #059669">
-                <div style="color:#065f46;font-weight:700;font-size:11px;margin-bottom:4px;text-transform:uppercase">Tùy chọn Phụ kiện:</div>
-                ${p.accessories.map(acc => `
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
-                        <span style="background:#059669;color:white;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600">${acc.name}</span>
-                        <span style="color:#047857;font-weight:700;font-size:11px">${formatMoney(acc.price)}</span>
+
+            // --- GRID VIEW: Compact card without price matrix ---
+            grid.innerHTML = data.map(p => {
+                const firstPrice = p.prices && p.prices['0-0.25'] ? p.prices['0-0.25'] : null;
+                const accs = p.accessories && p.accessories.length > 0 ? p.accessories : (p.accessory ? [{name: p.accessory}] : []);
+                const accPills = accs.map(a => `<span class="acc-pill">${a.name}</span>`).join('');
+                return `
+                <div class="product-card" onclick="openDetailModal(${p.id})">
+                    <div class="card-thumb">
+                        <span class="thumb-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M12 3v18"/></svg></span>
+                        <div class="group-badge">
+                            <span style="background:#c4b5fd;color:#5b21b6;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700">${p.groupCode || ''}</span>
+                            <span style="background:#fef08a;color:#854d0e;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600">${p.groupName || ''}</span>
+                        </div>
                     </div>
-                `).join('')}
-            </div>
-            ` : (p.accessory ? `
-            <div style="display:flex;align-items:center;gap:8px;margin:8px 0;padding:8px 12px;background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-radius:8px;border-left:3px solid #059669">
-                <span style="color:#065f46;font-weight:600;font-size:12px">Phụ kiện:</span>
-                <span style="background:#059669;color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600">${p.accessory}</span>
-                <span style="color:#065f46;font-size:12px">-</span>
-                <span style="color:#047857;font-weight:700;font-size:13px">${p.accessoryPrice ? formatMoney(p.accessoryPrice) : '—'}</span>
-            </div>
-            ` : '')}
-            <div class="price-grid">
-                ${SIZE_COLUMNS.map(size => `
-                    <div class="price-item ${!p.prices[size] ? 'empty' : ''}">
-                        <div class="size">${size}m²</div>
-                        <div class="price">${p.prices[size] ? formatMoney(p.prices[size]) : '—'}</div>
+                    <div class="card-body">
+                        <div class="card-code">${p.code}</div>
+                        <div class="card-name">${(p.name || '').split('\n')[0]}</div>
+                        ${accPills ? `<div class="card-accessories">${accPills}</div>` : ''}
+                        <div class="card-price-row">
+                            <span class="card-price-label">Giá từ:</span>
+                            <span class="card-price-value">${firstPrice ? formatMoney(firstPrice) + '/m²' : '---'}</span>
+                        </div>
                     </div>
-                `).join('')}
-            </div>
-            <div class="actions">
-                <button class="btn-edit" onclick="editItem('product', ${p.id})">Sửa</button>
-                <button class="btn-delete" onclick="deleteItem('product', ${p.id})">Xóa</button>
-            </div>
-        </div>
-    `).join('');
+                    <div class="card-actions">
+                        <button class="btn-detail" onclick="event.stopPropagation();openDetailModal(${p.id})">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:13px;height:13px;display:inline-block;vertical-align:-2px;margin-right:3px"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>Chi tiết
+                        </button>
+                        <button class="btn-edit-card" onclick="event.stopPropagation();editItem('product',${p.id})">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:13px;height:13px;display:inline-block;vertical-align:-2px;margin-right:3px"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>Sửa
+                        </button>
+                        <button class="btn-del-card" onclick="event.stopPropagation();deleteItem('product',${p.id})">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:13px;height:13px;display:inline-block;vertical-align:-2px;margin-right:3px"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>Xóa
+                        </button>
+                    </div>
+                </div>`;
+            }).join('');
+
+            renderProductsTable(data);
+        }
+
+        function renderProductsTable(data) {
+            document.getElementById('productsTableBody').innerHTML = data.map((p, i) => {
+                const firstPrice = p.prices && p.prices['0-0.25'] ? p.prices['0-0.25'] : null;
+                return `<tr style="background:${i%2===0?'#f8fafc':'white'}">
+                    <td style="text-align:center;color:#94a3b8;font-weight:600">${i+1}</td>
+                    <td><span style="font-weight:700;color:#4f46e5">${p.code}</span></td>
+                    <td style="font-size:13px;color:#334155">${(p.name||'').split('\n')[0]}</td>
+                    <td>
+                        <span style="background:#c4b5fd;color:#5b21b6;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;margin-right:4px">${p.groupCode||''}</span>
+                        <span style="background:#fef08a;color:#854d0e;padding:2px 8px;border-radius:4px;font-size:11px">${p.groupName||''}</span>
+                    </td>
+                    <td style="text-align:right;font-weight:700;color:#059669;padding-right:16px">${firstPrice ? formatMoney(firstPrice) : '---'}</td>
+                    <td style="text-align:center">
+                        <button onclick="openDetailModal(${p.id})" style="background:#dbeafe;color:#1d4ed8;border:none;padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;margin-right:4px">Chi tiết</button>
+                        <button onclick="editItem('product',${p.id})" style="background:#ede9fe;color:#5b21b6;border:none;padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;margin-right:4px">Sửa</button>
+                        <button onclick="deleteItem('product',${p.id})" style="background:#fee2e2;color:#dc2626;border:none;padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer">Xóa</button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function openDetailModal(id) {
+            const p = products.find(x => x.id === id);
+            if (!p) return;
+
+            document.getElementById('detailCode').textContent = p.code;
+            document.getElementById('detailTitle').textContent = (p.name || '').split('\n')[0];
+
+            // Badges
+            document.getElementById('detailBadges').innerHTML = `
+                <span style="background:linear-gradient(135deg,#c4b5fd,#8b5cf6);color:white;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:700">${p.groupCode || ''}</span>
+                <span style="background:linear-gradient(135deg,#fef08a,#fbbf24);color:#713f12;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:600">${p.groupName || ''}</span>`;
+
+            // Full name / description
+            const lines = (p.name || '').split('\n').filter(Boolean);
+            document.getElementById('detailMeta').innerHTML = lines.map(l => `<div style="padding:2px 0;border-bottom:1px solid #f1f5f9">${l}</div>`).join('');
+
+            // Accessories
+            const accs = p.accessories && p.accessories.length > 0 ? p.accessories : (p.accessory ? [{name:p.accessory, price:p.accessoryPrice}] : []);
+            if (accs.length > 0) {
+                document.getElementById('detailAccSection').innerHTML = `
+                    <div style="font-size:11px;font-weight:700;color:#065f46;text-transform:uppercase;margin-bottom:8px">Tùy chọn Phụ kiện</div>
+                    ${accs.map(a => `<div style="display:flex;justify-content:space-between;padding:6px 10px;background:#ecfdf5;border-radius:6px;margin-bottom:4px">
+                        <span style="background:#059669;color:white;padding:1px 8px;border-radius:4px;font-size:12px;font-weight:600">${a.name}</span>
+                        <span style="color:#047857;font-weight:700;font-size:13px">${a.price ? formatMoney(a.price) : '---'}</span>
+                    </div>`).join('')}`;
+            } else {
+                document.getElementById('detailAccSection').innerHTML = '';
+            }
+
+            // Price matrix
+            document.getElementById('detailPriceMatrix').innerHTML = SIZE_COLUMNS.map(size => {
+                const val = p.prices && p.prices[size];
+                return `<div class="pm-cell ${!val ? 'pm-empty' : ''}">
+                    <div class="pm-size">${size}m²</div>
+                    <div class="pm-price">${val ? formatMoney(val) : '—'}</div>
+                </div>`;
+            }).join('');
+
+            document.getElementById('detailOverlay').classList.add('show');
+        }
+
+        function closeDetailModal(e) {
+            if (e && e.target !== e.currentTarget) return;
+            document.getElementById('detailOverlay').classList.remove('show');
         }
 
         // GLASS
