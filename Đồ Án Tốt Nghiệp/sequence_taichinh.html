@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Biểu đồ trình tự – Quản lý tài chính (Chuẩn Red-Yellow Style)</title>
+  <style>
+    body { margin: 0; background: #fff; font-family: "Arial", sans-serif; }
+    svg { display: block; margin: 20px auto; }
+  </style>
+</head>
+<body>
+<svg width="900" height="1100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#a52a2a"/>
+    </marker>
+    <marker id="dasharr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <path d="M0,0 L10,3.5 L0,7" fill="none" stroke="#a52a2a" stroke-width="1"/>
+    </marker>
+  </defs>
+
+  <!-- OBJECTS -->
+  <!-- 1. Actor: KeToan -->
+  <g transform="translate(60, 30)">
+    <circle cx="20" cy="15" r="8" fill="none" stroke="#a52a2a" stroke-width="1.5"/>
+    <line x1="20" y1="23" x2="20" y2="40" stroke="#a52a2a" stroke-width="1.5"/>
+    <line x1="5" y1="30" x2="35" y2="30" stroke="#a52a2a" stroke-width="1.5"/>
+    <line x1="20" y1="40" x2="10" y2="55" stroke="#a52a2a" stroke-width="1.5"/>
+    <line x1="20" y1="40" x2="30" y2="55" stroke="#a52a2a" stroke-width="1.5"/>
+    <text x="20" y="75" text-anchor="middle" font-size="12" font-weight="bold" text-decoration="underline">: KeToan</text>
+  </g>
+
+  <!-- 2. Boundary: TaiChinhUI -->
+  <g transform="translate(200, 40)">
+    <line x1="10" y1="10" x2="10" y2="40" stroke="#000" stroke-width="1.5"/>
+    <line x1="10" y1="25" x2="20" y2="25" stroke="#000" stroke-width="1.5"/>
+    <circle cx="45" cy="25" r="25" fill="#fffbe6" stroke="#000" stroke-width="1.2"/>
+    <text x="45" y="75" text-anchor="middle" font-size="12" font-weight="bold" text-decoration="underline">: TaiChinhUI</text>
+  </g>
+
+  <!-- 3. Controller: TaiChinhController -->
+  <g transform="translate(380, 40)">
+    <circle cx="45" cy="25" r="25" fill="#fffbe6" stroke="#000" stroke-width="1.2"/>
+    <path d="M35,5 Q45,-5 55,5" fill="none" stroke="#000" stroke-width="1.5"/>
+    <polygon points="55,5 50,5 55,10" fill="#000"/>
+    <text x="45" y="75" text-anchor="middle" font-size="12" font-weight="bold" text-decoration="underline">: TaiChinhController</text>
+  </g>
+
+  <!-- 4. Entity: PhieuThuChi -->
+  <g transform="translate(560, 40)">
+    <circle cx="45" cy="25" r="25" fill="#fffbe6" stroke="#000" stroke-width="1.2"/>
+    <line x1="20" y1="50" x2="70" y2="50" stroke="#000" stroke-width="1.5"/>
+    <text x="45" y="75" text-anchor="middle" font-size="12" font-weight="bold" text-decoration="underline">: PhieuThuChi</text>
+  </g>
+
+  <!-- 5. DB -->
+  <g transform="translate(730, 40)">
+    <line x1="10" y1="10" x2="10" y2="40" stroke="#000" stroke-width="1.5"/>
+    <line x1="10" y1="25" x2="20" y2="25" stroke="#000" stroke-width="1.5"/>
+    <circle cx="45" cy="25" r="25" fill="#fffbe6" stroke="#000" stroke-width="1.2"/>
+    <text x="45" y="75" text-anchor="middle" font-size="12" font-weight="bold" text-decoration="underline">: IHeThongCSDL</text>
+  </g>
+
+  <!-- LIFELINES -->
+  <line x1="80"  y1="130" x2="80"  y2="1060" stroke="#000" stroke-width="1" stroke-dasharray="5,4"/>
+  <line x1="245" y1="130" x2="245" y2="1060" stroke="#000" stroke-width="1" stroke-dasharray="5,4"/>
+  <line x1="425" y1="130" x2="425" y2="1060" stroke="#000" stroke-width="1" stroke-dasharray="5,4"/>
+  <line x1="605" y1="130" x2="605" y2="1060" stroke="#000" stroke-width="1" stroke-dasharray="5,4"/>
+  <line x1="775" y1="130" x2="775" y2="1060" stroke="#000" stroke-width="1" stroke-dasharray="5,4"/>
+
+  <!-- ACTIVATION BOXES -->
+  <rect x="75"  y="142" width="10" height="30"  fill="#ffe6e6" stroke="#a52a2a"/>
+  <rect x="240" y="142" width="10" height="60"  fill="#ffe6e6" stroke="#a52a2a"/>
+  <rect x="75"  y="220" width="10" height="30"  fill="#ffe6e6" stroke="#a52a2a"/>
+  <rect x="240" y="220" width="10" height="50"  fill="#ffe6e6" stroke="#a52a2a"/>
+  <!-- Flow A: Thu/Chi -->
+  <rect x="420" y="250" width="10" height="380" fill="#ffe6e6" stroke="#a52a2a"/>
+  <rect x="600" y="290" width="10" height="40"  fill="#ffe6e6" stroke="#a52a2a"/>
+  <rect x="770" y="330" width="10" height="40"  fill="#ffe6e6" stroke="#a52a2a"/>
+  <rect x="770" y="480" width="10" height="50"  fill="#ffe6e6" stroke="#a52a2a"/>
+  <rect x="240" y="650" width="10" height="36"  fill="#ffe6e6" stroke="#a52a2a"/>
+  <!-- Flow B: Bao cao -->
+  <rect x="420" y="760" width="10" height="190" fill="#ffe6e6" stroke="#a52a2a"/>
+  <rect x="770" y="800" width="10" height="40"  fill="#ffe6e6" stroke="#a52a2a"/>
+  <rect x="240" y="960" width="10" height="36"  fill="#ffe6e6" stroke="#a52a2a"/>
+
+  <!-- ═══ MESSAGES ═══ -->
+
+  <!-- 1 -->
+  <line x1="85" y1="148" x2="240" y2="148" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="162" y="143" text-anchor="middle" font-size="10">1: chon "Quan ly Tai chinh"()</text>
+
+  <!-- 2 self UI -->
+  <path d="M250,158 L282,158 L282,178 L250,178" fill="none" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="340" y="173" text-anchor="middle" font-size="10">2: hienThiDashboardTaiChinh()</text>
+
+  <!-- 3 -->
+  <line x1="85" y1="226" x2="240" y2="226" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="162" y="221" text-anchor="middle" font-size="10">3: chonNghiepVu (Thu/Chi/BaoCao)</text>
+
+  <!-- ═══ FLOW A: GHI NHAN THU / CHI ═══ -->
+  <rect x="30" y="242" width="840" height="420" fill="none" stroke="#000" stroke-width="1"/>
+  <line x1="30" y1="260" x2="78" y2="260" stroke="#000" stroke-width="1"/>
+  <line x1="78" y1="260" x2="88" y2="242" stroke="#000" stroke-width="1"/>
+  <text x="54" y="256" font-size="11" font-weight="bold">alt</text>
+  <text x="96" y="256" font-size="10" font-style="italic">[Nghiep vu: Ghi nhan Thu hoac Chi]</text>
+
+  <!-- 4 UI→Ctrl -->
+  <line x1="250" y1="276" x2="420" y2="276" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="335" y="271" text-anchor="middle" font-size="10">4: taoPhieuMoi(loai)</text>
+
+  <!-- 5 Ctrl→Entity -->
+  <line x1="430" y1="298" x2="600" y2="298" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="515" y="293" text-anchor="middle" font-size="10">5: layDanhSachDoiTuong(KH/DA)</text>
+
+  <!-- 6 Entity→DB -->
+  <line x1="610" y1="338" x2="770" y2="338" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="690" y="333" text-anchor="middle" font-size="10">6: truyVanCongNo(doiTuongId)</text>
+
+  <!-- 7 return cong no -->
+  <line x1="770" y1="362" x2="610" y2="362" stroke="#a52a2a" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#dasharr)"/>
+  <text x="690" y="357" text-anchor="middle" font-size="10">7: soTienConNo / PhaiTra</text>
+
+  <!-- 8 Ctrl→UI -->
+  <line x1="420" y1="390" x2="245" y2="390" stroke="#a52a2a" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#dasharr)"/>
+  <text x="332" y="385" text-anchor="middle" font-size="10">8: hienThiSoTienConNo(doiTuong)</text>
+
+  <!-- 9 KeToan nhap -->
+  <line x1="85" y1="418" x2="240" y2="418" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="162" y="413" text-anchor="middle" font-size="10">9: nhapThongTin(soTien, hinhThuc)</text>
+
+  <!-- 10 nhan luu -->
+  <line x1="85" y1="448" x2="240" y2="448" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="162" y="443" text-anchor="middle" font-size="10">10: nhanNutLuuPhieu()</text>
+
+  <!-- 11 UI→Ctrl -->
+  <line x1="250" y1="462" x2="420" y2="462" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="335" y="457" text-anchor="middle" font-size="10">11: luuPhieuThuChi(data)</text>
+
+  <!-- 12 Ctrl→DB: cap nhat -->
+  <line x1="430" y1="488" x2="770" y2="488" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="600" y="483" text-anchor="middle" font-size="10">12: capNhatCongNoVaSoDu(data)</text>
+
+  <!-- 13 return -->
+  <line x1="770" y1="518" x2="430" y2="518" stroke="#a52a2a" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#dasharr)"/>
+  <text x="600" y="513" text-anchor="middle" font-size="10">13: success</text>
+
+  <!-- 14 Ctrl→DB: insert chung tu -->
+  <line x1="430" y1="548" x2="770" y2="548" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="600" y="543" text-anchor="middle" font-size="10">14: insertPhieuVaoBangFinance(data)</text>
+
+  <!-- 15 return phieuId -->
+  <line x1="770" y1="568" x2="430" y2="568" stroke="#a52a2a" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#dasharr)"/>
+  <text x="600" y="563" text-anchor="middle" font-size="10">15: success (phieuId)</text>
+
+  <!-- 16 Ctrl→UI result -->
+  <line x1="420" y1="608" x2="245" y2="608" stroke="#a52a2a" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#dasharr)"/>
+  <text x="332" y="603" text-anchor="middle" font-size="10">16: returnKetQua(success)</text>
+
+  <!-- 17 UI self: thong bao -->
+  <path d="M250,622 L282,622 L282,642 L250,642" fill="none" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="348" y="637" text-anchor="middle" font-size="10">17: hienThiThongBao &amp; choPhepInPhieu()</text>
+
+  <!-- ═══ FLOW B: BAO CAO DOANH THU ═══ -->
+  <line x1="30" y1="700" x2="870" y2="700" stroke="#000" stroke-width="1" stroke-dasharray="8,4"/>
+  <text x="96" y="720" font-size="10" font-style="italic">[Nghiep vu: Xem bao cao doanh thu]</text>
+
+  <!-- 18 -->
+  <line x1="85" y1="742" x2="240" y2="742" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="162" y="737" text-anchor="middle" font-size="10">18: chonBaoCaoDoanhThu()</text>
+
+  <!-- 19 UI→Ctrl -->
+  <line x1="250" y1="768" x2="420" y2="768" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="335" y="763" text-anchor="middle" font-size="10">19: layBaoCao(tuNgay, denNgay)</text>
+
+  <!-- 20 Ctrl→DB -->
+  <line x1="430" y1="808" x2="770" y2="808" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="600" y="803" text-anchor="middle" font-size="10">20: SELECT SUM(thu), SUM(chi)</text>
+
+  <!-- 21 return -->
+  <line x1="770" y1="838" x2="430" y2="838" stroke="#a52a2a" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#dasharr)"/>
+  <text x="600" y="833" text-anchor="middle" font-size="10">21: tongThu, tongChi, loiNhuan[]</text>
+
+  <!-- 22 self: tao bieu do -->
+  <path d="M430,862 L462,862 L462,882 L430,882" fill="none" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="520" y="877" text-anchor="middle" font-size="10">22: taoBieuDoSoSanhThuChi()</text>
+
+  <!-- 23 Ctrl→UI return bieu do -->
+  <line x1="420" y1="910" x2="245" y2="910" stroke="#a52a2a" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#dasharr)"/>
+  <text x="332" y="905" text-anchor="middle" font-size="10">23: returnBaoCao(bieuDo, bangTongHop)</text>
+
+  <!-- 24 UI self -->
+  <path d="M250,930 L282,930 L282,950 L250,950" fill="none" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="352" y="945" text-anchor="middle" font-size="10">24: hienThiBieuDoDoanhThu()</text>
+
+  <!-- OPT: Xuat Excel -->
+  <rect x="30" y="968" width="840" height="56" fill="none" stroke="#000" stroke-width="1"/>
+  <line x1="30" y1="986" x2="78" y2="986" stroke="#000" stroke-width="1"/>
+  <line x1="78" y1="986" x2="88" y2="968" stroke="#000" stroke-width="1"/>
+  <text x="54" y="982" font-size="11" font-weight="bold">opt</text>
+  <text x="96" y="982" font-size="10" font-style="italic">[Xuat file Excel bao cao]</text>
+  <line x1="85" y1="1004" x2="240" y2="1004" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="162" y="999" text-anchor="middle" font-size="10">25: chonXuatExcel() → download()</text>
+
+</svg>
+
+<p style="text-align:center; font-style:italic; font-family:'Arial'; font-size:14px; margin-top:10px;">
+  Hình 2.x. Biểu đồ trình tự use case Quản lý tài chính
+</p>
+</body>
+</html>

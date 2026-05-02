@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Biểu đồ hoạt động – Bóc tách vật tư</title>
+  <style>
+    body { margin: 0; background: #fff; font-family: "Times New Roman", serif; }
+    svg { display: block; margin: 20px auto; }
+  </style>
+</head>
+<body>
+<svg width="600" height="1100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#333"/>
+    </marker>
+  </defs>
+
+  <!-- BORDER -->
+  <rect x="10" y="10" width="580" height="1078" fill="white" stroke="#333" stroke-width="1.5"/>
+
+  <!-- TITLE -->
+  <text x="300" y="38" text-anchor="middle" font-size="14" font-weight="bold" font-family="Times New Roman">
+    2.3.4. Biểu đồ hoạt động use case Thiết kế &amp; Bóc tách vật tư
+  </text>
+
+  <!-- START -->
+  <circle cx="300" cy="72" r="13" fill="#222"/>
+  <line x1="300" y1="85" x2="300" y2="106" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ACT 1 -->
+  <rect x="130" y="108" width="340" height="44" rx="22" fill="#cce5ff" stroke="#333" stroke-width="1.2"/>
+  <text x="300" y="135" text-anchor="middle" font-size="12" font-family="Times New Roman">Nhân viên KT chọn menu "Kỹ thuật"</text>
+  <line x1="300" y1="152" x2="300" y2="172" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ACT 2 -->
+  <rect x="110" y="174" width="380" height="44" rx="22" fill="#cce5ff" stroke="#333" stroke-width="1.2"/>
+  <text x="300" y="201" text-anchor="middle" font-size="12" font-family="Times New Roman">Hệ thống hiển thị danh sách dự án (dạng thẻ)</text>
+  <line x1="300" y1="218" x2="300" y2="238" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ACT 3 -->
+  <rect x="130" y="240" width="340" height="44" rx="22" fill="#cce5ff" stroke="#333" stroke-width="1.2"/>
+  <text x="300" y="267" text-anchor="middle" font-size="12" font-family="Times New Roman">Nhân viên KT chọn dự án và nhấn "Chọn dự án"</text>
+  <line x1="300" y1="284" x2="300" y2="304" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ACT 4 -->
+  <rect x="110" y="306" width="380" height="44" rx="22" fill="#cce5ff" stroke="#333" stroke-width="1.2"/>
+  <text x="300" y="333" text-anchor="middle" font-size="12" font-family="Times New Roman">Hệ thống hiển thị danh sách sản phẩm (Bước 2)</text>
+  <line x1="300" y1="350" x2="300" y2="370" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ACT 5 -->
+  <rect x="110" y="372" width="380" height="44" rx="22" fill="#cce5ff" stroke="#333" stroke-width="1.2"/>
+  <text x="300" y="399" text-anchor="middle" font-size="12" font-family="Times New Roman">Nhân viên nhập kích thước thực tế (R × C)</text>
+  <line x1="300" y1="416" x2="300" y2="436" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ACT 6 -->
+  <rect x="110" y="438" width="380" height="44" rx="22" fill="#cce5ff" stroke="#333" stroke-width="1.2"/>
+  <text x="300" y="465" text-anchor="middle" font-size="12" font-family="Times New Roman">Nhân viên nhấn "Tính toán bóc tách"</text>
+  <line x1="300" y1="482" x2="300" y2="502" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- DECISION 1: Công thức tồn tại? -->
+  <polygon points="300,502 390,534 300,566 210,534" fill="#fffbcc" stroke="#333" stroke-width="1.2"/>
+  <text x="300" y="530" text-anchor="middle" font-size="11" font-family="Times New Roman">Công thức</text>
+  <text x="300" y="545" text-anchor="middle" font-size="11" font-family="Times New Roman">cắt tồn tại?</text>
+
+  <!-- Không → RIGHT error -->
+  <line x1="390" y1="534" x2="490" y2="534" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="435" y="527" text-anchor="middle" font-size="11" fill="#c00" font-family="Times New Roman">Không</text>
+  <rect x="491" y="510" width="85" height="48" rx="8" fill="#ffd6d6" stroke="#333" stroke-width="1.2"/>
+  <text x="533" y="531" text-anchor="middle" font-size="10" font-family="Times New Roman">Thông báo:</text>
+  <text x="533" y="545" text-anchor="middle" font-size="10" font-family="Times New Roman">"Chưa có</text>
+  <text x="533" y="559" text-anchor="middle" font-size="10" font-family="Times New Roman">công thức"</text>
+  <!-- End error -->
+  <line x1="533" y1="558" x2="533" y2="582" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <circle cx="533" cy="595" r="10" fill="none" stroke="#333" stroke-width="2"/>
+  <circle cx="533" cy="595" r="6" fill="#333"/>
+
+  <!-- Có → DOWN -->
+  <line x1="300" y1="566" x2="300" y2="586" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="325" y="580" font-size="11" fill="#007700" font-family="Times New Roman">Có</text>
+
+  <!-- ACT 7 -->
+  <rect x="90" y="588" width="420" height="44" rx="22" fill="#d4edda" stroke="#333" stroke-width="1.2"/>
+  <text x="300" y="615" text-anchor="middle" font-size="12" font-family="Times New Roman">Hệ thống tính chiều dài cắt nhôm &amp; kích thước kính</text>
+  <line x1="300" y1="632" x2="300" y2="652" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ACT 8 -->
+  <rect x="90" y="654" width="420" height="44" rx="22" fill="#d4edda" stroke="#333" stroke-width="1.2"/>
+  <text x="300" y="681" text-anchor="middle" font-size="12" font-family="Times New Roman">Hệ thống tổng hợp số lượng phụ kiện kèm theo</text>
+  <line x1="300" y1="698" x2="300" y2="718" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ACT 9 -->
+  <rect x="110" y="720" width="380" height="44" rx="22" fill="#d4edda" stroke="#333" stroke-width="1.2"/>
+  <text x="300" y="747" text-anchor="middle" font-size="12" font-family="Times New Roman">Hệ thống hiển thị bảng BOM dự kiến (Bước 3)</text>
+  <line x1="300" y1="764" x2="300" y2="784" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ACT 10: Đối chiếu tồn kho (Bước 4) -->
+  <rect x="90" y="786" width="420" height="44" rx="22" fill="#d4edda" stroke="#333" stroke-width="1.2"/>
+  <text x="300" y="813" text-anchor="middle" font-size="12" font-family="Times New Roman">Hệ thống đối chiếu BOM với tồn kho (Bước 4)</text>
+  <line x1="300" y1="830" x2="300" y2="850" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- DECISION 2: Đủ vật tư? -->
+  <polygon points="300,850 385,880 300,910 215,880" fill="#fffbcc" stroke="#333" stroke-width="1.2"/>
+  <text x="300" y="876" text-anchor="middle" font-size="11" font-family="Times New Roman">Đủ vật tư</text>
+  <text x="300" y="890" text-anchor="middle" font-size="11" font-family="Times New Roman">trong kho?</text>
+
+  <!-- Không đủ → LEFT -->
+  <line x1="215" y1="880" x2="115" y2="880" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="163" y="872" text-anchor="middle" font-size="11" fill="#c00" font-family="Times New Roman">Không đủ</text>
+  <rect x="22" y="856" width="94" height="48" rx="8" fill="#ffd6d6" stroke="#333" stroke-width="1.2"/>
+  <text x="69" y="877" text-anchor="middle" font-size="10" font-family="Times New Roman">Cảnh báo</text>
+  <text x="69" y="891" text-anchor="middle" font-size="10" font-family="Times New Roman">thiếu vật tư,</text>
+  <text x="69" y="905" text-anchor="middle" font-size="10" font-family="Times New Roman">bôi đỏ dòng</text>
+  <!-- arrow to suggest PO -->
+  <line x1="69" y1="904" x2="69" y2="940" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="22" y="942" width="94" height="44" rx="8" fill="#ffd6d6" stroke="#333" stroke-width="1.2"/>
+  <text x="69" y="960" text-anchor="middle" font-size="10" font-family="Times New Roman">Gợi ý tạo</text>
+  <text x="69" y="974" text-anchor="middle" font-size="10" font-family="Times New Roman">Yêu cầu VT</text>
+  <line x1="69" y1="986" x2="69" y2="1005" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <circle cx="69" cy="1018" r="10" fill="none" stroke="#333" stroke-width="2"/>
+  <circle cx="69" cy="1018" r="6" fill="#333"/>
+
+  <!-- Đủ → DOWN -->
+  <line x1="300" y1="910" x2="300" y2="930" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="325" y="924" font-size="11" fill="#007700" font-family="Times New Roman">Đủ</text>
+
+  <!-- ACT 11 -->
+  <rect x="110" y="932" width="380" height="44" rx="22" fill="#d4edda" stroke="#333" stroke-width="1.2"/>
+  <text x="300" y="959" text-anchor="middle" font-size="12" font-family="Times New Roman">Nhân viên xác nhận lưu bảng BOM</text>
+  <line x1="300" y1="976" x2="300" y2="996" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ACT 12 -->
+  <rect x="110" y="998" width="380" height="44" rx="22" fill="#d4edda" stroke="#333" stroke-width="1.2"/>
+  <text x="300" y="1025" text-anchor="middle" font-size="12" font-family="Times New Roman">Hệ thống lưu BOM &amp; cập nhật tiến độ dự án</text>
+  <line x1="300" y1="1042" x2="300" y2="1058" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- END -->
+  <circle cx="300" cy="1072" r="12" fill="none" stroke="#333" stroke-width="2.5"/>
+  <circle cx="300" cy="1072" r="7" fill="#222"/>
+</svg>
+
+<p style="text-align:center; font-style:italic; font-family:'Times New Roman'; font-size:13px; margin-top:4px;">
+  Hình 2.y. Biểu đồ hoạt động use case Thiết kế &amp; Bóc tách vật tư
+</p>
+</body>
+</html>

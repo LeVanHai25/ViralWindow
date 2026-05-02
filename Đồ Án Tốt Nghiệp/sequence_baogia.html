@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Biểu đồ trình tự – Lập báo giá (Chuẩn Red-Yellow Style)</title>
+  <style>
+    body { margin: 0; background: #fff; font-family: "Arial", sans-serif; }
+    svg { display: block; margin: 20px auto; }
+  </style>
+</head>
+<body>
+<svg width="1000" height="1200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#a52a2a"/>
+    </marker>
+    <marker id="dasharr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <path d="M0,0 L10,3.5 L0,7" fill="none" stroke="#a52a2a" stroke-width="1"/>
+    </marker>
+  </defs>
+
+  <!-- OBJECTS -->
+  <!-- 1. Actor: NhanVienKD -->
+  <g transform="translate(60, 30)">
+    <circle cx="20" cy="15" r="8" fill="none" stroke="#a52a2a" stroke-width="1.5"/>
+    <line x1="20" y1="23" x2="20" y2="40" stroke="#a52a2a" stroke-width="1.5"/>
+    <line x1="5" y1="30" x2="35" y2="30" stroke="#a52a2a" stroke-width="1.5"/>
+    <line x1="20" y1="40" x2="10" y2="55" stroke="#a52a2a" stroke-width="1.5"/>
+    <line x1="20" y1="40" x2="30" y2="55" stroke="#a52a2a" stroke-width="1.5"/>
+    <text x="20" y="75" text-anchor="middle" font-size="12" font-weight="bold" text-decoration="underline">: NhanVienKD</text>
+  </g>
+
+  <!-- 2. Boundary: BaoGiaUI -->
+  <g transform="translate(180, 40)">
+    <line x1="10" y1="10" x2="10" y2="40" stroke="#000" stroke-width="1.5"/>
+    <line x1="10" y1="25" x2="20" y2="25" stroke="#000" stroke-width="1.5"/>
+    <circle cx="45" cy="25" r="25" fill="#fffbe6" stroke="#000" stroke-width="1.2"/>
+    <text x="45" y="75" text-anchor="middle" font-size="12" font-weight="bold" text-decoration="underline">: BaoGiaUI</text>
+  </g>
+
+  <!-- 3. Controller: BaoGiaController -->
+  <g transform="translate(360, 40)">
+    <circle cx="45" cy="25" r="25" fill="#fffbe6" stroke="#000" stroke-width="1.2"/>
+    <path d="M35,5 Q45,-5 55,5" fill="none" stroke="#000" stroke-width="1.5"/>
+    <polygon points="55,5 50,5 55,10" fill="#000"/>
+    <text x="45" y="75" text-anchor="middle" font-size="12" font-weight="bold" text-decoration="underline">: BaoGiaController</text>
+  </g>
+
+  <!-- 4. Entity: DonGia -->
+  <g transform="translate(540, 40)">
+    <circle cx="45" cy="25" r="25" fill="#fffbe6" stroke="#000" stroke-width="1.2"/>
+    <line x1="20" y1="50" x2="70" y2="50" stroke="#000" stroke-width="1.5"/>
+    <text x="45" y="75" text-anchor="middle" font-size="12" font-weight="bold" text-decoration="underline">: DonGia</text>
+  </g>
+
+  <!-- 5. Entity: BaoGia -->
+  <g transform="translate(720, 40)">
+    <circle cx="45" cy="25" r="25" fill="#fffbe6" stroke="#000" stroke-width="1.2"/>
+    <line x1="20" y1="50" x2="70" y2="50" stroke="#000" stroke-width="1.5"/>
+    <text x="45" y="75" text-anchor="middle" font-size="12" font-weight="bold" text-decoration="underline">: BaoGia</text>
+  </g>
+
+  <!-- 6. DB -->
+  <g transform="translate(880, 40)">
+    <line x1="10" y1="10" x2="10" y2="40" stroke="#000" stroke-width="1.5"/>
+    <line x1="10" y1="25" x2="20" y2="25" stroke="#000" stroke-width="1.5"/>
+    <circle cx="45" cy="25" r="25" fill="#fffbe6" stroke="#000" stroke-width="1.2"/>
+    <text x="45" y="75" text-anchor="middle" font-size="12" font-weight="bold" text-decoration="underline">: IHeThongCSDL</text>
+  </g>
+
+  <!-- LIFELINES -->
+  <line x1="80"  y1="130" x2="80"  y2="1150" stroke="#000" stroke-width="1" stroke-dasharray="5,4"/>
+  <line x1="225" y1="130" x2="225" y2="1150" stroke="#000" stroke-width="1" stroke-dasharray="5,4"/>
+  <line x1="405" y1="130" x2="405" y2="1150" stroke="#000" stroke-width="1" stroke-dasharray="5,4"/>
+  <line x1="585" y1="130" x2="585" y2="1150" stroke="#000" stroke-width="1" stroke-dasharray="5,4"/>
+  <line x1="765" y1="130" x2="765" y2="1150" stroke="#000" stroke-width="1" stroke-dasharray="5,4"/>
+  <line x1="925" y1="130" x2="925" y2="1150" stroke="#000" stroke-width="1" stroke-dasharray="5,4"/>
+
+  <!-- ACTIVATION BOXES -->
+  <rect x="75"  y="140" width="10" height="30"  fill="#ffe6e6" stroke="#a52a2a"/>
+  <rect x="220" y="140" width="10" height="60"  fill="#ffe6e6" stroke="#a52a2a"/>
+  
+  <rect x="75"  y="220" width="10" height="30"  fill="#ffe6e6" stroke="#a52a2a"/>
+  <rect x="220" y="220" width="10" height="30"  fill="#ffe6e6" stroke="#a52a2a"/>
+  
+  <rect x="75"  y="270" width="10" height="50"  fill="#ffe6e6" stroke="#a52a2a"/>
+  <rect x="220" y="270" width="10" height="80"  fill="#ffe6e6" stroke="#a52a2a"/>
+  
+  <rect x="400" y="320" width="10" height="480" fill="#ffe6e6" stroke="#a52a2a"/>
+  <rect x="580" y="360" width="10" height="40"  fill="#ffe6e6" stroke="#a52a2a"/>
+  <rect x="920" y="380" width="10" height="30"  fill="#ffe6e6" stroke="#a52a2a"/>
+
+  <rect x="760" y="820" width="10" height="50"  fill="#ffe6e6" stroke="#a52a2a"/>
+  <rect x="920" y="850" width="10" height="30"  fill="#ffe6e6" stroke="#a52a2a"/>
+  
+  <rect x="400" y="930" width="10" height="100" fill="#ffe6e6" stroke="#a52a2a"/>
+  <rect x="220" y="1050" width="10" height="40" fill="#ffe6e6" stroke="#a52a2a"/>
+
+  <!-- MESSAGES -->
+  
+  <!-- 1. Open Menu -->
+  <line x1="85" y1="145" x2="220" y2="145" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="152" y="140" text-anchor="middle" font-size="10">1: chonMenuTaoBaoGia()</text>
+
+  <!-- 2. Display Form -->
+  <path d="M230,155 L260,155 L260,175 L230,175" fill="none" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="315" y="170" text-anchor="middle" font-size="10">2: hienThiFormLapBaoGia()</text>
+
+  <!-- 3. Select Customer -->
+  <line x1="85" y1="225" x2="220" y2="225" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="152" y="220" text-anchor="middle" font-size="10">3: timKiemVaChonKhachHang()</text>
+
+  <!-- 4. Input Item -->
+  <line x1="85" y1="275" x2="220" y2="275" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="152" y="270" text-anchor="middle" font-size="10">4: themSanPham(maSP, RxC, SL)</text>
+
+  <!-- 5. Get Price -->
+  <line x1="230" y1="325" x2="400" y2="325" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="315" y="320" text-anchor="middle" font-size="10">5: traCuuDonGia(maSP)</text>
+
+  <!-- 6. Entity Price -->
+  <line x1="410" y1="365" x2="580" y2="365" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="495" y="360" text-anchor="middle" font-size="10">6: getDonGia(maSP)</text>
+
+  <!-- 7. Query DB -->
+  <line x1="590" y1="385" x2="920" y2="385" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="755" y="380" text-anchor="middle" font-size="10">7: truyVanGiaSP()</text>
+
+  <!-- 8. Return Price -->
+  <line x1="920" y1="405" x2="590" y2="405" stroke="#a52a2a" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#dasharr)"/>
+  <text x="755" y="400" text-anchor="middle" font-size="10">8: bangDonGia[]</text>
+
+  <!-- ALT: Unit Price exists -->
+  <rect x="30" y="420" width="940" height="120" fill="none" stroke="#000" stroke-width="1"/>
+  <line x1="30" y1="440" x2="90" y2="440" stroke="#000" stroke-width="1"/>
+  <line x1="90" y1="440" x2="100" y2="420" stroke="#000" stroke-width="1"/>
+  <text x="60" y="435" font-size="11" font-weight="bold">alt</text>
+  <text x="110" y="435" font-size="10" font-style="italic">[Co don gia co dinh]</text>
+
+  <line x1="580" y1="460" x2="410" y2="460" stroke="#a52a2a" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#dasharr)"/>
+  <text x="495" y="455" text-anchor="middle" font-size="10">9: traDonGiaCoDinh(giaM2)</text>
+
+  <line x1="30" y1="480" x2="970" y2="480" stroke="#000" stroke-width="1" stroke-dasharray="8,4"/>
+  <text x="110" y="495" font-size="10" font-style="italic">[Khong co don gia - nhap thu cong]</text>
+
+  <line x1="400" y1="510" x2="85" y2="510" stroke="#a52a2a" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#dasharr)"/>
+  <text x="242" y="505" text-anchor="middle" font-size="10">9a: yeuCauNhapGia()</text>
+  <line x1="85" y1="530" x2="400" y2="530" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="242" y="525" text-anchor="middle" font-size="10">9b: nhapDonGiaThuCong()</text>
+
+  <!-- Calculation -->
+  <path d="M410,550 L440,550 L440,570 L410,570" fill="none" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="500" y="565" text-anchor="middle" font-size="10">10: tinhDienTich() &amp; ThanhTien()</text>
+
+  <!-- Loop -->
+  <rect x="30" y="590" width="940" height="60" fill="none" stroke="#000" stroke-width="1"/>
+  <line x1="30" y1="610" x2="100" y2="610" stroke="#000" stroke-width="1"/>
+  <line x1="100" y1="610" x2="110" y2="590" stroke="#000" stroke-width="1"/>
+  <text x="65" y="605" font-size="11" font-weight="bold">loop</text>
+  <text x="120" y="605" font-size="10" font-style="italic">[Tiep tuc them san pham]</text>
+  
+  <line x1="400" y1="630" x2="230" y2="630" stroke="#a52a2a" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#dasharr)"/>
+  <text x="315" y="625" text-anchor="middle" font-size="10">11: hienThiKetQuaTamTinh()</text>
+
+  <!-- 12. Save & Export -->
+  <line x1="85" y1="680" x2="230" y2="680" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="152" y="675" text-anchor="middle" font-size="10">12: nhanNutLuuVaXuatBaoGia()</text>
+
+  <line x1="230" y1="710" x2="400" y2="710" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="315" y="705" text-anchor="middle" font-size="10">13: saveAndExport(data)</text>
+
+  <!-- Update DB -->
+  <line x1="410" y1="740" x2="920" y2="740" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="665" y="735" text-anchor="middle" font-size="10">14: insertQuotations(data)</text>
+  <line x1="920" y1="760" x2="410" y2="760" stroke="#a52a2a" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#dasharr)"/>
+  <text x="665" y="755" text-anchor="middle" font-size="10">15: success (quotationId)</text>
+
+  <!-- Create PDF -->
+  <line x1="410" y1="790" x2="760" y2="790" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="585" y="785" text-anchor="middle" font-size="10">16: khoiTaoFilePDFTheoMau()</text>
+
+  <line x1="770" y1="830" x2="920" y2="830" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="845" y="825" text-anchor="middle" font-size="10">17: luuDuongDanPDF()</text>
+
+  <line x1="920" y1="860" x2="770" y2="860" stroke="#a52a2a" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#dasharr)"/>
+  <text x="845" y="855" text-anchor="middle" font-size="10">18: success</text>
+
+  <!-- Result -->
+  <rect x="30" y="880" width="940" height="110" fill="none" stroke="#000" stroke-width="1"/>
+  <line x1="30" y1="900" x2="85" y2="900" stroke="#000" stroke-width="1"/>
+  <line x1="85" y1="900" x2="95" y2="880" stroke="#000" stroke-width="1"/>
+  <text x="57" y="895" font-size="11" font-weight="bold">alt</text>
+  <text x="105" y="895" font-size="10" font-style="italic">[Tao PDF thanh cong]</text>
+
+  <line x1="400" y1="920" x2="230" y2="920" stroke="#a52a2a" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#dasharr)"/>
+  <text x="315" y="915" text-anchor="middle" font-size="10">19: returnFilePDF(url)</text>
+
+  <line x1="30" y1="940" x2="970" y2="940" stroke="#000" stroke-width="1" stroke-dasharray="8,4"/>
+  <text x="105" y="955" font-size="10" font-style="italic">[Loi tao PDF]</text>
+  <line x1="400" y1="975" x2="230" y2="975" stroke="#a52a2a" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#dasharr)"/>
+  <text x="315" y="970" text-anchor="middle" font-size="10">19a: hienThiLoiPDF()</text>
+
+  <!-- Final step -->
+  <path d="M230,1010 L260,1010 L260,1030 L230,1030" fill="none" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="325" y="1025" text-anchor="middle" font-size="10">20: hienThiThongBao &amp; ChoTaiFile()</text>
+
+</svg>
+
+<p style="text-align:center; font-style:italic; font-family:'Arial'; font-size:14px; margin-top:10px;">
+  Hình 2.x. Biểu đồ trình tự use case Lập báo giá
+</p>
+</body>
+</html>

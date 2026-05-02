@@ -1,0 +1,308 @@
+<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><title>ERD ViralWindow - Crow's Foot</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#fff;font-family:'Times New Roman',serif;padding:15px}
+h1{text-align:center;font-size:15pt;color:#1a2540;margin-bottom:2px}
+.sub{text-align:center;font-size:11pt;color:#555;font-style:italic;margin-bottom:10px}
+.canvas{position:relative;width:2200px;height:1500px;border:1.5px solid #333;background:#fff;margin:0 auto}
+svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
+.group{position:absolute;border:2px dashed;border-radius:10px;padding:8px}
+.group-label{position:absolute;top:-13px;left:16px;font-size:10pt;font-weight:700;padding:0 8px;background:#fff}
+.ent{position:absolute;border:1.8px solid #555;border-radius:4px;background:#fff;font-size:10pt;box-shadow:0 1px 4px rgba(0,0,0,.12);overflow:hidden}
+.ent-h{padding:5px 10px;font-weight:700;color:#fff;text-align:center;font-size:10.5pt;letter-spacing:.5px}
+.ent-r{display:flex;padding:2px 8px;border-bottom:1px solid #eee;font-size:9.5pt;gap:4px;align-items:center}
+.ent-r:last-child{border-bottom:none}
+.pk{color:#c62828;font-weight:700}.fk{color:#1565c0;font-weight:600}.at{color:#333}
+.badge{font-size:7.5pt;font-weight:700;border-radius:2px;padding:0 4px}
+.bpk{background:#ffcdd2;color:#b71c1c;border:1px solid #e57373}
+.bfk{background:#bbdefb;color:#0d47a1;border:1px solid #64b5f6}
+.c1{background:#1a3a6c}.c2{background:#2e7d32}.c3{background:#6a1b9a}.c4{background:#c62828}.c5{background:#e65100}.c6{background:#00695c}
+.g1{border-color:#1a3a6c;background:rgba(26,58,108,.03)}.g2{border-color:#2e7d32;background:rgba(46,125,50,.03)}
+.g3{border-color:#6a1b9a;background:rgba(106,27,154,.03)}.g4{border-color:#c62828;background:rgba(198,40,40,.03)}
+.g5{border-color:#e65100;background:rgba(230,81,0,.03)}.g6{border-color:#00695c;background:rgba(0,105,92,.03)}
+.legend{margin:8px auto;width:2200px;display:flex;gap:20px;font-size:9.5pt;align-items:center;flex-wrap:wrap}
+.legend b{margin-right:6px}
+.leg-item{display:flex;align-items:center;gap:4px}
+.leg-line{width:30px;height:0;border-top:2px solid #4a6fa5}
+@media print{body{padding:0}.canvas{border:1px solid #aaa}}
+</style></head><body>
+<h1>Biểu đồ Thực thể Liên kết (ERD) – Hệ thống ViralWindow</h1>
+<p class="sub">Hình 2.25. Sơ đồ thiết kế CSDL – Crow's Foot Notation</p>
+
+<div class="legend">
+<b>Ký hiệu Crow's Foot:</b>
+<span class="leg-item">──||── Một (bắt buộc)</span>
+<span class="leg-item">──|○── Một (tùy chọn)</span>
+<span class="leg-item">──⟩|── Nhiều (bắt buộc)</span>
+<span class="leg-item">──⟩○── Nhiều (tùy chọn)</span>
+<span class="leg-item"><span class="badge bpk">PK</span> Khóa chính</span>
+<span class="leg-item"><span class="badge bfk">FK</span> Khóa ngoại</span>
+</div>
+
+<div class="canvas" id="cv">
+<svg id="sg" xmlns="http://www.w3.org/2000/svg"></svg>
+</div>
+
+<script>
+const NS='http://www.w3.org/2000/svg';
+const cv=document.getElementById('cv'),sg=document.getElementById('sg');
+
+// ===== MODULE GROUPS =====
+const groups=[
+{x:10,y:10,w:480,h:590,cls:'g1',label:'🔵 Xác thực & Phân quyền'},
+{x:500,y:10,w:290,h:500,cls:'g2',label:'🟢 Khách hàng & Dự án'},
+{x:800,y:10,w:310,h:730,cls:'g3',label:'🟣 Sản phẩm & BOM'},
+{x:1120,y:10,w:320,h:700,cls:'g4',label:'🔴 Báo giá'},
+{x:1450,y:10,w:340,h:750,cls:'g5',label:'🟠 Tài chính & Công nợ'},
+{x:1800,y:10,w:300,h:580,cls:'g6',label:'🟤 Kho vật tư'},
+];
+
+groups.forEach(g=>{
+const d=document.createElement('div');d.className='group '+g.cls;
+d.style.cssText=`left:${g.x}px;top:${g.y}px;width:${g.w}px;height:${g.h}px`;
+d.innerHTML=`<span class="group-label">${g.label}</span>`;
+cv.appendChild(d);
+});
+
+// ===== ENTITIES =====
+const entities={
+A:{x:30,y:40,w:220,hc:'c1',name:'CHUC_VU',rows:[
+['id','PK'],['ten',''],['mo_ta',''],['la_he_thong',''],['ngay_tao','']]},
+B:{x:30,y:230,w:220,hc:'c1',name:'QUYEN_HAN',rows:[
+['id','PK'],['ma_code',''],['ten',''],['module',''],['thu_tu','']]},
+C:{x:260,y:40,w:220,hc:'c1',name:'NGUOI_DUNG',rows:[
+['id','PK'],['ma_chuc_vu','FK'],['email',''],['mat_khau',''],['ho_ten',''],['loai_tai_khoan',''],['trang_thai',''],['ngay_tao','']]},
+D:{x:30,y:420,w:220,hc:'c1',name:'CHUC_VU_QUYEN',rows:[
+['ma_chuc_vu','PK FK'],['ma_quyen','PK FK']]},
+E:{x:260,y:330,w:220,hc:'c1',name:'PHIEN_DANG_NHAP',rows:[
+['id','PK'],['ma_nguoi_dung','FK'],['token_phien',''],['dang_hoat_dong',''],['thoi_gian_dn',''],['dia_chi_ip','']]},
+F:{x:260,y:520,w:220,hc:'c1',name:'THONG_BAO',rows:[
+['id','PK'],['ma_nguoi_dung','FK'],['tieu_de',''],['noi_dung',''],['da_doc',''],['ngay_tao','']]},
+
+G:{x:520,y:40,w:250,hc:'c2',name:'KHACH_HANG',rows:[
+['id','PK'],['ma_khach_hang',''],['ho_ten',''],['dien_thoai',''],['email',''],['dia_chi',''],['ma_so_thue',''],['trang_thai_kh',''],['ngay_tao','']]},
+H:{x:520,y:330,w:250,hc:'c2',name:'DU_AN',rows:[
+['id','PK'],['ma_khach_hang','FK'],['ma_du_an',''],['ten_du_an',''],['trang_thai',''],['ngay_bat_dau',''],['han_hoan_thanh',''],['dia_chi_thi_cong',''],['ghi_chu',''],['ngay_tao','']]},
+
+I:{x:820,y:40,w:270,hc:'c3',name:'MAU_SAN_PHAM',rows:[
+['id','PK'],['ma_code',''],['ten_san_pham',''],['loai_san_pham',''],['danh_muc',''],['chieu_rong_md',''],['chieu_cao_md',''],['cau_truc_json',''],['anh_dai_dien','']]},
+J:{x:820,y:350,w:270,hc:'c3',name:'SAN_PHAM_DU_AN',rows:[
+['id','PK'],['ma_du_an','FK'],['ma_mau_sp','FK'],['ten_rieng',''],['so_luong',''],['chieu_rong_tc',''],['chieu_cao_tc',''],['cau_hinh_snap',''],['vi_tri_lap_dat',''],['trang_thai',''],['ngay_tao','']]},
+K:{x:820,y:620,w:270,hc:'c3',name:'VAT_TU_BOM',rows:[
+['id','PK'],['ma_sp_du_an','FK'],['ma_ton_kho','FK'],['loai_vat_tu',''],['ma_code',''],['ten_vat_tu',''],['chieu_dai_mm',''],['so_luong',''],['hao_hut_mm',''],['ngay_tao','']]},
+
+L:{x:1140,y:40,w:280,hc:'c4',name:'BAO_GIA',rows:[
+['id','PK'],['ma_du_an','FK'],['ma_bao_gia',''],['ngay_bao_gia',''],['phien_ban',''],['trang_thai',''],['pt_loi_nhuan',''],['pt_vat',''],['phi_van_chuyen',''],['tong_tien_cuoi',''],['so_tien_dat_coc',''],['ngay_tao','']]},
+M:{x:1140,y:440,w:280,hc:'c4',name:'CHI_TIET_BAO_GIA',rows:[
+['id','PK'],['ma_bao_gia','FK'],['ma_mau_sp','FK'],['ten_san_pham',''],['chieu_rong',''],['chieu_cao',''],['so_luong',''],['don_gia',''],['thanh_tien','']]},
+
+N:{x:1470,y:40,w:300,hc:'c5',name:'GIAO_DICH_TAI_CHINH',rows:[
+['id','PK'],['ma_du_an','FK'],['ma_bao_gia','FK'],['ma_giao_dich',''],['ngay_giao_dich',''],['loai_giao_dich',''],['danh_muc',''],['so_tien',''],['dien_giai',''],['trang_thai',''],['pt_thanh_toan',''],['ngay_tao','']]},
+O:{x:1470,y:440,w:300,hc:'c5',name:'CHI_TIET_GIAO_DICH',rows:[
+['id','PK'],['ma_giao_dich','FK'],['ten_muc',''],['so_luong',''],['don_gia',''],['thanh_tien','']]},
+P:{x:1470,y:620,w:300,hc:'c5',name:'CONG_NO',rows:[
+['id','PK'],['ma_du_an','FK'],['loai_cong_no',''],['nha_cung_cap',''],['tong_no',''],['da_thanh_toan',''],['trang_thai',''],['ngay_tao','']]},
+
+Q:{x:1820,y:40,w:260,hc:'c6',name:'TON_KHO',rows:[
+['id','PK'],['ma_vat_tu',''],['ten_vat_tu',''],['loai_vat_tu',''],['don_vi',''],['don_gia',''],['nha_cung_cap',''],['muc_canh_bao','']]},
+R:{x:1820,y:340,w:260,hc:'c6',name:'GIAO_DICH_KHO',rows:[
+['id','PK'],['ma_ton_kho','FK'],['ma_du_an','FK'],['loai_giao_dich',''],['so_luong',''],['ghi_chu',''],['ngay_giao_dich','']]},
+};
+
+// Render entities
+Object.entries(entities).forEach(([id,e])=>{
+const d=document.createElement('div');d.className='ent';d.id=id;
+d.style.cssText=`left:${e.x}px;top:${e.y}px;width:${e.w}px`;
+let h=`<div class="ent-h ${e.hc}">${e.name}</div>`;
+e.rows.forEach(r=>{
+const [name,type]=r;
+let cls='at',badges='';
+if(type.includes('PK')&&type.includes('FK')){cls='fk';badges='<span class="badge bpk">PK</span><span class="badge bfk">FK</span>';}
+else if(type==='PK'){cls='pk';badges='<span class="badge bpk">PK</span>';}
+else if(type==='FK'){cls='fk';badges='<span class="badge bfk">FK</span>';}
+h+=`<div class="ent-r"><span class="${cls}" style="flex:1">${name}</span>${badges}</div>`;
+});
+d.innerHTML=h;cv.appendChild(d);
+});
+
+// ===== CROW'S FOOT DRAWING =====
+function getBox(id){
+const el=document.getElementById(id),cr=cv.getBoundingClientRect(),r=el.getBoundingClientRect();
+return{l:r.left-cr.left,r:r.right-cr.left,t:r.top-cr.top,b:r.bottom-cr.top,
+cx:(r.left+r.right)/2-cr.left,cy:(r.top+r.bottom)/2-cr.top,w:r.width,h:r.height};
+}
+
+function drawLine(pts,color='#4a6fa5'){
+const p=document.createElementNS(NS,'polyline');
+p.setAttribute('points',pts.map(v=>v.join(',')).join(' '));
+p.setAttribute('fill','none');p.setAttribute('stroke',color);
+p.setAttribute('stroke-width','1.8');sg.appendChild(p);
+}
+
+// Crow's foot: "1" side = short perpendicular line; "many" side = fork
+function drawOne(x,y,dir){
+// dir: 'l','r','u','d'
+const g=document.createElementNS(NS,'g');
+let l1,l2;
+if(dir==='r'){l1=[[x,y-7],[x,y+7]];}
+else if(dir==='l'){l1=[[x,y-7],[x,y+7]];}
+else if(dir==='d'){l1=[[x-7,y],[x+7,y]];}
+else{l1=[[x-7,y],[x+7,y]];}
+const p=document.createElementNS(NS,'line');
+p.setAttribute('x1',l1[0][0]);p.setAttribute('y1',l1[0][1]);
+p.setAttribute('x2',l1[1][0]);p.setAttribute('y2',l1[1][1]);
+p.setAttribute('stroke','#4a6fa5');p.setAttribute('stroke-width','2');
+sg.appendChild(p);
+}
+
+function drawMany(x,y,dir){
+const lines=[];
+if(dir==='r'){lines.push([[x-8,y-7],[x,y]],[[x-8,y+7],[x,y]]);}
+else if(dir==='l'){lines.push([[x+8,y-7],[x,y]],[[x+8,y+7],[x,y]]);}
+else if(dir==='d'){lines.push([[x-7,y-8],[x,y]],[[x+7,y-8],[x,y]]);}
+else{lines.push([[x-7,y+8],[x,y]],[[x+7,y+8],[x,y]]);}
+lines.forEach(l=>{
+const p=document.createElementNS(NS,'line');
+p.setAttribute('x1',l[0][0]);p.setAttribute('y1',l[0][1]);
+p.setAttribute('x2',l[1][0]);p.setAttribute('y2',l[1][1]);
+p.setAttribute('stroke','#4a6fa5');p.setAttribute('stroke-width','2');
+sg.appendChild(p);
+});
+}
+
+function drawOptional(x,y,dir){
+const c=document.createElementNS(NS,'circle');
+c.setAttribute('r','4');c.setAttribute('fill','#fff');c.setAttribute('stroke','#4a6fa5');c.setAttribute('stroke-width','1.5');
+if(dir==='r'){c.setAttribute('cx',x-5);c.setAttribute('cy',y);}
+else if(dir==='l'){c.setAttribute('cx',x+5);c.setAttribute('cy',y);}
+else if(dir==='d'){c.setAttribute('cx',x);c.setAttribute('cy',y-5);}
+else{c.setAttribute('cx',x);c.setAttribute('cy',y+5);}
+sg.appendChild(c);
+}
+
+function label(x,y,t,sz=9){
+const e=document.createElementNS(NS,'text');
+e.setAttribute('x',x);e.setAttribute('y',y);
+e.setAttribute('text-anchor','middle');e.setAttribute('font-size',sz);
+e.setAttribute('fill','#555');e.setAttribute('font-style','italic');
+e.setAttribute('font-family','Times New Roman');
+e.textContent=t;sg.appendChild(e);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+const a=getBox('A'),b=getBox('B'),c=getBox('C'),d=getBox('D'),e=getBox('E'),f=getBox('F'),
+g=getBox('G'),h=getBox('H'),i=getBox('I'),j=getBox('J'),k=getBox('K'),l=getBox('L'),
+m=getBox('M'),n=getBox('N'),o=getBox('O'),p=getBox('P'),q=getBox('Q'),r=getBox('R');
+
+// ── AUTH MODULE ──
+// CHUC_VU 1──N NGUOI_DUNG
+drawLine([[a.r,a.cy],[c.l,a.cy]]);
+drawOne(a.r+2,a.cy,'r');drawMany(c.l-2,a.cy,'l');
+label((a.r+c.l)/2,a.cy-10,'có');
+
+// CHUC_VU 1──N CHUC_VU_QUYEN
+drawLine([[a.cx,a.b],[a.cx,d.t]]);
+drawOne(a.cx,a.b+2,'d');drawMany(a.cx,d.t-2,'u');
+label(a.cx+20,(a.b+d.t)/2,'gán');
+
+// QUYEN_HAN 1──N CHUC_VU_QUYEN
+drawLine([[b.cx,b.b],[b.cx,d.t]]);
+drawOne(b.cx,b.b+2,'d');drawMany(b.cx,d.t-2,'u');
+label(b.cx+22,(b.b+d.t)/2,'gán');
+
+// NGUOI_DUNG 1──0..N PHIEN_DANG_NHAP
+drawLine([[c.cx,c.b],[c.cx,e.t]]);
+drawOne(c.cx,c.b+2,'d');drawMany(c.cx,e.t-2,'u');drawOptional(c.cx,e.t-2,'u');
+label(c.cx+28,(c.b+e.t)/2,'đăng nhập');
+
+// NGUOI_DUNG 1──0..N THONG_BAO
+drawLine([[c.cx-30,c.b],[c.cx-30,c.b+15],[f.cx+30,c.b+15],[f.cx+30,f.t]]);
+drawOne(c.cx-30,c.b+2,'d');drawMany(f.cx+30,f.t-2,'u');drawOptional(f.cx+30,f.t-2,'u');
+label((c.cx+f.cx)/2-10,c.b+10,'nhận');
+
+// ── BUSINESS MODULE ──
+// KHACH_HANG 1──0..N DU_AN
+drawLine([[g.cx,g.b],[g.cx,h.t]]);
+drawOne(g.cx,g.b+2,'d');drawMany(g.cx,h.t-2,'u');drawOptional(g.cx,h.t-2,'u');
+label(g.cx+22,(g.b+h.t)/2,'sở hữu');
+
+// ── PRODUCT MODULE ──
+// DU_AN 1──0..N SAN_PHAM_DU_AN
+drawLine([[h.r,h.cy],[j.l,h.cy]]);
+drawOne(h.r+2,h.cy,'r');drawMany(j.l-2,h.cy,'l');drawOptional(j.l-2,h.cy,'l');
+label((h.r+j.l)/2,h.cy-10,'chứa');
+
+// MAU_SAN_PHAM 1──0..N SAN_PHAM_DU_AN
+drawLine([[i.cx,i.b],[i.cx,j.t]]);
+drawOne(i.cx,i.b+2,'d');drawMany(i.cx,j.t-2,'u');drawOptional(i.cx,j.t-2,'u');
+label(i.cx+26,(i.b+j.t)/2,'áp dụng');
+
+// SAN_PHAM_DU_AN 1──0..N VAT_TU_BOM
+drawLine([[j.cx-20,j.b],[j.cx-20,k.t]]);
+drawOne(j.cx-20,j.b+2,'d');drawMany(j.cx-20,k.t-2,'u');drawOptional(j.cx-20,k.t-2,'u');
+label(j.cx+10,(j.b+k.t)/2,'bóc tách');
+
+// ── QUOTATION MODULE ──
+// DU_AN 1──0..N BAO_GIA
+drawLine([[h.r,h.cy-25],[h.r+30,h.cy-25],[h.r+30,l.cy],[l.l,l.cy]]);
+drawOne(h.r+2,h.cy-25,'r');drawMany(l.l-2,l.cy,'l');drawOptional(l.l-2,l.cy,'l');
+label(h.r+30+30,l.cy-10,'tạo');
+
+// BAO_GIA 1──N CHI_TIET_BAO_GIA
+drawLine([[l.cx,l.b],[l.cx,m.t]]);
+drawOne(l.cx,l.b+2,'d');drawMany(l.cx,m.t-2,'u');
+label(l.cx+22,(l.b+m.t)/2,'gồm');
+
+// MAU_SAN_PHAM 0..1──0..N CHI_TIET_BAO_GIA
+drawLine([[i.r,i.cy+20],[i.r+15,i.cy+20],[i.r+15,m.cy-15],[m.l,m.cy-15]]);
+drawOne(i.r+2,i.cy+20,'r');drawOptional(i.r+2,i.cy+20,'r');
+drawMany(m.l-2,m.cy-15,'l');drawOptional(m.l-2,m.cy-15,'l');
+label(i.r+15+40,m.cy-25,'tham chiếu');
+
+// ── FINANCE MODULE ──
+// DU_AN 1──0..N GIAO_DICH_TAI_CHINH
+drawLine([[h.r,h.cy+25],[h.r+50,h.cy+25],[h.r+50,h.t-25],[n.cx,h.t-25],[n.cx,n.t]]);
+drawOne(h.r+2,h.cy+25,'r');drawMany(n.cx,n.t-2,'u');drawOptional(n.cx,n.t-2,'u');
+label(n.cx+30,n.t-30,'phát sinh');
+
+// BAO_GIA 0..1──0..N GIAO_DICH_TAI_CHINH
+drawLine([[l.r,l.cy+20],[l.r+15,l.cy+20],[l.r+15,n.cy+20],[n.l,n.cy+20]]);
+drawOne(l.r+2,l.cy+20,'r');drawOptional(l.r+2,l.cy+20,'r');
+drawMany(n.l-2,n.cy+20,'l');drawOptional(n.l-2,n.cy+20,'l');
+label((l.r+n.l)/2,n.cy+12,'thanh toán');
+
+// GIAO_DICH_TAI_CHINH 1──0..N CHI_TIET_GIAO_DICH
+drawLine([[n.cx,n.b],[n.cx,o.t]]);
+drawOne(n.cx,n.b+2,'d');drawMany(n.cx,o.t-2,'u');drawOptional(n.cx,o.t-2,'u');
+label(n.cx+22,(n.b+o.t)/2,'gồm');
+
+// DU_AN 1──0..N CONG_NO
+drawLine([[h.cx+30,h.b],[h.cx+30,h.b+30],[p.l-20,h.b+30],[p.l-20,p.cy],[p.l,p.cy]]);
+drawOne(h.cx+30,h.b+2,'d');drawMany(p.l-2,p.cy,'l');drawOptional(p.l-2,p.cy,'l');
+label(p.l-20-5,p.cy-10,'nợ');
+
+// ── INVENTORY MODULE ──
+// TON_KHO 1──0..N GIAO_DICH_KHO
+drawLine([[q.cx,q.b],[q.cx,r.t]]);
+drawOne(q.cx,q.b+2,'d');drawMany(q.cx,r.t-2,'u');drawOptional(q.cx,r.t-2,'u');
+label(q.cx+25,(q.b+r.t)/2,'xuất/nhập');
+
+// DU_AN 0..1──0..N GIAO_DICH_KHO
+drawLine([[h.r,h.b-20],[h.r+60,h.b-20],[h.r+60,h.b+50],[r.l-20,h.b+50],[r.l-20,r.cy],[r.l,r.cy]]);
+drawOne(h.r+2,h.b-20,'r');drawOptional(h.r+2,h.b-20,'r');
+drawMany(r.l-2,r.cy,'l');drawOptional(r.l-2,r.cy,'l');
+label(r.l-20-5,r.cy-10,'xuất kho');
+
+// TON_KHO 0..1──0..N VAT_TU_BOM
+drawLine([[q.l,q.cy+20],[q.l-15,q.cy+20],[q.l-15,k.cy+20],[k.r,k.cy+20]]);
+drawOne(q.l-2,q.cy+20,'l');drawOptional(q.l-2,q.cy+20,'l');
+drawMany(k.r+2,k.cy+20,'r');drawOptional(k.r+2,k.cy+20,'r');
+label((q.l+k.r)/2,k.cy+12,'tra cứu');
+
+});
+</script>
+
+<p style="text-align:center;font-size:10pt;color:#888;margin-top:6px">
+💡 Zoom 100% → <b>Win+Shift+S</b> chụp hoặc <b>Ctrl+P → PDF</b>
+</p>
+</body></html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Bảng CSDL – Nhóm Người dùng</title>
+  <style>body{margin:20px;background:#fff;font-family:Arial,sans-serif}svg{display:block;margin:15px auto}</style>
+</head>
+<body>
+
+<!-- BẢNG 1: users -->
+<svg width="700" height="420" xmlns="http://www.w3.org/2000/svg">
+  <text x="350" y="22" text-anchor="middle" font-size="14" font-weight="bold">Bảng 2.1. users – Người dùng hệ thống</text>
+  <!-- Header -->
+  <rect x="20" y="35" width="660" height="30" fill="#d4a373" stroke="#a52a2a" stroke-width="1"/>
+  <text x="45" y="55" font-size="11" font-weight="bold" fill="#fff">STT</text>
+  <text x="85" y="55" font-size="11" font-weight="bold" fill="#fff">Tên cột</text>
+  <text x="230" y="55" font-size="11" font-weight="bold" fill="#fff">Kiểu dữ liệu</text>
+  <text x="390" y="55" font-size="11" font-weight="bold" fill="#fff">Ràng buộc</text>
+  <text x="510" y="55" font-size="11" font-weight="bold" fill="#fff">Mô tả</text>
+  <!-- Rows -->
+  <g font-size="11">
+    <rect x="20" y="65" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="81">1</text><text x="85" y="81" font-weight="bold">id</text><text x="230" y="81">INT</text><text x="390" y="81">PK</text><text x="510" y="81">Mã người dùng</text>
+
+    <rect x="20" y="87" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="103">2</text><text x="85" y="103">full_name</text><text x="230" y="103">VARCHAR(255)</text><text x="390" y="103">NOT NULL</text><text x="510" y="103">Họ và tên</text>
+
+    <rect x="20" y="109" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="125">3</text><text x="85" y="125">email</text><text x="230" y="125">VARCHAR(100)</text><text x="390" y="125">NOT NULL, UQ</text><text x="510" y="125">Email đăng nhập</text>
+
+    <rect x="20" y="131" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="147">4</text><text x="85" y="147">phone</text><text x="230" y="147">VARCHAR(20)</text><text x="390" y="147">UQ</text><text x="510" y="147">Số điện thoại</text>
+
+    <rect x="20" y="153" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="169">5</text><text x="85" y="169">password</text><text x="230" y="169">VARCHAR(255)</text><text x="390" y="169">NOT NULL</text><text x="510" y="169">Mật khẩu (bcrypt)</text>
+
+    <rect x="20" y="175" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="191">6</text><text x="85" y="191">address</text><text x="230" y="191">TEXT</text><text x="390" y="191"></text><text x="510" y="191">Địa chỉ</text>
+
+    <rect x="20" y="197" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="213">7</text><text x="85" y="213">user_type</text><text x="230" y="213">ENUM</text><text x="390" y="213">DEFAULT 'user'</text><text x="510" y="213">admin/user/manager</text>
+
+    <rect x="20" y="219" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="235">8</text><text x="85" y="235">role_id</text><text x="230" y="235">INT</text><text x="390" y="235">FK → roles(id)</text><text x="510" y="235">Mã vai trò</text>
+
+    <rect x="20" y="241" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="257">9</text><text x="85" y="257">is_active</text><text x="230" y="257">TINYINT(1)</text><text x="390" y="257">DEFAULT 1</text><text x="510" y="257">Trạng thái kích hoạt</text>
+
+    <rect x="20" y="263" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="279">10</text><text x="85" y="279">avatar_url</text><text x="230" y="279">LONGTEXT</text><text x="390" y="279"></text><text x="510" y="279">Ảnh đại diện</text>
+
+    <rect x="20" y="285" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="301">11</text><text x="85" y="301">last_login</text><text x="230" y="301">TIMESTAMP</text><text x="390" y="301"></text><text x="510" y="301">Lần đăng nhập cuối</text>
+
+    <rect x="20" y="307" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="323">12</text><text x="85" y="323">remember_me</text><text x="230" y="323">TINYINT(1)</text><text x="390" y="323">DEFAULT 0</text><text x="510" y="323">Ghi nhớ đăng nhập</text>
+
+    <rect x="20" y="329" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="345">13</text><text x="85" y="345">timezone</text><text x="230" y="345">VARCHAR(50)</text><text x="390" y="345">DEFAULT 'Asia/...'</text><text x="510" y="345">Múi giờ</text>
+
+    <rect x="20" y="351" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="367">14</text><text x="85" y="367">language</text><text x="230" y="367">VARCHAR(10)</text><text x="390" y="367">DEFAULT 'vi'</text><text x="510" y="367">Ngôn ngữ</text>
+
+    <rect x="20" y="373" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="389">15</text><text x="85" y="389">created_at</text><text x="230" y="389">TIMESTAMP</text><text x="390" y="389">CURRENT_TIMESTAMP</text><text x="510" y="389">Ngày tạo</text>
+
+    <rect x="20" y="395" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="411">16</text><text x="85" y="411">updated_at</text><text x="230" y="411">TIMESTAMP</text><text x="390" y="411">ON UPDATE</text><text x="510" y="411">Ngày cập nhật</text>
+  </g>
+</svg>
+
+<!-- BẢNG 2: roles -->
+<svg width="700" height="170" xmlns="http://www.w3.org/2000/svg">
+  <text x="350" y="22" text-anchor="middle" font-size="14" font-weight="bold">Bảng 2.2. roles – Vai trò người dùng</text>
+  <rect x="20" y="35" width="660" height="30" fill="#d4a373" stroke="#a52a2a" stroke-width="1"/>
+  <text x="45" y="55" font-size="11" font-weight="bold" fill="#fff">STT</text>
+  <text x="85" y="55" font-size="11" font-weight="bold" fill="#fff">Tên cột</text>
+  <text x="230" y="55" font-size="11" font-weight="bold" fill="#fff">Kiểu dữ liệu</text>
+  <text x="390" y="55" font-size="11" font-weight="bold" fill="#fff">Ràng buộc</text>
+  <text x="510" y="55" font-size="11" font-weight="bold" fill="#fff">Mô tả</text>
+  <g font-size="11">
+    <rect x="20" y="65" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="81">1</text><text x="85" y="81" font-weight="bold">id</text><text x="230" y="81">INT</text><text x="390" y="81">PK, AI</text><text x="510" y="81">Mã vai trò</text>
+    <rect x="20" y="87" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="103">2</text><text x="85" y="103">name</text><text x="230" y="103">VARCHAR(50)</text><text x="390" y="103">NOT NULL, UQ</text><text x="510" y="103">Tên vai trò</text>
+    <rect x="20" y="109" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="125">3</text><text x="85" y="125">description</text><text x="230" y="125">VARCHAR(255)</text><text x="390" y="125"></text><text x="510" y="125">Mô tả</text>
+    <rect x="20" y="131" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="147">4</text><text x="85" y="147">created_at</text><text x="230" y="147">TIMESTAMP</text><text x="390" y="147">CURRENT_TIMESTAMP</text><text x="510" y="147">Ngày tạo</text>
+  </g>
+</svg>
+
+<!-- BẢNG 3: customers -->
+<svg width="700" height="310" xmlns="http://www.w3.org/2000/svg">
+  <text x="350" y="22" text-anchor="middle" font-size="14" font-weight="bold">Bảng 2.3. customers – Khách hàng</text>
+  <rect x="20" y="35" width="660" height="30" fill="#d4a373" stroke="#a52a2a" stroke-width="1"/>
+  <text x="45" y="55" font-size="11" font-weight="bold" fill="#fff">STT</text>
+  <text x="85" y="55" font-size="11" font-weight="bold" fill="#fff">Tên cột</text>
+  <text x="230" y="55" font-size="11" font-weight="bold" fill="#fff">Kiểu dữ liệu</text>
+  <text x="390" y="55" font-size="11" font-weight="bold" fill="#fff">Ràng buộc</text>
+  <text x="510" y="55" font-size="11" font-weight="bold" fill="#fff">Mô tả</text>
+  <g font-size="11">
+    <rect x="20" y="65" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="81">1</text><text x="85" y="81" font-weight="bold">id</text><text x="230" y="81">INT</text><text x="390" y="81">PK</text><text x="510" y="81">Mã khách hàng</text>
+    <rect x="20" y="87" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="103">2</text><text x="85" y="103">full_name</text><text x="230" y="103">VARCHAR(255)</text><text x="390" y="103">NOT NULL</text><text x="510" y="103">Tên khách hàng</text>
+    <rect x="20" y="109" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="125">3</text><text x="85" y="125">phone</text><text x="230" y="125">VARCHAR(20)</text><text x="390" y="125">UQ</text><text x="510" y="125">Số điện thoại</text>
+    <rect x="20" y="131" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="147">4</text><text x="85" y="147">email</text><text x="230" y="147">VARCHAR(100)</text><text x="390" y="147"></text><text x="510" y="147">Email</text>
+    <rect x="20" y="153" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="169">5</text><text x="85" y="169">address</text><text x="230" y="169">TEXT</text><text x="390" y="169"></text><text x="510" y="169">Địa chỉ</text>
+    <rect x="20" y="175" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="191">6</text><text x="85" y="191">company_name</text><text x="230" y="191">VARCHAR(255)</text><text x="390" y="191"></text><text x="510" y="191">Tên công ty</text>
+    <rect x="20" y="197" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="213">7</text><text x="85" y="213">tax_code</text><text x="230" y="213">VARCHAR(50)</text><text x="390" y="213"></text><text x="510" y="213">Mã số thuế</text>
+    <rect x="20" y="219" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="235">8</text><text x="85" y="235">debt</text><text x="230" y="235">DECIMAL(15,2)</text><text x="390" y="235">DEFAULT 0.00</text><text x="510" y="235">Công nợ</text>
+    <rect x="20" y="241" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="257">9</text><text x="85" y="257">notes</text><text x="230" y="257">TEXT</text><text x="390" y="257"></text><text x="510" y="257">Ghi chú</text>
+    <rect x="20" y="263" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="279">10</text><text x="85" y="279">created_at</text><text x="230" y="279">TIMESTAMP</text><text x="390" y="279">CURRENT_TIMESTAMP</text><text x="510" y="279">Ngày tạo</text>
+    <rect x="20" y="285" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="301">11</text><text x="85" y="301">updated_at</text><text x="230" y="301">TIMESTAMP</text><text x="390" y="301">ON UPDATE</text><text x="510" y="301">Ngày cập nhật</text>
+  </g>
+</svg>
+
+</body>
+</html>

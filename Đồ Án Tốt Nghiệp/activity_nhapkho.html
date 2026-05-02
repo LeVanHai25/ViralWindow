@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Biểu đồ hoạt động – Nhập kho vật tư</title>
+  <style>
+    body { margin: 0; background: #fff; font-family: "Times New Roman", serif; }
+    svg { display: block; margin: 20px auto; }
+  </style>
+</head>
+<body>
+<svg width="720" height="950" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#000"/>
+    </marker>
+  </defs>
+
+  <!-- OUTER BORDER -->
+  <rect x="5" y="5" width="710" height="940" fill="white" stroke="#000" stroke-width="1.5"/>
+
+  <!-- SWIMLANE HEADERS -->
+  <rect x="5" y="5" width="355" height="42" fill="white" stroke="#000" stroke-width="1"/>
+  <rect x="360" y="5" width="355" height="42" fill="white" stroke="#000" stroke-width="1"/>
+  <text x="182" y="31" text-anchor="middle" font-size="13" font-weight="bold" font-family="Times New Roman">Nhân viên Kho</text>
+  <text x="537" y="31" text-anchor="middle" font-size="13" font-weight="bold" font-family="Times New Roman">Hệ thống</text>
+
+  <!-- LANE DIVIDER -->
+  <line x1="360" y1="47" x2="360" y2="945" stroke="#000" stroke-width="1" stroke-dasharray="6,4"/>
+
+  <!-- START -->
+  <circle cx="182" cy="78" r="13" fill="#000"/>
+  <line x1="182" y1="91" x2="182" y2="110" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- U1 -->
+  <rect x="55" y="112" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="182" y="136" text-anchor="middle" font-size="12" font-family="Times New Roman">Chọn "Tạo phiếu nhập kho"</text>
+  <line x1="310" y1="131" x2="398" y2="131" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- S1 -->
+  <rect x="400" y="112" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="527" y="136" text-anchor="middle" font-size="12" font-family="Times New Roman">Hiển thị form phiếu nhập</text>
+  <line x1="527" y1="150" x2="527" y2="170" stroke="#000" stroke-width="1.5"/>
+  <line x1="527" y1="170" x2="310" y2="170" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- U2 -->
+  <rect x="35" y="173" width="295" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="182" y="197" text-anchor="middle" font-size="12" font-family="Times New Roman">Chọn Nhà cung cấp, thêm vật tư nhập</text>
+  <line x1="182" y1="211" x2="182" y2="230" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- U3 -->
+  <rect x="35" y="232" width="295" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="182" y="256" text-anchor="middle" font-size="12" font-family="Times New Roman">Nhập Số lượng thực nhận, Đơn giá</text>
+  <line x1="182" y1="270" x2="182" y2="289" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- U4 -->
+  <rect x="55" y="291" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="182" y="315" text-anchor="middle" font-size="12" font-family="Times New Roman">Nhấn "Hoàn tất nhập kho"</text>
+  <line x1="310" y1="310" x2="398" y2="310" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- S2: Validate -->
+  <rect x="400" y="291" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="527" y="315" text-anchor="middle" font-size="12" font-family="Times New Roman">Kiểm tra dữ liệu phiếu nhập</text>
+  <line x1="527" y1="329" x2="527" y2="348" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- D1: Hợp lệ? -->
+  <polygon points="527,348 615,376 527,404 439,376" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="527" y="372" text-anchor="middle" font-size="11" font-family="Times New Roman">Dữ liệu</text>
+  <text x="527" y="386" text-anchor="middle" font-size="11" font-family="Times New Roman">hợp lệ?</text>
+
+  <!-- [invalid] → back to U3 -->
+  <line x1="615" y1="376" x2="690" y2="376" stroke="#000" stroke-width="1.5"/>
+  <text x="648" y="370" text-anchor="middle" font-size="10" font-family="Times New Roman">[invalid]</text>
+  <line x1="690" y1="376" x2="690" y2="251" stroke="#000" stroke-width="1.5"/>
+  <line x1="690" y1="251" x2="330" y2="251" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="680" y="320" text-anchor="end" font-size="10" font-family="Times New Roman">[Báo lỗi]</text>
+
+  <!-- [valid] → down -->
+  <line x1="527" y1="404" x2="527" y2="423" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="548" y="418" font-size="10" font-family="Times New Roman">[valid]</text>
+
+  <!-- S3: Tính tổng tiền -->
+  <rect x="400" y="425" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="527" y="449" text-anchor="middle" font-size="12" font-family="Times New Roman">Tự động tính tổng tiền phiếu nhập</text>
+  <line x1="527" y1="463" x2="527" y2="482" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- S4: Lưu phiếu -->
+  <rect x="400" y="484" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="527" y="508" text-anchor="middle" font-size="12" font-family="Times New Roman">Lưu phiếu nhập kho vào CSDL</text>
+  <line x1="527" y1="522" x2="527" y2="541" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- S5: Cập nhật tồn kho -->
+  <rect x="400" y="543" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="527" y="567" text-anchor="middle" font-size="12" font-family="Times New Roman">Cộng (+) số lượng vào Inventory</text>
+  <line x1="527" y1="581" x2="527" y2="600" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- S6: Thông báo -->
+  <rect x="400" y="602" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="527" y="626" text-anchor="middle" font-size="12" font-family="Times New Roman">Thông báo "Nhập kho thành công"</text>
+  <line x1="527" y1="640" x2="527" y2="659" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- END -->
+  <circle cx="527" cy="673" r="13" fill="none" stroke="#000" stroke-width="2.5"/>
+  <circle cx="527" cy="673" r="8" fill="#000"/>
+</svg>
+
+<p style="text-align:center; font-style:italic; font-family:'Times New Roman'; font-size:13px; margin-top:4px;">
+  Hình 2.v. Biểu đồ hoạt động use case Nhập kho vật tư
+</p>
+</body>
+</html>

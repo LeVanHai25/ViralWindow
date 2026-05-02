@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Biểu đồ lớp phân tích – UC Quản lý người dùng</title>
+  <style>body{margin:0;background:#fff;font-family:Arial,sans-serif}svg{display:block;margin:20px auto}</style>
+</head>
+<body>
+<svg width="860" height="740" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <g id="ai"><rect x="0" y="4" width="10" height="8" fill="#4a90e2" rx="1"/><path d="M2,4 V2 A3,3 0 0,1 8,2 V4" fill="none" stroke="#4a90e2" stroke-width="1.5"/></g>
+    <g id="mi"><polygon points="5,0 10,5 5,10 0,5" fill="#e83e8c"/></g>
+    <marker id="da" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><path d="M0,0 L10,3.5 L0,7" fill="none" stroke="#a52a2a" stroke-width="1"/></marker>
+  </defs>
+
+  <!-- LINES -->
+  <line x1="170" y1="175" x2="170" y2="238" stroke="#a52a2a" stroke-width="1" stroke-dasharray="6,3" marker-end="url(#da)"/>
+  <text x="178" y="208" font-size="11">1</text>
+  <line x1="170" y1="398" x2="170" y2="458" stroke="#a52a2a" stroke-width="1" stroke-dasharray="6,3" marker-end="url(#da)"/>
+  <text x="178" y="430" font-size="11">1</text>
+  <line x1="170" y1="618" x2="170" y2="648" stroke="#a52a2a" stroke-width="1" stroke-dasharray="6,3" marker-end="url(#da)"/>
+  <text x="178" y="635" font-size="11">1</text>
+  <line x1="310" y1="530" x2="528" y2="360" stroke="#a52a2a" stroke-width="1" stroke-dasharray="6,3" marker-end="url(#da)"/>
+  <text x="400" y="435" font-size="11">1</text>
+  <line x1="310" y1="690" x2="528" y2="440" stroke="#a52a2a" stroke-width="1"/>
+  <text x="440" y="540" font-size="11">1</text>
+  <text x="390" y="595" font-size="14" font-weight="bold">*</text>
+
+  <!-- 1. BOUNDARY: NguoiDungUI -->
+  <g transform="translate(30,30)">
+    <rect width="280" height="145" fill="#fffbe6" stroke="#a52a2a" stroke-width="1.2"/>
+    <rect width="280" height="38" fill="#fffbe6" stroke="#a52a2a" stroke-width="1.2"/>
+    <line x1="0" y1="55" x2="280" y2="55" stroke="#a52a2a" stroke-width="0.8"/>
+    <text x="140" y="16" text-anchor="middle" font-size="12">&lt;&lt;boundary&gt;&gt;</text>
+    <text x="140" y="33" text-anchor="middle" font-size="13" font-weight="bold" text-decoration="underline">NguoiDungUI</text>
+    <use href="#mi" x="10" y="62"/><text x="26" y="72" font-size="12">hienThiDanhSachTaiKhoan()</text>
+    <use href="#mi" x="10" y="82"/><text x="26" y="92" font-size="12">hienThiFormTaoTaiKhoan()</text>
+    <use href="#mi" x="10" y="102"/><text x="26" y="112" font-size="12">submitThongTin(data)</text>
+    <use href="#mi" x="10" y="122"/><text x="26" y="132" font-size="12">hienThiThongBao(msg)</text>
+  </g>
+
+  <!-- 2. CONTROL: NguoiDungController -->
+  <g transform="translate(30,238)">
+    <rect width="280" height="160" fill="#fffbe6" stroke="#a52a2a" stroke-width="1.2"/>
+    <rect width="280" height="38" fill="#fffbe6" stroke="#a52a2a" stroke-width="1.2"/>
+    <line x1="0" y1="55" x2="280" y2="55" stroke="#a52a2a" stroke-width="0.8"/>
+    <text x="140" y="16" text-anchor="middle" font-size="12">&lt;&lt;control&gt;&gt;</text>
+    <text x="140" y="33" text-anchor="middle" font-size="13" font-weight="bold" text-decoration="underline">NguoiDungController</text>
+    <use href="#mi" x="10" y="62"/><text x="26" y="72" font-size="12">layDanhSach()</text>
+    <use href="#mi" x="10" y="82"/><text x="26" y="92" font-size="12">taoMoi(data)</text>
+    <use href="#mi" x="10" y="102"/><text x="26" y="112" font-size="12">capNhat(id, data)</text>
+    <use href="#mi" x="10" y="122"/><text x="26" y="132" font-size="12">voHieuHoa(id)</text>
+    <use href="#mi" x="10" y="142"/><text x="26" y="152" font-size="12">dieuPhoi(request, response)</text>
+  </g>
+
+  <!-- 3. CONTROL: NguoiDungService -->
+  <g transform="translate(30,458)">
+    <rect width="280" height="160" fill="#fffbe6" stroke="#a52a2a" stroke-width="1.2"/>
+    <rect width="280" height="38" fill="#fffbe6" stroke="#a52a2a" stroke-width="1.2"/>
+    <line x1="0" y1="55" x2="280" y2="55" stroke="#a52a2a" stroke-width="0.8"/>
+    <text x="140" y="16" text-anchor="middle" font-size="12">&lt;&lt;control&gt;&gt;</text>
+    <text x="140" y="33" text-anchor="middle" font-size="13" font-weight="bold" text-decoration="underline">NguoiDungService</text>
+    <use href="#mi" x="10" y="62"/><text x="26" y="72" font-size="12">kiemTraEmailTrung(email)</text>
+    <use href="#mi" x="10" y="82"/><text x="26" y="92" font-size="12">maHoaMatKhau(plainPass)</text>
+    <use href="#mi" x="10" y="102"/><text x="26" y="112" font-size="12">ganQuyenTaiKhoan(userId, role)</text>
+    <use href="#mi" x="10" y="122"/><text x="26" y="132" font-size="12">luuTaiKhoan(nguoiDung)</text>
+    <use href="#mi" x="10" y="142"/><text x="26" y="152" font-size="12">ghiLogHanhDong(userId, action)</text>
+  </g>
+
+  <!-- 4. REPOSITORY: NguoiDungRepository -->
+  <g transform="translate(30,648)">
+    <rect width="280" height="80" fill="#fffbe6" stroke="#a52a2a" stroke-width="1.2"/>
+    <rect width="280" height="38" fill="#fffbe6" stroke="#a52a2a" stroke-width="1.2"/>
+    <line x1="0" y1="55" x2="280" y2="55" stroke="#a52a2a" stroke-width="0.8"/>
+    <text x="140" y="16" text-anchor="middle" font-size="12">&lt;&lt;repository&gt;&gt;</text>
+    <text x="140" y="33" text-anchor="middle" font-size="13" font-weight="bold" text-decoration="underline">NguoiDungRepository</text>
+    <use href="#mi" x="10" y="62"/><text x="26" y="72" font-size="12">timTheoEmail(email) : NguoiDung</text>
+  </g>
+
+  <!-- 5. ENTITY: NguoiDung -->
+  <g transform="translate(530,200)">
+    <rect width="250" height="245" fill="#fffbe6" stroke="#a52a2a" stroke-width="1.2"/>
+    <rect width="250" height="38" fill="#fffbe6" stroke="#a52a2a" stroke-width="1.2"/>
+    <text x="125" y="16" text-anchor="middle" font-size="12">&lt;&lt;entity&gt;&gt;</text>
+    <text x="125" y="33" text-anchor="middle" font-size="13" font-weight="bold" text-decoration="underline">NguoiDung</text>
+    <use href="#ai" x="10" y="48"/><text x="26" y="58" font-size="12">id : int</text>
+    <use href="#ai" x="10" y="68"/><text x="26" y="78" font-size="12">hoTen : string</text>
+    <use href="#ai" x="10" y="88"/><text x="26" y="98" font-size="12">email : string</text>
+    <use href="#ai" x="10" y="108"/><text x="26" y="118" font-size="12">password_hash : string</text>
+    <use href="#ai" x="10" y="128"/><text x="26" y="138" font-size="12">soDienThoai : string</text>
+    <use href="#ai" x="10" y="148"/><text x="26" y="158" font-size="12">role : string</text>
+    <use href="#ai" x="10" y="168"/><text x="26" y="178" font-size="12">trangThai : string</text>
+    <use href="#ai" x="10" y="188"/><text x="26" y="198" font-size="12">avatar : string</text>
+    <use href="#ai" x="10" y="208"/><text x="26" y="218" font-size="12">ngayTao : datetime</text>
+    <use href="#ai" x="10" y="228"/><text x="26" y="238" font-size="12">ngayCapNhat : datetime</text>
+  </g>
+</svg>
+<p style="text-align:center;font-style:italic;font-size:16px;margin-top:20px">Hình 3.6. Biểu đồ lớp phân tích use case Quản lý người dùng</p>
+</body>
+</html>

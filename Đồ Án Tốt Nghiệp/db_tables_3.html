@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Bảng CSDL – Nhóm Kho &amp; Kỹ thuật</title>
+  <style>body{margin:20px;background:#fff;font-family:Arial,sans-serif}svg{display:block;margin:15px auto}</style>
+</head>
+<body>
+
+<!-- BẢNG 6: inventory -->
+<svg width="700" height="340" xmlns="http://www.w3.org/2000/svg">
+  <text x="350" y="22" text-anchor="middle" font-size="14" font-weight="bold">Bảng 2.6. inventory – Tồn kho vật tư</text>
+  <rect x="20" y="35" width="660" height="30" fill="#d4a373" stroke="#a52a2a" stroke-width="1"/>
+  <text x="45" y="55" font-size="11" font-weight="bold" fill="#fff">STT</text>
+  <text x="85" y="55" font-size="11" font-weight="bold" fill="#fff">Tên cột</text>
+  <text x="230" y="55" font-size="11" font-weight="bold" fill="#fff">Kiểu dữ liệu</text>
+  <text x="390" y="55" font-size="11" font-weight="bold" fill="#fff">Ràng buộc</text>
+  <text x="510" y="55" font-size="11" font-weight="bold" fill="#fff">Mô tả</text>
+  <g font-size="11">
+    <rect x="20" y="65" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="81">1</text><text x="85" y="81" font-weight="bold">id</text><text x="230" y="81">INT</text><text x="390" y="81">PK</text><text x="510" y="81">Mã vật tư</text>
+    <rect x="20" y="87" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="103">2</text><text x="85" y="103">material_code</text><text x="230" y="103">VARCHAR(50)</text><text x="390" y="103">UQ</text><text x="510" y="103">Mã vật tư (duy nhất)</text>
+    <rect x="20" y="109" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="125">3</text><text x="85" y="125">name</text><text x="230" y="125">VARCHAR(255)</text><text x="390" y="125">NOT NULL</text><text x="510" y="125">Tên vật tư</text>
+    <rect x="20" y="131" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="147">4</text><text x="85" y="147">category</text><text x="230" y="147">VARCHAR(100)</text><text x="390" y="147"></text><text x="510" y="147">Danh mục (nhôm/kính/PK)</text>
+    <rect x="20" y="153" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="169">5</text><text x="85" y="169">material_type</text><text x="230" y="169">VARCHAR(50)</text><text x="390" y="169"></text><text x="510" y="169">Loại vật tư chi tiết</text>
+    <rect x="20" y="175" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="191">6</text><text x="85" y="191">unit</text><text x="230" y="191">VARCHAR(20)</text><text x="390" y="191"></text><text x="510" y="191">Đơn vị (m, kg, tấm)</text>
+    <rect x="20" y="197" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="213">7</text><text x="85" y="213">quantity</text><text x="230" y="213">INT</text><text x="390" y="213">DEFAULT 0</text><text x="510" y="213">Số lượng tồn kho</text>
+    <rect x="20" y="219" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="235">8</text><text x="85" y="235">min_quantity</text><text x="230" y="235">INT</text><text x="390" y="235">DEFAULT 0</text><text x="510" y="235">Mức tối thiểu (cảnh báo)</text>
+    <rect x="20" y="241" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="257">9</text><text x="85" y="257">max_quantity</text><text x="230" y="257">INT</text><text x="390" y="257">DEFAULT 0</text><text x="510" y="257">Mức tối đa</text>
+    <rect x="20" y="263" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="279">10</text><text x="85" y="279">unit_price</text><text x="230" y="279">DECIMAL(15,2)</text><text x="390" y="279">DEFAULT 0.00</text><text x="510" y="279">Đơn giá nhập</text>
+    <rect x="20" y="285" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="301">11</text><text x="85" y="301">supplier</text><text x="230" y="301">VARCHAR(255)</text><text x="390" y="301"></text><text x="510" y="301">Nhà cung cấp</text>
+    <rect x="20" y="307" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="323">12</text><text x="85" y="323">created_at</text><text x="230" y="323">TIMESTAMP</text><text x="390" y="323">CURRENT_TIMESTAMP</text><text x="510" y="323">Ngày tạo</text>
+  </g>
+</svg>
+
+<!-- BẢNG 7: project_items -->
+<svg width="700" height="340" xmlns="http://www.w3.org/2000/svg">
+  <text x="350" y="22" text-anchor="middle" font-size="14" font-weight="bold">Bảng 2.7. project_items – Hạng mục dự án</text>
+  <rect x="20" y="35" width="660" height="30" fill="#d4a373" stroke="#a52a2a" stroke-width="1"/>
+  <text x="45" y="55" font-size="11" font-weight="bold" fill="#fff">STT</text>
+  <text x="85" y="55" font-size="11" font-weight="bold" fill="#fff">Tên cột</text>
+  <text x="230" y="55" font-size="11" font-weight="bold" fill="#fff">Kiểu dữ liệu</text>
+  <text x="390" y="55" font-size="11" font-weight="bold" fill="#fff">Ràng buộc</text>
+  <text x="510" y="55" font-size="11" font-weight="bold" fill="#fff">Mô tả</text>
+  <g font-size="11">
+    <rect x="20" y="65" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="81">1</text><text x="85" y="81" font-weight="bold">id</text><text x="230" y="81">INT</text><text x="390" y="81">PK</text><text x="510" y="81">Mã hạng mục</text>
+    <rect x="20" y="87" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="103">2</text><text x="85" y="103">project_id</text><text x="230" y="103">INT</text><text x="390" y="103">FK → projects(id)</text><text x="510" y="103">Mã dự án</text>
+    <rect x="20" y="109" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="125">3</text><text x="85" y="125">item_code</text><text x="230" y="125">VARCHAR(50)</text><text x="390" y="125"></text><text x="510" y="125">Mã hạng mục</text>
+    <rect x="20" y="131" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="147">4</text><text x="85" y="147">item_name</text><text x="230" y="147">VARCHAR(255)</text><text x="390" y="147"></text><text x="510" y="147">Tên (cửa đi, cửa sổ)</text>
+    <rect x="20" y="153" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="169">5</text><text x="85" y="169">item_type</text><text x="230" y="169">VARCHAR(50)</text><text x="390" y="169"></text><text x="510" y="169">Loại (door/window/fixed)</text>
+    <rect x="20" y="175" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="191">6</text><text x="85" y="191">width_mm</text><text x="230" y="191">INT</text><text x="390" y="191"></text><text x="510" y="191">Chiều rộng (mm)</text>
+    <rect x="20" y="197" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="213">7</text><text x="85" y="213">height_mm</text><text x="230" y="213">INT</text><text x="390" y="213"></text><text x="510" y="213">Chiều cao (mm)</text>
+    <rect x="20" y="219" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="235">8</text><text x="85" y="235">quantity</text><text x="230" y="235">INT</text><text x="390" y="235">DEFAULT 1</text><text x="510" y="235">Số lượng</text>
+    <rect x="20" y="241" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="257">9</text><text x="85" y="257">aluminum_system</text><text x="230" y="257">VARCHAR(50)</text><text x="390" y="257"></text><text x="510" y="257">Hệ nhôm sử dụng</text>
+    <rect x="20" y="263" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="279">10</text><text x="85" y="279">unit_price</text><text x="230" y="279">DECIMAL(15,2)</text><text x="390" y="279">DEFAULT 0.00</text><text x="510" y="279">Đơn giá</text>
+    <rect x="20" y="285" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="301">11</text><text x="85" y="301">status</text><text x="230" y="301">VARCHAR(50)</text><text x="390" y="301">DEFAULT 'pending'</text><text x="510" y="301">Trạng thái</text>
+    <rect x="20" y="307" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="323">12</text><text x="85" y="323">created_at</text><text x="230" y="323">TIMESTAMP</text><text x="390" y="323">CURRENT_TIMESTAMP</text><text x="510" y="323">Ngày tạo</text>
+  </g>
+</svg>
+
+<!-- BẢNG 8: project_materials -->
+<svg width="700" height="310" xmlns="http://www.w3.org/2000/svg">
+  <text x="350" y="22" text-anchor="middle" font-size="14" font-weight="bold">Bảng 2.8. project_materials – Vật tư BOM dự án</text>
+  <rect x="20" y="35" width="660" height="30" fill="#d4a373" stroke="#a52a2a" stroke-width="1"/>
+  <text x="45" y="55" font-size="11" font-weight="bold" fill="#fff">STT</text>
+  <text x="85" y="55" font-size="11" font-weight="bold" fill="#fff">Tên cột</text>
+  <text x="230" y="55" font-size="11" font-weight="bold" fill="#fff">Kiểu dữ liệu</text>
+  <text x="390" y="55" font-size="11" font-weight="bold" fill="#fff">Ràng buộc</text>
+  <text x="510" y="55" font-size="11" font-weight="bold" fill="#fff">Mô tả</text>
+  <g font-size="11">
+    <rect x="20" y="65" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="81">1</text><text x="85" y="81" font-weight="bold">id</text><text x="230" y="81">INT</text><text x="390" y="81">PK</text><text x="510" y="81">Mã bản ghi</text>
+    <rect x="20" y="87" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="103">2</text><text x="85" y="103">project_id</text><text x="230" y="103">INT</text><text x="390" y="103">FK → projects(id)</text><text x="510" y="103">Mã dự án</text>
+    <rect x="20" y="109" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="125">3</text><text x="85" y="125">project_item_id</text><text x="230" y="125">INT</text><text x="390" y="125">FK → project_items</text><text x="510" y="125">Mã hạng mục</text>
+    <rect x="20" y="131" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="147">4</text><text x="85" y="147">material_name</text><text x="230" y="147">VARCHAR(255)</text><text x="390" y="147"></text><text x="510" y="147">Tên vật tư</text>
+    <rect x="20" y="153" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="169">5</text><text x="85" y="169">material_code</text><text x="230" y="169">VARCHAR(50)</text><text x="390" y="169"></text><text x="510" y="169">Mã vật tư</text>
+    <rect x="20" y="175" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="191">6</text><text x="85" y="191">quantity</text><text x="230" y="191">DECIMAL(10,3)</text><text x="390" y="191">DEFAULT 0</text><text x="510" y="191">Số lượng cần</text>
+    <rect x="20" y="197" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="213">7</text><text x="85" y="213">unit</text><text x="230" y="213">VARCHAR(20)</text><text x="390" y="213"></text><text x="510" y="213">Đơn vị</text>
+    <rect x="20" y="219" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="235">8</text><text x="85" y="235">unit_cost</text><text x="230" y="235">DECIMAL(15,2)</text><text x="390" y="235">DEFAULT 0.00</text><text x="510" y="235">Đơn giá</text>
+    <rect x="20" y="241" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="257">9</text><text x="85" y="257">total_cost</text><text x="230" y="257">DECIMAL(15,2)</text><text x="390" y="257">DEFAULT 0.00</text><text x="510" y="257">Thành tiền</text>
+    <rect x="20" y="263" width="660" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="279">10</text><text x="85" y="279">cut_length_mm</text><text x="230" y="279">INT</text><text x="390" y="279"></text><text x="510" y="279">Chiều dài cắt (mm)</text>
+    <rect x="20" y="285" width="660" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="301">11</text><text x="85" y="301">created_at</text><text x="230" y="301">TIMESTAMP</text><text x="390" y="301">CURRENT_TIMESTAMP</text><text x="510" y="301">Ngày tạo</text>
+  </g>
+</svg>
+
+</body>
+</html>

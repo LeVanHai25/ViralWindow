@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Biểu đồ hoạt động – Lập báo giá</title>
+  <style>
+    body { margin: 0; background: #fff; font-family: "Times New Roman", serif; }
+    svg { display: block; margin: 20px auto; }
+  </style>
+</head>
+<body>
+<svg width="720" height="1100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#000"/>
+    </marker>
+  </defs>
+
+  <!-- OUTER BORDER -->
+  <rect x="5" y="5" width="710" height="1090" fill="white" stroke="#000" stroke-width="1.5"/>
+
+  <!-- SWIMLANE HEADERS -->
+  <rect x="5" y="5" width="355" height="42" fill="white" stroke="#000" stroke-width="1"/>
+  <rect x="360" y="5" width="355" height="42" fill="white" stroke="#000" stroke-width="1"/>
+  <text x="182" y="31" text-anchor="middle" font-size="13" font-weight="bold" font-family="Times New Roman">Nhân viên Kinh doanh</text>
+  <text x="537" y="31" text-anchor="middle" font-size="13" font-weight="bold" font-family="Times New Roman">Hệ thống</text>
+
+  <!-- LANE DIVIDER -->
+  <line x1="360" y1="47" x2="360" y2="1095" stroke="#000" stroke-width="1" stroke-dasharray="6,4"/>
+
+  <!-- START -->
+  <circle cx="182" cy="78" r="13" fill="#000"/>
+  <line x1="182" y1="91" x2="182" y2="110" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- U1: Chọn tạo BG -->
+  <rect x="55" y="112" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="182" y="136" text-anchor="middle" font-size="12" font-family="Times New Roman">Nhấn "Tạo báo giá mới"</text>
+  <line x1="310" y1="131" x2="398" y2="131" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- S1: Hiển thị form -->
+  <rect x="400" y="112" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="527" y="136" text-anchor="middle" font-size="12" font-family="Times New Roman">Hiển thị form tạo báo giá</text>
+  <line x1="527" y1="150" x2="527" y2="170" stroke="#000" stroke-width="1.5"/>
+  <line x1="527" y1="170" x2="310" y2="170" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- U2: Chọn KH -->
+  <rect x="55" y="173" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="182" y="197" text-anchor="middle" font-size="12" font-family="Times New Roman">Tìm kiếm và chọn Khách hàng</text>
+  <line x1="182" y1="211" x2="182" y2="230" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- U3: Thêm hạng mục -->
+  <rect x="35" y="232" width="295" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="182" y="256" text-anchor="middle" font-size="12" font-family="Times New Roman">Thêm hạng mục: Hệ nhôm, Mã SP, KT, SL</text>
+  <line x1="330" y1="251" x2="398" y2="251" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- S2: Tra đơn giá -->
+  <rect x="400" y="232" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="527" y="256" text-anchor="middle" font-size="12" font-family="Times New Roman">Tra cứu đơn giá theo mã SP</text>
+  <line x1="527" y1="270" x2="527" y2="289" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- D1: Có đơn giá? -->
+  <polygon points="527,289 615,317 527,345 439,317" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="527" y="313" text-anchor="middle" font-size="11" font-family="Times New Roman">Có đơn giá</text>
+  <text x="527" y="327" text-anchor="middle" font-size="11" font-family="Times New Roman">cố định?</text>
+
+  <!-- [no] → nhập giá thủ công LEFT -->
+  <line x1="439" y1="317" x2="310" y2="317" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="372" y="310" text-anchor="middle" font-size="10" font-family="Times New Roman">[no]</text>
+  <rect x="110" y="298" width="200" height="38" rx="8" fill="white" stroke="#000" stroke-width="1"/>
+  <text x="210" y="318" text-anchor="middle" font-size="10" font-family="Times New Roman">Nhân viên nhập giá thủ công</text>
+  <text x="210" y="332" text-anchor="middle" font-size="10" font-family="Times New Roman">(được Quản lý phê duyệt)</text>
+  <!-- merge back down -->
+  <line x1="210" y1="336" x2="210" y2="370" stroke="#000" stroke-width="1.5"/>
+  <line x1="210" y1="370" x2="398" y2="370" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- [yes] → down -->
+  <line x1="527" y1="345" x2="527" y2="360" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="548" y="356" font-size="10" font-family="Times New Roman">[yes]</text>
+
+  <!-- S3: Tính thành tiền -->
+  <rect x="400" y="362" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="527" y="386" text-anchor="middle" font-size="12" font-family="Times New Roman">Tính diện tích (m²) &amp; thành tiền</text>
+  <line x1="527" y1="400" x2="527" y2="420" stroke="#000" stroke-width="1.5"/>
+  <line x1="527" y1="420" x2="310" y2="420" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- U4: Nhập CK, VAT -->
+  <rect x="55" y="423" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="182" y="447" text-anchor="middle" font-size="12" font-family="Times New Roman">Nhập Chiết khấu, Thuế VAT</text>
+  <line x1="310" y1="442" x2="398" y2="442" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- S4: Cập nhật tổng -->
+  <rect x="400" y="423" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="527" y="447" text-anchor="middle" font-size="12" font-family="Times New Roman">Cập nhật tổng giá trị báo giá</text>
+  <line x1="527" y1="461" x2="527" y2="481" stroke="#000" stroke-width="1.5"/>
+  <line x1="527" y1="481" x2="310" y2="481" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- U5: Lưu & Xuất -->
+  <rect x="55" y="484" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="182" y="508" text-anchor="middle" font-size="12" font-family="Times New Roman">Nhấn "Lưu &amp; Xuất báo giá"</text>
+  <line x1="310" y1="503" x2="398" y2="503" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- S5: Validate -->
+  <rect x="400" y="484" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="527" y="508" text-anchor="middle" font-size="12" font-family="Times New Roman">Kiểm tra dữ liệu báo giá</text>
+  <line x1="527" y1="522" x2="527" y2="541" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- D2: Hợp lệ? -->
+  <polygon points="527,541 615,569 527,597 439,569" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="527" y="565" text-anchor="middle" font-size="11" font-family="Times New Roman">Dữ liệu</text>
+  <text x="527" y="579" text-anchor="middle" font-size="11" font-family="Times New Roman">hợp lệ?</text>
+
+  <!-- [invalid] → error back to U3 (routed via far-right x=703 to avoid overlap with U3→S2 arrow at y=251) -->
+  <line x1="615" y1="569" x2="703" y2="569" stroke="#000" stroke-width="1.5"/>
+  <text x="652" y="563" text-anchor="middle" font-size="10" font-family="Times New Roman">[invalid]</text>
+  <line x1="703" y1="569" x2="703" y2="265" stroke="#000" stroke-width="1.5"/>
+  <line x1="703" y1="265" x2="330" y2="265" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="700" y="420" text-anchor="end" font-size="10" font-family="Times New Roman">[Báo lỗi]</text>
+
+  <!-- [valid] → down -->
+  <line x1="527" y1="597" x2="527" y2="616" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="548" y="611" font-size="10" font-family="Times New Roman">[valid]</text>
+
+  <!-- S6: Lưu CSDL -->
+  <rect x="400" y="618" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="527" y="642" text-anchor="middle" font-size="12" font-family="Times New Roman">Lưu báo giá vào bảng Quotations</text>
+  <line x1="527" y1="656" x2="527" y2="675" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- S7: Xuất PDF -->
+  <rect x="400" y="677" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="527" y="701" text-anchor="middle" font-size="12" font-family="Times New Roman">Tạo file PDF báo giá theo mẫu</text>
+  <line x1="527" y1="715" x2="527" y2="734" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- S8: Thông báo -->
+  <rect x="400" y="736" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="527" y="760" text-anchor="middle" font-size="12" font-family="Times New Roman">Thông báo "Lưu thành công"</text>
+  <line x1="527" y1="774" x2="527" y2="793" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- END -->
+  <circle cx="527" cy="807" r="13" fill="none" stroke="#000" stroke-width="2.5"/>
+  <circle cx="527" cy="807" r="8" fill="#000"/>
+</svg>
+
+<p style="text-align:center; font-style:italic; font-family:'Times New Roman'; font-size:13px; margin-top:4px;">
+  Hình 2.w. Biểu đồ hoạt động use case Lập báo giá
+</p>
+</body>
+</html>

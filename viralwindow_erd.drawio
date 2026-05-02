@@ -1,0 +1,131 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="ERD ViralWindow">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- USERS -->
+        <mxCell id="users" value="USERS
+-------------------
+id (PK)
+role_id (FK)
+email
+password
+full_name
+status
+created_at" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="200" height="160" as="geometry"/>
+        </mxCell>
+
+        <!-- ROLES -->
+        <mxCell id="roles" value="ROLES
+-------------------
+id (PK)
+name
+description" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="40" y="220" width="200" height="120" as="geometry"/>
+        </mxCell>
+
+        <!-- CUSTOMERS -->
+        <mxCell id="customers" value="CUSTOMERS
+-------------------
+id (PK)
+name
+phone
+email
+address
+tax_code
+status
+created_at" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;" vertex="1" parent="1">
+          <mxGeometry x="300" y="40" width="220" height="180" as="geometry"/>
+        </mxCell>
+
+        <!-- PROJECTS -->
+        <mxCell id="projects" value="PROJECTS
+-------------------
+id (PK)
+customer_id (FK)
+name
+status
+start_date
+end_date
+address
+created_at" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;" vertex="1" parent="1">
+          <mxGeometry x="300" y="240" width="220" height="180" as="geometry"/>
+        </mxCell>
+
+        <!-- QUOTATIONS -->
+        <mxCell id="quotations" value="QUOTATIONS
+-------------------
+id (PK)
+project_id (FK)
+version
+status
+total_amount
+created_at" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;" vertex="1" parent="1">
+          <mxGeometry x="600" y="40" width="220" height="160" as="geometry"/>
+        </mxCell>
+
+        <!-- QUOTATION ITEMS -->
+        <mxCell id="quotation_items" value="QUOTATION_ITEMS
+-------------------
+id (PK)
+quotation_id (FK)
+product_id (FK)
+quantity
+unit_price
+total_price" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;" vertex="1" parent="1">
+          <mxGeometry x="600" y="240" width="220" height="180" as="geometry"/>
+        </mxCell>
+
+        <!-- TRANSACTIONS -->
+        <mxCell id="transactions" value="TRANSACTIONS
+-------------------
+id (PK)
+project_id (FK)
+quotation_id (FK)
+type
+amount
+status
+created_at" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;" vertex="1" parent="1">
+          <mxGeometry x="900" y="40" width="220" height="160" as="geometry"/>
+        </mxCell>
+
+        <!-- INVENTORY -->
+        <mxCell id="inventory" value="INVENTORY_ITEMS
+-------------------
+id (PK)
+name
+unit
+unit_price
+supplier
+min_stock" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;" vertex="1" parent="1">
+          <mxGeometry x="900" y="240" width="220" height="160" as="geometry"/>
+        </mxCell>
+
+        <!-- RELATIONSHIPS -->
+        <mxCell id="rel1" style="endArrow=block;" edge="1" parent="1" source="roles" target="users">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="rel2" style="endArrow=block;" edge="1" parent="1" source="customers" target="projects">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="rel3" style="endArrow=block;" edge="1" parent="1" source="projects" target="quotations">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="rel4" style="endArrow=block;" edge="1" parent="1" source="quotations" target="quotation_items">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="rel5" style="endArrow=block;" edge="1" parent="1" source="quotations" target="transactions">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

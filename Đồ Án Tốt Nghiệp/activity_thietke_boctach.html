@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Biểu đồ hoạt động – Thiết kế & Bóc tách vật tư</title>
+  <style>
+    body { margin: 0; background: #fff; font-family: "Times New Roman", serif; }
+    svg { display: block; margin: 20px auto; }
+  </style>
+</head>
+<body>
+<svg width="760" height="1350" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#000"/>
+    </marker>
+  </defs>
+
+  <!-- OUTER BORDER -->
+  <rect x="5" y="5" width="750" height="1340" fill="white" stroke="#000" stroke-width="1.5"/>
+
+  <!-- SWIMLANE HEADERS -->
+  <rect x="5"   y="5" width="375" height="42" fill="white" stroke="#000" stroke-width="1"/>
+  <rect x="380" y="5" width="375" height="42" fill="white" stroke="#000" stroke-width="1"/>
+  <text x="192" y="31" text-anchor="middle" font-size="13" font-weight="bold" font-family="Times New Roman">Nhân viên Kỹ thuật</text>
+  <text x="567" y="31" text-anchor="middle" font-size="13" font-weight="bold" font-family="Times New Roman">Hệ thống ViralWindow</text>
+
+  <!-- LANE DIVIDER -->
+  <line x1="380" y1="47" x2="380" y2="1345" stroke="#000" stroke-width="1" stroke-dasharray="6,4"/>
+
+  <!-- ════════════════ FLOW ════════════════ -->
+
+  <!-- START -->
+  <circle cx="192" cy="78" r="13" fill="#000"/>
+  <line x1="192" y1="91" x2="192" y2="110" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- U1: Click menu -->
+  <rect x="60" y="112" width="272" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="196" y="136" text-anchor="middle" font-size="12" font-family="Times New Roman">Chọn menu "Kỹ thuật" → "Thiết kế &amp; Bóc tách"</text>
+  <line x1="332" y1="131" x2="420" y2="131" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- S1: Hiển thị danh sách dự án (Card) -->
+  <rect x="422" y="112" width="298" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="571" y="136" text-anchor="middle" font-size="12" font-family="Times New Roman">Hiển thị DS dự án (Thẻ card, tiến độ, deadline)</text>
+  <line x1="571" y1="150" x2="571" y2="170" stroke="#000" stroke-width="1.5"/>
+  <line x1="571" y1="170" x2="332" y2="170" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- U2: Chọn dự án -->
+  <rect x="60" y="173" width="272" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="196" y="197" text-anchor="middle" font-size="12" font-family="Times New Roman">Bước 1: Tìm kiếm &amp; Nhấn "Chọn dự án >"</text>
+  <line x1="332" y1="192" x2="420" y2="192" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- S2: Hiển thị Bước 2 -->
+  <rect x="422" y="173" width="298" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="571" y="197" text-anchor="middle" font-size="12" font-family="Times New Roman">Bước 2: Liệt kê các hạng mục sản phẩm</text>
+  <line x1="571" y1="211" x2="571" y2="231" stroke="#000" stroke-width="1.5"/>
+  <line x1="571" y1="231" x2="332" y2="231" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- U3: Chốt kích thước -->
+  <rect x="60" y="234" width="272" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="196" y="258" text-anchor="middle" font-size="12" font-family="Times New Roman">Kiểm tra &amp; Chốt kích thước thực tế</text>
+  <line x1="196" y1="272" x2="196" y2="295" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- U4: Ra lệnh bóc tách -->
+  <rect x="60" y="295" width="272" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="196" y="319" text-anchor="middle" font-size="12" font-family="Times New Roman">Bước 3: Nhấn nút "Ra lệnh bóc tách"</text>
+  <line x1="332" y1="314" x2="420" y2="314" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- S3: Sinh BOM -->
+  <rect x="422" y="295" width="298" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="571" y="319" text-anchor="middle" font-size="12" font-family="Times New Roman">Áp công thức cắt, sinh bảng BOM chi tiết</text>
+  <line x1="571" y1="333" x2="571" y2="352" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- S4: Update Trạng thái DA -->
+  <rect x="422" y="352" width="298" height="40" rx="4" fill="white" stroke="#000" stroke-width="1"/>
+  <text x="571" y="371" text-anchor="middle" font-size="10" font-family="Times New Roman">Chuyển trạng thái sang "Đang sản xuất"</text>
+  <text x="571" y="384" text-anchor="middle" font-size="10" font-family="Times New Roman">&amp; Cập nhật thanh tiến độ (%)</text>
+  <line x1="571" y1="392" x2="571" y2="411" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- S5: Kiểm tra Kho (Bước 4) -->
+  <rect x="422" y="411" width="298" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="571" y="435" text-anchor="middle" font-size="12" font-family="Times New Roman">Bước 4: Đối chiếu BOM với Tồn kho thực tế</text>
+  <line x1="571" y1="449" x2="571" y2="468" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- D1: Đủ vật tư? -->
+  <polygon points="571,468 660,496 571,524 482,496" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="571" y="492" text-anchor="middle" font-size="11" font-family="Times New Roman">Đủ vật tư</text>
+  <text x="571" y="506" text-anchor="middle" font-size="11" font-family="Times New Roman">trong kho?</text>
+
+  <!-- [no] → Cảnh báo bôi đỏ -->
+  <line x1="660" y1="496" x2="730" y2="496" stroke="#000" stroke-width="1.5"/>
+  <text x="695" y="489" text-anchor="middle" font-size="10" font-family="Times New Roman">[no]</text>
+  <line x1="730" y1="496" x2="730" y2="540" stroke="#000" stroke-width="1.5"/>
+  <rect x="440" y="540" width="290" height="42" rx="8" fill="white" stroke="#000" stroke-width="1"/>
+  <text x="585" y="560" text-anchor="middle" font-size="10" font-family="Times New Roman" font-weight="bold">Bôi đỏ mặt hàng thiếu hụt</text>
+  <text x="585" y="574" text-anchor="middle" font-size="10" font-family="Times New Roman">&amp; Hiển thị số lượng "Cần mua thêm"</text>
+  
+  <!-- [yes] → merge -->
+  <line x1="571" y1="524" x2="571" y2="600" stroke="#000" stroke-width="1.5"/>
+  <text x="588" y="538" font-size="10" font-family="Times New Roman">[yes]</text>
+  <!-- Merge from [no] back to main flow -->
+  <line x1="585" y1="582" x2="585" y2="600" stroke="#000" stroke-width="1.5"/>
+  <line x1="585" y1="600" x2="332" y2="600" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- U5: Xác nhận hoàn tất -->
+  <rect x="60" y="603" width="272" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="196" y="627" text-anchor="middle" font-size="12" font-family="Times New Roman">Xác nhận hoàn tất quy trình bóc tách</text>
+  <line x1="196" y1="641" x2="192" y2="660" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- D2: Cần nhập hàng? (Extension point) -->
+  <polygon points="192,660 300,688 192,716 84,688" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="192" y="684" text-anchor="middle" font-size="11" font-family="Times New Roman">Phát hiện</text>
+  <text x="192" y="698" text-anchor="middle" font-size="11" font-family="Times New Roman">thiếu hàng?</text>
+
+  <!-- [yes] → Purchase Request -->
+  <line x1="84" y1="688" x2="30" y2="688" stroke="#000" stroke-width="1.5"/>
+  <text x="55" y="681" text-anchor="middle" font-size="10" font-family="Times New Roman">[yes]</text>
+  <line x1="30" y1="688" x2="30" y2="740" stroke="#000" stroke-width="1.5"/>
+  <rect x="30" y="740" width="230" height="38" rx="8" fill="white" stroke="#000" stroke-width="1"/>
+  <text x="145" y="764" text-anchor="middle" font-size="10" font-family="Times New Roman">Chuyển sang "Tạo phiếu yêu cầu VT"</text>
+  <!-- Final end via this path -->
+  <line x1="145" y1="778" x2="145" y2="810" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- [no] → End -->
+  <line x1="192" y1="716" x2="192" y2="810" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="210" y="735" font-size="10" font-family="Times New Roman">[no]</text>
+
+  <!-- END -->
+  <circle cx="192" cy="824" r="13" fill="none" stroke="#000" stroke-width="2.5"/>
+  <circle cx="192" cy="824" r="8" fill="#000"/>
+  
+  <!-- END for Purchase Path -->
+  <circle cx="145" cy="824" r="13" fill="none" stroke="#000" stroke-width="2.5"/>
+  <circle cx="145" cy="824" r="8" fill="#000"/>
+
+</svg>
+
+<p style="text-align:center; font-style:italic; font-family:'Times New Roman'; font-size:13px; margin-top:4px;">
+  Hình 2.y. Biểu đồ hoạt động use case Thiết kế &amp; Bóc tách vật tư
+</p>
+</body>
+</html>

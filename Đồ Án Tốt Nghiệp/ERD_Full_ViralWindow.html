@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <title>ERD ViralWindow</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #e8ecf0;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 15pt;
+      color: #1a2540;
+      margin-bottom: 4px;
+      font-weight: 700;
+    }
+
+    .sub {
+      font-size: 10pt;
+      color: #666;
+      margin-bottom: 16px;
+      font-style: italic;
+    }
+
+    .cv {
+      position: relative;
+      background: #fff;
+      border: 2px solid #c5ccd8;
+      border-radius: 10px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, .13);
+      width: 1560px;
+      height: 980px;
+    }
+
+    svg.ln {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: visible;
+    }
+
+    .e {
+      position: absolute;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .12);
+      font-size: 7.5pt;
+      border: 1.5px solid #9aaabf;
+    }
+
+    .eh {
+      color: #fff;
+      padding: 5px 8px;
+      font-weight: 700;
+      font-size: 8.5pt;
+      text-align: center;
+      letter-spacing: .4px;
+    }
+
+    .er {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 7px;
+      border-bottom: 1px solid #eaecf2;
+      line-height: 1.5;
+    }
+
+    .er:last-child {
+      border-bottom: none;
+    }
+
+    .fn {
+      flex: 1;
+      white-space: nowrap;
+    }
+
+    .fpk {
+      color: #b71c1c;
+      font-weight: 700;
+    }
+
+    .ffk {
+      color: #1565c0;
+      font-weight: 600;
+    }
+
+    .fat {
+      color: #444;
+    }
+
+    .tg {
+      font-size: 6.5pt;
+      font-weight: 700;
+      border-radius: 3px;
+      padding: 1px 3px;
+      flex-shrink: 0;
+    }
+
+    .pk {
+      background: #fde8e8;
+      color: #b71c1c;
+      border: 1px solid #e57373;
+    }
+
+    .fk {
+      background: #e3eeff;
+      color: #1565c0;
+      border: 1px solid #90caf9;
+    }
+
+    .hu {
+      background: #1a3a6c;
+    }
+
+    .hc {
+      background: #1b5e20;
+    }
+
+    .hp {
+      background: #4a148c;
+    }
+
+    .hq {
+      background: #b71c1c;
+    }
+
+    .hf {
+      background: #e65100;
+    }
+
+    .hk {
+      background: #006064;
+    }
+
+    .hv {
+      background: #37474f;
+    }
+
+    .leg {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      background: #f7f9fc;
+      border: 1px solid #d0d6e2;
+      border-radius: 7px;
+      padding: 9px 13px;
+      font-size: 7.8pt;
+    }
+
+    .leg h3 {
+      font-size: 8.5pt;
+      color: #1a2540;
+      margin-bottom: 5px;
+    }
+
+    .li {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 2px;
+    }
+
+    .lb {
+      width: 11px;
+      height: 11px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Biểu đồ Thực thể Liên kết (ERD) – Hệ thống ViralWindow</h1>
+  <p class="sub">Hình 2.48. Sơ đồ thiết kế cơ sở dữ liệu</p>
+  <div class="cv" id="cv">
+    <svg class="ln" id="svg">
+      <defs>
+        <marker id="ar" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L7,3z" fill="#5b7ab5" />
+        </marker>
+      </defs>
+    </svg>
+
+    <!-- USER MODULE -->
+    <div class="e" id="CV" style="left:18px;top:18px;width:168px;">
+      <div class="eh hu">CHUC_VU</div>
+      <div class="er"><span class="fn fpk">id</span><span class="tg pk">PK</span></div>
+      <div class="er"><span class="fn fat">ten</span></div>
+      <div class="er"><span class="fn fat">mo_ta</span></div>
+      <div class="er"><span class="fn fat">la_he_thong</span></div>
+      <div class="er"><span class="fn fat">ngay_tao</span></div>
+    </div>
+    <div class="e" id="QH" style="left:18px;top:170px;width:168px;">
+      <div class="eh hu">QUYEN_HAN</div>
+      <div class="er"><span class="fn fpk">id</span><span class="tg pk">PK</span></div>
+      <div class="er"><span class="fn fat">ma_code</span></div>
+      <div class="er"><span class="fn fat">ten</span></div>
+      <div class="er"><span class="fn fat">module</span></div>
+      <div class="er"><span class="fn fat">thu_tu</span></div>
+    </div>
+    <div class="e" id="CVQ" style="left:18px;top:338px;width:168px;">
+      <div class="eh hu">CHUC_VU_QUYEN</div>
+      <div class="er"><span class="fn ffk">ma_chuc_vu</span><span class="tg pk">PK</span><span class="tg fk">FK</span>
+      </div>
+      <div class="er"><span class="fn ffk">ma_quyen</span><span class="tg pk">PK</span><span class="tg fk">FK</span>
+      </div>
+    </div>
+    <div class="e" id="ND" style="left:202px;top:18px;width:188px;">
+      <div class="eh hu">NGUOI_DUNG</div>
+      <div class="er"><span class="fn fpk">id</span><span class="tg pk">PK</span></div>
+      <div class="er"><span class="fn ffk">ma_chuc_vu</span><span class="tg fk">FK</span></div>
+      <div class="er"><span class="fn fat">email</span></div>
+      <div class="er"><span class="fn fat">mat_khau</span></div>
+      <div class="er"><span class="fn fat">ho_ten</span></div>
+      <div class="er"><span class="fn fat">loai_tai_khoan</span></div>
+      <div class="er"><span class="fn fat">trang_thai</span></div>
+      <div class="er"><span class="fn fat">ngay_tao</span></div>
+    </div>
+    <div class="e" id="PDN" style="left:202px;top:255px;width:188px;">
+      <div class="eh hu">PHIEN_DANG_NHAP</div>
+      <div class="er"><span class="fn fpk">id</span><span class="tg pk">PK</span></div>
+      <div class="er"><span class="fn ffk">ma_nguoi_dung</span><span class="tg fk">FK</span></div>
+      <div class="er"><span class="fn fat">token_phien</span></div>
+      <div class="er"><span class="fn fat">dang_hoat_dong</span></div>
+      <div class="er"><span class="fn fat">thoi_gian_dang_nhap</span></div>
+      <div class="er"><span class="fn fat">dia_chi_ip</span></div>
+    </div>
+    <div class="e" id="TB" style="left:202px;top:450px;width:188px;">
+      <div class="eh hv">THONG_BAO</div>
+      <div class="er"><span class="fn fpk">id</span><span class="tg pk">PK</span></div>
+      <div class="er"><span class="fn ffk">ma_nguoi_dung</span><span class="tg fk">FK</span></div>
+      <div class="er"><span class="fn fat">tieu_de</span></div>
+      <div class="er"><span class="fn fat">noi_dung</span></div>
+      <div class="er"><span class="fn fat">da_doc</span></div>
+      <div class="er"><span class="fn fat">ngay_tao</span></div>
+    </div>
+
+    <!-- CUSTOMER / PROJECT -->
+    <div class="e" id="KH" style="left:410px;top:18px;width:195px;">
+      <div class="eh hc">KHACH_HANG</div>
+      <div class="er"><span class="fn fpk">id</span><span class="tg pk">PK</span></div>
+      <div class="er"><span class="fn fat">ma_khach_hang</span></div>
+      <div class="er"><span class="fn fat">ho_ten</span></div>
+      <div class="er"><span class="fn fat">dien_thoai</span></div>
+      <div class="er"><span class="fn fat">email</span></div>
+      <div class="er"><span class="fn fat">dia_chi</span></div>
+      <div class="er"><span class="fn fat">ma_so_thue</span></div>
+      <div class="er"><span class="fn fat">trang_thai_kh</span></div>
+      <div class="er"><span class="fn fat">ngay_tao</span></div>
+    </div>
+    <div class="e" id="DA" style="left:410px;top:288px;width:195px;">
+      <div class="eh hc">DU_AN</div>
+      <div class="er"><span class="fn fpk">id</span><span class="tg pk">PK</span></div>
+      <div class="er"><span class="fn ffk">ma_khach_hang</span><span class="tg fk">FK</span></div>
+      <div class="er"><span class="fn fat">ma_du_an</span></div>
+      <div class="er"><span class="fn fat">ten_du_an</span></div>
+      <div class="er"><span class="fn fat">trang_thai</span></div>
+      <div class="er"><span class="fn fat">ngay_bat_dau</span></div>
+      <div class="er"><span class="fn fat">han_hoan_thanh</span></div>
+      <div class="er"><span class="fn fat">dia_chi_thi_cong</span></div>
+      <div class="er"><span class="fn fat">ghi_chu</span></div>
+      <div class="er"><span class="fn fat">ngay_tao</span></div>
+    </div>
+
+    <!-- PRODUCT MODULE -->
+    <div class="e" id="MSP" style="left:628px;top:18px;width:200px;">
+      <div class="eh hp">MAU_SAN_PHAM</div>
+      <div class="er"><span class="fn fpk">id</span><span class="tg pk">PK</span></div>
+      <div class="er"><span class="fn fat">ma_code</span></div>
+      <div class="er"><span class="fn fat">ten_san_pham</span></div>
+      <div class="er"><span class="fn fat">loai_san_pham</span></div>
+      <div class="er"><span class="fn fat">danh_muc</span></div>
+      <div class="er"><span class="fn fat">chieu_rong_mac_dinh</span></div>
+      <div class="er"><span class="fn fat">chieu_cao_mac_dinh</span></div>
+      <div class="er"><span class="fn fat">cau_truc_json</span></div>
+      <div class="er"><span class="fn fat">anh_dai_dien</span></div>
+    </div>
+    <div class="e" id="SPDA" style="left:628px;top:290px;width:210px;">
+      <div class="eh hp">SAN_PHAM_DU_AN</div>
+      <div class="er"><span class="fn fpk">id</span><span class="tg pk">PK</span></div>
+      <div class="er"><span class="fn ffk">ma_du_an</span><span class="tg fk">FK</span></div>
+      <div class="er"><span class="fn ffk">ma_mau_san_pham</span><span class="tg fk">FK</span></div>
+      <div class="er"><span class="fn ffk">ma_bao_gia_goc</span><span class="tg fk">FK</span></div>
+      <div class="er"><span class="fn fat">ten_rieng</span></div>
+      <div class="er"><span class="fn fat">so_luong</span></div>
+      <div class="er"><span class="fn fat">chieu_rong_tuy_chinh</span></div>
+      <div class="er"><span class="fn fat">chieu_cao_tuy_chinh</span></div>
+      <div class="er"><span class="fn fat">cau_hinh_snapshot</span></div>
+      <div class="er"><span class="fn fat">vi_tri_lap_dat</span></div>
+      <div class="er"><span class="fn fat">trang_thai</span></div>
+      <div class="er"><span class="fn fat">ngay_tao</span></div>
+    </div>
+
+    <!-- BOM MODULE -->
+    <div class="e" id="VTL" style="left:628px;top:640px;width:210px;">
+      <div class="eh hp">VAT_TU_BOM</div>
+      <div class="er"><span class="fn fpk">id</span><span class="tg pk">PK</span></div>
+      <div class="er"><span class="fn ffk">ma_san_pham_du_an</span><span class="tg fk">FK</span></div>
+      <div class="er"><span class="fn fat">loai_vat_tu</span></div>
+      <div class="er"><span class="fn fat">ma_code</span></div>
+      <div class="er"><span class="fn fat">ten_vat_tu</span></div>
+      <div class="er"><span class="fn fat">chieu_dai_mm</span></div>
+      <div class="er"><span class="fn fat">chieu_rong_mm</span></div>
+      <div class="er"><span class="fn fat">so_luong</span></div>
+      <div class="er"><span class="fn fat">hao_hut_mm</span></div>
+      <div class="er"><span class="fn fat">ghi_chu</span></div>
+      <div class="er"><span class="fn fat">ngay_tao</span></div>
+    </div>
+
+    <!-- QUOTATION MODULE -->
+    <div class="e" id="BG" style="left:862px;top:18px;width:215px;">
+      <div class="eh hq">BAO_GIA</div>
+      <div class="er"><span class="fn fpk">id</span><span class="tg pk">PK</span></div>
+      <div class="er"><span class="fn ffk">ma_du_an</span><span class="tg fk">FK</span></div>
+      <div class="er"><span class="fn ffk">ma_khach_hang</span><span class="tg fk">FK</span></div>
+      <div class="er"><span class="fn ffk">ma_bao_gia_goc</span><span class="tg fk">FK</span></div>
+      <div class="er"><span class="fn fat">ma_bao_gia</span></div>
+      <div class="er"><span class="fn fat">ngay_bao_gia</span></div>
+      <div class="er"><span class="fn fat">phien_ban</span></div>
+      <div class="er"><span class="fn fat">trang_thai</span></div>
+      <div class="er"><span class="fn fat">phan_tram_loi_nhuan</span></div>
+      <div class="er"><span class="fn fat">phan_tram_vat</span></div>
+      <div class="er"><span class="fn fat">phi_van_chuyen</span></div>
+      <div class="er"><span class="fn fat">tong_tien_cuoi</span></div>
+      <div class="er"><span class="fn fat">so_tien_dat_coc</span></div>
+      <div class="er"><span class="fn fat">ngay_tao</span></div>
+    </div>
+    <div class="e" id="CTBG" style="left:862px;top:430px;width:215px;">
+      <div class="eh hq">CHI_TIET_BAO_GIA</div>
+      <div class="er"><span class="fn fpk">id</span><span class="tg pk">PK</span></div>
+      <div class="er"><span class="fn ffk">ma_bao_gia</span><span class="tg fk">FK</span></div>
+      <div class="er"><span class="fn fat">ten_san_pham</span></div>
+      <div class="er"><span class="fn fat">chieu_rong</span></div>
+      <div class="er"><span class="fn fat">chieu_cao</span></div>
+      <div class="er"><span class="fn fat">so_luong</span></div>
+      <div class="er"><span class="fn fat">don_gia</span></div>
+      <div class="er"><span class="fn fat">thanh_tien</span></div>
+      <div class="er"><span class="fn fat">ghi_chu</span></div>
+    </div>
+
+    <!-- FINANCE MODULE -->
+    <div class="e" id="GDTC" style="left:1100px;top:18px;width:218px;">
+      <div class="eh hf">GIAO_DICH_TAI_CHINH</div>
+      <div class="er"><span class="fn fpk">id</span><span class="tg pk">PK</span></div>
+      <div class="er"><span class="fn ffk">ma_du_an</span><span class="tg fk">FK</span></div>
+      <div class="er"><span class="fn ffk">ma_khach_hang</span><span class="tg fk">FK</span></div>
+      <div class="er"><span class="fn fat">ma_giao_dich</span></div>
+      <div class="er"><span class="fn fat">ngay_giao_dich</span></div>
+      <div class="er"><span class="fn fat">loai_giao_dich</span></div>
+      <div class="er"><span class="fn fat">danh_muc</span></div>
+      <div class="er"><span class="fn fat">so_tien</span></div>
+      <div class="er"><span class="fn fat">dien_giai</span></div>
+      <div class="er"><span class="fn fat">trang_thai</span></div>
+      <div class="er"><span class="fn fat">phuong_thuc_thanh_toan</span></div>
+      <div class="er"><span class="fn fat">ngay_tao</span></div>
+    </div>
+    <div class="e" id="CTGD" style="left:1100px;top:390px;width:218px;">
+      <div class="eh hf">CHI_TIET_GIAO_DICH</div>
+      <div class="er"><span class="fn fpk">id</span><span class="tg pk">PK</span></div>
+      <div class="er"><span class="fn ffk">ma_giao_dich</span><span class="tg fk">FK</span></div>
+      <div class="er"><span class="fn fat">ten_muc</span></div>
+      <div class="er"><span class="fn fat">so_luong</span></div>
+      <div class="er"><span class="fn fat">don_gia</span></div>
+      <div class="er"><span class="fn fat">thanh_tien</span></div>
+    </div>
+    <div class="e" id="CN" style="left:1100px;top:620px;width:218px;">
+      <div class="eh hf">CONG_NO</div>
+      <div class="er"><span class="fn fpk">id</span><span class="tg pk">PK</span></div>
+      <div class="er"><span class="fn ffk">ma_khach_hang</span><span class="tg fk">FK</span></div>
+      <div class="er"><span class="fn ffk">ma_du_an</span><span class="tg fk">FK</span></div>
+      <div class="er"><span class="fn fat">loai_cong_no</span></div>
+      <div class="er"><span class="fn fat">nha_cung_cap</span></div>
+      <div class="er"><span class="fn fat">tong_no</span></div>
+      <div class="er"><span class="fn fat">da_thanh_toan</span></div>
+      <div class="er"><span class="fn fat">so_tien_con_lai</span></div>
+      <div class="er"><span class="fn fat">trang_thai</span></div>
+      <div class="er"><span class="fn fat">ngay_tao</span></div>
+    </div>
+
+    <!-- WAREHOUSE MODULE -->
+    <div class="e" id="TK" style="left:1338px;top:18px;width:200px;">
+      <div class="eh hk">TON_KHO</div>
+      <div class="er"><span class="fn fpk">id</span><span class="tg pk">PK</span></div>
+      <div class="er"><span class="fn fat">ma_vat_tu</span></div>
+      <div class="er"><span class="fn fat">ten_vat_tu</span></div>
+      <div class="er"><span class="fn fat">loai_vat_tu</span></div>
+      <div class="er"><span class="fn fat">don_vi</span></div>
+      <div class="er"><span class="fn fat">so_luong_ton</span></div>
+      <div class="er"><span class="fn fat">don_gia</span></div>
+      <div class="er"><span class="fn fat">nha_cung_cap</span></div>
+      <div class="er"><span class="fn fat">muc_canh_bao_ton</span></div>
+      <div class="er"><span class="fn fat">ngay_cap_nhat</span></div>
+    </div>
+    <div class="e" id="GDK" style="left:1338px;top:330px;width:200px;">
+      <div class="eh hk">GIAO_DICH_KHO</div>
+      <div class="er"><span class="fn fpk">id</span><span class="tg pk">PK</span></div>
+      <div class="er"><span class="fn ffk">ma_ton_kho</span><span class="tg fk">FK</span></div>
+      <div class="er"><span class="fn ffk">ma_du_an</span><span class="tg fk">FK</span></div>
+      <div class="er"><span class="fn fat">loai_giao_dich</span></div>
+      <div class="er"><span class="fn fat">so_luong</span></div>
+      <div class="er"><span class="fn fat">don_gia</span></div>
+      <div class="er"><span class="fn fat">ghi_chu</span></div>
+      <div class="er"><span class="fn fat">ngay_giao_dich</span></div>
+      <div class="er"><span class="fn fat">ngay_tao</span></div>
+    </div>
+
+    <!-- LEGEND -->
+    <div class="leg">
+      <h3>Chú thích Module</h3>
+      <div class="li">
+        <div class="lb" style="background:#1a3a6c"></div>Quản lý Người dùng
+      </div>
+      <div class="li">
+        <div class="lb" style="background:#1b5e20"></div>Khách hàng &amp; Dự án
+      </div>
+      <div class="li">
+        <div class="lb" style="background:#4a148c"></div>Sản phẩm &amp; BOM Vật tư
+      </div>
+      <div class="li">
+        <div class="lb" style="background:#b71c1c"></div>Quản lý Báo giá
+      </div>
+      <div class="li">
+        <div class="lb" style="background:#e65100"></div>Quản lý Tài chính
+      </div>
+      <div class="li">
+        <div class="lb" style="background:#006064"></div>Quản lý Kho
+      </div>
+      <div class="li">
+        <div class="lb" style="background:#37474f"></div>Thông báo
+      </div>
+      <div style="margin-top:7px;border-top:1px solid #d0d6e2;padding-top:6px;">
+        <div class="li"><span style="color:#b71c1c;font-weight:700">■</span>&nbsp;Khóa chính (PK)</div>
+        <div class="li"><span style="color:#1565c0;font-weight:700">■</span>&nbsp;Khóa ngoại (FK)</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const svg = document.getElementById('svg');
+      const cv = document.getElementById('cv');
+      function b(id) {
+        const el = document.getElementById(id);
+        const cr = cv.getBoundingClientRect(), er = el.getBoundingClientRect();
+        return {
+          l: er.left - cr.left, r: er.right - cr.left, t: er.top - cr.top, b: er.bottom - cr.top,
+          cx: er.left - cr.left + er.width / 2, cy: er.top - cr.top + er.height / 2, w: er.width, h: er.height
+        };
+      }
+      function draw(fid, tid, lbl) {
+        const a = b(fid), t = b(tid);
+        const dx = t.cx - a.cx, dy = t.cy - a.cy;
+        let x1, y1, x2, y2;
+        if (Math.abs(dx) >= Math.abs(dy)) { y1 = a.cy; y2 = t.cy; x1 = dx > 0 ? a.r : a.l; x2 = dx > 0 ? t.l : t.r; }
+        else { x1 = a.cx; x2 = t.cx; y1 = dy > 0 ? a.b : a.t; y2 = dy > 0 ? t.t : t.b; }
+        const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        l.setAttribute('x1', x1); l.setAttribute('y1', y1); l.setAttribute('x2', x2); l.setAttribute('y2', y2);
+        l.setAttribute('stroke', '#5b7ab5'); l.setAttribute('stroke-width', '1.4');
+        l.setAttribute('stroke-dasharray', '5,3'); l.setAttribute('marker-end', 'url(#ar)');
+        svg.appendChild(l);
+        if (lbl) {
+          const tx = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          tx.setAttribute('x', (x1 + x2) / 2); tx.setAttribute('y', (y1 + y2) / 2 - 4);
+          tx.setAttribute('text-anchor', 'middle'); tx.setAttribute('font-size', '7.5');
+          tx.setAttribute('fill', '#7a8aaa'); tx.setAttribute('font-style', 'italic');
+          tx.textContent = lbl; svg.appendChild(tx);
+        }
+      }
+      // User
+      draw('CV', 'ND', '1-N'); draw('CV', 'CVQ', '1-N'); draw('QH', 'CVQ', '1-N');
+      draw('ND', 'PDN', '1-N'); draw('ND', 'TB', '1-N');
+      // Customer/Project
+      draw('KH', 'DA', '1-N'); draw('KH', 'BG', '1-N'); draw('KH', 'GDTC', '1-N'); draw('KH', 'CN', '1-N');
+      // Project
+      draw('DA', 'SPDA', '1-N'); draw('DA', 'BG', '1-N'); draw('DA', 'GDTC', '1-N'); draw('DA', 'CN', '1-N'); draw('DA', 'GDK', '1-N');
+      // Product
+      draw('MSP', 'SPDA', '1-N'); draw('BG', 'SPDA', '1-N');
+      draw('SPDA', 'VTL', '1-N');
+      // Quotation
+      draw('BG', 'CTBG', '1-N');
+      // Finance
+      draw('GDTC', 'CTGD', '1-N');
+      // Warehouse
+      draw('TK', 'GDK', '1-N');
+    });
+  </script>
+</body>
+
+</html>

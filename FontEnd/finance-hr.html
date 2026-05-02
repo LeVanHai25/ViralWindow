@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <script src="js/modal-system.js"></script>
@@ -657,8 +657,6 @@
             const token = sessionStorage.getItem('token') || localStorage.getItem('token');
             if (!token) { window.location.href = 'login.html'; return false; }
             if (!sessionStorage.getItem('token')) { sessionStorage.setItem('token', token); const u = localStorage.getItem('user'); if (u) sessionStorage.setItem('user', u); }
-            return true;
-        }
             return true;
         }
 

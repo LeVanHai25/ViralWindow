@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Biểu đồ trình tự – Quản lý người dùng (Chuẩn Red-Yellow Style)</title>
+  <style>
+    body { margin: 0; background: #fff; font-family: "Arial", sans-serif; }
+    svg { display: block; margin: 20px auto; }
+  </style>
+</head>
+<body>
+<svg width="900" height="960" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#a52a2a"/>
+    </marker>
+    <marker id="dasharr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <path d="M0,0 L10,3.5 L0,7" fill="none" stroke="#a52a2a" stroke-width="1"/>
+    </marker>
+  </defs>
+
+  <!-- OBJECTS -->
+  <!-- 1. Actor: QuanTriVien -->
+  <g transform="translate(60, 30)">
+    <circle cx="20" cy="15" r="8" fill="none" stroke="#a52a2a" stroke-width="1.5"/>
+    <line x1="20" y1="23" x2="20" y2="40" stroke="#a52a2a" stroke-width="1.5"/>
+    <line x1="5" y1="30" x2="35" y2="30" stroke="#a52a2a" stroke-width="1.5"/>
+    <line x1="20" y1="40" x2="10" y2="55" stroke="#a52a2a" stroke-width="1.5"/>
+    <line x1="20" y1="40" x2="30" y2="55" stroke="#a52a2a" stroke-width="1.5"/>
+    <text x="20" y="75" text-anchor="middle" font-size="12" font-weight="bold" text-decoration="underline">: QuanTriVien</text>
+  </g>
+
+  <!-- 2. Boundary: NguoiDungUI -->
+  <g transform="translate(200, 40)">
+    <line x1="10" y1="10" x2="10" y2="40" stroke="#000" stroke-width="1.5"/>
+    <line x1="10" y1="25" x2="20" y2="25" stroke="#000" stroke-width="1.5"/>
+    <circle cx="45" cy="25" r="25" fill="#fffbe6" stroke="#000" stroke-width="1.2"/>
+    <text x="45" y="75" text-anchor="middle" font-size="12" font-weight="bold" text-decoration="underline">: NguoiDungUI</text>
+  </g>
+
+  <!-- 3. Controller: NguoiDungController -->
+  <g transform="translate(380, 40)">
+    <circle cx="45" cy="25" r="25" fill="#fffbe6" stroke="#000" stroke-width="1.2"/>
+    <path d="M35,5 Q45,-5 55,5" fill="none" stroke="#000" stroke-width="1.5"/>
+    <polygon points="55,5 50,5 55,10" fill="#000"/>
+    <text x="45" y="75" text-anchor="middle" font-size="12" font-weight="bold" text-decoration="underline">: NguoiDungController</text>
+  </g>
+
+  <!-- 4. Entity: NguoiDung -->
+  <g transform="translate(560, 40)">
+    <circle cx="45" cy="25" r="25" fill="#fffbe6" stroke="#000" stroke-width="1.2"/>
+    <line x1="20" y1="50" x2="70" y2="50" stroke="#000" stroke-width="1.5"/>
+    <text x="45" y="75" text-anchor="middle" font-size="12" font-weight="bold" text-decoration="underline">: NguoiDung</text>
+  </g>
+
+  <!-- 5. DB -->
+  <g transform="translate(730, 40)">
+    <line x1="10" y1="10" x2="10" y2="40" stroke="#000" stroke-width="1.5"/>
+    <line x1="10" y1="25" x2="20" y2="25" stroke="#000" stroke-width="1.5"/>
+    <circle cx="45" cy="25" r="25" fill="#fffbe6" stroke="#000" stroke-width="1.2"/>
+    <text x="45" y="75" text-anchor="middle" font-size="12" font-weight="bold" text-decoration="underline">: IHeThongCSDL</text>
+  </g>
+
+  <!-- LIFELINES -->
+  <line x1="80"  y1="130" x2="80"  y2="920" stroke="#000" stroke-width="1" stroke-dasharray="5,4"/>
+  <line x1="245" y1="130" x2="245" y2="920" stroke="#000" stroke-width="1" stroke-dasharray="5,4"/>
+  <line x1="425" y1="130" x2="425" y2="920" stroke="#000" stroke-width="1" stroke-dasharray="5,4"/>
+  <line x1="605" y1="130" x2="605" y2="920" stroke="#000" stroke-width="1" stroke-dasharray="5,4"/>
+  <line x1="775" y1="130" x2="775" y2="920" stroke="#000" stroke-width="1" stroke-dasharray="5,4"/>
+
+  <!-- ACTIVATION BOXES -->
+  <rect x="75"  y="142" width="10" height="30"  fill="#ffe6e6" stroke="#a52a2a"/>
+  <rect x="240" y="142" width="10" height="60"  fill="#ffe6e6" stroke="#a52a2a"/>
+  
+  <rect x="75"  y="220" width="10" height="30"  fill="#ffe6e6" stroke="#a52a2a"/>
+  <rect x="240" y="220" width="10" height="30"  fill="#ffe6e6" stroke="#a52a2a"/>
+  
+  <rect x="75"  y="268" width="10" height="40"  fill="#ffe6e6" stroke="#a52a2a"/>
+  <rect x="240" y="268" width="10" height="370" fill="#ffe6e6" stroke="#a52a2a"/>
+  <rect x="420" y="300" width="10" height="330" fill="#ffe6e6" stroke="#a52a2a"/>
+  <rect x="600" y="330" width="10" height="40"  fill="#ffe6e6" stroke="#a52a2a"/>
+  <rect x="770" y="370" width="10" height="60"  fill="#ffe6e6" stroke="#a52a2a"/>
+  
+  <rect x="240" y="660" width="10" height="36"  fill="#ffe6e6" stroke="#a52a2a"/>
+  <rect x="240" y="720" width="10" height="36"  fill="#ffe6e6" stroke="#a52a2a"/>
+
+  <!-- MESSAGES -->
+  <!-- 1 -->
+  <line x1="85" y1="148" x2="240" y2="148" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="162" y="143" text-anchor="middle" font-size="10">1: chon "Quan ly Nguoi dung"()</text>
+
+  <!-- 2 self UI -->
+  <path d="M250,158 L282,158 L282,178 L250,178" fill="none" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="338" y="173" text-anchor="middle" font-size="10">2: hienThiDanhSachTaiKhoan()</text>
+
+  <!-- 3 -->
+  <line x1="85" y1="226" x2="240" y2="226" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="162" y="221" text-anchor="middle" font-size="10">3: nhanNutThemMoi()</text>
+
+  <!-- 4 self UI -->
+  <path d="M250,236 L282,236 L282,256 L250,256" fill="none" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="345" y="251" text-anchor="middle" font-size="10">4: hienThiFormTaoTaiKhoan()</text>
+
+  <!-- 5 -->
+  <line x1="85" y1="274" x2="240" y2="274" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="162" y="269" text-anchor="middle" font-size="10">5: nhapThongTin(ten, email, matKhau, quyen)</text>
+
+  <!-- 6 -->
+  <line x1="85" y1="304" x2="240" y2="304" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="162" y="299" text-anchor="middle" font-size="10">6: nhanNutLuu()</text>
+
+  <!-- 7 UI→Ctrl -->
+  <line x1="250" y1="314" x2="420" y2="314" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="335" y="309" text-anchor="middle" font-size="10">7: luuTaiKhoan(data)</text>
+
+  <!-- 8 Ctrl→Entity -->
+  <line x1="430" y1="338" x2="600" y2="338" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="515" y="333" text-anchor="middle" font-size="10">8: kiemTraEmailDaTonTai(email)</text>
+
+  <!-- 9 Entity→DB -->
+  <line x1="610" y1="378" x2="770" y2="378" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="690" y="373" text-anchor="middle" font-size="10">9: SELECT FROM users</text>
+
+  <!-- 10 DB return -->
+  <line x1="770" y1="408" x2="610" y2="408" stroke="#a52a2a" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#dasharr)"/>
+  <text x="690" y="403" text-anchor="middle" font-size="10">10: exists(true/false)</text>
+
+  <!-- ALT: Email exists -->
+  <rect x="30" y="420" width="840" height="78" fill="none" stroke="#000" stroke-width="1"/>
+  <line x1="30" y1="438" x2="78" y2="438" stroke="#000" stroke-width="1"/>
+  <line x1="78" y1="438" x2="88" y2="420" stroke="#000" stroke-width="1"/>
+  <text x="54" y="434" font-size="11" font-weight="bold">alt</text>
+  <text x="96" y="434" font-size="10" font-style="italic">[Email da ton tai - bao loi]</text>
+  <line x1="420" y1="454" x2="80" y2="454" stroke="#a52a2a" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#da)"/>
+  <text x="250" y="449" text-anchor="middle" font-size="10">10a: hienThiLoiEmailDaTonTai()</text>
+  <line x1="30" y1="468" x2="870" y2="468" stroke="#000" stroke-width="0.8" stroke-dasharray="8,4"/>
+  <text x="96" y="484" font-size="10" font-style="italic">[Email chua ton tai - tiep tuc]</text>
+
+  <!-- 11 Encryption -->
+  <path d="M430,500 L462,500 L462,520 L430,520" fill="none" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="518" y="515" text-anchor="middle" font-size="10">11: maHoaMatKhau_Bcrypt()</text>
+
+  <!-- 12 Save -->
+  <line x1="430" y1="546" x2="770" y2="546" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="600" y="541" text-anchor="middle" font-size="10">12: INSERT INTO users(data)</text>
+
+  <!-- 13 DB success -->
+  <line x1="770" y1="566" x2="430" y2="566" stroke="#a52a2a" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#dasharr)"/>
+  <text x="600" y="561" text-anchor="middle" font-size="10">13: success (userId)</text>
+
+  <!-- 14 Ghi log -->
+  <line x1="430" y1="596" x2="770" y2="596" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="600" y="591" text-anchor="middle" font-size="10">14: ghiLogHanhDongTaoTaiKhoan()</text>
+
+  <!-- 15 Result -->
+  <line x1="420" y1="640" x2="245" y2="640" stroke="#a52a2a" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#dasharr)"/>
+  <text x="332" y="635" text-anchor="middle" font-size="10">15: returnKetQua(success)</text>
+
+  <!-- 16 self: thong bao -->
+  <path d="M250,670 L282,670 L282,690 L250,690" fill="none" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="350" y="685" text-anchor="middle" font-size="10">16: hienThiThongBaoThanhCong()</text>
+
+  <!-- 17 self: reload -->
+  <path d="M250,730 L282,730 L282,750 L250,750" fill="none" stroke="#a52a2a" stroke-width="1" marker-end="url(#arr)"/>
+  <text x="356" y="745" text-anchor="middle" font-size="10">17: taiLaiDanhSachTaiKhoan()</text>
+
+</svg>
+
+<p style="text-align:center; font-style:italic; font-family:'Arial'; font-size:14px; margin-top:10px;">
+  Hình 2.x. Biểu đồ trình tự use case Quản lý người dùng
+</p>
+</body>
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Biểu đồ thực thể liên kết – ViralWindow</title>
+  <style>
+    body { margin: 0; background: #fff; font-family: 'Times New Roman', serif; }
+  </style>
+</head>
+<body>
+  <svg width="1000" height="850" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:10px auto">
+
+    <!-- ================= ROW 1 ================= -->
+    <g transform="translate(40,20)">
+      <rect width="160" height="80" fill="#fff" stroke="#000" stroke-width="1.2" />
+      <text x="5" y="14" font-size="11"><tspan font-weight="bold">chuc_vu</tspan></text>
+      <line x1="0" y1="20" x2="160" y2="20" stroke="#000" stroke-width="0.5" />
+      <text x="5" y="35" font-size="10"><tspan fill="red" font-weight="bold">id</tspan> <tspan fill="red">(PK)</tspan></text>
+      <text x="5" y="50" font-size="10">ten_chuc_vu</text>
+      <text x="5" y="65" font-size="10">mo_ta</text>
+    </g>
+
+    <g transform="translate(260,20)">
+      <rect width="180" height="65" fill="#fff" stroke="#000" stroke-width="1.2" />
+      <text x="5" y="14" font-size="11"><tspan font-weight="bold">nguoi_dung_chuc_vu</tspan></text>
+      <line x1="0" y1="20" x2="180" y2="20" stroke="#000" stroke-width="0.5" />
+      <text x="5" y="35" font-size="10"><tspan fill="red" font-weight="bold">ma_nguoi_dung</tspan> <tspan fill="red">(PK, FK)</tspan></text>
+      <text x="5" y="50" font-size="10"><tspan fill="red" font-weight="bold">ma_chuc_vu</tspan> <tspan fill="red">(PK, FK)</tspan></text>
+    </g>
+
+    <g transform="translate(500,20)">
+      <rect width="180" height="95" fill="#fff" stroke="#000" stroke-width="1.2" />
+      <text x="5" y="14" font-size="11"><tspan font-weight="bold">nguoi_dung</tspan></text>
+      <line x1="0" y1="20" x2="180" y2="20" stroke="#000" stroke-width="0.5" />
+      <text x="5" y="35" font-size="10"><tspan fill="red" font-weight="bold">id</tspan> <tspan fill="red">(PK)</tspan></text>
+      <text x="5" y="50" font-size="10">email</text>
+      <text x="5" y="65" font-size="10">mat_khau</text>
+      <text x="5" y="80" font-size="10">ho_ten</text>
+    </g>
+
+    <g transform="translate(760,20)">
+      <rect width="180" height="95" fill="#fff" stroke="#000" stroke-width="1.2" />
+      <text x="5" y="14" font-size="11"><tspan font-weight="bold">khach_hang</tspan></text>
+      <line x1="0" y1="20" x2="180" y2="20" stroke="#000" stroke-width="0.5" />
+      <text x="5" y="35" font-size="10"><tspan fill="red" font-weight="bold">id</tspan> <tspan fill="red">(PK)</tspan></text>
+      <text x="5" y="50" font-size="10">ma_khach_hang</text>
+      <text x="5" y="65" font-size="10">ho_ten</text>
+      <text x="5" y="80" font-size="10">dien_thoai</text>
+    </g>
+
+    <!-- ================= ROW 2 ================= -->
+    <g transform="translate(40,220)">
+      <rect width="180" height="110" fill="#fff" stroke="#000" stroke-width="1.2" />
+      <text x="5" y="14" font-size="11"><tspan font-weight="bold">du_an_history</tspan></text>
+      <line x1="0" y1="20" x2="180" y2="20" stroke="#000" stroke-width="0.5" />
+      <text x="5" y="35" font-size="10"><tspan fill="red" font-weight="bold">id</tspan> <tspan fill="red">(PK)</tspan></text>
+      <text x="5" y="50" font-size="10">trang_thai_cu</text>
+      <text x="5" y="65" font-size="10">trang_thai_moi</text>
+      <text x="5" y="80" font-size="10">thoi_gian_doi</text>
+      <text x="5" y="95" font-size="10"><tspan fill="blue" font-weight="bold">ma_du_an</tspan> <tspan fill="blue">(FK)</tspan></text>
+    </g>
+
+    <g transform="translate(260,220)">
+      <rect width="180" height="110" fill="#fff" stroke="#000" stroke-width="1.2" />
+      <text x="5" y="14" font-size="11"><tspan font-weight="bold">du_an</tspan></text>
+      <line x1="0" y1="20" x2="180" y2="20" stroke="#000" stroke-width="0.5" />
+      <text x="5" y="35" font-size="10"><tspan fill="red" font-weight="bold">id</tspan> <tspan fill="red">(PK)</tspan></text>
+      <text x="5" y="50" font-size="10">ma_du_an</text>
+      <text x="5" y="65" font-size="10">ten_du_an</text>
+      <text x="5" y="80" font-size="10">trang_thai (ENUM)</text>
+      <text x="5" y="95" font-size="10"><tspan fill="blue" font-weight="bold">ma_khach_hang</tspan> <tspan fill="blue">(FK)</tspan></text>
+    </g>
+
+    <g transform="translate(500,220)">
+      <rect width="180" height="125" fill="#fff" stroke="#000" stroke-width="1.2" />
+      <text x="5" y="14" font-size="11"><tspan font-weight="bold">bao_gia</tspan></text>
+      <line x1="0" y1="20" x2="180" y2="20" stroke="#000" stroke-width="0.5" />
+      <text x="5" y="35" font-size="10"><tspan fill="red" font-weight="bold">id</tspan> <tspan fill="red">(PK)</tspan></text>
+      <text x="5" y="50" font-size="10">ma_bao_gia</text>
+      <text x="5" y="65" font-size="10">phien_ban</text>
+      <text x="5" y="80" font-size="10">trang_thai (ENUM)</text>
+      <text x="5" y="95" font-size="10"><tspan fill="blue" font-weight="bold">ma_du_an</tspan> <tspan fill="blue">(FK)</tspan></text>
+      <text x="5" y="110" font-size="10"><tspan fill="blue" font-weight="bold">ma_bao_gia_goc</tspan> <tspan fill="blue">(FK)</tspan></text>
+    </g>
+
+    <g transform="translate(760,220)">
+      <rect width="180" height="110" fill="#fff" stroke="#000" stroke-width="1.2" />
+      <text x="5" y="14" font-size="11"><tspan font-weight="bold">chi_tiet_bao_gia</tspan></text>
+      <line x1="0" y1="20" x2="180" y2="20" stroke="#000" stroke-width="0.5" />
+      <text x="5" y="35" font-size="10"><tspan fill="red" font-weight="bold">id</tspan> <tspan fill="red">(PK)</tspan></text>
+      <text x="5" y="50" font-size="10">don_gia</text>
+      <text x="5" y="65" font-size="10">thanh_tien</text>
+      <text x="5" y="80" font-size="10"><tspan fill="blue" font-weight="bold">ma_bao_gia</tspan> <tspan fill="blue">(FK)</tspan></text>
+      <text x="5" y="95" font-size="10"><tspan fill="blue" font-weight="bold">ma_san_pham_du_an</tspan> <tspan fill="blue">(FK)</tspan></text>
+    </g>
+
+    <!-- ================= ROW 3 ================= -->
+    <g transform="translate(40,440)">
+      <rect width="180" height="95" fill="#fff" stroke="#000" stroke-width="1.2" />
+      <text x="5" y="14" font-size="11"><tspan font-weight="bold">vat_tu_bom</tspan></text>
+      <line x1="0" y1="20" x2="180" y2="20" stroke="#000" stroke-width="0.5" />
+      <text x="5" y="35" font-size="10"><tspan fill="red" font-weight="bold">id</tspan> <tspan fill="red">(PK)</tspan></text>
+      <text x="5" y="50" font-size="10">so_luong_can</text>
+      <text x="5" y="65" font-size="10"><tspan fill="blue" font-weight="bold">ma_sp_du_an</tspan> <tspan fill="blue">(FK)</tspan></text>
+      <text x="5" y="80" font-size="10"><tspan fill="blue" font-weight="bold">ma_vat_tu</tspan> <tspan fill="blue">(FK)</tspan></text>
+    </g>
+
+    <g transform="translate(260,440)">
+      <rect width="180" height="95" fill="#fff" stroke="#000" stroke-width="1.2" />
+      <text x="5" y="14" font-size="11"><tspan font-weight="bold">san_pham_du_an</tspan></text>
+      <line x1="0" y1="20" x2="180" y2="20" stroke="#000" stroke-width="0.5" />
+      <text x="5" y="35" font-size="10"><tspan fill="red" font-weight="bold">id</tspan> <tspan fill="red">(PK)</tspan></text>
+      <text x="5" y="50" font-size="10">ten_rieng</text>
+      <text x="5" y="65" font-size="10">cau_hinh_json</text>
+      <text x="5" y="80" font-size="10"><tspan fill="blue" font-weight="bold">ma_du_an</tspan> <tspan fill="blue">(FK)</tspan></text>
+    </g>
+
+    <g transform="translate(500,440)">
+      <rect width="180" height="110" fill="#fff" stroke="#000" stroke-width="1.2" />
+      <text x="5" y="14" font-size="11"><tspan font-weight="bold">phieu_xuat_nhap_kho</tspan></text>
+      <line x1="0" y1="20" x2="180" y2="20" stroke="#000" stroke-width="0.5" />
+      <text x="5" y="35" font-size="10"><tspan fill="red" font-weight="bold">id</tspan> <tspan fill="red">(PK)</tspan></text>
+      <text x="5" y="50" font-size="10">loai_phieu (ENUM)</text>
+      <text x="5" y="65" font-size="10">so_luong</text>
+      <text x="5" y="80" font-size="10"><tspan fill="blue" font-weight="bold">ma_vat_tu</tspan> <tspan fill="blue">(FK)</tspan></text>
+      <text x="5" y="95" font-size="10"><tspan fill="blue" font-weight="bold">ma_du_an</tspan> <tspan fill="blue">(FK)</tspan></text>
+    </g>
+
+    <g transform="translate(760,440)">
+      <rect width="180" height="110" fill="#fff" stroke="#000" stroke-width="1.2" />
+      <text x="5" y="14" font-size="11"><tspan font-weight="bold">giao_dich_tai_chinh</tspan></text>
+      <line x1="0" y1="20" x2="180" y2="20" stroke="#000" stroke-width="0.5" />
+      <text x="5" y="35" font-size="10"><tspan fill="red" font-weight="bold">id</tspan> <tspan fill="red">(PK)</tspan></text>
+      <text x="5" y="50" font-size="10">loai_gd (ENUM)</text>
+      <text x="5" y="65" font-size="10">so_tien</text>
+      <text x="5" y="80" font-size="10"><tspan fill="blue" font-weight="bold">ma_du_an</tspan> <tspan fill="blue">(FK)</tspan></text>
+      <text x="5" y="95" font-size="10"><tspan fill="blue" font-weight="bold">ma_khach_hang</tspan> <tspan fill="blue">(FK)</tspan></text>
+    </g>
+
+    <!-- ================= ROW 4 ================= -->
+    <g transform="translate(260,660)">
+      <rect width="180" height="95" fill="#fff" stroke="#000" stroke-width="1.2" />
+      <text x="5" y="14" font-size="11"><tspan font-weight="bold">kho_vat_tu</tspan></text>
+      <line x1="0" y1="20" x2="180" y2="20" stroke="#000" stroke-width="0.5" />
+      <text x="5" y="35" font-size="10"><tspan fill="red" font-weight="bold">id</tspan> <tspan fill="red">(PK)</tspan></text>
+      <text x="5" y="50" font-size="10">ma_vat_tu</text>
+      <text x="5" y="65" font-size="10">ten_vat_tu</text>
+      <text x="5" y="80" font-size="10">so_luong_ton</text>
+    </g>
+
+    <!-- ══════════════════════════════════════ -->
+    <!--         RELATIONSHIP LINES             -->
+    <!-- ══════════════════════════════════════ -->
+
+    <!-- chuc_vu (1) -> (N) nguoi_dung_chuc_vu -->
+    <line x1="200" y1="50" x2="260" y2="50" stroke="#000" stroke-width="1" stroke-dasharray="5,3" />
+    <line x1="204" y1="43" x2="204" y2="57" stroke="#000" stroke-width="1.5" />
+    <line x1="250" y1="43" x2="260" y2="50" stroke="#000" stroke-width="1.2" />
+    <line x1="250" y1="57" x2="260" y2="50" stroke="#000" stroke-width="1.2" />
+
+    <!-- nguoi_dung (1) -> (N) nguoi_dung_chuc_vu -->
+    <line x1="500" y1="50" x2="440" y2="50" stroke="#000" stroke-width="1" stroke-dasharray="5,3" />
+    <line x1="496" y1="43" x2="496" y2="57" stroke="#000" stroke-width="1.5" />
+    <line x1="450" y1="43" x2="440" y2="50" stroke="#000" stroke-width="1.2" />
+    <line x1="450" y1="57" x2="440" y2="50" stroke="#000" stroke-width="1.2" />
+
+    <!-- khach_hang (1) -> (N) du_an -->
+    <line x1="790" y1="115" x2="440" y2="240" stroke="#000" stroke-width="1" stroke-dasharray="5,3" />
+    <line x1="782" y1="116" x2="792" y2="126" stroke="#000" stroke-width="1.5" />
+    <line x1="452" y1="230" x2="440" y2="240" stroke="#000" stroke-width="1.2" />
+    <line x1="458" y1="242" x2="440" y2="240" stroke="#000" stroke-width="1.2" />
+
+    <!-- du_an (1) -> (N) du_an_history -->
+    <line x1="260" y1="260" x2="220" y2="260" stroke="#000" stroke-width="1" stroke-dasharray="5,3" />
+    <line x1="256" y1="253" x2="256" y2="267" stroke="#000" stroke-width="1.5" />
+    <line x1="230" y1="253" x2="220" y2="260" stroke="#000" stroke-width="1.2" />
+    <line x1="230" y1="267" x2="220" y2="260" stroke="#000" stroke-width="1.2" />
+
+    <!-- du_an (1) -> (N) bao_gia -->
+    <line x1="440" y1="260" x2="500" y2="260" stroke="#000" stroke-width="1" stroke-dasharray="5,3" />
+    <line x1="444" y1="253" x2="444" y2="267" stroke="#000" stroke-width="1.5" />
+    <line x1="490" y1="253" x2="500" y2="260" stroke="#000" stroke-width="1.2" />
+    <line x1="490" y1="267" x2="500" y2="260" stroke="#000" stroke-width="1.2" />
+
+    <!-- bao_gia (1) -> (N) bao_gia_goc (Self Loop) -->
+    <path d="M 600 220 L 600 180 L 650 180 L 650 220" fill="none" stroke="#000" stroke-width="1" stroke-dasharray="5,3" />
+    <line x1="593" y1="216" x2="607" y2="216" stroke="#000" stroke-width="1.5" />
+    <line x1="643" y1="210" x2="650" y2="220" stroke="#000" stroke-width="1.2" />
+    <line x1="657" y1="210" x2="650" y2="220" stroke="#000" stroke-width="1.2" />
+
+    <!-- bao_gia (1) -> (N) chi_tiet_bao_gia -->
+    <line x1="680" y1="260" x2="760" y2="260" stroke="#000" stroke-width="1" stroke-dasharray="5,3" />
+    <line x1="684" y1="253" x2="684" y2="267" stroke="#000" stroke-width="1.5" />
+    <line x1="750" y1="253" x2="760" y2="260" stroke="#000" stroke-width="1.2" />
+    <line x1="750" y1="267" x2="760" y2="260" stroke="#000" stroke-width="1.2" />
+
+    <!-- san_pham_du_an (1) -> (N) chi_tiet_bao_gia -->
+    <line x1="440" y1="460" x2="760" y2="300" stroke="#000" stroke-width="1" stroke-dasharray="5,3" />
+    <line x1="445" y1="450" x2="455" y2="465" stroke="#000" stroke-width="1.5" />
+    <line x1="745" y1="300" x2="760" y2="300" stroke="#000" stroke-width="1.2" />
+    <line x1="755" y1="310" x2="760" y2="300" stroke="#000" stroke-width="1.2" />
+
+    <!-- du_an (1) -> (N) san_pham_du_an -->
+    <line x1="350" y1="330" x2="350" y2="440" stroke="#000" stroke-width="1" stroke-dasharray="5,3" />
+    <line x1="343" y1="334" x2="357" y2="334" stroke="#000" stroke-width="1.5" />
+    <line x1="343" y1="430" x2="350" y2="440" stroke="#000" stroke-width="1.2" />
+    <line x1="357" y1="430" x2="350" y2="440" stroke="#000" stroke-width="1.2" />
+
+    <!-- san_pham_du_an (1) -> (N) vat_tu_bom -->
+    <line x1="260" y1="480" x2="220" y2="480" stroke="#000" stroke-width="1" stroke-dasharray="5,3" />
+    <line x1="256" y1="473" x2="256" y2="487" stroke="#000" stroke-width="1.5" />
+    <line x1="230" y1="473" x2="220" y2="480" stroke="#000" stroke-width="1.2" />
+    <line x1="230" y1="487" x2="220" y2="480" stroke="#000" stroke-width="1.2" />
+
+    <!-- kho_vat_tu (1) -> (N) vat_tu_bom -->
+    <line x1="260" y1="700" x2="130" y2="535" stroke="#000" stroke-width="1" stroke-dasharray="5,3" />
+    <line x1="250" y1="695" x2="260" y2="708" stroke="#000" stroke-width="1.5" />
+    <line x1="135" y1="545" x2="130" y2="535" stroke="#000" stroke-width="1.2" />
+    <line x1="125" y1="542" x2="130" y2="535" stroke="#000" stroke-width="1.2" />
+
+    <!-- kho_vat_tu (1) -> (N) phieu_xuat_nhap_kho -->
+    <line x1="440" y1="700" x2="550" y2="550" stroke="#000" stroke-width="1" stroke-dasharray="5,3" />
+    <line x1="435" y1="692" x2="445" y2="702" stroke="#000" stroke-width="1.5" />
+    <line x1="540" y1="550" x2="550" y2="550" stroke="#000" stroke-width="1.2" />
+    <line x1="545" y1="560" x2="550" y2="550" stroke="#000" stroke-width="1.2" />
+
+    <!-- du_an (1) -> (N) phieu_xuat_nhap_kho -->
+    <line x1="440" y1="310" x2="520" y2="440" stroke="#000" stroke-width="1" stroke-dasharray="5,3" />
+    <line x1="445" y1="318" x2="435" y2="308" stroke="#000" stroke-width="1.5" />
+    <line x1="510" y1="435" x2="520" y2="440" stroke="#000" stroke-width="1.2" />
+    <line x1="515" y1="428" x2="520" y2="440" stroke="#000" stroke-width="1.2" />
+
+    <!-- khach_hang (1) -> (N) giao_dich_tai_chinh -->
+    <line x1="850" y1="115" x2="850" y2="440" stroke="#000" stroke-width="1" stroke-dasharray="5,3" />
+    <line x1="843" y1="119" x2="857" y2="119" stroke="#000" stroke-width="1.5" />
+    <line x1="843" y1="430" x2="850" y2="440" stroke="#000" stroke-width="1.2" />
+    <line x1="857" y1="430" x2="850" y2="440" stroke="#000" stroke-width="1.2" />
+
+    <!-- du_an (1) -> (N) giao_dich_tai_chinh -->
+    <line x1="440" y1="280" x2="760" y2="480" stroke="#000" stroke-width="1" stroke-dasharray="5,3" />
+    <line x1="445" y1="270" x2="450" y2="285" stroke="#000" stroke-width="1.5" />
+    <line x1="750" y1="470" x2="760" y2="480" stroke="#000" stroke-width="1.2" />
+    <line x1="745" y1="480" x2="760" y2="480" stroke="#000" stroke-width="1.2" />
+
+    <!-- CAPTION -->
+    <text x="500" y="800" text-anchor="middle" font-size="14" font-style="italic">Hình 2.25. Biểu đồ thực thể liên kết (ERD) - Phiên bản tối ưu chuẩn System Design</text>
+
+    <!-- Kế toán Note -->
+    <g transform="translate(680,660)">
+      <rect width="260" height="40" fill="#fff" stroke="#000" stroke-width="0.5" stroke-dasharray="2,2"/>
+      <text x="10" y="16" font-size="10" font-style="italic">* Ghi chú nghiệp vụ:</text>
+      <text x="10" y="30" font-size="10" font-style="italic">Bảng "cong_no" được thay bằng phép toán SUM</text>
+      <text x="10" y="44" font-size="10" font-style="italic">từ "giao_dich_tai_chinh" theo đúng chuẩn Kế toán.</text>
+    </g>
+
+    <!-- LEGEND -->
+    <g transform="translate(40,730)">
+      <rect width="360" height="90" rx="0" fill="#fff" stroke="#000" stroke-width="1.2" />
+      <text x="10" y="16" font-size="10" font-weight="bold">Chú thích:</text>
+      <text x="10" y="32" font-size="10"><tspan fill="red" font-weight="bold">id (PK)</tspan> = Khóa chính</text>
+      <text x="10" y="48" font-size="10"><tspan fill="blue" font-weight="bold">ma_xxx (FK)</tspan> = Khóa ngoại</text>
+      <line x1="10" y1="60" x2="50" y2="60" stroke="#000" stroke-width="1" stroke-dasharray="5,3" />
+      <text x="55" y="64" font-size="10">= Quan hệ giữa các thực thể</text>
+      <line x1="170" y1="30" x2="190" y2="30" stroke="#000" stroke-width="1" stroke-dasharray="5,3" />
+      <line x1="173" y1="25" x2="173" y2="35" stroke="#000" stroke-width="1.5" />
+      <text x="195" y="34" font-size="10">= Đầu "Một" (1)</text>
+      <line x1="170" y1="50" x2="190" y2="50" stroke="#000" stroke-width="1" stroke-dasharray="5,3" />
+      <line x1="180" y1="43" x2="190" y2="50" stroke="#000" stroke-width="1.2" />
+      <line x1="180" y1="57" x2="190" y2="50" stroke="#000" stroke-width="1.2" />
+      <text x="195" y="54" font-size="10">= Đầu "Nhiều" (N)</text>
+    </g>
+
+  </svg>
+</body>
+</html>

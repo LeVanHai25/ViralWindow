@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<title>Biểu đồ thực thể liên kết – ViralWindow</title>
+<style>
+body{margin:0;background:#fff;font-family:Arial,sans-serif;overflow-x:auto}
+svg{display:block;margin:10px auto}
+</style>
+</head>
+<body>
+<svg width="1200" height="950" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0,0 8,3 0,6" fill="#a52a2a"/></marker>
+</defs>
+
+<!-- TITLE -->
+<text x="600" y="28" text-anchor="middle" font-size="17" font-weight="bold">Biểu đồ thực thể liên kết (ERD) – Hệ thống quản lý ViralWindow</text>
+
+<!-- ============ ENTITY: VAI_TRO ============ -->
+<g transform="translate(55,80)">
+  <rect width="150" height="100" rx="4" fill="#fffbe6" stroke="#a52a2a" stroke-width="1.5"/>
+  <rect width="150" height="26" rx="4" fill="#a52a2a"/>
+  <text x="75" y="18" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff">VAI_TRO</text>
+  <text x="10" y="44" font-size="10"><tspan font-weight="bold" text-decoration="underline">ma_vai_tro</tspan> (PK)</text>
+  <text x="10" y="60" font-size="10">ten_vai_tro</text>
+  <text x="10" y="76" font-size="10">mo_ta</text>
+  <text x="10" y="92" font-size="10">ngay_tao</text>
+</g>
+
+<!-- ============ ENTITY: NGUOI_DUNG ============ -->
+<g transform="translate(55,250)">
+  <rect width="170" height="180" rx="4" fill="#fffbe6" stroke="#a52a2a" stroke-width="1.5"/>
+  <rect width="170" height="26" rx="4" fill="#a52a2a"/>
+  <text x="85" y="18" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff">NGUOI_DUNG</text>
+  <text x="10" y="44" font-size="10"><tspan font-weight="bold" text-decoration="underline">ma_nguoi_dung</tspan> (PK)</text>
+  <text x="10" y="60" font-size="10">ho_ten</text>
+  <text x="10" y="76" font-size="10">email (UQ)</text>
+  <text x="10" y="92" font-size="10">dien_thoai (UQ)</text>
+  <text x="10" y="108" font-size="10">mat_khau</text>
+  <text x="10" y="124" font-size="10">loai_nguoi_dung</text>
+  <text x="10" y="140" font-size="10">ma_vai_tro (FK)</text>
+  <text x="10" y="156" font-size="10">trang_thai</text>
+  <text x="10" y="172" font-size="10">ngay_tao / ngay_cap_nhat</text>
+</g>
+
+<!-- ============ ENTITY: KHACH_HANG ============ -->
+<g transform="translate(310,80)">
+  <rect width="170" height="160" rx="4" fill="#fffbe6" stroke="#a52a2a" stroke-width="1.5"/>
+  <rect width="170" height="26" rx="4" fill="#a52a2a"/>
+  <text x="85" y="18" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff">KHACH_HANG</text>
+  <text x="10" y="44" font-size="10"><tspan font-weight="bold" text-decoration="underline">ma_khach_hang</tspan> (PK)</text>
+  <text x="10" y="60" font-size="10">ho_ten</text>
+  <text x="10" y="76" font-size="10">dien_thoai (UQ)</text>
+  <text x="10" y="92" font-size="10">email</text>
+  <text x="10" y="108" font-size="10">dia_chi</text>
+  <text x="10" y="124" font-size="10">ten_cong_ty</text>
+  <text x="10" y="140" font-size="10">cong_no</text>
+  <text x="10" y="156" font-size="10">ngay_tao / ngay_cap_nhat</text>
+</g>
+
+<!-- ============ ENTITY: DU_AN ============ -->
+<g transform="translate(560,80)">
+  <rect width="180" height="180" rx="4" fill="#fffbe6" stroke="#a52a2a" stroke-width="1.5"/>
+  <rect width="180" height="26" rx="4" fill="#a52a2a"/>
+  <text x="90" y="18" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff">DU_AN</text>
+  <text x="10" y="44" font-size="10"><tspan font-weight="bold" text-decoration="underline">ma_du_an</tspan> (PK)</text>
+  <text x="10" y="60" font-size="10">ma_du_an_tu_sinh (UQ)</text>
+  <text x="10" y="76" font-size="10">ten_du_an</text>
+  <text x="10" y="92" font-size="10">ma_khach_hang (FK)</text>
+  <text x="10" y="108" font-size="10">trang_thai</text>
+  <text x="10" y="124" font-size="10">ngay_bat_dau / ngay_ket_thuc</text>
+  <text x="10" y="140" font-size="10">tong_gia_tri</text>
+  <text x="10" y="156" font-size="10">tien_dat_coc</text>
+  <text x="10" y="172" font-size="10">nguoi_tao (FK)</text>
+</g>
+
+<!-- ============ ENTITY: BAO_GIA ============ -->
+<g transform="translate(830,80)">
+  <rect width="180" height="200" rx="4" fill="#fffbe6" stroke="#a52a2a" stroke-width="1.5"/>
+  <rect width="180" height="26" rx="4" fill="#a52a2a"/>
+  <text x="90" y="18" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff">BAO_GIA</text>
+  <text x="10" y="44" font-size="10"><tspan font-weight="bold" text-decoration="underline">ma_bao_gia</tspan> (PK)</text>
+  <text x="10" y="60" font-size="10">ma_bao_gia_tu_sinh (UQ)</text>
+  <text x="10" y="76" font-size="10">ma_du_an (FK)</text>
+  <text x="10" y="92" font-size="10">ma_khach_hang (FK)</text>
+  <text x="10" y="108" font-size="10">ngay_lap</text>
+  <text x="10" y="124" font-size="10">trang_thai</text>
+  <text x="10" y="140" font-size="10">tam_tinh / tong_tien</text>
+  <text x="10" y="156" font-size="10">ty_le_vat / ty_le_chiet_khau</text>
+  <text x="10" y="172" font-size="10">tien_dat_coc</text>
+  <text x="10" y="188" font-size="10">nguoi_tao (FK)</text>
+</g>
+
+<!-- ============ ENTITY: HANG_MUC_DU_AN ============ -->
+<g transform="translate(560,330)">
+  <rect width="180" height="160" rx="4" fill="#fffbe6" stroke="#a52a2a" stroke-width="1.5"/>
+  <rect width="180" height="26" rx="4" fill="#a52a2a"/>
+  <text x="90" y="18" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff">HANG_MUC_DU_AN</text>
+  <text x="10" y="44" font-size="10"><tspan font-weight="bold" text-decoration="underline">ma_hang_muc</tspan> (PK)</text>
+  <text x="10" y="60" font-size="10">ma_du_an (FK)</text>
+  <text x="10" y="76" font-size="10">ten_hang_muc</text>
+  <text x="10" y="92" font-size="10">loai_hang_muc</text>
+  <text x="10" y="108" font-size="10">chieu_rong_mm / chieu_cao_mm</text>
+  <text x="10" y="124" font-size="10">so_luong / don_gia</text>
+  <text x="10" y="140" font-size="10">he_nhom</text>
+  <text x="10" y="156" font-size="10">trang_thai</text>
+</g>
+
+<!-- ============ ENTITY: VAT_TU_BOM ============ -->
+<g transform="translate(830,330)">
+  <rect width="180" height="160" rx="4" fill="#fffbe6" stroke="#a52a2a" stroke-width="1.5"/>
+  <rect width="180" height="26" rx="4" fill="#a52a2a"/>
+  <text x="90" y="18" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff">VAT_TU_BOM</text>
+  <text x="10" y="44" font-size="10"><tspan font-weight="bold" text-decoration="underline">ma_ban_ghi</tspan> (PK)</text>
+  <text x="10" y="60" font-size="10">ma_du_an (FK)</text>
+  <text x="10" y="76" font-size="10">ma_hang_muc (FK)</text>
+  <text x="10" y="92" font-size="10">ten_vat_tu / ma_vat_tu</text>
+  <text x="10" y="108" font-size="10">so_luong / don_vi</text>
+  <text x="10" y="124" font-size="10">don_gia / thanh_tien</text>
+  <text x="10" y="140" font-size="10">chieu_dai_cat_mm</text>
+  <text x="10" y="156" font-size="10">ngay_tao</text>
+</g>
+
+<!-- ============ ENTITY: KHO_VAT_TU ============ -->
+<g transform="translate(310,330)">
+  <rect width="170" height="160" rx="4" fill="#fffbe6" stroke="#a52a2a" stroke-width="1.5"/>
+  <rect width="170" height="26" rx="4" fill="#a52a2a"/>
+  <text x="85" y="18" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff">KHO_VAT_TU</text>
+  <text x="10" y="44" font-size="10"><tspan font-weight="bold" text-decoration="underline">ma_vat_tu</tspan> (PK)</text>
+  <text x="10" y="60" font-size="10">ma_vat_tu_tu_sinh (UQ)</text>
+  <text x="10" y="76" font-size="10">ten_vat_tu</text>
+  <text x="10" y="92" font-size="10">danh_muc / loai_vat_tu</text>
+  <text x="10" y="108" font-size="10">don_vi</text>
+  <text x="10" y="124" font-size="10">so_luong_ton</text>
+  <text x="10" y="140" font-size="10">muc_toi_thieu / muc_toi_da</text>
+  <text x="10" y="156" font-size="10">don_gia_nhap / nha_cung_cap</text>
+</g>
+
+<!-- ============ ENTITY: GIAO_DICH_TAI_CHINH ============ -->
+<g transform="translate(55,550)">
+  <rect width="200" height="180" rx="4" fill="#fffbe6" stroke="#a52a2a" stroke-width="1.5"/>
+  <rect width="200" height="26" rx="4" fill="#a52a2a"/>
+  <text x="100" y="18" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff">GIAO_DICH_TAI_CHINH</text>
+  <text x="10" y="44" font-size="10"><tspan font-weight="bold" text-decoration="underline">ma_giao_dich</tspan> (PK)</text>
+  <text x="10" y="60" font-size="10">ma_phieu (UQ)</text>
+  <text x="10" y="76" font-size="10">ngay_giao_dich</text>
+  <text x="10" y="92" font-size="10">loai_giao_dich (Thu/Chi)</text>
+  <text x="10" y="108" font-size="10">so_tien</text>
+  <text x="10" y="124" font-size="10">ma_du_an (FK)</text>
+  <text x="10" y="140" font-size="10">ma_khach_hang (FK)</text>
+  <text x="10" y="156" font-size="10">trang_thai</text>
+  <text x="10" y="172" font-size="10">hinh_thuc_thanh_toan</text>
+</g>
+
+<!-- ============ ENTITY: THONG_BAO ============ -->
+<g transform="translate(340,550)">
+  <rect width="170" height="150" rx="4" fill="#fffbe6" stroke="#a52a2a" stroke-width="1.5"/>
+  <rect width="170" height="26" rx="4" fill="#a52a2a"/>
+  <text x="85" y="18" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff">THONG_BAO</text>
+  <text x="10" y="44" font-size="10"><tspan font-weight="bold" text-decoration="underline">ma_thong_bao</tspan> (PK)</text>
+  <text x="10" y="60" font-size="10">ma_nguoi_nhan (FK)</text>
+  <text x="10" y="76" font-size="10">tieu_de</text>
+  <text x="10" y="92" font-size="10">noi_dung</text>
+  <text x="10" y="108" font-size="10">loai / muc_do</text>
+  <text x="10" y="124" font-size="10">da_doc</text>
+  <text x="10" y="140" font-size="10">ngay_tao</text>
+</g>
+
+<!-- ============ ENTITY: NHAT_KY ============ -->
+<g transform="translate(590,550)">
+  <rect width="170" height="150" rx="4" fill="#fffbe6" stroke="#a52a2a" stroke-width="1.5"/>
+  <rect width="170" height="26" rx="4" fill="#a52a2a"/>
+  <text x="85" y="18" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff">NHAT_KY</text>
+  <text x="10" y="44" font-size="10"><tspan font-weight="bold" text-decoration="underline">ma_nhat_ky</tspan> (PK)</text>
+  <text x="10" y="60" font-size="10">ma_nguoi_dung</text>
+  <text x="10" y="76" font-size="10">phuong_thuc</text>
+  <text x="10" y="92" font-size="10">duong_dan</text>
+  <text x="10" y="108" font-size="10">mo_ta_hanh_dong</text>
+  <text x="10" y="124" font-size="10">ma_trang_thai</text>
+  <text x="10" y="140" font-size="10">thoi_diem</text>
+</g>
+
+<!-- ════════════════════════════════════════════ -->
+<!--              RELATIONSHIP LINES             -->
+<!-- ════════════════════════════════════════════ -->
+
+<!-- VAI_TRO (1) ──── (N) NGUOI_DUNG -->
+<line x1="130" y1="180" x2="130" y2="250" stroke="#a52a2a" stroke-width="1.5"/>
+<rect x="107" y="200" width="46" height="20" rx="10" fill="#fff" stroke="#a52a2a" stroke-width="1"/>
+<text x="130" y="214" text-anchor="middle" font-size="10" fill="#a52a2a" font-weight="bold">1 : N</text>
+<text x="138" y="192" font-size="9" fill="#666" font-style="italic">có</text>
+
+<!-- KHACH_HANG (1) ──── (N) DU_AN -->
+<line x1="480" y1="160" x2="560" y2="160" stroke="#a52a2a" stroke-width="1.5"/>
+<rect x="497" y="148" width="46" height="20" rx="10" fill="#fff" stroke="#a52a2a" stroke-width="1"/>
+<text x="520" y="162" text-anchor="middle" font-size="10" fill="#a52a2a" font-weight="bold">1 : N</text>
+<text x="520" y="143" font-size="9" fill="#666" font-style="italic">sở hữu</text>
+
+<!-- DU_AN (1) ──── (N) BAO_GIA -->
+<line x1="740" y1="170" x2="830" y2="170" stroke="#a52a2a" stroke-width="1.5"/>
+<rect x="762" y="158" width="46" height="20" rx="10" fill="#fff" stroke="#a52a2a" stroke-width="1"/>
+<text x="785" y="172" text-anchor="middle" font-size="10" fill="#a52a2a" font-weight="bold">1 : N</text>
+<text x="785" y="153" font-size="9" fill="#666" font-style="italic">lập</text>
+
+<!-- DU_AN (1) ──── (N) HANG_MUC_DU_AN -->
+<line x1="650" y1="260" x2="650" y2="330" stroke="#a52a2a" stroke-width="1.5"/>
+<rect x="627" y="282" width="46" height="20" rx="10" fill="#fff" stroke="#a52a2a" stroke-width="1"/>
+<text x="650" y="296" text-anchor="middle" font-size="10" fill="#a52a2a" font-weight="bold">1 : N</text>
+<text x="665" y="278" font-size="9" fill="#666" font-style="italic">chứa</text>
+
+<!-- HANG_MUC (1) ──── (N) VAT_TU_BOM -->
+<line x1="740" y1="410" x2="830" y2="410" stroke="#a52a2a" stroke-width="1.5"/>
+<rect x="762" y="398" width="46" height="20" rx="10" fill="#fff" stroke="#a52a2a" stroke-width="1"/>
+<text x="785" y="412" text-anchor="middle" font-size="10" fill="#a52a2a" font-weight="bold">1 : N</text>
+<text x="785" y="393" font-size="9" fill="#666" font-style="italic">bóc tách</text>
+
+<!-- KHACH_HANG (1) ──── (N) BAO_GIA (dashed) -->
+<line x1="480" y1="120" x2="830" y2="140" stroke="#a52a2a" stroke-width="1" stroke-dasharray="5,3"/>
+<text x="650" y="118" font-size="9" fill="#666" font-style="italic">nhận báo giá (1:N)</text>
+
+<!-- NGUOI_DUNG (1) ──── (N) THONG_BAO -->
+<line x1="140" y1="430" x2="380" y2="550" stroke="#a52a2a" stroke-width="1.5"/>
+<rect x="230" y="478" width="46" height="20" rx="10" fill="#fff" stroke="#a52a2a" stroke-width="1"/>
+<text x="253" y="492" text-anchor="middle" font-size="10" fill="#a52a2a" font-weight="bold">1 : N</text>
+<text x="240" y="474" font-size="9" fill="#666" font-style="italic">nhận</text>
+
+<!-- NGUOI_DUNG (1) ──── (N) NHAT_KY -->
+<line x1="200" y1="430" x2="640" y2="550" stroke="#a52a2a" stroke-width="1" stroke-dasharray="5,3"/>
+<text x="420" y="478" font-size="9" fill="#666" font-style="italic">ghi nhật ký (1:N)</text>
+
+<!-- DU_AN (1) ──── (N) GIAO_DICH_TAI_CHINH -->
+<line x1="560" y1="240" x2="200" y2="550" stroke="#a52a2a" stroke-width="1" stroke-dasharray="5,3"/>
+<text x="360" y="400" font-size="9" fill="#666" font-style="italic">phát sinh giao dịch (1:N)</text>
+
+<!-- KHACH_HANG ──── GIAO_DICH_TAI_CHINH -->
+<line x1="310" y1="230" x2="180" y2="550" stroke="#a52a2a" stroke-width="1" stroke-dasharray="5,3"/>
+<text x="220" y="400" font-size="9" fill="#666" font-style="italic">thanh toán (1:N)</text>
+
+<!-- ════════════ LEGEND ════════════ -->
+<g transform="translate(830,550)">
+  <rect width="300" height="145" rx="6" fill="#f9f9f9" stroke="#999" stroke-width="1"/>
+  <text x="150" y="22" text-anchor="middle" font-size="13" font-weight="bold">Chú thích</text>
+  
+  <rect x="15" y="35" width="40" height="16" rx="2" fill="#fffbe6" stroke="#a52a2a" stroke-width="1"/>
+  <text x="65" y="48" font-size="10">= Thực thể (Entity)</text>
+  
+  <text x="15" y="70" font-size="10"><tspan font-weight="bold" text-decoration="underline">ma_xxx</tspan> = Khóa chính (PK)</text>
+  <text x="15" y="88" font-size="10">ma_xxx (FK) = Khóa ngoại</text>
+  
+  <line x1="15" y1="100" x2="55" y2="100" stroke="#a52a2a" stroke-width="1.5"/>
+  <text x="65" y="104" font-size="10">= Quan hệ trực tiếp</text>
+  
+  <line x1="15" y1="118" x2="55" y2="118" stroke="#a52a2a" stroke-width="1" stroke-dasharray="5,3"/>
+  <text x="65" y="122" font-size="10">= Quan hệ gián tiếp</text>
+  
+  <rect x="15" y="130" width="30" height="12" rx="6" fill="#fff" stroke="#a52a2a" stroke-width="1"/>
+  <text x="20" y="140" font-size="8" fill="#a52a2a">1:N</text>
+  <text x="65" y="140" font-size="10">= Bản số quan hệ</text>
+</g>
+
+</svg>
+
+<p style="text-align:center;font-style:italic;font-size:15px;margin:10px 0 30px">
+  Hình 2.6. Biểu đồ thực thể liên kết (ERD) – Hệ thống quản lý ViralWindow
+</p>
+</body>
+</html>

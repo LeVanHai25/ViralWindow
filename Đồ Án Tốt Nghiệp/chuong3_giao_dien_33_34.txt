@@ -1,0 +1,187 @@
+NỘI DUNG CHƯƠNG 3 — MỤC 3.3 & 3.4
+(Copy vào Word, chèn ảnh chụp màn hình vào vị trí [Hình x.x])
+
+3.3. Giao diện chung
+
+3.3.1. Giao diện trang Đăng nhập
+
+Trang đăng nhập là cổng vào đầu tiên của hệ thống, đảm bảo chỉ những người dùng được cấp phép mới có thể truy cập vào các chức năng bên trong.
+
+[Hình 3.x: Giao diện trang Đăng nhập]
+
+Mô tả giao diện:
+•	Bố cục hai cột (Split-panel):
+	o	Cột trái hiển thị hình ảnh thương hiệu ViralWindow cùng các tính năng nổi bật của hệ thống.
+	o	Cột phải chứa form đăng nhập được căn giữa màn hình.
+•	Form đăng nhập gồm:
+	o	Trường nhập Email và Mật khẩu có biểu tượng minh họa.
+	o	Chức năng hiển thị/ẩn mật khẩu bằng nút toggle.
+	o	Tùy chọn "Ghi nhớ đăng nhập" giúp duy trì phiên làm việc khi mở lại trình duyệt.
+	o	Liên kết chuyển đến trang Đăng ký và Quên mật khẩu.
+•	Thông báo lỗi hiển thị trực tiếp dưới form khi thông tin không hợp lệ.
+
+Đánh giá: Giao diện đăng nhập được thiết kế đơn giản, trực quan, đảm bảo người dùng có thể thao tác nhanh chóng và dễ dàng ngay từ lần đầu sử dụng.
+
+3.3.2. Giao diện Trang Tổng quan (Dashboard)
+
+Trang chủ cung cấp cái nhìn tổng quan về tình trạng hoạt động của doanh nghiệp, là nơi đầu tiên người dùng tiếp cận sau khi đăng nhập thành công vào hệ thống.
+
+[Hình 3.x: Giao diện Trang Tổng quan]
+
+Mô tả giao diện:
+•	Thẻ thống kê (KPI):
+	Hiển thị các số liệu quan trọng như:
+	o	Dự án đang chạy
+	o	Báo giá chờ duyệt
+	o	Lệnh sản xuất
+	o	Dự án hoàn thành
+•	Tổng quan công ty:
+	Hiển thị số lượng khách hàng, tổng dự án, số lượng vật tư trong kho và doanh thu tháng hiện tại.
+•	Cảnh báo:
+	Thông báo các vấn đề cần chú ý như thiếu hàng, vật tư sắp hết hoặc dự án trễ tiến độ.
+•	Thao tác nhanh:
+	Cho phép truy cập nhanh đến các chức năng thường dùng như tạo báo giá, quản lý khách hàng, kho vật tư và cài đặt hệ thống.
+•	Hoạt động gần đây:
+	Hiển thị các thao tác mới nhất trong hệ thống theo thứ tự thời gian thực.
+
+Đánh giá: Trang chủ được thiết kế trực quan, giúp người dùng nắm bắt nhanh tình hình và đưa ra quyết định kịp thời mà không cần truy cập nhiều màn hình khác nhau.
+
+3.3.3. Giao diện Quản lý Dự án
+
+Màn hình Quản lý Dự án cho phép theo dõi toàn bộ vòng đời của từng dự án từ khi tiếp nhận đến khi bàn giao cho khách hàng.
+
+[Hình 3.x: Giao diện Quản lý Dự án]
+
+Mô tả giao diện:
+•	Danh sách dự án:
+	o	Hiển thị toàn bộ dự án dưới dạng bảng với các thông tin: mã dự án, tên khách hàng, giá trị hợp đồng, ngày bắt đầu, deadline và trạng thái.
+	o	Hỗ trợ tìm kiếm theo tên dự án hoặc khách hàng, lọc theo trạng thái và phân trang.
+	o	Chỉ số tiến độ (Progress Bar) hiển thị trực quan phần trăm hoàn thành của từng dự án.
+•	Thao tác:
+	o	Nút "Tạo dự án mới" cho phép nhập thông tin dự án và liên kết với khách hàng có sẵn.
+	o	Các nút Xem chi tiết, Chỉnh sửa và Xóa được bố trí ngay trên từng dòng dự án.
+•	Bộ lọc trạng thái:
+	Cho phép lọc nhanh theo các trạng thái: Đang thực hiện, Hoàn thành, Tạm dừng.
+
+Đánh giá: Giao diện quản lý dự án giúp người dùng theo dõi và điều phối công việc hiệu quả, đặc biệt phù hợp với doanh nghiệp có nhiều dự án song song.
+
+3.3.4. Giao diện Lập Báo giá
+
+Màn hình Lập Báo giá hỗ trợ nhân viên kinh doanh tạo báo giá chuyên nghiệp và tự động tính toán vật tư dựa trên thông số kỹ thuật của từng hạng mục cửa nhôm kính.
+
+[Hình 3.x: Giao diện Lập Báo giá]
+
+Mô tả giao diện:
+•	Thông tin chung:
+	o	Lựa chọn khách hàng từ danh sách có sẵn hoặc tạo mới trực tiếp trên form.
+	o	Nhập thông tin công trình: địa chỉ, ghi chú và ngày dự kiến bàn giao.
+•	Bảng hạng mục:
+	o	Thêm nhiều hạng mục cửa với thông số: loại cửa, hệ nhôm, kích thước (rộng × cao), số lượng, màu sắc và phụ kiện.
+	o	Hệ thống tự động tính toán và hiển thị danh sách vật tư cần dùng (BOM) theo từng hạng mục.
+•	Tóm tắt báo giá:
+	o	Hiển thị tổng chi phí vật tư, nhân công và lợi nhuận dự kiến.
+	o	Cho phép nhập chiết khấu và xem giá bán đề xuất sau chiết khấu.
+•	Xuất tài liệu:
+	Hỗ trợ xuất báo giá ra file PDF để gửi cho khách hàng.
+
+Đánh giá: Chức năng lập báo giá tự động hóa việc tính toán vật tư, giảm thiểu sai sót và rút ngắn đáng kể thời gian xử lý so với phương pháp thủ công truyền thống.
+
+3.3.5. Giao diện Quản lý Kho vật tư
+
+Màn hình Quản lý Kho vật tư cho phép theo dõi tình trạng nhập – xuất – tồn kho theo thời gian thực, đảm bảo nguồn cung vật tư luôn đáp ứng nhu cầu sản xuất.
+
+[Hình 3.x: Giao diện Quản lý Kho vật tư]
+
+Mô tả giao diện:
+•	Danh mục vật tư:
+	o	Hiển thị toàn bộ vật tư trong kho với các thông tin: mã, tên, đơn vị tính, số lượng tồn và mức tồn tối thiểu.
+	o	Các vật tư có tồn kho dưới mức tối thiểu được đánh dấu màu đỏ để cảnh báo trực quan.
+•	Phiếu nhập/xuất kho:
+	o	Form tạo phiếu nhập hoặc xuất với đầy đủ thông tin: vật tư, số lượng, lý do, người thực hiện và liên kết với dự án tương ứng.
+•	Lịch sử giao dịch:
+	Nhật ký toàn bộ các lần nhập xuất kho theo thứ tự thời gian, hỗ trợ tra cứu và đối soát.
+•	Cảnh báo tồn kho:
+	Hệ thống tự động hiển thị danh sách vật tư sắp hết hàng trên trang Tổng quan.
+
+Đánh giá: Giao diện kho vật tư trực quan và dễ sử dụng, giúp nhân viên kho kiểm soát chính xác lượng hàng tồn và phản ứng kịp thời với các biến động trong quá trình sản xuất.
+
+3.3.6. Giao diện Quản lý Tài chính
+
+Màn hình Quản lý Tài chính cung cấp công cụ ghi nhận và theo dõi toàn bộ luồng thu chi của doanh nghiệp, bao gồm phiếu thu, phiếu chi và công nợ khách hàng.
+
+[Hình 3.x: Giao diện Quản lý Tài chính]
+
+Mô tả giao diện:
+•	Tổng quan tài chính:
+	o	Hiển thị tổng thu, tổng chi và lợi nhuận theo tháng dưới dạng biểu đồ cột trực quan.
+	o	Cho phép lọc dữ liệu theo khoảng thời gian tùy chọn.
+•	Quản lý phiếu thu/chi:
+	o	Form tạo phiếu với đầy đủ thông tin: đối tượng, số tiền, nội dung giao dịch và phương thức thanh toán.
+	o	Mỗi phiếu được liên kết trực tiếp với dự án tương ứng để dễ dàng truy vết.
+•	Theo dõi công nợ:
+	o	Danh sách khách hàng còn công nợ, hiển thị số tiền và thời gian đến hạn thanh toán.
+	o	Hỗ trợ ghi nhận các khoản thanh toán theo từng đợt.
+•	Báo cáo tài chính:
+	Tự động tổng hợp doanh thu, chi phí và lợi nhuận theo kỳ, hỗ trợ xuất báo cáo.
+
+Đánh giá: Giao diện tài chính cung cấp đầy đủ thông tin để ban lãnh đạo theo dõi sức khỏe tài chính doanh nghiệp và đưa ra quyết định kịp thời dựa trên số liệu thực tế.
+
+3.4. Giao diện Quản trị
+
+Phân hệ Quản trị cung cấp các công cụ dành riêng cho Quản trị viên để quản lý tài khoản, phân quyền và cấu hình toàn bộ hệ thống.
+
+3.4.1. Giao diện Quản lý Người dùng
+
+Màn hình Quản lý Người dùng cho phép Quản trị viên tạo mới, chỉnh sửa và kiểm soát toàn bộ tài khoản trong hệ thống.
+
+[Hình 3.x: Giao diện Quản lý Người dùng]
+
+Mô tả giao diện:
+•	Danh sách người dùng:
+	o	Hiển thị toàn bộ tài khoản với thông tin: họ tên, email, vai trò, trạng thái hoạt động và thời gian đăng nhập gần nhất.
+	o	Hỗ trợ tìm kiếm theo tên hoặc email, lọc theo vai trò và trạng thái.
+•	Thao tác quản lý:
+	o	Tạo tài khoản mới với đầy đủ thông tin cá nhân và gán vai trò tương ứng.
+	o	Chỉnh sửa thông tin, thay đổi vai trò hoặc vô hiệu hóa tài khoản vi phạm.
+	o	Đặt lại mật khẩu cho người dùng khi cần thiết.
+•	Phân vai trò:
+	Hệ thống hỗ trợ các vai trò: Admin, Quản lý, Kinh doanh, Kho, Tài chính — mỗi vai trò có quyền truy cập tương ứng với chức năng được phép.
+
+Đánh giá: Giao diện quản lý người dùng giúp Quản trị viên kiểm soát chặt chẽ việc truy cập hệ thống, đảm bảo tính bảo mật và phân quyền rõ ràng theo từng bộ phận.
+
+3.4.2. Giao diện Quản lý Phân quyền
+
+Màn hình Quản lý Phân quyền cho phép Quản trị viên cấu hình chi tiết quyền truy cập của từng vai trò đối với các chức năng trong hệ thống.
+
+[Hình 3.x: Giao diện Quản lý Phân quyền]
+
+Mô tả giao diện:
+•	Ma trận phân quyền:
+	o	Hiển thị dưới dạng bảng với các vai trò trên cột và các chức năng trên hàng.
+	o	Mỗi ô trong bảng là checkbox cho phép bật/tắt các quyền: Xem, Tạo mới, Chỉnh sửa, Xóa.
+•	Cập nhật tức thì:
+	Thay đổi phân quyền được áp dụng ngay lập tức mà không cần người dùng đăng xuất.
+•	Bảo vệ vai trò Admin:
+	Quyền của vai trò Quản trị viên được khóa và không thể chỉnh sửa để đảm bảo tính toàn vẹn hệ thống.
+
+Đánh giá: Giao diện phân quyền linh hoạt, dễ cấu hình và đảm bảo mỗi người dùng chỉ được truy cập đúng những chức năng thuộc phạm vi công việc của mình.
+
+3.4.3. Giao diện Cài đặt Hệ thống
+
+Màn hình Cài đặt Hệ thống tập trung toàn bộ thông số cấu hình toàn cục của ứng dụng, giúp Quản trị viên tùy chỉnh hệ thống theo đặc thù của doanh nghiệp.
+
+[Hình 3.x: Giao diện Cài đặt Hệ thống]
+
+Mô tả giao diện:
+•	Thông tin doanh nghiệp:
+	o	Cập nhật tên công ty, logo, địa chỉ, số điện thoại và website.
+	o	Thông tin sau khi lưu được phản ánh tự động trên toàn bộ giao diện hệ thống.
+•	Cài đặt thông báo:
+	o	Cấu hình ngưỡng cảnh báo tồn kho (số lượng tối thiểu trước khi hiển thị cảnh báo).
+	o	Bật/tắt các loại thông báo trong hệ thống.
+•	Quản lý chi nhánh:
+	Cho phép thêm và quản lý thông tin nhiều chi nhánh hoạt động của doanh nghiệp.
+•	Nhật ký hệ thống (Activity Log):
+	Ghi lại toàn bộ thao tác của người dùng theo thời gian thực, hỗ trợ tra cứu và kiểm soát hoạt động bất thường.
+
+Đánh giá: Giao diện cài đặt được tổ chức rõ ràng theo từng nhóm chức năng, giúp Quản trị viên dễ dàng tùy chỉnh hệ thống mà không cần can thiệp vào mã nguồn.

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Sơ đồ Use Case Tổng Quan - ViralWindow</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#fff;display:flex;justify-content:center;padding:20px;font-family:'Times New Roman',serif}
+h2{text-align:center;margin-bottom:10px;font-size:22px}
+</style>
+</head>
+<body>
+<div>
+<h2>2.1. Sơ đồ use case tổng quan</h2>
+<canvas id="cv" width="1050" height="820"></canvas>
+</div>
+<script>
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+ctx.strokeStyle='#000';ctx.fillStyle='#000';ctx.lineWidth=1.5;
+
+function drawActor(x,y,name){
+ ctx.beginPath();ctx.arc(x,y-22,10,0,Math.PI*2);ctx.stroke();
+ ctx.beginPath();ctx.moveTo(x,y-12);ctx.lineTo(x,y+10);ctx.stroke();
+ ctx.beginPath();ctx.moveTo(x-16,y-2);ctx.lineTo(x+16,y-2);ctx.stroke();
+ ctx.beginPath();ctx.moveTo(x,y+10);ctx.lineTo(x-12,y+28);ctx.stroke();
+ ctx.beginPath();ctx.moveTo(x,y+10);ctx.lineTo(x+12,y+28);ctx.stroke();
+ ctx.textAlign='center';ctx.font='bold 14px Times New Roman';
+ ctx.fillText(name,x,y+44);ctx.font='13px Times New Roman';
+}
+
+function drawUC(x,y,text,w){
+ w=w||140;const h=36;
+ ctx.beginPath();ctx.ellipse(x,y,w/2,h/2,0,0,Math.PI*2);ctx.stroke();
+ ctx.textAlign='center';ctx.font='13px Times New Roman';
+ const lines=text.split('\n');
+ if(lines.length===1) ctx.fillText(text,x,y+5);
+ else{ctx.fillText(lines[0],x,y-3);ctx.fillText(lines[1],x,y+13);}
+ return{x,y,w:w/2};
+}
+
+function lineTo(ax,ay,u){
+ const dx=u.x-ax,dy=u.y-ay,d=Math.sqrt(dx*dx+dy*dy);
+ const ex=u.x-dx/d*u.w, ey=u.y-dy/d*18;
+ ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(ex,ey);ctx.stroke();
+}
+
+// ========== ACTORS ==========
+drawActor(70,350,'Nhân viên');
+drawActor(620,140,'Quản lý');
+drawActor(620,600,'Quản trị viên/Admin');
+
+// ========== USE CASES ==========
+// --- Shared auth (top) ---
+const u1=drawUC(250,45,'Đăng nhập');
+const u2=drawUC(450,45,'Đăng xuất');
+
+// --- Nhân viên use cases (center column) ---
+const u3=drawUC(330,120,'Quản lý khách hàng',160);
+const u20=drawUC(330,175,'Quản lý sản phẩm',160);
+const u4=drawUC(330,230,'Lập báo giá',130);
+const u5=drawUC(330,285,'Quản lý dự án',150);
+const u6=drawUC(330,340,'Quản lý kỹ thuật',160);
+const u7=drawUC(330,395,'Quản lý sản xuất',160);
+const u8=drawUC(330,450,'Quản lý kho vật tư',165);
+const u9=drawUC(330,505,'Lắp đặt & Bàn giao',165);
+const u10=drawUC(330,560,'Quản lý tài chính',160);
+const u11=drawUC(330,615,'Yêu cầu mua hàng',160);
+const u12=drawUC(330,670,'Xem thông báo',140);
+
+// --- Quản lý use cases (right-top) ---
+const u13=drawUC(830,95,'Duyệt báo giá',140);
+const u14=drawUC(830,155,'Xem báo cáo',130);
+const u15=drawUC(830,215,'Quản lý nhân sự',155);
+
+// --- Admin use cases (right-bottom) ---
+const u21=drawUC(830,490,'Đăng ký người dùng',170);
+const u16=drawUC(830,550,'Quản lý người dùng',170);
+const u17=drawUC(830,610,'Phân quyền hệ thống',170);
+const u18=drawUC(830,670,'Quản lý đại lý\n/ chi nhánh',160);
+const u19=drawUC(830,730,'Cấu hình hệ thống',165);
+
+// ========== ASSOCIATIONS ==========
+const nv={x:86,y:370}; // nhân viên connection point
+const ql={x:620,y:140}; // quản lý
+const ad={x:620,y:630}; // admin
+
+// Nhân viên → auth + all center UCs
+lineTo(nv.x,nv.y,u1);
+lineTo(nv.x,nv.y,u2);
+[u3,u20,u4,u5,u6,u7,u8,u9,u10,u11,u12].forEach(u=>lineTo(nv.x,nv.y,u));
+
+// Quản lý → auth
+lineTo(ql.x,ql.y,u1);
+lineTo(ql.x,ql.y,u2);
+
+// Quản lý → shared UCs (dự án, báo giá, tài chính, sản xuất)
+[u4,u5,u7,u10].forEach(u=>lineTo(ql.x,ql.y,u));
+
+// Quản lý → own UCs
+[u13,u14,u15].forEach(u=>lineTo(ql.x,ql.y,u));
+
+// Admin → auth
+lineTo(ad.x,ad.y,u1);
+lineTo(ad.x,ad.y,u2);
+
+// Admin → own UCs
+[u21,u16,u17,u18,u19].forEach(u=>lineTo(ad.x,ad.y,u));
+
+// Admin → shared (xem báo cáo, quản lý nhân sự)
+lineTo(ad.x,ad.y,u14);
+lineTo(ad.x,ad.y,u15);
+
+</script>
+</body>
+</html>

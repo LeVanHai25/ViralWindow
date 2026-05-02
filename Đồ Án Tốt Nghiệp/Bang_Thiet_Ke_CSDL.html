@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Thiết kế Cơ sở Dữ liệu - ViralWindow</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Times+New+Roman&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 13pt;
+    background: #fff;
+    color: #000;
+    padding: 40px 60px;
+    max-width: 960px;
+    margin: auto;
+  }
+  h2 { font-size: 14pt; font-weight: bold; text-align: center; margin: 36px 0 8px 0; }
+  .table-caption {
+    text-align: center;
+    font-style: italic;
+    font-size: 12pt;
+    margin: 22px 0 8px 0;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+    font-size: 12pt;
+  }
+  th {
+    background: #1a2540;
+    color: #fff;
+    border: 1px solid #333;
+    padding: 7px 8px;
+    text-align: center;
+    font-weight: bold;
+  }
+  td {
+    border: 1px solid #555;
+    padding: 6px 8px;
+    vertical-align: middle;
+  }
+  tr:nth-child(even) td { background: #f5f7fa; }
+  .pk { color: #c0392b; font-weight: bold; }
+  .fk { color: #2471a3; font-weight: bold; }
+  .key-cell { text-align: center; font-weight: bold; }
+  .page-break { page-break-before: always; }
+  @media print {
+    body { padding: 20px 40px; }
+    .no-print { display: none; }
+  }
+  .hint {
+    background: #eaf3fb;
+    border: 1px solid #aed6f1;
+    border-radius: 6px;
+    padding: 10px 16px;
+    font-size: 11pt;
+    color: #1a5276;
+    margin-bottom: 28px;
+  }
+</style>
+</head>
+<body>
+
+<div class="hint no-print">
+  💡 Nhấn <b>Ctrl+P</b> để in / lưu PDF từng trang, hoặc <b>chụp màn hình</b> từng bảng để dán vào báo cáo.
+</div>
+
+<h2>2.4.2. Thiết kế bảng cơ sở dữ liệu</h2>
+
+<!-- ===== ROLE ===== -->
+<div class="table-caption">Bảng 2.14. Chi tiết bảng ROLE (Vai trò)</div>
+<table>
+  <tr><th>Tên trường</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Khóa</th><th>Mô tả</th></tr>
+  <tr>
+    <td class="pk">RoleId</td>
+    <td>UniqueIdentifier</td>
+    <td>NOT NULL</td>
+    <td class="key-cell pk">PK</td>
+    <td>Mã định danh duy nhất của vai trò</td>
+  </tr>
+  <tr>
+    <td>RoleName</td>
+    <td>Nvarchar(50)</td>
+    <td>NOT NULL</td>
+    <td></td>
+    <td>Tên vai trò (Quản lý, Kỹ thuật, Khách hàng...)</td>
+  </tr>
+</table>
+
+<!-- ===== USER ===== -->
+<div class="table-caption">Bảng 2.15. Chi tiết bảng USER (Người dùng)</div>
+<table>
+  <tr><th>Tên trường</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Khóa</th><th>Mô tả</th></tr>
+  <tr><td class="pk">UserId</td><td>UniqueIdentifier</td><td>NOT NULL</td><td class="key-cell pk">PK</td><td>Mã định danh duy nhất của người dùng</td></tr>
+  <tr><td>Email</td><td>Varchar(100)</td><td>NOT NULL, UNIQUE</td><td></td><td>Địa chỉ email đăng nhập hệ thống</td></tr>
+  <tr><td>PasswordHash</td><td>Varchar(255)</td><td>NOT NULL</td><td></td><td>Mật khẩu đã được mã hóa (Bcrypt Hash)</td></tr>
+  <tr><td>FullName</td><td>Nvarchar(100)</td><td>NOT NULL</td><td></td><td>Họ và tên đầy đủ của người dùng</td></tr>
+  <tr><td>AvatarUrl</td><td>Varchar(500)</td><td>NULL</td><td></td><td>Đường dẫn URL lưu trữ ảnh đại diện</td></tr>
+  <tr><td>CreatedAt</td><td>Datetime</td><td>NOT NULL, DEFAULT GETDATE()</td><td></td><td>Thời gian tạo tài khoản</td></tr>
+  <tr><td>IsActive</td><td>Bit</td><td>NOT NULL, DEFAULT 1</td><td></td><td>Trạng thái tài khoản (1: Hoạt động, 0: Bị khóa)</td></tr>
+</table>
+
+<!-- ===== PROJECT ===== -->
+<div class="table-caption">Bảng 2.16. Chi tiết bảng PROJECT (Dự án)</div>
+<table>
+  <tr><th>Tên trường</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Khóa</th><th>Mô tả</th></tr>
+  <tr><td class="pk">ProjectId</td><td>UniqueIdentifier</td><td>NOT NULL</td><td class="key-cell pk">PK</td><td>Mã định danh duy nhất của dự án</td></tr>
+  <tr><td class="fk">UserId</td><td>UniqueIdentifier</td><td>NOT NULL</td><td class="key-cell fk">FK</td><td>Mã người dùng tạo dự án (tham chiếu bảng USER)</td></tr>
+  <tr><td>ProjectName</td><td>Nvarchar(200)</td><td>NOT NULL</td><td></td><td>Tên của dự án</td></tr>
+  <tr><td>Description</td><td>Nvarchar(MAX)</td><td>NULL</td><td></td><td>Mô tả chi tiết về dự án</td></tr>
+  <tr><td>CreatedAt</td><td>Datetime</td><td>NOT NULL, DEFAULT GETDATE()</td><td></td><td>Thời gian khởi tạo dự án</td></tr>
+  <tr><td>DeletedAt</td><td>Datetime</td><td>NULL</td><td></td><td>Thời gian xóa dự án (xóa mềm - Soft Delete)</td></tr>
+</table>
+
+<!-- ===== PROJECT_MEMBER ===== -->
+<div class="table-caption">Bảng 2.17. Chi tiết bảng PROJECT_MEMBER (Thành viên dự án)</div>
+<table>
+  <tr><th>Tên trường</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Khóa</th><th>Mô tả</th></tr>
+  <tr><td class="pk fk">UserId</td><td>UniqueIdentifier</td><td>NOT NULL</td><td class="key-cell"><span class="pk">PK</span>, <span class="fk">FK</span></td><td>Mã người dùng (tham chiếu bảng USER)</td></tr>
+  <tr><td class="pk fk">ProjectId</td><td>UniqueIdentifier</td><td>NOT NULL</td><td class="key-cell"><span class="pk">PK</span>, <span class="fk">FK</span></td><td>Mã dự án (tham chiếu bảng PROJECT)</td></tr>
+  <tr><td class="fk">RoleId</td><td>UniqueIdentifier</td><td>NOT NULL</td><td class="key-cell fk">FK</td><td>Vai trò trong dự án (tham chiếu bảng ROLE)</td></tr>
+  <tr><td>JoinAt</td><td>Datetime</td><td>NOT NULL, DEFAULT GETDATE()</td><td></td><td>Thời điểm người dùng được thêm vào dự án</td></tr>
+</table>
+
+<!-- ===== TASK ===== -->
+<div class="table-caption">Bảng 2.18. Chi tiết bảng TASK (Công việc)</div>
+<table>
+  <tr><th>Tên trường</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Khóa</th><th>Mô tả</th></tr>
+  <tr><td class="pk">TaskId</td><td>UniqueIdentifier</td><td>NOT NULL</td><td class="key-cell pk">PK</td><td>Mã định danh duy nhất của công việc</td></tr>
+  <tr><td class="fk">ProjectId</td><td>UniqueIdentifier</td><td>NOT NULL</td><td class="key-cell fk">FK</td><td>Công việc thuộc dự án nào (tham chiếu bảng PROJECT)</td></tr>
+  <tr><td class="fk">UserId</td><td>UniqueIdentifier</td><td>NOT NULL</td><td class="key-cell fk">FK</td><td>Người được giao thực hiện công việc (tham chiếu USER)</td></tr>
+  <tr><td>Title</td><td>Nvarchar(200)</td><td>NOT NULL</td><td></td><td>Tiêu đề của công việc</td></tr>
+  <tr><td>Description</td><td>Nvarchar(MAX)</td><td>NULL</td><td></td><td>Mô tả chi tiết yêu cầu công việc</td></tr>
+  <tr><td>Priority</td><td>Int</td><td>NOT NULL, DEFAULT 0</td><td></td><td>Mức độ ưu tiên (0: Thấp, 1: Trung bình, 2: Cao)</td></tr>
+  <tr><td>DueDate</td><td>Datetime</td><td>NULL</td><td></td><td>Hạn chót hoàn thành công việc</td></tr>
+  <tr><td>TaskStatus</td><td>Int</td><td>NOT NULL, DEFAULT 0</td><td></td><td>Trạng thái công việc (0: Mới, 1: Đang làm, 2: Hoàn thành)</td></tr>
+  <tr><td>IsApproved</td><td>Bit</td><td>NOT NULL, DEFAULT 0</td><td></td><td>Đánh dấu công việc đã được phê duyệt hay chưa</td></tr>
+  <tr><td>ApprovedAt</td><td>Datetime</td><td>NULL</td><td></td><td>Thời điểm công việc được phê duyệt</td></tr>
+  <tr><td>CreatedAt</td><td>Datetime</td><td>NOT NULL, DEFAULT GETDATE()</td><td></td><td>Thời gian tạo công việc</td></tr>
+  <tr><td>UpdatedAt</td><td>Datetime</td><td>NULL</td><td></td><td>Thời gian cập nhật thông tin lần cuối</td></tr>
+</table>
+
+<!-- ===== COMMENT ===== -->
+<div class="table-caption">Bảng 2.19. Chi tiết bảng COMMENT (Bình luận)</div>
+<table>
+  <tr><th>Tên trường</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Khóa</th><th>Mô tả</th></tr>
+  <tr><td class="pk">CommentId</td><td>UniqueIdentifier</td><td>NOT NULL</td><td class="key-cell pk">PK</td><td>Mã định danh của bình luận</td></tr>
+  <tr><td class="fk">TaskId</td><td>UniqueIdentifier</td><td>NOT NULL</td><td class="key-cell fk">FK</td><td>Bình luận thuộc công việc nào (tham chiếu bảng TASK)</td></tr>
+  <tr><td class="fk">UserId</td><td>UniqueIdentifier</td><td>NOT NULL</td><td class="key-cell fk">FK</td><td>Người viết bình luận (tham chiếu bảng USER)</td></tr>
+  <tr><td>Content</td><td>Nvarchar(MAX)</td><td>NOT NULL</td><td></td><td>Nội dung của bình luận</td></tr>
+  <tr><td>CreatedAt</td><td>Datetime</td><td>NOT NULL, DEFAULT GETDATE()</td><td></td><td>Thời gian đăng bình luận</td></tr>
+</table>
+
+<!-- ===== PROJECT_FILE ===== -->
+<div class="table-caption">Bảng 2.20. Chi tiết bảng PROJECT_FILE (Tệp tin dự án)</div>
+<table>
+  <tr><th>Tên trường</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Khóa</th><th>Mô tả</th></tr>
+  <tr><td class="pk">FileId</td><td>UniqueIdentifier</td><td>NOT NULL</td><td class="key-cell pk">PK</td><td>Mã định danh của tệp tin dự án</td></tr>
+  <tr><td class="fk">ProjectId</td><td>UniqueIdentifier</td><td>NOT NULL</td><td class="key-cell fk">FK</td><td>Tệp thuộc dự án nào (tham chiếu bảng PROJECT)</td></tr>
+  <tr><td class="fk">UploadById</td><td>UniqueIdentifier</td><td>NOT NULL</td><td class="key-cell fk">FK</td><td>Người tải tệp lên (tham chiếu bảng USER)</td></tr>
+  <tr><td>FileName</td><td>Nvarchar(255)</td><td>NOT NULL</td><td></td><td>Tên của tệp tin</td></tr>
+  <tr><td>FileUrl</td><td>Varchar(500)</td><td>NOT NULL</td><td></td><td>Đường dẫn URL lưu trữ tệp trên máy chủ</td></tr>
+  <tr><td>FileType</td><td>Varchar(50)</td><td>NULL</td><td></td><td>Định dạng tệp (VD: .pdf, .docx, .png)</td></tr>
+  <tr><td>FileSize</td><td>BigInt</td><td>NULL</td><td></td><td>Kích thước tệp tin (đơn vị: bytes)</td></tr>
+  <tr><td>CreatedAt</td><td>Datetime</td><td>NOT NULL, DEFAULT GETDATE()</td><td></td><td>Thời gian tệp tin được tải lên</td></tr>
+</table>
+
+<!-- ===== ATTACHMENT ===== -->
+<div class="table-caption">Bảng 2.21. Chi tiết bảng ATTACHMENT (Tệp đính kèm công việc)</div>
+<table>
+  <tr><th>Tên trường</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Khóa</th><th>Mô tả</th></tr>
+  <tr><td class="pk">AttachmentId</td><td>UniqueIdentifier</td><td>NOT NULL</td><td class="key-cell pk">PK</td><td>Mã định danh của tệp đính kèm</td></tr>
+  <tr><td class="fk">TaskId</td><td>UniqueIdentifier</td><td>NOT NULL</td><td class="key-cell fk">FK</td><td>Đính kèm thuộc công việc nào (tham chiếu bảng TASK)</td></tr>
+  <tr><td class="fk">UserId</td><td>UniqueIdentifier</td><td>NOT NULL</td><td class="key-cell fk">FK</td><td>Người tải tệp đính kèm lên (tham chiếu bảng USER)</td></tr>
+  <tr><td>FileName</td><td>Nvarchar(255)</td><td>NOT NULL</td><td></td><td>Tên của tệp đính kèm</td></tr>
+  <tr><td>FileUrl</td><td>Varchar(500)</td><td>NOT NULL</td><td></td><td>Đường dẫn URL lưu trữ tệp</td></tr>
+  <tr><td>IsEvidence</td><td>Bit</td><td>NOT NULL, DEFAULT 0</td><td></td><td>Đây có phải tệp minh chứng hoàn thành công việc không</td></tr>
+  <tr><td>CreatedAt</td><td>Datetime</td><td>NOT NULL, DEFAULT GETDATE()</td><td></td><td>Thời gian đính kèm vào công việc</td></tr>
+</table>
+
+<!-- ===== TASK_ACTIVITY_LOG ===== -->
+<div class="table-caption">Bảng 2.22. Chi tiết bảng TASK_ACTIVITY_LOG (Nhật ký hoạt động công việc)</div>
+<table>
+  <tr><th>Tên trường</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Khóa</th><th>Mô tả</th></tr>
+  <tr><td class="pk">LogId</td><td>UniqueIdentifier</td><td>NOT NULL</td><td class="key-cell pk">PK</td><td>Mã định danh của bản ghi nhật ký</td></tr>
+  <tr><td class="fk">TaskId</td><td>UniqueIdentifier</td><td>NOT NULL</td><td class="key-cell fk">FK</td><td>Nhật ký thuộc công việc nào (tham chiếu bảng TASK)</td></tr>
+  <tr><td class="fk">UserId</td><td>UniqueIdentifier</td><td>NOT NULL</td><td class="key-cell fk">FK</td><td>Người thực hiện thao tác (tham chiếu bảng USER)</td></tr>
+  <tr><td>ActionType</td><td>Varchar(50)</td><td>NOT NULL</td><td></td><td>Loại hành động (UpdateStatus, UploadFile, Comment...)</td></tr>
+  <tr><td>OldStatus</td><td>Int</td><td>NULL</td><td></td><td>Trạng thái cũ của công việc trước khi thay đổi</td></tr>
+  <tr><td>NewStatus</td><td>Int</td><td>NULL</td><td></td><td>Trạng thái mới của công việc sau khi thay đổi</td></tr>
+  <tr><td>Note</td><td>Nvarchar(MAX)</td><td>NULL</td><td></td><td>Ghi chú hoặc lý do thực hiện thao tác</td></tr>
+  <tr><td>CreatedAt</td><td>Datetime</td><td>NOT NULL, DEFAULT GETDATE()</td><td></td><td>Thời gian hệ thống ghi nhận thao tác</td></tr>
+</table>
+
+<!-- ===== PERSONAL_TASK ===== -->
+<div class="table-caption">Bảng 2.23. Chi tiết bảng PERSONAL_TASK (Công việc cá nhân)</div>
+<table>
+  <tr><th>Tên trường</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Khóa</th><th>Mô tả</th></tr>
+  <tr><td class="pk">PersonalTaskId</td><td>UniqueIdentifier</td><td>NOT NULL</td><td class="key-cell pk">PK</td><td>Mã định danh duy nhất của công việc cá nhân</td></tr>
+  <tr><td class="fk">UserId</td><td>UniqueIdentifier</td><td>NOT NULL</td><td class="key-cell fk">FK</td><td>Công việc thuộc người dùng nào (tham chiếu bảng USER)</td></tr>
+  <tr><td>Title</td><td>Nvarchar(200)</td><td>NOT NULL</td><td></td><td>Tiêu đề của công việc cá nhân</td></tr>
+  <tr><td>Description</td><td>Nvarchar(MAX)</td><td>NULL</td><td></td><td>Mô tả chi tiết công việc</td></tr>
+  <tr><td>IsCompleted</td><td>Bit</td><td>NOT NULL, DEFAULT 0</td><td></td><td>Trạng thái hoàn thành (1: Đã xong, 0: Chưa xong)</td></tr>
+  <tr><td>DueDate</td><td>Datetime</td><td>NULL</td><td></td><td>Hạn chót để hoàn thành công việc</td></tr>
+  <tr><td>CreatedAt</td><td>Datetime</td><td>NOT NULL, DEFAULT GETDATE()</td><td></td><td>Thời gian tạo công việc cá nhân</td></tr>
+</table>
+
+<!-- ===== NOTIFICATION ===== -->
+<div class="table-caption">Bảng 2.24. Chi tiết bảng NOTIFICATION (Thông báo)</div>
+<table>
+  <tr><th>Tên trường</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Khóa</th><th>Mô tả</th></tr>
+  <tr><td class="pk">NotificationId</td><td>UniqueIdentifier</td><td>NOT NULL</td><td class="key-cell pk">PK</td><td>Mã định danh duy nhất của thông báo</td></tr>
+  <tr><td class="fk">UserId</td><td>UniqueIdentifier</td><td>NOT NULL</td><td class="key-cell fk">FK</td><td>Người nhận thông báo (tham chiếu bảng USER)</td></tr>
+  <tr><td>Title</td><td>Nvarchar(200)</td><td>NOT NULL</td><td></td><td>Tiêu đề tóm tắt của thông báo</td></tr>
+  <tr><td>Message</td><td>Nvarchar(MAX)</td><td>NOT NULL</td><td></td><td>Nội dung chi tiết của thông báo</td></tr>
+  <tr><td>IsRead</td><td>Bit</td><td>NOT NULL, DEFAULT 0</td><td></td><td>Trạng thái đã đọc (1: Đã đọc, 0: Chưa đọc)</td></tr>
+  <tr><td>LinkUrl</td><td>Varchar(500)</td><td>NULL</td><td></td><td>Đường dẫn điều hướng khi bấm vào thông báo</td></tr>
+  <tr><td>CreatedAt</td><td>Datetime</td><td>NOT NULL, DEFAULT GETDATE()</td><td></td><td>Thời gian tạo thông báo</td></tr>
+</table>
+
+</body>
+</html>

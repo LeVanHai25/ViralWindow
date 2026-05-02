@@ -1,0 +1,246 @@
+@startuml UseCase_TongQuan_ViralWindow
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecase {
+  BackgroundColor #FEFECE
+  BorderColor #A80036
+  ArrowColor #A80036
+}
+
+actor "Admin" as Admin
+actor "Quản lý" as Manager
+actor "Nhân viên" as Employee
+actor "Hệ thống" as System
+
+Manager --|> Admin : kế thừa
+Employee --|> Manager : kế thừa
+
+rectangle "Hệ thống ViralWindow - Phần mềm Quản lý Nhôm Kính" {
+
+  package "1. Xác thực & Phân quyền" {
+    usecase "Đăng nhập" as UC1_1
+    usecase "Đăng ký" as UC1_2
+    usecase "Quên mật khẩu" as UC1_3
+    usecase "Cập nhật hồ sơ" as UC1_4
+    usecase "Quản lý người dùng" as UC1_6
+    usecase "Quản lý chức vụ" as UC1_7
+    usecase "Phân quyền RBAC" as UC1_8
+    UC1_3 ..> UC1_1 : <<extend>>
+    UC1_7 ..> UC1_8 : <<include>>
+  }
+
+  package "2. Khách hàng & CRM" {
+    usecase "Quản lý khách hàng" as UC2_1
+    usecase "Quản lý lịch hẹn" as UC2_2
+    usecase "Ghi nhận tương tác" as UC2_3
+    usecase "Cập nhật trạng thái KH" as UC2_4
+  }
+
+  package "3. Quản lý Dự án" {
+    usecase "CRUD Dự án" as UC3_1
+    usecase "Theo dõi tiến độ" as UC3_2
+    usecase "Quản lý cửa/sản phẩm" as UC3_3
+    usecase "Import từ báo giá" as UC3_4
+    usecase "Hủy/Khôi phục DA" as UC3_5
+    usecase "Xuất báo cáo DA" as UC3_6
+    usecase "Nhật ký hoạt động" as UC3_7
+    UC3_4 ..> UC3_1 : <<extend>>
+    UC3_1 ..> UC3_7 : <<include>>
+  }
+
+  package "4. Báo giá" {
+    usecase "CRUD Báo giá" as UC4_1
+    usecase "Quản lý hạng mục" as UC4_2
+    usecase "Tạo phiên bản mới" as UC4_3
+    usecase "Ký hợp đồng" as UC4_4
+    usecase "Xác nhận đặt cọc" as UC4_5
+    usecase "Xuất PDF/Excel" as UC4_6
+    usecase "Tính giá từ BOM" as UC4_7
+    UC4_1 ..> UC4_2 : <<include>>
+    UC4_7 ..> UC4_1 : <<extend>>
+    UC4_4 ..> UC4_5 : <<include>>
+  }
+
+  package "5. Thiết kế" {
+    usecase "Quản lý mẫu cửa" as UC5_1
+    usecase "Bản vẽ sản xuất" as UC5_2
+    usecase "Quy trình duyệt TK" as UC5_3
+    usecase "Quản lý revision" as UC5_4
+    usecase "Khóa bản thiết kế" as UC5_5
+    usecase "Danh mục sản phẩm" as UC5_6
+    UC5_3 ..> UC5_5 : <<include>>
+    UC5_4 ..> UC5_3 : <<extend>>
+  }
+
+  package "6. BOM & Công thức" {
+    usecase "Tính BOM tự động" as UC6_1
+    usecase "Công thức cắt nhôm" as UC6_2
+    usecase "Tối ưu cắt thanh" as UC6_3
+    usecase "Tính kích thước kính" as UC6_4
+    usecase "Xuất BOM Excel" as UC6_5
+    usecase "Tạo YCMH từ BOM" as UC6_6
+    UC6_1 ..> UC6_2 : <<include>>
+    UC6_1 ..> UC6_4 : <<include>>
+    UC6_6 ..> UC6_1 : <<include>>
+  }
+
+  package "7. Kho & Tồn kho" {
+    usecase "CRUD Vật tư" as UC7_1
+    usecase "Phiếu nhập/xuất kho" as UC7_2
+    usecase "Thẻ kho & Tồn kho" as UC7_3
+    usecase "Cảnh báo tồn kho" as UC7_4
+    usecase "Quản lý phế liệu" as UC7_5
+    usecase "Xuất Excel tồn kho" as UC7_6
+    usecase "Gợi ý nhập hàng AI" as UC7_7
+    UC7_2 ..> UC7_3 : <<include>>
+  }
+
+  package "8. Sản xuất" {
+    usecase "Quản lý sản xuất" as UC8_1
+    usecase "Cập nhật hoàn thành" as UC8_2
+    usecase "Gán vật tư cho SP" as UC8_3
+    usecase "Chuyển giai đoạn" as UC8_4
+    usecase "Lệnh sản xuất" as UC8_5
+    usecase "Tiến độ sản xuất" as UC8_6
+    UC8_1 ..> UC8_6 : <<include>>
+  }
+
+  package "9. Lắp đặt & Bàn giao" {
+    usecase "Theo dõi lắp đặt" as UC9_1
+    usecase "Cập nhật bước LĐ" as UC9_2
+    usecase "Chuyển sang bàn giao" as UC9_3
+    usecase "Hoàn thành bàn giao" as UC9_4
+    usecase "Lưu ảnh bàn giao" as UC9_5
+    UC9_4 ..> UC9_5 : <<include>>
+    UC9_2 ..> UC9_3 : <<extend>>
+  }
+
+  package "10. Tài chính & Công nợ" {
+    usecase "Quản lý thu chi" as UC10_1
+    usecase "Quản lý công nợ" as UC10_2
+    usecase "Ghi nhận thanh toán" as UC10_3
+    usecase "Dashboard tài chính" as UC10_4
+    usecase "Báo cáo lãi lỗ" as UC10_5
+    usecase "Xuất Excel tài chính" as UC10_7
+    UC10_2 ..> UC10_3 : <<include>>
+  }
+
+  package "11. Mua hàng" {
+    usecase "CRUD Yêu cầu MH" as UC11_1
+    usecase "Duyệt yêu cầu" as UC11_2
+    usecase "Quản lý NCC" as UC11_3
+    usecase "Xuất Excel YCMH" as UC11_4
+  }
+
+  package "12. Nhân sự" {
+    usecase "Chấm công" as UC12_1
+    usecase "Xem chấm công CN" as UC12_2
+    usecase "Thống kê chấm công" as UC12_3
+    usecase "Gửi đơn nghỉ phép" as UC12_4
+    usecase "Duyệt nghỉ phép" as UC12_5
+    usecase "Quản lý ca làm" as UC12_6
+  }
+
+  package "13. Kế hoạch CV" {
+    usecase "CRUD Kế hoạch" as UC13_1
+    usecase "Thảo luận" as UC13_2
+    usecase "Checklist" as UC13_4
+    UC13_1 ..> UC13_4 : <<include>>
+  }
+
+  package "14. Chat nội bộ" {
+    usecase "Tạo cuộc trò chuyện" as UC14_1
+    usecase "Gửi/nhận tin nhắn" as UC14_2
+    usecase "Gửi file đính kèm" as UC14_3
+    usecase "Ghim tin nhắn" as UC14_4
+    usecase "Quản lý thành viên" as UC14_5
+    UC14_2 ..> UC14_3 : <<extend>>
+  }
+
+  package "15. Báo cáo" {
+    usecase "Dashboard tổng quan" as UC15_1
+    usecase "BC doanh thu" as UC15_2
+    usecase "BC sản xuất" as UC15_3
+    usecase "BC tồn kho" as UC15_4
+    usecase "BC chi nhánh" as UC15_5
+  }
+
+  package "16. Đại lý" {
+    usecase "CRUD Đại lý" as UC16_1
+    usecase "Dashboard đại lý" as UC16_2
+    usecase "Phân bổ KH" as UC16_3
+  }
+
+  package "17. Thông báo" {
+    usecase "Thông báo realtime" as UC17_1
+    usecase "Đánh dấu đã đọc" as UC17_2
+    usecase "Nhật ký hệ thống" as UC17_3
+  }
+}
+
+' === ACTOR - USE CASE ASSOCIATIONS ===
+
+' All users (Employee+)
+Employee --> UC1_1
+Employee --> UC1_2
+Employee --> UC1_3
+Employee --> UC1_4
+Employee --> UC2_1
+Employee --> UC2_2
+Employee --> UC3_1
+Employee --> UC3_2
+Employee --> UC3_3
+Employee --> UC4_1
+Employee --> UC4_4
+Employee --> UC5_1
+Employee --> UC5_2
+Employee --> UC5_3
+Employee --> UC6_1
+Employee --> UC6_3
+Employee --> UC7_1
+Employee --> UC7_2
+Employee --> UC7_5
+Employee --> UC8_1
+Employee --> UC8_2
+Employee --> UC8_5
+Employee --> UC9_1
+Employee --> UC9_2
+Employee --> UC10_1
+Employee --> UC10_2
+Employee --> UC11_1
+Employee --> UC11_3
+Employee --> UC12_1
+Employee --> UC12_2
+Employee --> UC12_4
+Employee --> UC13_1
+Employee --> UC13_2
+Employee --> UC14_1
+Employee --> UC14_2
+Employee --> UC17_2
+
+' Manager
+Manager --> UC3_5
+Manager --> UC3_6
+Manager --> UC10_4
+Manager --> UC10_5
+Manager --> UC11_2
+Manager --> UC12_5
+Manager --> UC15_1
+Manager --> UC15_2
+Manager --> UC16_2
+Manager --> UC16_3
+
+' Admin only
+Admin --> UC1_6
+Admin --> UC1_7
+Admin --> UC12_3
+Admin --> UC12_6
+Admin --> UC16_1
+
+' System
+System --> UC7_4
+System --> UC7_7
+System --> UC17_1
+System --> UC17_3
+
+@enduml

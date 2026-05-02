@@ -994,9 +994,13 @@
             try {
                 const url = id ? `${API_BASE}/agencies/${id}` : `${API_BASE}/agencies`;
                 const method = id ? 'PUT' : 'POST';
+                const token = sessionStorage.getItem('token') || localStorage.getItem('token');
                 const response = await fetch(url, {
                     method,
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
                     body: JSON.stringify(data)
                 });
                 const result = await response.json();
@@ -1004,12 +1008,18 @@
                     closeAgencyModal();
                     loadAgencies();
                     loadOverview();
-                    alert(id ? 'Cập nhật thành công!' : 'Thêm đại lý thành công!');
+                    if (window.VWModal) {
+                        VWModal.toast(id ? 'Cập nhật thành công!' : 'Thêm đại lý thành công!', 'success');
+                    } else {
+                        alert(id ? 'Cập nhật thành công!' : 'Thêm đại lý thành công!');
+                    }
                 } else {
-                    alert('Lỗi: ' + result.message);
+                    if (window.VWModal) VWModal.alert('Lỗi', result.message);
+                    else alert('Lỗi: ' + result.message);
                 }
             } catch (error) {
-                alert('Lỗi kết nối server');
+                if (window.VWModal) VWModal.alert('Lỗi', 'Lỗi kết nối server');
+                else alert('Lỗi kết nối server');
             }
         }
 
@@ -1203,9 +1213,13 @@
             };
 
             try {
+                const token = sessionStorage.getItem('token') || localStorage.getItem('token');
                 const response = await fetch(`${API_BASE}/customers`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
                     body: JSON.stringify(data)
                 });
                 const result = await response.json();
@@ -1216,12 +1230,18 @@
                     }
                     loadAgencies(); // Update counts
                     loadOverview();
-                    alert('Thêm khách hàng thành công!');
+                    if (window.VWModal) {
+                        VWModal.toast('Thêm khách hàng thành công!', 'success');
+                    } else {
+                        alert('Thêm khách hàng thành công!');
+                    }
                 } else {
-                    alert('Lỗi: ' + result.message);
+                    if (window.VWModal) VWModal.alert('Lỗi', result.message);
+                    else alert('Lỗi: ' + result.message);
                 }
             } catch (error) {
-                alert('Lỗi kết nối server');
+                if (window.VWModal) VWModal.alert('Lỗi', 'Lỗi kết nối server');
+                else alert('Lỗi kết nối server');
             }
         }
 

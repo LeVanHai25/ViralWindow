@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Biểu đồ ERD - Hệ thống ViralWindow</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #f0f2f5;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 20px;
+    min-height: 100vh;
+  }
+
+  h1 {
+    font-size: 18pt;
+    font-weight: 700;
+    color: #1a2540;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+  }
+
+  .subtitle {
+    font-size: 10pt;
+    color: #6b7a99;
+    margin-bottom: 28px;
+  }
+
+  /* ---- CANVAS ---- */
+  .erd-canvas {
+    background: #ffffff;
+    border: 1.5px solid #dde1ea;
+    border-radius: 12px;
+    box-shadow: 0 6px 32px rgba(0,0,0,0.10);
+    padding: 36px 40px 40px 40px;
+    position: relative;
+    width: 1340px;
+    min-height: 920px;
+  }
+
+  /* ---- LEGEND ---- */
+  .legend {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    background: #f7f9fc;
+    border: 1px solid #dde1ea;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 8.5pt;
+    color: #444;
+    line-height: 1.8;
+  }
+  .legend-title { font-weight: 700; font-size: 9pt; margin-bottom: 4px; color: #1a2540; }
+  .legend-item { display: flex; align-items: center; gap: 7px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .dot-pk { background: #e74c3c; }
+  .dot-fk { background: #2980b9; }
+  .dot-attr { background: #7f8c8d; }
+
+  /* ---- TABLE BOXES ---- */
+  .entity {
+    position: absolute;
+    background: #fff;
+    border: 1.8px solid #bdc3d0;
+    border-radius: 7px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.09);
+    min-width: 170px;
+    font-size: 8.5pt;
+    overflow: hidden;
+  }
+
+  .entity-header {
+    background: #1a2540;
+    color: #fff;
+    padding: 7px 10px;
+    font-weight: 700;
+    font-size: 9.5pt;
+    letter-spacing: 0.6px;
+    text-align: center;
+  }
+
+  .entity-row {
+    padding: 3px 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid #f0f2f5;
+    line-height: 1.5;
+  }
+  .entity-row:last-child { border-bottom: none; }
+
+  .field-name { color: #1a2540; font-weight: 500; flex: 1; white-space: nowrap; }
+  .field-pk   { color: #c0392b; font-weight: 700; }
+  .field-fk   { color: #2471a3; font-weight: 600; }
+  .field-attr { color: #555; }
+
+  .tag {
+    font-size: 7pt;
+    font-weight: 700;
+    border-radius: 3px;
+    padding: 1px 4px;
+    flex-shrink: 0;
+  }
+  .tag-pk { background: #fdecea; color: #c0392b; border: 1px solid #e74c3c; }
+  .tag-fk { background: #eaf3fb; color: #2471a3; border: 1px solid #2980b9; }
+
+  /* ============================
+     SVG CONNECTOR LAYER
+  ============================ */
+  svg.connectors {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    overflow: visible;
+  }
+
+  line.rel {
+    stroke: #8899bb;
+    stroke-width: 1.4;
+    stroke-dasharray: 5,3;
+    marker-end: url(#arrow);
+  }
+  line.rel-solid {
+    stroke: #3d5a9e;
+    stroke-width: 1.6;
+    stroke-dasharray: none;
+    marker-end: url(#arrow);
+  }
+
+  .rel-label {
+    font-size: 8pt;
+    fill: #7f8c8d;
+    font-style: italic;
+  }
+
+  /* ============================
+     ENTITY POSITIONS
+  ============================ */
+
+  /* USER - CENTER */
+  #USER    { left: 520px; top: 330px; width: 188px; }
+
+  /* PROJECT - TOP-LEFT */
+  #PROJECT { left: 240px; top: 90px; width: 190px; }
+
+  /* PROJECT_MEMBER - LEFT */
+  #PROJECT_MEMBER { left: 30px; top: 305px; width: 185px; }
+
+  /* ROLE - FAR LEFT */
+  #ROLE    { left: 30px; top: 90px; width: 175px; }
+
+  /* TASK - RIGHT */
+  #TASK    { left: 840px; top: 170px; width: 200px; }
+
+  /* COMMENT - CENTER-TOP */
+  #COMMENT { left: 530px; top: 90px; width: 185px; }
+
+  /* PROJECT_FILE - TOP-RIGHT */
+  #PROJECT_FILE { left: 1060px; top: 90px; width: 195px; }
+
+  /* ATTACHMENT - RIGHT */
+  #ATTACHMENT { left: 1000px; top: 440px; width: 190px; }
+
+  /* TASK_ACTIVITY_LOG - BOTTOM-RIGHT */
+  #TASK_ACTIVITY_LOG { left: 850px; top: 670px; width: 205px; }
+
+  /* PERSONAL_TASK - BOTTOM-LEFT */
+  #PERSONAL_TASK { left: 30px; top: 560px; width: 185px; }
+
+  /* NOTIFICATION - BOTTOM-CENTER-LEFT */
+  #NOTIFICATION { left: 280px; top: 620px; width: 190px; }
+
+</style>
+</head>
+<body>
+
+<h1>Biểu đồ Thực thể Liên kết (ERD) – Hệ thống ViralWindow</h1>
+<p class="subtitle">Hình 2.48. Sơ đồ thiết kế cơ sở dữ liệu</p>
+
+<div class="erd-canvas" id="canvas">
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="legend-title">Chú thích</div>
+    <div class="legend-item"><span class="legend-dot dot-pk"></span> Khóa chính (PK)</div>
+    <div class="legend-item"><span class="legend-dot dot-fk"></span> Khóa ngoại (FK)</div>
+    <div class="legend-item"><span class="legend-dot dot-attr"></span> Thuộc tính thường</div>
+    <div class="legend-item" style="margin-top:6px;">
+      <svg width="34" height="10"><line x1="0" y1="5" x2="34" y2="5" stroke="#8899bb" stroke-width="1.5" stroke-dasharray="5,3"/></svg>
+      Quan hệ (FK)
+    </div>
+  </div>
+
+  <!-- SVG ARROWS -->
+  <svg class="connectors" id="svgLayer">
+    <defs>
+      <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L8,3 z" fill="#3d5a9e" />
+      </marker>
+    </defs>
+    <!-- Lines drawn by JS after layout -->
+  </svg>
+
+  <!-- ===================== ENTITIES ===================== -->
+
+  <!-- USER -->
+  <div class="entity" id="USER">
+    <div class="entity-header">USER</div>
+    <div class="entity-row"><span class="field-name field-pk">UserId</span><span class="tag tag-pk">PK</span></div>
+    <div class="entity-row"><span class="field-name field-attr">Email</span></div>
+    <div class="entity-row"><span class="field-name field-attr">PasswordHash</span></div>
+    <div class="entity-row"><span class="field-name field-attr">FullName</span></div>
+    <div class="entity-row"><span class="field-name field-attr">AvatarUrl</span></div>
+    <div class="entity-row"><span class="field-name field-attr">CreatedAt</span></div>
+    <div class="entity-row"><span class="field-name field-attr">IsActive</span></div>
+  </div>
+
+  <!-- ROLE -->
+  <div class="entity" id="ROLE">
+    <div class="entity-header">ROLE</div>
+    <div class="entity-row"><span class="field-name field-pk">RoleId</span><span class="tag tag-pk">PK</span></div>
+    <div class="entity-row"><span class="field-name field-attr">RoleName</span></div>
+  </div>
+
+  <!-- PROJECT -->
+  <div class="entity" id="PROJECT">
+    <div class="entity-header">PROJECT</div>
+    <div class="entity-row"><span class="field-name field-pk">ProjectId</span><span class="tag tag-pk">PK</span></div>
+    <div class="entity-row"><span class="field-name field-fk">UserId</span><span class="tag tag-fk">FK</span></div>
+    <div class="entity-row"><span class="field-name field-attr">ProjectName</span></div>
+    <div class="entity-row"><span class="field-name field-attr">Description</span></div>
+    <div class="entity-row"><span class="field-name field-attr">CreatedAt</span></div>
+    <div class="entity-row"><span class="field-name field-attr">DeletedAt</span></div>
+  </div>
+
+  <!-- PROJECT_MEMBER -->
+  <div class="entity" id="PROJECT_MEMBER">
+    <div class="entity-header">PROJECT MEMBER</div>
+    <div class="entity-row"><span class="field-name field-pk field-fk">UserId</span><span class="tag tag-pk">PK</span><span class="tag tag-fk">FK</span></div>
+    <div class="entity-row"><span class="field-name field-pk field-fk">ProjectId</span><span class="tag tag-pk">PK</span><span class="tag tag-fk">FK</span></div>
+    <div class="entity-row"><span class="field-name field-fk">RoleId</span><span class="tag tag-fk">FK</span></div>
+    <div class="entity-row"><span class="field-name field-attr">JoinAt</span></div>
+  </div>
+
+  <!-- TASK -->
+  <div class="entity" id="TASK">
+    <div class="entity-header">TASK</div>
+    <div class="entity-row"><span class="field-name field-pk">TaskId</span><span class="tag tag-pk">PK</span></div>
+    <div class="entity-row"><span class="field-name field-fk">ProjectId</span><span class="tag tag-fk">FK</span></div>
+    <div class="entity-row"><span class="field-name field-fk">UserId</span><span class="tag tag-fk">FK</span></div>
+    <div class="entity-row"><span class="field-name field-attr">Title</span></div>
+    <div class="entity-row"><span class="field-name field-attr">Description</span></div>
+    <div class="entity-row"><span class="field-name field-attr">Priority</span></div>
+    <div class="entity-row"><span class="field-name field-attr">DueDate</span></div>
+    <div class="entity-row"><span class="field-name field-attr">TaskStatus</span></div>
+    <div class="entity-row"><span class="field-name field-attr">IsApproved</span></div>
+    <div class="entity-row"><span class="field-name field-attr">ApprovedAt</span></div>
+    <div class="entity-row"><span class="field-name field-attr">CreatedAt</span></div>
+    <div class="entity-row"><span class="field-name field-attr">UpdatedAt</span></div>
+  </div>
+
+  <!-- COMMENT -->
+  <div class="entity" id="COMMENT">
+    <div class="entity-header">COMMENT</div>
+    <div class="entity-row"><span class="field-name field-pk">CommentId</span><span class="tag tag-pk">PK</span></div>
+    <div class="entity-row"><span class="field-name field-fk">TaskId</span><span class="tag tag-fk">FK</span></div>
+    <div class="entity-row"><span class="field-name field-fk">UserId</span><span class="tag tag-fk">FK</span></div>
+    <div class="entity-row"><span class="field-name field-attr">Content</span></div>
+    <div class="entity-row"><span class="field-name field-attr">CreatedAt</span></div>
+  </div>
+
+  <!-- PROJECT_FILE -->
+  <div class="entity" id="PROJECT_FILE">
+    <div class="entity-header">PROJECT FILE</div>
+    <div class="entity-row"><span class="field-name field-pk">FileId</span><span class="tag tag-pk">PK</span></div>
+    <div class="entity-row"><span class="field-name field-fk">ProjectId</span><span class="tag tag-fk">FK</span></div>
+    <div class="entity-row"><span class="field-name field-fk">UploadById</span><span class="tag tag-fk">FK</span></div>
+    <div class="entity-row"><span class="field-name field-attr">FileName</span></div>
+    <div class="entity-row"><span class="field-name field-attr">FileUrl</span></div>
+    <div class="entity-row"><span class="field-name field-attr">FileType</span></div>
+    <div class="entity-row"><span class="field-name field-attr">FileSize</span></div>
+    <div class="entity-row"><span class="field-name field-attr">CreatedAt</span></div>
+  </div>
+
+  <!-- ATTACHMENT -->
+  <div class="entity" id="ATTACHMENT">
+    <div class="entity-header">ATTACHMENT</div>
+    <div class="entity-row"><span class="field-name field-pk">AttachmentId</span><span class="tag tag-pk">PK</span></div>
+    <div class="entity-row"><span class="field-name field-fk">TaskId</span><span class="tag tag-fk">FK</span></div>
+    <div class="entity-row"><span class="field-name field-fk">UserId</span><span class="tag tag-fk">FK</span></div>
+    <div class="entity-row"><span class="field-name field-attr">FileName</span></div>
+    <div class="entity-row"><span class="field-name field-attr">FileUrl</span></div>
+    <div class="entity-row"><span class="field-name field-attr">IsEvidence</span></div>
+    <div class="entity-row"><span class="field-name field-attr">CreatedAt</span></div>
+  </div>
+
+  <!-- TASK_ACTIVITY_LOG -->
+  <div class="entity" id="TASK_ACTIVITY_LOG">
+    <div class="entity-header">TASK ACTIVITY LOG</div>
+    <div class="entity-row"><span class="field-name field-pk">LogId</span><span class="tag tag-pk">PK</span></div>
+    <div class="entity-row"><span class="field-name field-fk">TaskId</span><span class="tag tag-fk">FK</span></div>
+    <div class="entity-row"><span class="field-name field-fk">UserId</span><span class="tag tag-fk">FK</span></div>
+    <div class="entity-row"><span class="field-name field-attr">ActionType</span></div>
+    <div class="entity-row"><span class="field-name field-attr">OldStatus</span></div>
+    <div class="entity-row"><span class="field-name field-attr">NewStatus</span></div>
+    <div class="entity-row"><span class="field-name field-attr">Note</span></div>
+    <div class="entity-row"><span class="field-name field-attr">CreatedAt</span></div>
+  </div>
+
+  <!-- PERSONAL_TASK -->
+  <div class="entity" id="PERSONAL_TASK">
+    <div class="entity-header">PERSONAL TASK</div>
+    <div class="entity-row"><span class="field-name field-pk">PersonalTaskId</span><span class="tag tag-pk">PK</span></div>
+    <div class="entity-row"><span class="field-name field-fk">UserId</span><span class="tag tag-fk">FK</span></div>
+    <div class="entity-row"><span class="field-name field-attr">Title</span></div>
+    <div class="entity-row"><span class="field-name field-attr">Description</span></div>
+    <div class="entity-row"><span class="field-name field-attr">IsCompleted</span></div>
+    <div class="entity-row"><span class="field-name field-attr">DueDate</span></div>
+    <div class="entity-row"><span class="field-name field-attr">CreatedAt</span></div>
+  </div>
+
+  <!-- NOTIFICATION -->
+  <div class="entity" id="NOTIFICATION">
+    <div class="entity-header">NOTIFICATION</div>
+    <div class="entity-row"><span class="field-name field-pk">NotificationId</span><span class="tag tag-pk">PK</span></div>
+    <div class="entity-row"><span class="field-name field-fk">UserId</span><span class="tag tag-fk">FK</span></div>
+    <div class="entity-row"><span class="field-name field-attr">Title</span></div>
+    <div class="entity-row"><span class="field-name field-attr">Message</span></div>
+    <div class="entity-row"><span class="field-name field-attr">IsRead</span></div>
+    <div class="entity-row"><span class="field-name field-attr">LinkUrl</span></div>
+    <div class="entity-row"><span class="field-name field-attr">CreatedAt</span></div>
+  </div>
+
+</div><!-- /erd-canvas -->
+
+<p style="margin-top:18px; font-size:9pt; color:#888;">
+  💡 Nhấn <kbd>Ctrl+Shift+P</kbd> → <b>Print</b> → lưu PDF hoặc chụp màn hình để dán vào báo cáo.
+</p>
+
+<script>
+// Vẽ đường nối sau khi DOM render xong
+document.addEventListener('DOMContentLoaded', () => {
+  const svg = document.getElementById('svgLayer');
+  const canvas = document.getElementById('canvas');
+
+  function getCenter(id) {
+    const el = document.getElementById(id);
+    const cr = canvas.getBoundingClientRect();
+    const er = el.getBoundingClientRect();
+    return {
+      left:   er.left - cr.left,
+      right:  er.right - cr.left,
+      top:    er.top - cr.top,
+      bottom: er.bottom - cr.top,
+      cx:     er.left - cr.left + er.width / 2,
+      cy:     er.top  - cr.top  + er.height / 2,
+      w:      er.width,
+      h:      er.height
+    };
+  }
+
+  // Returns the best edge point (closest side) and endpoint
+  function edgePoint(from, to) {
+    const dx = to.cx - from.cx;
+    const dy = to.cy - from.cy;
+    let fx, fy, tx, ty;
+
+    if (Math.abs(dx) > Math.abs(dy)) {
+      // Horizontal dominant
+      if (dx > 0) { fx = from.right; fy = from.cy; tx = to.left; ty = to.cy; }
+      else         { fx = from.left;  fy = from.cy; tx = to.right; ty = to.cy; }
+    } else {
+      // Vertical dominant
+      if (dy > 0) { fx = from.cx; fy = from.bottom; tx = to.cx; ty = to.top; }
+      else         { fx = from.cx; fy = from.top;    tx = to.cx; ty = to.bottom; }
+    }
+    return { fx, fy, tx, ty };
+  }
+
+  function drawLine(fromId, toId, label = '', dashed = true) {
+    const from = getCenter(fromId);
+    const to   = getCenter(toId);
+    const { fx, fy, tx, ty } = edgePoint(from, to);
+
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', fx); line.setAttribute('y1', fy);
+    line.setAttribute('x2', tx); line.setAttribute('y2', ty);
+    line.setAttribute('class', dashed ? 'rel' : 'rel-solid');
+    svg.appendChild(line);
+
+    if (label) {
+      const mx = (fx + tx) / 2 - 2;
+      const my = (fy + ty) / 2 - 5;
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('x', mx); text.setAttribute('y', my);
+      text.setAttribute('class', 'rel-label');
+      text.setAttribute('text-anchor', 'middle');
+      text.textContent = label;
+      svg.appendChild(text);
+    }
+  }
+
+  // --- Define all relationships ---
+  // USER → PROJECT (creator)
+  drawLine('USER', 'PROJECT',      'tạo');
+  // USER → PROJECT_MEMBER
+  drawLine('USER', 'PROJECT_MEMBER', 'tham gia');
+  // PROJECT → PROJECT_MEMBER
+  drawLine('PROJECT', 'PROJECT_MEMBER', 'có');
+  // ROLE → PROJECT_MEMBER
+  drawLine('ROLE', 'PROJECT_MEMBER', 'áp dụng');
+  // PROJECT → TASK
+  drawLine('PROJECT', 'TASK', 'có');
+  // USER → TASK (assigned)
+  drawLine('USER', 'TASK', 'thực hiện');
+  // TASK → COMMENT
+  drawLine('TASK', 'COMMENT', 'có');
+  // USER → COMMENT
+  drawLine('USER', 'COMMENT', 'viết');
+  // PROJECT → PROJECT_FILE
+  drawLine('PROJECT', 'PROJECT_FILE', 'lưu trữ');
+  // USER → PROJECT_FILE (uploader)
+  drawLine('USER', 'PROJECT_FILE', 'tải lên');
+  // TASK → ATTACHMENT
+  drawLine('TASK', 'ATTACHMENT', 'đính kèm');
+  // USER → ATTACHMENT
+  drawLine('USER', 'ATTACHMENT', 'upload');
+  // TASK → TASK_ACTIVITY_LOG
+  drawLine('TASK', 'TASK_ACTIVITY_LOG', 'ghi nhật ký');
+  // USER → TASK_ACTIVITY_LOG
+  drawLine('USER', 'TASK_ACTIVITY_LOG', 'thực hiện');
+  // USER → PERSONAL_TASK
+  drawLine('USER', 'PERSONAL_TASK', 'quản lý');
+  // USER → NOTIFICATION
+  drawLine('USER', 'NOTIFICATION', 'nhận');
+});
+</script>
+</body>
+</html>

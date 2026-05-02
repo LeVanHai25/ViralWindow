@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Sơ đồ Use Case - ViralWindow</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:#f0f2f5;overflow-x:auto}
+h1{text-align:center;padding:18px;background:linear-gradient(135deg,#1a237e,#283593);color:#fff;font-size:20px}
+.toolbar{text-align:center;padding:10px;background:#fff;border-bottom:1px solid #ddd}
+.toolbar button{margin:4px;padding:6px 14px;border:1px solid #1a237e;background:#fff;color:#1a237e;border-radius:4px;cursor:pointer;font-size:13px}
+.toolbar button:hover,.toolbar button.active{background:#1a237e;color:#fff}
+svg{display:block;margin:0 auto}
+.legend{display:flex;gap:30px;justify-content:center;padding:10px;background:#fff;border-top:1px solid #ddd;flex-wrap:wrap;font-size:13px}
+.legend-item{display:flex;align-items:center;gap:6px}
+</style>
+</head>
+<body>
+<h1>SƠ ĐỒ USE CASE TỔNG QUAN — HỆ THỐNG VIRALWINDOW</h1>
+<div class="toolbar">
+<button class="active" onclick="showView('overview')">Tổng quan</button>
+<button onclick="showView('auth')">1. Xác thực</button>
+<button onclick="showView('customer')">2. Khách hàng</button>
+<button onclick="showView('project')">3. Dự án</button>
+<button onclick="showView('quotation')">4. Báo giá</button>
+<button onclick="showView('design')">5. Thiết kế</button>
+<button onclick="showView('bom')">6. BOM</button>
+<button onclick="showView('inventory')">7. Kho</button>
+<button onclick="showView('production')">8. Sản xuất</button>
+<button onclick="showView('install')">9. Lắp đặt</button>
+<button onclick="showView('finance')">10. Tài chính</button>
+<button onclick="showView('hr')">11. Nhân sự</button>
+<button onclick="showView('chat')">12. Chat</button>
+<button onclick="showView('report')">13. Báo cáo</button>
+</div>
+<div id="canvas"></div>
+<div class="legend">
+<div class="legend-item"><svg width="30" height="20"><ellipse cx="15" cy="10" rx="14" ry="9" fill="#FEFECE" stroke="#A80036" stroke-width="1.5"/></svg> Use Case</div>
+<div class="legend-item"><svg width="20" height="30"><line x1="10" y1="0" x2="10" y2="8" stroke="#333" stroke-width="2"/><circle cx="10" cy="4" r="4" fill="none" stroke="#333" stroke-width="1.5"/><line x1="10" y1="8" x2="10" y2="20" stroke="#333" stroke-width="2"/><line x1="4" y1="12" x2="16" y2="12" stroke="#333" stroke-width="2"/><line x1="10" y1="20" x2="5" y2="28" stroke="#333" stroke-width="2"/><line x1="10" y1="20" x2="15" y2="28" stroke="#333" stroke-width="2"/></svg> Actor</div>
+<div class="legend-item"><svg width="50" height="14"><line x1="0" y1="7" x2="50" y2="7" stroke="#333" stroke-width="1.5"/></svg> Association</div>
+<div class="legend-item"><svg width="60" height="14"><line x1="0" y1="7" x2="50" y2="7" stroke="#333" stroke-width="1.2" stroke-dasharray="5,3"/><polygon points="50,3 60,7 50,11" fill="#333"/></svg> &lt;&lt;include&gt;&gt;</div>
+<div class="legend-item"><svg width="60" height="14"><line x1="0" y1="7" x2="50" y2="7" stroke="#666" stroke-width="1.2" stroke-dasharray="5,3"/><polygon points="50,3 60,7 50,11" fill="#666"/></svg> &lt;&lt;extend&gt;&gt;</div>
+<div class="legend-item"><svg width="40" height="14"><line x1="0" y1="7" x2="30" y2="7" stroke="#333" stroke-width="1.5"/><polygon points="30,2 40,7 30,12" fill="#fff" stroke="#333" stroke-width="1.5"/></svg> Generalization</div>
+</div>
+<script>
+const C=document.getElementById('canvas');
+function actor(svg,x,y,name,color='#1a237e'){
+ return`<g transform="translate(${x},${y})">
+  <circle cx="0" cy="-20" r="8" fill="none" stroke="${color}" stroke-width="2"/>
+  <line x1="0" y1="-12" x2="0" y2="8" stroke="${color}" stroke-width="2"/>
+  <line x1="-14" y1="-4" x2="14" y2="-4" stroke="${color}" stroke-width="2"/>
+  <line x1="0" y1="8" x2="-10" y2="22" stroke="${color}" stroke-width="2"/>
+  <line x1="0" y1="8" x2="10" y2="22" stroke="${color}" stroke-width="2"/>
+  <text x="0" y="38" text-anchor="middle" font-size="12" font-weight="bold" fill="${color}">${name}</text>
+ </g>`;
+}
+function uc(svg,x,y,text,w=140,h=36){
+ return`<ellipse cx="${x}" cy="${y}" rx="${w/2}" ry="${h/2}" fill="#FEFECE" stroke="#A80036" stroke-width="1.5"/>
+ <text x="${x}" y="${y+4}" text-anchor="middle" font-size="11" fill="#333">${text}</text>`;
+}
+function line(x1,y1,x2,y2){return`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#555" stroke-width="1.2"/>`;}
+function dash(x1,y1,x2,y2,label,col='#A80036'){
+ const mx=(x1+x2)/2,my=(y1+y2)/2;
+ return`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#arrow)"/>
+ <text x="${mx}" y="${my-5}" text-anchor="middle" font-size="9" fill="${col}">${label}</text>`;
+}
+function sysBox(x,y,w,h,title){
+ return`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="none" stroke="#1a237e" stroke-width="2" rx="4"/>
+ <text x="${x+10}" y="${y+18}" font-size="13" font-weight="bold" fill="#1a237e">${title}</text>`;
+}
+function pkg(x,y,w,h,title){
+ return`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#f8f9ff" stroke="#5c6bc0" stroke-width="1.2" rx="3"/>
+ <rect x="${x}" y="${y}" width="${Math.min(w*0.6,180)}" height="20" fill="#e8eaf6" stroke="#5c6bc0" stroke-width="1.2" rx="3"/>
+ <text x="${x+8}" y="${y+14}" font-size="11" font-weight="bold" fill="#283593">${title}</text>`;
+}
+function gen(x1,y1,x2,y2){
+ return`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#333" stroke-width="1.5" marker-end="url(#tri)"/>`;
+}
+const defs=`<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#A80036"/></marker>
+<marker id="tri" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="10" markerHeight="10" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#fff" stroke="#333" stroke-width="1"/></marker>
+</defs>`;
+
+function showView(v){
+ document.querySelectorAll('.toolbar button').forEach(b=>b.classList.remove('active'));
+ event.target.classList.add('active');
+ const fn={overview,auth,customer,project,quotation,design,bom,inventory,production,install,finance,hr,chat,report};
+ (fn[v]||overview)();
+}
+
+function overview(){
+ let s=`<svg width="1200" height="980">${defs}`;
+ s+=sysBox(160,10,880,960,'Hệ thống ViralWindow — Phần mềm Quản lý Nhôm Kính');
+ // Actors
+ s+=actor(0,60,80,'Nhân viên','#2e7d32');
+ s+=actor(0,60,280,'Quản lý','#e65100');
+ s+=actor(0,60,480,'Admin','#b71c1c');
+ s+=actor(0,1140,300,'Hệ thống','#1565c0');
+ // Generalization arrows
+ s+=gen(60,258,60,118);
+ s+=gen(60,458,60,318);
+ // Packages
+ const pkgs=[
+  [180,35,260,100,'1. Xác thực & Phân quyền'],
+  [460,35,260,100,'2. Khách hàng & CRM'],
+  [740,35,280,100,'3. Quản lý Dự án'],
+  [180,150,260,100,'4. Báo giá'],
+  [460,150,260,100,'5. Thiết kế'],
+  [740,150,280,100,'6. BOM & Công thức'],
+  [180,265,260,100,'7. Kho & Tồn kho'],
+  [460,265,260,100,'8. Sản xuất'],
+  [740,265,280,100,'9. Lắp đặt & Bàn giao'],
+  [180,380,260,100,'10. Tài chính & Công nợ'],
+  [460,380,260,100,'11. Mua hàng'],
+  [740,380,280,100,'12. Nhân sự'],
+  [180,495,260,100,'13. Kế hoạch công việc'],
+  [460,495,260,100,'14. Chat nội bộ'],
+  [740,495,280,100,'15. Báo cáo & Dashboard'],
+  [180,610,260,100,'16. Đại lý / Chi nhánh'],
+  [460,610,260,100,'17. Thông báo & Audit'],
+ ];
+ // Use cases inside packages (1 representative per package)
+ pkgs.forEach(p=>{s+=pkg(p[0],p[1],p[2],p[3],p[4]);
+  s+=uc(0,p[0]+p[2]/2,p[1]+65,'(chi tiết bên trong)',p[2]-30,28);
+ });
+ // Employee lines to packages
+ [35,150,265,380,495].forEach(py=>{
+  s+=line(80,80,180,py+70);
+ });
+ [35,150,265].forEach(py=>{
+  s+=line(80,80,460,py+70);
+  s+=line(80,80,740,py+70);
+ });
+ // Manager lines
+ [380,495,610].forEach(py=>{
+  s+=line(80,280,460,py+70);
+ });
+ s+=line(80,280,180,610+70);
+ s+=line(80,280,740,380+70);
+ s+=line(80,280,740,495+70);
+ // Admin lines
+ s+=line(80,480,180,35+70);
+ s+=line(80,480,740,380+70);
+ s+=line(80,480,180,610+70);
+ // System lines
+ s+=line(1120,300,1020,265+70);
+ s+=line(1120,300,740,610+70);
+ s+=line(1120,300,460,610+70);
+
+ s+=`</svg>`;
+ C.innerHTML=s;
+}
+
+function detailView(title,ucs,actors,relations){
+ const W=900,ucH=42,pad=30,startY=60;
+ const H=startY+ucs.length*ucH+100;
+ let s=`<svg width="${W}" height="${H}">${defs}`;
+ s+=sysBox(130,10,W-260,H-20,title);
+ // Actors on sides
+ actors.forEach(a=>{s+=actor(0,a.x,a.y,a.name,a.color);});
+ // Use Cases
+ ucs.forEach((u,i)=>{
+  const y=startY+30+i*ucH;
+  s+=uc(0,W/2,y,u.text,260,32);
+  u._y=y;
+ });
+ // Actor-UC associations
+ ucs.forEach((u,i)=>{
+  if(u.actors)u.actors.forEach(ai=>{
+   const a=actors[ai];
+   const uy=u._y;
+   s+=line(a.x+(a.x<W/2?20:-20),a.y,W/2-(a.x<W/2?130:-130),uy);
+  });
+ });
+ // Relations (include/extend)
+ if(relations)relations.forEach(r=>{
+  const from=ucs[r[0]],to=ucs[r[1]];
+  s+=dash(W/2+(r[3]||80),from._y,W/2+(r[3]||80),to._y,r[2]);
+ });
+ s+=`</svg>`;
+ C.innerHTML=s;
+}
+
+function auth(){
+ detailView('1. Xác thực & Phân quyền',[
+  {text:'UC1.1 Đăng nhập',actors:[0]},
+  {text:'UC1.2 Đăng ký tài khoản',actors:[0]},
+  {text:'UC1.3 Quên mật khẩu',actors:[0]},
+  {text:'UC1.4 Cập nhật hồ sơ cá nhân',actors:[0]},
+  {text:'UC1.5 Đăng xuất',actors:[0]},
+  {text:'UC1.6 Quản lý người dùng (CRUD)',actors:[1]},
+  {text:'UC1.7 Quản lý chức vụ (Role)',actors:[1]},
+  {text:'UC1.8 Phân quyền RBAC',actors:[1]},
+ ],[
+  {x:50,y:140,name:'Nhân viên',color:'#2e7d32'},
+  {x:50,y:320,name:'Admin',color:'#b71c1c'},
+ ],[[2,0,'<<extend>>',150],[6,7,'<<include>>',150]]);
+}
+function customer(){
+ detailView('2. Quản lý Khách hàng & CRM',[
+  {text:'UC2.1 CRUD Khách hàng',actors:[0]},
+  {text:'UC2.2 Quản lý lịch hẹn',actors:[0]},
+  {text:'UC2.3 Ghi nhận tương tác',actors:[0]},
+  {text:'UC2.4 Cập nhật trạng thái KH',actors:[0]},
+ ],[{x:50,y:140,name:'Nhân viên',color:'#2e7d32'}],[]);
+}
+function project(){
+ detailView('3. Quản lý Dự án',[
+  {text:'UC3.1 CRUD Dự án',actors:[0]},
+  {text:'UC3.2 Theo dõi tiến độ',actors:[0]},
+  {text:'UC3.3 Quản lý cửa/sản phẩm',actors:[0]},
+  {text:'UC3.4 Import từ báo giá',actors:[0]},
+  {text:'UC3.5 Hủy / Khôi phục dự án',actors:[1]},
+  {text:'UC3.6 Xuất báo cáo dự án',actors:[0]},
+  {text:'UC3.7 Nhật ký hoạt động',actors:[0]},
+ ],[
+  {x:50,y:140,name:'Nhân viên',color:'#2e7d32'},
+  {x:50,y:300,name:'Quản lý',color:'#e65100'},
+ ],[[3,0,'<<extend>>',150],[0,6,'<<include>>',150]]);
+}
+function quotation(){
+ detailView('4. Báo giá',[
+  {text:'UC4.1 CRUD Báo giá',actors:[0]},
+  {text:'UC4.2 Quản lý hạng mục',actors:[0]},
+  {text:'UC4.3 Tạo phiên bản mới',actors:[0]},
+  {text:'UC4.4 Ký hợp đồng',actors:[0]},
+  {text:'UC4.5 Xác nhận đặt cọc',actors:[0]},
+  {text:'UC4.6 Xuất PDF / Excel',actors:[0]},
+  {text:'UC4.7 Tính giá từ BOM',actors:[0]},
+ ],[{x:50,y:200,name:'Nhân viên',color:'#2e7d32'}],
+ [[0,1,'<<include>>',150],[6,0,'<<extend>>',150],[3,4,'<<include>>',150]]);
+}
+function design(){
+ detailView('5. Thiết kế',[
+  {text:'UC5.1 Quản lý mẫu cửa',actors:[0]},
+  {text:'UC5.2 Bản vẽ sản xuất',actors:[0]},
+  {text:'UC5.3 Quy trình duyệt thiết kế',actors:[0]},
+  {text:'UC5.4 Quản lý revision',actors:[0]},
+  {text:'UC5.5 Khóa bản thiết kế',actors:[0]},
+  {text:'UC5.6 Danh mục sản phẩm',actors:[0]},
+ ],[{x:50,y:180,name:'Nhân viên',color:'#2e7d32'}],
+ [[2,4,'<<include>>',150],[3,2,'<<extend>>',150]]);
+}
+function bom(){
+ detailView('6. BOM & Công thức',[
+  {text:'UC6.1 Tính BOM tự động',actors:[0]},
+  {text:'UC6.2 Công thức cắt nhôm',actors:[0]},
+  {text:'UC6.3 Tối ưu cắt thanh',actors:[0]},
+  {text:'UC6.4 Tính kích thước kính',actors:[0]},
+  {text:'UC6.5 Xuất BOM Excel',actors:[0]},
+  {text:'UC6.6 Tạo YCMH từ BOM',actors:[0]},
+ ],[{x:50,y:180,name:'Nhân viên',color:'#2e7d32'}],
+ [[0,1,'<<include>>',150],[0,3,'<<include>>',150],[5,0,'<<include>>',150]]);
+}
+function inventory(){
+ detailView('7. Kho & Tồn kho',[
+  {text:'UC7.1 CRUD Vật tư',actors:[0]},
+  {text:'UC7.2 Phiếu nhập/xuất kho',actors:[0]},
+  {text:'UC7.3 Thẻ kho & Tồn kho',actors:[0]},
+  {text:'UC7.4 Cảnh báo tồn kho thấp',actors:[1]},
+  {text:'UC7.5 Quản lý phế liệu',actors:[0]},
+  {text:'UC7.6 Xuất Excel tồn kho',actors:[0]},
+  {text:'UC7.7 Gợi ý nhập hàng AI',actors:[1]},
+ ],[
+  {x:50,y:180,name:'Nhân viên',color:'#2e7d32'},
+  {x:850,y:220,name:'Hệ thống',color:'#1565c0'},
+ ],[[1,2,'<<include>>',150]]);
+}
+function production(){
+ detailView('8. Sản xuất',[
+  {text:'UC8.1 Quản lý dự án sản xuất',actors:[0]},
+  {text:'UC8.2 Cập nhật hoàn thành SP',actors:[0]},
+  {text:'UC8.3 Gán vật tư cho sản phẩm',actors:[0]},
+  {text:'UC8.4 Chuyển giai đoạn',actors:[0]},
+  {text:'UC8.5 Lệnh sản xuất',actors:[0]},
+  {text:'UC8.6 Tiến độ sản xuất',actors:[0]},
+ ],[{x:50,y:180,name:'Nhân viên',color:'#2e7d32'}],
+ [[0,5,'<<include>>',150]]);
+}
+function install(){
+ detailView('9. Lắp đặt & Bàn giao',[
+  {text:'UC9.1 Theo dõi lắp đặt',actors:[0]},
+  {text:'UC9.2 Cập nhật bước lắp đặt',actors:[0]},
+  {text:'UC9.3 Chuyển sang bàn giao',actors:[0]},
+  {text:'UC9.4 Hoàn thành bàn giao',actors:[0]},
+  {text:'UC9.5 Lưu ảnh bàn giao',actors:[0]},
+ ],[{x:50,y:160,name:'Nhân viên',color:'#2e7d32'}],
+ [[3,4,'<<include>>',150],[1,2,'<<extend>>',150]]);
+}
+function finance(){
+ detailView('10. Tài chính & Công nợ',[
+  {text:'UC10.1 Quản lý thu chi',actors:[0]},
+  {text:'UC10.2 Quản lý công nợ',actors:[0]},
+  {text:'UC10.3 Ghi nhận thanh toán',actors:[0]},
+  {text:'UC10.4 Dashboard tài chính',actors:[1]},
+  {text:'UC10.5 Báo cáo lãi lỗ',actors:[1]},
+  {text:'UC10.6 Báo cáo dòng tiền',actors:[1]},
+  {text:'UC10.7 Xuất Excel tài chính',actors:[0]},
+ ],[
+  {x:50,y:140,name:'Nhân viên',color:'#2e7d32'},
+  {x:50,y:300,name:'Quản lý',color:'#e65100'},
+ ],[[1,2,'<<include>>',150]]);
+}
+function hr(){
+ detailView('12. Nhân sự',[
+  {text:'UC12.1 Chấm công vào/ra',actors:[0]},
+  {text:'UC12.2 Xem chấm công cá nhân',actors:[0]},
+  {text:'UC12.3 Thống kê chấm công',actors:[2]},
+  {text:'UC12.4 Gửi đơn nghỉ phép',actors:[0]},
+  {text:'UC12.5 Duyệt nghỉ phép',actors:[1]},
+  {text:'UC12.6 Quản lý ca làm',actors:[2]},
+ ],[
+  {x:50,y:120,name:'Nhân viên',color:'#2e7d32'},
+  {x:50,y:260,name:'Quản lý',color:'#e65100'},
+  {x:50,y:340,name:'Admin',color:'#b71c1c'},
+ ],[]);
+}
+function chat(){
+ detailView('14. Chat nội bộ',[
+  {text:'UC14.1 Tạo cuộc trò chuyện',actors:[0]},
+  {text:'UC14.2 Gửi/nhận tin nhắn',actors:[0]},
+  {text:'UC14.3 Gửi file đính kèm',actors:[0]},
+  {text:'UC14.4 Ghim tin nhắn',actors:[0]},
+  {text:'UC14.5 Quản lý thành viên nhóm',actors:[0]},
+ ],[{x:50,y:160,name:'Nhân viên',color:'#2e7d32'}],
+ [[1,2,'<<extend>>',150]]);
+}
+function report(){
+ detailView('15. Báo cáo & Dashboard',[
+  {text:'UC15.1 Dashboard tổng quan',actors:[0]},
+  {text:'UC15.2 Báo cáo doanh thu',actors:[0]},
+  {text:'UC15.3 Báo cáo sản xuất',actors:[0]},
+  {text:'UC15.4 Báo cáo tồn kho',actors:[0]},
+  {text:'UC15.5 Báo cáo chi nhánh',actors:[0]},
+ ],[{x:50,y:160,name:'Quản lý',color:'#e65100'}],[]);
+}
+overview();
+</script>
+</body>
+</html>

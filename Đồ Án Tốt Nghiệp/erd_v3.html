@@ -1,0 +1,268 @@
+<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><title>ERD ViralWindow</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#fff;font-family:'Segoe UI',sans-serif;padding:20px;display:flex;flex-direction:column;align-items:center}
+h1{font-size:16pt;color:#1a2540;font-weight:700}
+.sub{font-size:11pt;color:#555;margin-bottom:14px;font-style:italic}
+.cv{position:relative;background:#fff;border:2px solid #999;width:2600px;height:1700px}
+svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
+.e{position:absolute;border-radius:6px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.15);font-size:11pt;border:2px solid #888}
+.eh{color:#fff;padding:6px 10px;font-weight:700;font-size:12pt;text-align:center}
+.er{display:flex;gap:5px;padding:3px 8px;border-bottom:1px solid #ddd;line-height:1.6;align-items:center}
+.er:last-child{border-bottom:none}
+.fn{flex:1;white-space:nowrap}
+.fpk{color:#c62828;font-weight:700}.ffk{color:#1565c0;font-weight:600}.fat{color:#333}
+.t{font-size:8pt;font-weight:700;border-radius:3px;padding:1px 5px}
+.tpk{background:#ffcdd2;color:#b71c1c;border:1px solid #e57373}
+.tfk{background:#bbdefb;color:#1565c0;border:1px solid #64b5f6}
+.h1{background:#1a3a6c}.h2{background:#2e7d32}.h3{background:#6a1b9a}
+.h4{background:#c62828}.h5{background:#e65100}.h6{background:#00838f}.h7{background:#455a64}
+@media print{body{padding:0}.cv{border:1px solid #aaa;width:100%!important;height:auto!important}}
+</style></head><body>
+<h1>Biểu đồ Thực thể Liên kết (ERD) – Hệ thống ViralWindow</h1>
+<p class="sub">Hình 2.25. Sơ đồ thiết kế cơ sở dữ liệu</p>
+<div class="cv" id="cv">
+<svg id="sg"><defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="3.5" orient="auto"><path d="M0,0L0,7L8,3.5z" fill="#4a6fa5"/></marker></defs></svg>
+
+<div class="e" id="A" style="left:20px;top:20px;width:230px"><div class="eh h1">CHUC_VU</div>
+<div class="er"><span class="fn fpk">id</span><span class="t tpk">PK</span></div>
+<div class="er"><span class="fn fat">ten</span></div>
+<div class="er"><span class="fn fat">mo_ta</span></div>
+<div class="er"><span class="fn fat">la_he_thong</span></div>
+<div class="er"><span class="fn fat">ngay_tao</span></div></div>
+
+<div class="e" id="B" style="left:20px;top:230px;width:230px"><div class="eh h1">QUYEN_HAN</div>
+<div class="er"><span class="fn fpk">id</span><span class="t tpk">PK</span></div>
+<div class="er"><span class="fn fat">ma_code</span></div>
+<div class="er"><span class="fn fat">ten</span></div>
+<div class="er"><span class="fn fat">module</span></div>
+<div class="er"><span class="fn fat">thu_tu</span></div></div>
+
+<div class="e" id="C" style="left:20px;top:460px;width:230px"><div class="eh h1">CHUC_VU_QUYEN</div>
+<div class="er"><span class="fn ffk">ma_chuc_vu</span><span class="t tpk">PK</span><span class="t tfk">FK</span></div>
+<div class="er"><span class="fn ffk">ma_quyen</span><span class="t tpk">PK</span><span class="t tfk">FK</span></div></div>
+
+<div class="e" id="D" style="left:280px;top:20px;width:260px"><div class="eh h1">NGUOI_DUNG</div>
+<div class="er"><span class="fn fpk">id</span><span class="t tpk">PK</span></div>
+<div class="er"><span class="fn ffk">ma_chuc_vu</span><span class="t tfk">FK</span></div>
+<div class="er"><span class="fn fat">email</span></div>
+<div class="er"><span class="fn fat">mat_khau</span></div>
+<div class="er"><span class="fn fat">ho_ten</span></div>
+<div class="er"><span class="fn fat">loai_tai_khoan</span></div>
+<div class="er"><span class="fn fat">trang_thai</span></div>
+<div class="er"><span class="fn fat">ngay_tao</span></div></div>
+
+<div class="e" id="E" style="left:280px;top:340px;width:260px"><div class="eh h1">PHIEN_DANG_NHAP</div>
+<div class="er"><span class="fn fpk">id</span><span class="t tpk">PK</span></div>
+<div class="er"><span class="fn ffk">ma_nguoi_dung</span><span class="t tfk">FK</span></div>
+<div class="er"><span class="fn fat">token_phien</span></div>
+<div class="er"><span class="fn fat">dang_hoat_dong</span></div>
+<div class="er"><span class="fn fat">thoi_gian_dang_nhap</span></div>
+<div class="er"><span class="fn fat">dia_chi_ip</span></div></div>
+
+<div class="e" id="F" style="left:280px;top:620px;width:260px"><div class="eh h7">THONG_BAO</div>
+<div class="er"><span class="fn fpk">id</span><span class="t tpk">PK</span></div>
+<div class="er"><span class="fn ffk">ma_nguoi_dung</span><span class="t tfk">FK</span></div>
+<div class="er"><span class="fn fat">tieu_de</span></div>
+<div class="er"><span class="fn fat">noi_dung</span></div>
+<div class="er"><span class="fn fat">da_doc</span></div>
+<div class="er"><span class="fn fat">ngay_tao</span></div></div>
+
+<div class="e" id="G" style="left:580px;top:20px;width:270px"><div class="eh h2">KHACH_HANG</div>
+<div class="er"><span class="fn fpk">id</span><span class="t tpk">PK</span></div>
+<div class="er"><span class="fn fat">ma_khach_hang</span></div>
+<div class="er"><span class="fn fat">ho_ten</span></div>
+<div class="er"><span class="fn fat">dien_thoai</span></div>
+<div class="er"><span class="fn fat">email</span></div>
+<div class="er"><span class="fn fat">dia_chi</span></div>
+<div class="er"><span class="fn fat">ma_so_thue</span></div>
+<div class="er"><span class="fn fat">trang_thai_kh</span></div>
+<div class="er"><span class="fn fat">ngay_tao</span></div></div>
+
+<div class="e" id="H" style="left:580px;top:420px;width:270px"><div class="eh h2">DU_AN</div>
+<div class="er"><span class="fn fpk">id</span><span class="t tpk">PK</span></div>
+<div class="er"><span class="fn ffk">ma_khach_hang</span><span class="t tfk">FK</span></div>
+<div class="er"><span class="fn fat">ma_du_an</span></div>
+<div class="er"><span class="fn fat">ten_du_an</span></div>
+<div class="er"><span class="fn fat">trang_thai</span></div>
+<div class="er"><span class="fn fat">ngay_bat_dau</span></div>
+<div class="er"><span class="fn fat">han_hoan_thanh</span></div>
+<div class="er"><span class="fn fat">dia_chi_thi_cong</span></div>
+<div class="er"><span class="fn fat">ghi_chu</span></div>
+<div class="er"><span class="fn fat">ngay_tao</span></div></div>
+
+<div class="e" id="I" style="left:890px;top:20px;width:270px"><div class="eh h3">MAU_SAN_PHAM</div>
+<div class="er"><span class="fn fpk">id</span><span class="t tpk">PK</span></div>
+<div class="er"><span class="fn fat">ma_code</span></div>
+<div class="er"><span class="fn fat">ten_san_pham</span></div>
+<div class="er"><span class="fn fat">loai_san_pham</span></div>
+<div class="er"><span class="fn fat">danh_muc</span></div>
+<div class="er"><span class="fn fat">chieu_rong_mac_dinh</span></div>
+<div class="er"><span class="fn fat">chieu_cao_mac_dinh</span></div>
+<div class="er"><span class="fn fat">cau_truc_json</span></div>
+<div class="er"><span class="fn fat">anh_dai_dien</span></div></div>
+
+<div class="e" id="J" style="left:890px;top:420px;width:280px"><div class="eh h3">SAN_PHAM_DU_AN</div>
+<div class="er"><span class="fn fpk">id</span><span class="t tpk">PK</span></div>
+<div class="er"><span class="fn ffk">ma_du_an</span><span class="t tfk">FK</span></div>
+<div class="er"><span class="fn ffk">ma_mau_san_pham</span><span class="t tfk">FK</span></div>
+<div class="er"><span class="fn fat">ten_rieng</span></div>
+<div class="er"><span class="fn fat">so_luong</span></div>
+<div class="er"><span class="fn fat">chieu_rong_tuy_chinh</span></div>
+<div class="er"><span class="fn fat">chieu_cao_tuy_chinh</span></div>
+<div class="er"><span class="fn fat">cau_hinh_snapshot</span></div>
+<div class="er"><span class="fn fat">vi_tri_lap_dat</span></div>
+<div class="er"><span class="fn fat">trang_thai</span></div>
+<div class="er"><span class="fn fat">ngay_tao</span></div></div>
+
+<div class="e" id="K" style="left:890px;top:880px;width:280px"><div class="eh h3">VAT_TU_BOM</div>
+<div class="er"><span class="fn fpk">id</span><span class="t tpk">PK</span></div>
+<div class="er"><span class="fn ffk">ma_san_pham_du_an</span><span class="t tfk">FK</span></div>
+<div class="er"><span class="fn ffk">ma_ton_kho</span><span class="t tfk">FK</span></div>
+<div class="er"><span class="fn fat">loai_vat_tu</span></div>
+<div class="er"><span class="fn fat">ma_code</span></div>
+<div class="er"><span class="fn fat">ten_vat_tu</span></div>
+<div class="er"><span class="fn fat">chieu_dai_mm</span></div>
+<div class="er"><span class="fn fat">so_luong</span></div>
+<div class="er"><span class="fn fat">hao_hut_mm</span></div>
+<div class="er"><span class="fn fat">ngay_tao</span></div></div>
+
+<div class="e" id="L" style="left:1220px;top:20px;width:290px"><div class="eh h4">BAO_GIA</div>
+<div class="er"><span class="fn fpk">id</span><span class="t tpk">PK</span></div>
+<div class="er"><span class="fn ffk">ma_du_an</span><span class="t tfk">FK</span></div>
+<div class="er"><span class="fn fat">ma_bao_gia</span></div>
+<div class="er"><span class="fn fat">ngay_bao_gia</span></div>
+<div class="er"><span class="fn fat">phien_ban</span></div>
+<div class="er"><span class="fn fat">trang_thai</span></div>
+<div class="er"><span class="fn fat">phan_tram_loi_nhuan</span></div>
+<div class="er"><span class="fn fat">phan_tram_vat</span></div>
+<div class="er"><span class="fn fat">phi_van_chuyen</span></div>
+<div class="er"><span class="fn fat">tong_tien_cuoi</span></div>
+<div class="er"><span class="fn fat">so_tien_dat_coc</span></div>
+<div class="er"><span class="fn fat">ngay_tao</span></div></div>
+
+<div class="e" id="M" style="left:1220px;top:550px;width:290px"><div class="eh h4">CHI_TIET_BAO_GIA</div>
+<div class="er"><span class="fn fpk">id</span><span class="t tpk">PK</span></div>
+<div class="er"><span class="fn ffk">ma_bao_gia</span><span class="t tfk">FK</span></div>
+<div class="er"><span class="fn ffk">ma_mau_san_pham</span><span class="t tfk">FK</span></div>
+<div class="er"><span class="fn fat">ten_san_pham</span></div>
+<div class="er"><span class="fn fat">chieu_rong</span></div>
+<div class="er"><span class="fn fat">chieu_cao</span></div>
+<div class="er"><span class="fn fat">so_luong</span></div>
+<div class="er"><span class="fn fat">don_gia</span></div>
+<div class="er"><span class="fn fat">thanh_tien</span></div></div>
+
+<div class="e" id="N" style="left:1560px;top:20px;width:300px"><div class="eh h5">GIAO_DICH_TAI_CHINH</div>
+<div class="er"><span class="fn fpk">id</span><span class="t tpk">PK</span></div>
+<div class="er"><span class="fn ffk">ma_du_an</span><span class="t tfk">FK</span></div>
+<div class="er"><span class="fn ffk">ma_bao_gia</span><span class="t tfk">FK</span></div>
+<div class="er"><span class="fn fat">ma_giao_dich</span></div>
+<div class="er"><span class="fn fat">ngay_giao_dich</span></div>
+<div class="er"><span class="fn fat">loai_giao_dich</span></div>
+<div class="er"><span class="fn fat">danh_muc</span></div>
+<div class="er"><span class="fn fat">so_tien</span></div>
+<div class="er"><span class="fn fat">dien_giai</span></div>
+<div class="er"><span class="fn fat">trang_thai</span></div>
+<div class="er"><span class="fn fat">phuong_thuc_thanh_toan</span></div>
+<div class="er"><span class="fn fat">ngay_tao</span></div></div>
+
+<div class="e" id="O" style="left:1560px;top:530px;width:300px"><div class="eh h5">CHI_TIET_GIAO_DICH</div>
+<div class="er"><span class="fn fpk">id</span><span class="t tpk">PK</span></div>
+<div class="er"><span class="fn ffk">ma_giao_dich</span><span class="t tfk">FK</span></div>
+<div class="er"><span class="fn fat">ten_muc</span></div>
+<div class="er"><span class="fn fat">so_luong</span></div>
+<div class="er"><span class="fn fat">don_gia</span></div>
+<div class="er"><span class="fn fat">thanh_tien</span></div></div>
+
+<div class="e" id="P" style="left:1560px;top:820px;width:300px"><div class="eh h5">CONG_NO</div>
+<div class="er"><span class="fn fpk">id</span><span class="t tpk">PK</span></div>
+<div class="er"><span class="fn ffk">ma_du_an</span><span class="t tfk">FK</span></div>
+<div class="er"><span class="fn fat">loai_cong_no</span></div>
+<div class="er"><span class="fn fat">nha_cung_cap</span></div>
+<div class="er"><span class="fn fat">tong_no</span></div>
+<div class="er"><span class="fn fat">da_thanh_toan</span></div>
+<div class="er"><span class="fn fat">trang_thai</span></div>
+<div class="er"><span class="fn fat">ngay_tao</span></div></div>
+
+<div class="e" id="Q" style="left:1920px;top:20px;width:270px"><div class="eh h6">TON_KHO</div>
+<div class="er"><span class="fn fpk">id</span><span class="t tpk">PK</span></div>
+<div class="er"><span class="fn fat">ma_vat_tu</span></div>
+<div class="er"><span class="fn fat">ten_vat_tu</span></div>
+<div class="er"><span class="fn fat">loai_vat_tu</span></div>
+<div class="er"><span class="fn fat">don_vi</span></div>
+<div class="er"><span class="fn fat">don_gia</span></div>
+<div class="er"><span class="fn fat">nha_cung_cap</span></div>
+<div class="er"><span class="fn fat">muc_canh_bao_ton</span></div></div>
+
+<div class="e" id="R" style="left:1920px;top:400px;width:270px"><div class="eh h6">GIAO_DICH_KHO</div>
+<div class="er"><span class="fn fpk">id</span><span class="t tpk">PK</span></div>
+<div class="er"><span class="fn ffk">ma_ton_kho</span><span class="t tfk">FK</span></div>
+<div class="er"><span class="fn ffk">ma_du_an</span><span class="t tfk">FK</span></div>
+<div class="er"><span class="fn fat">loai_giao_dich</span></div>
+<div class="er"><span class="fn fat">so_luong</span></div>
+<div class="er"><span class="fn fat">ghi_chu</span></div>
+<div class="er"><span class="fn fat">ngay_giao_dich</span></div></div>
+</div>
+
+<p style="margin-top:12px;font-size:10pt;color:#888">💡 Zoom trình duyệt 100%, dùng <b>Snipping Tool (Win+Shift+S)</b> chụp từng phần, hoặc <b>Ctrl+P → Save as PDF</b></p>
+
+<script>
+const S='http://www.w3.org/2000/svg',cv=document.getElementById('cv'),sg=document.getElementById('sg');
+function bx(id){const e=document.getElementById(id),c=cv.getBoundingClientRect(),r=e.getBoundingClientRect();
+return{l:r.left-c.left,r:r.right-c.left,t:r.top-c.top,b:r.bottom-c.top,cx:r.left-c.left+r.width/2,cy:r.top-c.top+r.height/2}}
+function pl(pts){const p=document.createElementNS(S,'polyline');
+p.setAttribute('points',pts.map(v=>v.join(',')).join(' '));
+p.setAttribute('fill','none');p.setAttribute('stroke','#4a6fa5');
+p.setAttribute('stroke-width','2');p.setAttribute('stroke-dasharray','7,4');
+p.setAttribute('marker-end','url(#a)');sg.appendChild(p)}
+function tx(x,y,t){const e=document.createElementNS(S,'text');e.setAttribute('x',x);e.setAttribute('y',y);
+e.setAttribute('text-anchor','middle');e.setAttribute('font-size','11');e.setAttribute('fill','#c62828');
+e.setAttribute('font-weight','700');e.textContent=t;sg.appendChild(e)}
+document.addEventListener('DOMContentLoaded',()=>{
+const a=bx('A'),b=bx('B'),c=bx('C'),d=bx('D'),e=bx('E'),f=bx('F'),
+g=bx('G'),h=bx('H'),i=bx('I'),j=bx('J'),k=bx('K'),l=bx('L'),
+m=bx('M'),n=bx('N'),o=bx('O'),p=bx('P'),q=bx('Q'),r=bx('R');
+// CV→ND
+pl([[a.r,a.cy],[d.l,d.cy]]);tx(a.r+10,a.cy-6,'1');tx(d.l-10,d.cy-6,'N');
+// CV→CVQ
+pl([[a.cx-20,a.b],[a.cx-20,c.t]]);tx(a.cx-8,a.b+16,'1');tx(a.cx-8,c.t-8,'N');
+// QH→CVQ
+pl([[b.cx-20,b.b],[b.cx-20,c.t]]);tx(b.cx-8,b.b+16,'1');tx(b.cx-8,c.t-8,'N');
+// ND→PDN
+pl([[d.cx,d.b],[d.cx,e.t]]);tx(d.cx+14,d.b+16,'1');tx(d.cx+14,e.t-8,'N');
+// ND→TB
+pl([[d.l,d.b],[d.l-15,d.b],[d.l-15,f.t-12],[f.l,f.t-12],[f.l,f.t]]);tx(f.l+14,f.t-16,'N');
+// KH→DA
+pl([[g.cx,g.b],[g.cx,h.t]]);tx(g.cx+14,g.b+16,'1');tx(g.cx+14,h.t-8,'N');
+// DA→SPDA
+pl([[h.r,h.cy],[j.l,j.cy]]);tx(h.r+10,h.cy-6,'1');tx(j.l-10,j.cy-6,'N');
+// MSP→SPDA
+pl([[i.cx,i.b],[i.cx,j.t]]);tx(i.cx+14,i.b+16,'1');tx(i.cx+14,j.t-8,'N');
+// SPDA→VTL
+pl([[j.cx,j.b],[j.cx,k.t]]);tx(j.cx+14,j.b+16,'1');tx(j.cx+14,k.t-8,'N');
+// DA→BG
+pl([[h.r,h.t+20],[h.r+30,h.t+20],[h.r+30,h.t-15],[l.cx,h.t-15],[l.cx,l.b]]);
+tx(h.r+35,h.t+16,'1');
+// BG→CTBG
+pl([[l.cx,l.b],[l.cx,m.t]]);tx(l.cx+14,l.b+16,'1');tx(l.cx+14,m.t-8,'N');
+// MSP→CTBG
+pl([[i.r,i.b-20],[i.r+20,i.b-20],[i.r+20,m.t+30],[m.l,m.t+30]]);tx(m.l-10,m.t+26,'N');
+// BG→GDTC
+pl([[l.r,l.cy+25],[l.r+15,l.cy+25],[l.r+15,n.t+40],[n.l,n.t+40]]);
+tx(l.r+20,l.cy+21,'1');tx(n.l-10,n.t+36,'N');
+// DA→GDTC
+pl([[h.cx+40,h.t],[h.cx+40,h.t-30],[n.cx,h.t-30],[n.cx,n.t]]);tx(n.cx+14,n.t-35,'N');
+// GDTC→CTGD
+pl([[n.cx,n.b],[n.cx,o.t]]);tx(n.cx+14,n.b+16,'1');tx(n.cx+14,o.t-8,'N');
+// DA→CN
+pl([[h.cx,h.b],[h.cx,h.b+40],[1548,h.b+40],[1548,p.cy],[p.l,p.cy]]);tx(p.l-10,p.cy-6,'N');
+// DA→GDK
+pl([[h.r,h.b-20],[h.r+40,h.b-20],[h.r+40,h.b+60],[1908,h.b+60],[1908,r.cy],[r.l,r.cy]]);
+tx(r.l-10,r.cy-6,'N');
+// TK→GDK
+pl([[q.cx,q.b],[q.cx,r.t]]);tx(q.cx+14,q.b+16,'1');tx(q.cx+14,r.t-8,'N');
+// VTL→TK
+pl([[k.r,k.cy],[k.r+30,k.cy],[k.r+30,k.t-20],[1908,k.t-20],[1908,q.b+15],[q.cx-30,q.b+15],[q.cx-30,q.b]]);
+tx(k.r+35,k.cy-6,'N');tx(q.cx-18,q.b-8,'1');
+});
+</script></body></html>

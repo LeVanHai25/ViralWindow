@@ -1,0 +1,810 @@
+
+
+LỜI NÓI ĐẦU
+Lời đầu tiên, em xin gửi lời cảm ơn chân thành nhất tới thầy Nguyễn Ngọc Khải, người đã tận tâm hướng dẫn và đưa ra những chỉ dẫn quý báu trong suốt quá trình em thực hiện báo cáo. Đồng thời, em xin bày tỏ lòng biết ơn sâu sắc tới Ban lãnh đạo và các anh chị đồng nghiệp tại Công ty Cổ phần ViralWindow đã tạo điều kiện tốt nhất để em được học tập và làm việc trong môi trường chuyên nghiệp. Kỳ thực tập này là cơ hội quý báu giúp em có thể áp dụng những kiến thức chuyên môn đã được học trên ghế nhà trường vào thực tiễn các dự án thực tế tại doanh nghiệp. Qua đó, em không chỉ rèn luyện kỹ năng lập trình mà còn tích lũy được những kinh nghiệm thực tiễn vô cùng giá trị về quy trình sản xuất phần mềm. Dù đã nỗ lực hoàn thành, song báo cáo vẫn không tránh khỏi những thiếu sót, em rất mong nhận được những ý kiến đóng góp, phê bình từ phía thầy để bản thân ngày càng hoàn thiện hơn. Một lần nữa, em xin chân thành cảm ơn thầy và quý Công ty!
+Em xin chân thành cảm ơn! 
+Người thực hiện  
+
+
+Lê Văn Hải
+
+
+
+
+
+
+
+
+
+
+DANH MỤC HÌNH VẼ
+Hình 1: Logo Công ty Cổ phần ViralWindow	1
+Hình 2: Sơ đồ cơ cấu tổ chức Công ty Cổ phần ViralWindow	2
+Hình 3: Không gian làm việc tại văn phòng ViralWindow	4
+Hình 4: Sơ đồ quy trình Agile/Scrum trong quá trình xây dựng hệ thống	9
+Hình 5: Biểu đồ Use Case hệ thống	13
+Hình 6: Biểu đồ Use Case chi tiết Đăng nhập	14
+Hình 7: Biểu đồ Use Case Tạo dự án	16
+Hình 8:Biểu đồ Use Case Tạo báo giá	19
+Hình 9:Biểu đồ Use Case Quản lý phiếu thu	22
+Hình 11:Biểu đồ chi tiết Use Case Nhập kho vật tư	25
+Hình 12: Biểu đồ hoạt động Use Case Đăng Nhập	28
+Hình 13: Biểu đồ trình tự Use Case Đăng nhập	29
+Hình 14:Biểu đồ phân tích Use Case Đăng nhập	29
+Hình 15:Biểu đồ hoạt động Use Case Tạo dự án	30
+Hình 16:Biểu đồ trình tự Use Case Tạo dự án	31
+Hình 17:Biểu đồ phân tích Use Case Tạo dự án	32
+Hình 18:Biểu đồ hoạt động Use Case Tạo báo giá	33
+Hình 19:Biểu đồ trình tự Use Case Tạo báo giá	34
+Hình 20:Biểu đồ phân tích Use Case Tạo báo giá	35
+Hình 21:Biểu đồ hoạt động Use Case Quản lý phiếu thu	36
+Hình 22:Biểu đồ trình tự Use Case Quản lý phiếu thu	37
+Hình 23:Biểu đồ phân tích Use Case Quản lý phiếu thu	38
+Hình 24:Biểu đồ hoạt động Use Case Nhập kho vật tư	39
+Hình 25:Biểu đồ trình tự Use Case Nhập kho vật tư	40
+Hình 26:Biểu đồ phân tích Use Case Nhập kho vật tư	41
+Hình 27: Biểu đồ thực thể liên kết mức logic	41
+Hình 28: Biểu đồ thực thể liên kết mức vật lý	42
+Hình 29: Hình dung màn hình trang Đăng nhập	42
+Hình 30:Biểu đồ lớp màn hình Use Case Đăng nhập	43
+Hình 31:Biểu đồ cộng tác màn hình Use Case Đăng nhập	43
+Hình 32:Hình dung màn hình trang Tạo dự án	44
+Hình 33:Biểu đồ lớp màn hình Use Case Tạo dự án	45
+Hình 34:Biểu đồ cộng tácmàn hình Use Case Tạo dự án	45
+Hình 35:Hình dung màn hình trang Tạo báo giá	46
+Hình 36:Biểu đồ lớp màn hình Use Case Tạo báo giá	46
+Hình 37:Biểu đồ cộng tác Use Case Tạo báo giá	47
+Hình 38:Hình dung màn hình trang Quản lý phiếu thu	47
+Hình 39:Biểu đồ lớp màn hình Use Case Quản lý phiếu thu	48
+Hình 40:Biểu đồ cộng tác màn hình Use Case Quản lý phiếu thu	48
+Hình 41:Hình dung màn hình Nhập kho vật tư	49
+Hình 42:Biểu đồ lớp màn hình Use Case Nhập kho vật tư	49
+Hình 43:Biểu đồ cộng tác màn hình Use Case Nhập kho vật tư	50
+Hình 44:Kiến trúc hệ thống	51
+Hình 45:Màn hình giao diện trang Đăng nhập	53
+Hình 46: Màn hình giao diện trang Dashboard	54
+Hình 47 Màn hình giao diện trang Quản lý dự án	55
+Hình 48 Màn hình giao diện trang Tạo báo giá	56
+Hình 49: Màn hình giao diện trang Phiếu thu	57
+Hình 50: Màn hình giao diện trang Nhập kho	58
+
+
+
+
+
+
+
+
+DANH MỤC BẢNG BIỂU
+Bảng 1: Bảng kế hoạch thực hiện	6
+Bảng 2: Quá trình phát triển từng Sprint	10
+Bảng 3: Các môi trường sử dụng trong hệ thống	50
+Bảng 4: Công nghệ backend sử dụng trong hệ thống	51
+Bảng 5: Công nghệ fontend sử dụng trong hệ thống	52
+Bảng 6: Bảng cơ sở dữ liệu trong hệ thống	52
+Bảng 7: Bảng lên kế hoạch danh sách kiểm thử các chức năng	59
+Bảng 8: Bảng kết quả kiểm thử Đăng nhập	60
+Bảng 9: Bảng kết quả kiểm thử Tạo báo giá	61
+Bảng 10 Bảng kết quả kiểm thử Phiếu thu	62
+Bảng 11: Bảng kết quả kiểm thử Nhập kho vật tư	63
+Bảng 12: Bảng kết quả kiểm thử Tạo báo giá	64
+Bảng 13: Bảng tổng hợp kết quả kiểm thử	64
+
+
+
+
+
+
+
+
+
+
+CHƯƠNG 1: TỔNG QUAN VỀ ĐƠN VỊ THỰC TẬP
+1.1. Giới thiệu chung 
+Tên tiếng Việt: Công ty Cổ phần ViralWindow.
+Tên tiếng Anh: ViralWindow Joint Stock Company.
+Tên viết tắt: ViralWindow.
+Địa chỉ trụ sở: Căn 12+14-B1, Khu đô thị mới Geleximco, Lê Trọng Tấn, Hà Đông, Hà Nội.
+Website: https://viralwindow.vn/
+Người hướng dẫn tại doanh nghiệp: Lâm Tuấn Phong
+Số điện thoại: 0982068785
+Email: Tuanphongsbqt@gmail.com  
+Logo của công ty: với biểu tượng khung cửa cách điệu, tượng trưng cho sự vững chãi và độ chính xác tuyệt đối trong kỹ thuật thi công.
+
+Hình : Logo Công ty Cổ phần ViralWindow
+1.1.1. Quá trình hình thành và phát triển 
+ViralWindow là đơn vị tiên phong trong lĩnh vực sản xuất và cung cấp các giải pháp cửa nhôm kính cao cấp tại Việt Nam.
+Từ một xưởng sản xuất cơ khí chuyên nghiệp, công ty đã không ngừng mở rộng quy mô và đầu tư vào nghiên cứu công nghệ phần mềm để phục vụ sản xuất.
+Đến năm 2026, công ty đã xác lập được vị thế vững chắc trên thị trường thông qua việc kết hợp giữa sản xuất truyền thống và chuyển đổi số toàn diện.
+1.1.2. Chức năng, nhiệm vụ của công ty 
+Chức năng: Tư vấn, thiết kế, sản xuất và thi công các hệ thống cửa nhôm kính đồng bộ cho các công trình dân dụng và dự án lớn.
+Nhiệm vụ: Tối ưu hóa quy trình kỹ thuật, đảm bảo độ chính xác tuyệt đối trong bóc tách vật tư và nâng cao trải nghiệm khách hàng thông qua các ứng dụng công nghệ hiện đại.
+1.1.3. Cơ cấu tổ chức quản lý của doanh nghiệp 
+
+Hình : Sơ đồ cơ cấu tổ chức Công ty Cổ phần ViralWindow
+Công ty vận hành theo mô hình phòng ban chuyên biệt, trong đó Phòng Kỹ thuật & Công nghệ đóng vai trò nòng cốt trong việc phát triển các giải pháp phần mềm hỗ trợ sản xuất (như dự án ViralWindow App em đang tham gia).
+1.2. Sản phẩm và dịch vụ 
+ViralWindow cung cấp một hệ sinh thái sản phẩm khép kín từ phần cứng (cửa nhôm) đến phần mềm (quản lý kỹ thuật).
+1.2.1. Giải pháp phần mềm và ứng dụng doanh nghiệp 
+ViralWindow App: Hệ thống phần mềm chuyên dụng hỗ trợ các đại lý và xưởng sản xuất trong việc bóc tách bản vẽ AutoCAD 2D, tính toán kích thước nhôm kính và báo giá tự động.
+Hệ thống Quản trị nguồn lực (ERP): Triển khai các module quản lý kho vật tư, quản lý đơn hàng và tiến độ sản xuất theo thời gian thực.
+1.2.2. Sản phẩm nhôm kính đồng bộ 
+Cung cấp các dòng cửa nhôm ViralWindow cao cấp đạt tiêu chuẩn chất lượng châu Âu.
+Dịch vụ tư vấn giải pháp kiến trúc và lắp đặt hệ thống cửa thông minh tích hợp công nghệ cảm biến và điều khiển từ xa.
+1.3. Công nghệ và chất lượng 
+Công ty luôn chú trọng vào việc cập nhật và làm chủ các công nghệ mới nhất để duy trì chất lượng sản phẩm.
+1.3.1. Nền tảng phát triển đa dạng 
+Backend: Sử dụng Node.js để xây dựng hệ thống API xử lý dữ liệu kỹ thuật nhanh chóng và ổn định.
+Database: Quản trị dữ liệu vật tư và khách hàng thông qua hệ thống MySQL chuyên nghiệp.
+Tools: Tích hợp sâu các thư viện xử lý bản vẽ AutoCAD trong phần mềm để hỗ trợ bóc tách kỹ thuật chính xác.
+1.3.2. Cam kết chất lượng sản phẩm 
+Áp dụng quy trình phát triển phần mềm theo mô hình Agile/Scrum, cho phép cập nhật tính năng linh hoạt dựa trên phản hồi từ thực tế sản xuất tại xưởng.
+Quy trình kiểm tra chất lượng (QA/QC) nghiêm ngặt cho cả sản phẩm cửa vật lý và các module phần mềm trước khi bàn giao.
+1.4. Văn hóa doanh nghiệp 
+Văn hóa tại ViralWindow là sự kết hợp giữa tinh thần trách nhiệm, sự sáng tạo và tính kỷ luật.
+1.4.1. Giá trị cốt lõi 
+Chuyên nghiệp: Cam kết về tiến độ và độ chính xác trong từng bản vẽ kỹ thuật.
+Sáng tạo: Luôn tìm kiếm giải pháp công nghệ mới để đơn giản hóa quy trình sản xuất phức tạp cho người dùng.
+1.4.2. Môi trường làm việc 
+
+Hình : Không gian làm việc tại văn phòng ViralWindow
+Công ty tạo điều kiện tối đa cho sinh viên thực tập tiếp cận các thiết bị kỹ thuật hiện đại và được hướng dẫn trực tiếp bởi đội ngũ kỹ sư giàu kinh nghiệm.
+
+
+
+
+
+
+
+
+
+CHƯƠNG 2: QUÁ TRÌNH THỰC TẬP TẠI ĐƠN VỊ
+2.1. Nhiệm vụ được giao
+Trong suốt thời gian thực tập tại Công ty Cổ phần ViralWindow, với vị trí thực tập sinh phát triển phần mềm, em đã được giao các nhiệm vụ trọng tâm sau:
+Nghiên cứu quy trình nghiệp vụ: Tìm hiểu quy trình phối hợp giữa các bộ phận: Phân tích nghiệp vụ (BA) – Thiết kế (UI/UX) – Lập trình – Kiểm thử (Tester) trong ngành sản xuất cửa nhôm kính.
+Quản trị hệ thống và dự án: Sử dụng hệ thống Git để quản lý mã nguồn và cập nhật trạng thái công việc hàng ngày.
+Phát triển module chuyên môn: Xây dựng module quản lý người dùng, phân quyền (RBAC) và xác thực (Authentication) cho phần mềm quản lý của công ty bằng Node.js và MySQL.
+Xử lý dữ liệu kỹ thuật: Nghiên cứu cách số hóa các bản vẽ kỹ thuật từ AutoCAD để tích hợp vào hệ thống tính toán vật tư tự động.
+Kiểm thử và Debug: Phối hợp cùng bộ phận QA/QC để tìm, phân tích và khắc phục các lỗi logic, đảm bảo tính ổn định cho sản phẩm.
+2.2. Giải pháp thực hiện
+Để hoàn thành các nhiệm vụ trên một cách khoa học, em đã áp dụng các giải pháp cụ thể sau:
+2.2.1. Tiếp cận quy chuẩn và công cụ tại doanh nghiệp
+Tham gia đào tạo: Tham gia các buổi định hướng về văn hóa công ty, quy định bảo mật mã nguồn và quy trình Agile/Scrum.
+Thiết lập môi trường: Cài đặt các công cụ phát triển cần thiết gồm Node.js, MySQL Workbench, VS Code và thiết lập môi trường chạy dự án mẫu.
+Công cụ quản lý: Sử dụng Git theo chuẩn Coding Convention của công ty để thực hiện các yêu cầu kéo (Pull Request) chuyên nghiệp.
+2.2.2. Giải pháp kỹ thuật cho module quản trị
+Phân tích nghiệp vụ: Xác định luồng xác thực và phân cấp vai trò (Admin, Đại lý, Nhân viên kỹ thuật) cho phần mềm.
+Công nghệ Backend: Lựa chọn framework Express (Node.js) để xây dựng hệ thống API linh hoạt, kết hợp với JWT để bảo mật phiên đăng nhập.
+Thiết kế Database: Sử dụng MySQL để thiết kế cơ sở dữ liệu quan hệ, đảm bảo tính toàn vẹn dữ liệu cho các bảng người dùng và danh mục vật tư nhôm kính.
+2.3. Kế hoạch thực hiện
+Kế hoạch thực tập được xây dựng chi tiết theo từng tuần để đảm bảo tiến độ và chất lượng sản phẩm:
+Bảng : Bảng kế hoạch thực hiện
+
+2.4. Kết quả thực hiện
+Qua quá trình thực tập, em đã đạt được các kết quả quan trọng sau:
+2.4.1. Kiến thức chuyên môn và kỹ thuật
+Làm chủ Stack công nghệ: Thành thạo phát triển Backend với Node.js và quản trị cơ sở dữ liệu MySQL cho các bài toán doanh nghiệp thực tế.
+Kỹ năng thiết kế: Nắm vững cách xây dựng tài liệu SRS và sơ đồ cơ sở dữ liệu cho các hệ thống quản lý có độ phức tạp cao.
+2.4.2. Kỹ năng mềm và tác phong công nghiệp
+Làm việc nhóm (Teamwork): Phối hợp hiệu quả với các bộ phận thiết kế và sản xuất để tối ưu hóa tính năng phần mềm.
+Quản lý công việc: Sử dụng thành thạo Jira/Trello để sắp xếp ưu tiên nhiệm vụ và đảm bảo hoàn thành đúng thời hạn (Deadline).
+
+CHƯƠNG 3: NỘI DUNG VÀ KẾT QUẢ THỰC TẬP
+3.1. Mô tả công việc và phương thức làm việc
+3.1.1. Mô tả công việc được giao
+Trong thời gian thực tập tại Công ty Cổ phần ViralWindow, em được giao nhiệm vụ phân tích, thiết kế và phát triển hệ thống phần mềm quản lý tổng thể ViralWindow App phục vụ cho hoạt động kinh doanh nhôm kính. Các nhóm công việc cụ thể bao gồm:
+Khảo sát quy trình nghiệp vụ thực tế tại doanh nghiệp (báo giá, dự án, thu chi, kho).
+Phân tích yêu cầu và thiết kế cơ sở dữ liệu gồm 17 bảng trên hệ quản trị MariaDB.
+Xây dựng module Đăng nhập, xác thực JWT và hệ thống phân quyền RBAC.
+Phát triển module Quản lý Khách hàng và Quản lý Dự án.
+Phát triển module Báo giá (tạo, sửa, chi tiết sản phẩm, tính tổng tiền, VAT, chiết khấu).
+Phát triển module Tài chính (Thu chi, phiếu giao dịch) và Công nợ khách hàng.
+Nghiên cứu và xây dựng BOM Engine – bộ máy bóc tách vật tư tự động cho 5 dòng sản phẩm nhôm kính.
+Phát triển module Quản lý Kho (nhập kho, xuất kho, tồn kho).
+3.1.2. Phương thức làm việc
+Em áp dụng mô hình phát triển Agile/Scrum trong suốt quá trình xây dựng hệ thống. Anh Lâm Tuấn Phong đóng vai trò Product Owner – người đưa ra yêu cầu nghiệp vụ và xác định mức độ ưu tiên. Em đóng vai trò Scrum Team – chịu trách nhiệm phân tích, thiết kế, lập trình và kiểm thử.
+
+Hình : Sơ đồ quy trình Agile/Scrum trong quá trình xây dựng hệ thống
+Mỗi Sprint tương ứng với 1 tuần làm việc. Hàng ngày, em báo cáo tiến độ và trao đổi khó khăn kỹ thuật với Mentor qua Zalo (Daily Scrum). Cuối mỗi Sprint, em demo sản phẩm để Mentor và các anh chị bộ phận kế toán đánh giá, góp ý (Sprint Review). 
+3.1.3. Quy trình thực hiện
+Mỗi chức năng trong hệ thống được phát triển theo quy trình 5 bước:
+Bước 1 – Nhận yêu cầu và phân tích: Mentor mô tả chức năng cần làm qua Zalo, kèm ảnh minh họa giao diện mong muốn. Em phân tích yêu cầu, xác định các bảng dữ liệu liên quan và API cần xây dựng.
+Bước 2 – Thiết kế cơ sở dữ liệu: Xác định cấu trúc bảng, mối quan hệ, ràng buộc dữ liệu (PK, FK, CHECK, UNIQUE) và viết script SQL tạo bảng.
+Bước 3 – Lập trình Backend: Tạo route (định tuyến), viết controller (xử lý logic nghiệp vụ), thực hiện truy vấn SQL. Kiểm thử API bằng Postman.
+Bước 4 – Lập trình Frontend: Xây dựng giao diện HTML/CSS, viết JavaScript gọi API (Fetch API), xử lý và hiển thị dữ liệu.
+Bước 5 – Kiểm thử và bàn giao: Test trên trình duyệt, gửi demo cho Mentor qua Zalo. Nhận phản hồi, chỉnh sửa và commit lên Git.
+3.1.4. Tổ chức thực hiện
+Toàn bộ quá trình phát triển được tổ chức thành 8 Sprint theo trình tự từ nền tảng đến nghiệp vụ nâng cao:
+Bảng : Quá trình phát triển từng Sprint
+3.2. Phân tích thiết kế hệ thống
+Dựa trên quá trình khảo sát nghiệp vụ sản xuất và thi công cửa nhôm kính, hệ thống được thiết kế để giải quyết bài toán quản trị tích hợp với hai nhóm yêu cầu chính:
+3.2.1. Yêu cầu chức năng
+Hệ thống được xây dựng trên mô hình phân quyền RBAC (Role-Based Access Control) linh hoạt, phân định rõ ranh giới trách nhiệm giữa người dùng hệ thống và quản trị viên (Admin). Các chức năng trọng tâm bao gồm:
+Quản lý dự án: Hệ thống cho phép khởi tạo, chỉnh sửa và theo dõi vòng đời dự án với cơ chế tự sinh mã VR-xxx duy nhất. Các tính năng như ghi nhật ký hoạt động (Project Logs) và khôi phục dữ liệu giúp đảm bảo tính truy vết. Riêng vai trò Admin được cấp quyền xóa vĩnh viễn (Hard delete) kèm theo cơ chế CASCADE để dọn dẹp dữ liệu liên quan trong cơ sở dữ liệu SQL.
+Quản lý báo giá và Bán hàng: Hỗ trợ tạo báo giá từ dự án hiện có, quản lý đa phiên bản (V1, V2...) và tự động tính toán các chỉ số tài chính như VAT, chiết khấu. Quy trình "Ký hợp đồng" là điểm chốt chặn nghiệp vụ để chuyển đổi mã dự án tạm (VRBG) sang mã dự án chính thức (VR).
+Quản lý kho vật tư: Hệ thống quản lý chuyên sâu 4 nhóm vật tư chính gồm nhôm, kính, phụ kiện và vật tư phụ. Điểm đặc biệt là khả năng quản lý nhôm đề C (scrap), hỗ trợ upload ảnh sản phẩm qua Multer và hệ thống cảnh báo tồn kho thấp để tối ưu hóa nguồn vốn lưu động.
+Quản lý tài chính: Vận hành thông qua các phiếu thu/chi với quy trình kiểm soát chặt chẽ (Nháp → Đã ghi sổ → Đã hủy). Hệ thống tích hợp cơ chế phiếu đảo tự động khi hủy giao dịch đã ghi sổ nhằm đảm bảo tính minh bạch về công nợ và lợi nhuận trên Dashboard.
+Quản lý sản xuất và BOM Engine: Đây là module cốt lõi sử dụng BOM Engine để bóc tách vật tư tự động từ các template JSON. Chức năng này giúp chuyển đổi thiết kế kỹ thuật thành danh sách vật tư xuất kho chính xác cho từng công trình.
+Quản trị hệ thống: Dành cho Admin để quản trị người dùng, chi nhánh và thông tin doanh nghiệp thông qua hệ thống phân quyền động với 28 quyền hạn cụ thể.
+3.2.2. Yêu cầu phi chức năng
+Bên cạnh các tính năng nghiệp vụ, hệ thống đặc biệt chú trọng đến các tiêu chuẩn kỹ thuật để vận hành ổn định trong môi trường doanh nghiệp thực tế:
+Bảo mật và Xác thực: Toàn bộ mật khẩu người dùng được mã hóa một chiều qua thư viện bcryptjs (salt round = 10). Phiên đăng nhập được quản lý bằng JWT (JSON Web Token) với thời hạn linh hoạt, kết hợp bảng user_sessions để kiểm tra trạng thái hoạt động của token nhằm ngăn chặn truy cập trái phép.
+Hiệu năng và Tính sẵn sàng: Nhờ sử dụng cơ chế MySQL Connection Pool (giới hạn 10 kết nối đồng thời), hệ thống duy trì thời gian phản hồi API ổn định ngay cả khi có nhiều người dùng truy cập. Khả năng sẵn sàng cao được đảm bảo thông qua bộ xử lý lỗi tập trung (errorHandler.js) và cơ chế tự động khởi động lại hệ thống.
+Khả năng mở rộng và Bảo trì: Kiến trúc MVC (Model-View-Controller) với 78 controllers và 63 routes giúp mã nguồn được module hóa rõ ràng. Việc tách biệt các tầng Service và Middleware cùng với việc sử dụng file môi trường .env giúp hệ thống dễ dàng nâng cấp và bảo trì lâu dài.
+Toàn vẹn dữ liệu: Hệ thống áp dụng Database Transaction cho các thao tác nhạy cảm như ghi sổ tài chính hoặc ký hợp đồng. Điều này kết hợp với các ràng buộc khóa ngoại (Foreign Key) trong 171 file SQL đảm bảo dữ liệu luôn nhất quán và không xảy ra sai sót khi thao tác song song.
+Tính khả dụng: Với 66 trang HTML được thiết kế responsive và sidebar menu phân nhóm khoa học, người dùng có thể dễ dàng tiếp cận các tính năng một cách trực quan.
+3.2.3. Biểu đồ Use Case tổng quát
+
+
+Hình : Biểu đồ Use Case hệ thống
+Biểu đồ Use Case mô tả các tác nhân (Actor) và các chức năng chính của hệ thống quản lý dự án. Tác nhân chính là người dùng (User) tương tác với hệ thống thông qua các chức năng như đăng nhập, quản lý dự án, quản lý khách hàng, tạo báo giá và theo dõi tiến độ. Biểu đồ giúp xác định phạm vi hệ thống và mối quan hệ giữa tác nhân với các chức năng nghiệp vụ.
+3.2.4. Biểu đồ Use Case chi tiết
+1) Use Case Đăng nhập 
+ a) Biểu đồ Use Case chi tiết Đăng nhập 
+
+Hình : Biểu đồ Use Case chi tiết Đăng nhập
+Biểu đồ thể hiện tác nhân Người dùng tương tác với chức năng "Đăng nhập" trong hệ thống. Hệ thống xác thực thông tin đăng nhập và cấp JWT token nếu hợp lệ.
+b) Đặc tả Use Case 
+1.Tên Use Case 
+Đăng nhập
+2.Mô tả vắn tắt 
+Use case này cho phép người dùng xác thực danh tính bằng cách cung cấp email và mật khẩu để truy cập vào hệ thống quản lý ViralWindow. Sau khi xác thực thành công, hệ thống cấp token phiên làm việc và điều hướng người dùng đến trang chủ.
+3. Luồng sự kiện
+3.1. Luồng cơ bản
+Use case bắt đầu khi người dùng truy cập trang đăng nhập (login.html). Hệ thống kiểm tra nếu đã có phiên đăng nhập hợp lệ thì chuyển thẳng đến trang chủ.
+Hệ thống hiển thị form đăng nhập gồm: ô nhập Email, ô nhập Mật khẩu, checkbox "Ghi nhớ đăng nhập", nút "Đăng nhập", liên kết "Quên mật khẩu" và "Đăng ký".
+Nhập thông tin: a. Người dùng nhập email và mật khẩu. b. Người dùng kích vào nút "Đăng nhập". Hệ thống kiểm tra định dạng email và mật khẩu không được bỏ trống.
+Xác thực và đăng nhập: 
+a. Hệ thống truy vấn cơ sở dữ liệu tìm tài khoản theo email với điều kiện tài khoản đang hoạt động (is_active = 1). 
+b. Hệ thống so sánh mật khẩu đã mã hóa bằng thuật toán bcrypt. c. Nếu hợp lệ, hệ thống tạo token JWT chứa thông tin (mã người dùng, email, loại tài khoản, mã chức vụ). 
+d. Hệ thống ghi nhận phiên đăng nhập vào bảng user_sessions và cập nhật thời gian đăng nhập.
+ e. Hệ thống trả về thông tin người dùng (họ tên, chức vụ, ảnh đại diện) và hiển thị thông báo "Đăng nhập thành công". Use case kết thúc.
+3.2. Các luồng rẽ nhánh
+Tại bước 3b, nếu email hoặc mật khẩu bỏ trống, hệ thống hiển thị thông báo lỗi "Vui lòng nhập email và mật khẩu" và yêu cầu nhập lại. Người dùng có thể nhập lại hoặc đóng trang.
+Tại bước 4a, nếu không tìm thấy tài khoản (email không tồn tại hoặc tài khoản bị khóa), hệ thống hiển thị thông báo "Email hoặc mật khẩu không đúng". Quay lại bước 3.
+Tại bước 4b, nếu mật khẩu không khớp, hệ thống hiển thị thông báo "Email hoặc mật khẩu không đúng". Quay lại bước 3.
+Tại bất kỳ thời điểm nào, nếu mất kết nối server, hệ thống hiển thị thông báo "Lỗi kết nối server. Vui lòng thử lại sau" và use case kết thúc.
+4. Các yêu cầu đặc biệt
+Mật khẩu phải được mã hóa bằng bcrypt trước khi lưu trữ, không lưu dạng văn bản thuần.
+Thông báo lỗi không phân biệt "sai email" hay "sai mật khẩu" để đảm bảo an ninh.
+Nút đăng nhập phải vô hiệu hóa và hiển thị trạng thái loading khi đang xử lý.
+Hỗ trợ tùy chọn "Ghi nhớ đăng nhập" với thời hạn token 30 ngày.
+5. Tiền điều kiện
+Hệ thống backend và cơ sở dữ liệu đang hoạt động bình thường.
+Tài khoản người dùng đã được tạo trong hệ thống với trạng thái hoạt động (is_active = 1).
+6. Hậu điều kiện
+Nếu use case kết thúc thành công, token JWT được lưu trong trình duyệt và người dùng có thể truy cập các chức năng của hệ thống.
+7. Điểm mở rộng
+Ghi nhớ đăng nhập: token được lưu vào localStorage thay vì sessionStorage.
+Quên mật khẩu: chuyển đến trang forgot-password.html.
+Đăng ký tài khoản: chuyển đến trang register.html.
+2) Use Case Tạo dự án
+ a) Biểu đồ Use Case chi tiết 
+
+Hình : Biểu đồ Use Case Tạo dự án
+Biểu đồ thể hiện tác nhân Người dùng tương tác với chức năng "Tạo dự án" trong hệ thống. Chức năng này bao gồm include "Kiểm tra quyền" và extend "Tạo báo giá từ dự án".
+b) Đặc tả Use Case 
+1. Tên Use Case
+Tạo dự án
+2. Mô tả vắn tắt
+Use case này cho phép người dùng tạo mới một dự án trong hệ thống bằng cách nhập các thông tin: mã dự án, tên dự án, khách hàng, ngày bắt đầu, hạn hoàn thành và địa chỉ thi công. Hệ thống kiểm tra tính hợp lệ của dữ liệu và lưu vào cơ sở dữ liệu.
+3. Luồng sự kiện
+3.1. Luồng cơ bản
+Use case bắt đầu khi người dùng kích vào nút "Tạo dự án" trên trang danh sách dự án. Hệ thống hiển thị form nhập thông tin dự án mới.
+Nhập thông tin: 
+a. Người dùng nhập mã dự án (VRBG-xxx), tên dự án, chọn khách hàng từ danh sách. 
+b. Người dùng chọn ngày bắt đầu, hạn hoàn thành. 
+c. Người dùng nhập địa chỉ thi công (tỉnh/thành, quận/huyện, địa chỉ chi tiết) và ghi chú (nếu có). 
+d. Người dùng kích vào nút "Lưu". Hệ thống kiểm tra các trường bắt buộc: mã dự án, tên dự án, khách hàng, ngày bắt đầu, hạn hoàn thành.
+Xác nhận và lưu trữ: 
+a. Hệ thống kiểm tra mã dự án chưa tồn tại trong cơ sở dữ liệu. 
+b. Hệ thống kiểm tra khách hàng tồn tại trong bảng customers.
+ c. Hệ thống kiểm tra ngày giao dự kiến phải sau ngày bắt đầu. 
+d. Nếu hợp lệ, hệ thống lưu dự án vào bảng projects với trạng thái mặc định là "Mới" (new). 
+e. Hệ thống tạo thông báo cho các người dùng liên quan. 
+f. Hệ thống hiển thị thông báo "Thêm dự án thành công" và chuyển về trang danh sách dự án. Use case kết thúc.
+3.2. Các luồng rẽ nhánh
+Tại bước 2d, nếu thiếu thông tin bắt buộc (mã dự án, tên dự án, khách hàng, ngày bắt đầu, hoặc hạn hoàn thành), hệ thống hiển thị thông báo lỗi tương ứng (ví dụ: "Tên dự án không được để trống") và yêu cầu nhập lại. Người dùng có thể nhập lại hoặc hủy bỏ.
+Tại bước 3a, nếu mã dự án đã tồn tại, hệ thống hiển thị thông báo "Mã dự án đã tồn tại. Vui lòng chọn mã khác". Quay lại bước 2.
+Tại bước 3b, nếu khách hàng không tồn tại trong cơ sở dữ liệu, hệ thống hiển thị thông báo "Khách hàng không tồn tại". Quay lại bước 2.
+Tại bước 3c, nếu ngày giao dự kiến trước ngày bắt đầu, hệ thống hiển thị thông báo "Ngày giao dự kiến phải sau ngày bắt đầu". Quay lại bước 2.
+Tại bất kỳ thời điểm nào, nếu mất kết nối cơ sở dữ liệu, hệ thống hiển thị thông báo lỗi và use case kết thúc.
+4. Các yêu cầu đặc biệt
+Mã dự án phải là duy nhất trong toàn hệ thống, theo định dạng VRBG-xxx (giai đoạn báo giá) hoặc VR-xxx (sau ký hợp đồng).
+Dự án mới luôn có trạng thái mặc định là "Mới" (new).
+Hệ thống tự động tạo thông báo cho người dùng liên quan khi có dự án mới.
+Người dùng phải có quyền projects.create mới được thực hiện chức năng này.
+5. Tiền điều kiện
+Người dùng đã đăng nhập vào hệ thống và có quyền tạo dự án.
+Khách hàng liên quan đã được tạo trước trong hệ thống.
+6. Hậu điều kiện
+Nếu use case kết thúc thành công, dự án mới được tạo trong bảng projects với trạng thái "Mới" và người dùng có thể xem trong danh sách dự án.
+7. Điểm mở rộng
+Sau khi tạo dự án, người dùng có thể tạo báo giá cho dự án đó.
+Dự án có thể được gắn với đại lý (agency_id) nếu khách hàng đến từ đại lý.
+3) Use Case Tạo báo giá
+ a) Biểu đồ Use Case chi tiết 
+
+Hình :Biểu đồ Use Case Tạo báo giá
+Biểu đồ thể hiện tác nhân Người dùng tương tác với chức năng "Tạo báo giá". Chức năng bao gồm include "Chọn khách hàng", "Chọn dự án" và extend "Tạo phiên bản mới", "Ký hợp đồng".
+b) Đặc tả Use Case 
+1. Tên Use Case
+Tạo báo giá
+2. Mô tả vắn tắt
+Use case này cho phép người dùng tạo một bản báo giá mới cho khách hàng bằng cách chọn khách hàng, nhập danh sách sản phẩm (loại cửa nhôm kính, kích thước, số lượng, đơn giá), thiết lập tỷ lệ lợi nhuận, chiết khấu, thuế VAT và phí vận chuyển. Hệ thống tự động tính toán tổng tiền, sinh mã báo giá và lưu vào cơ sở dữ liệu.
+3. Luồng sự kiện
+3.1. Luồng cơ bản
+Use case bắt đầu khi người dùng kích vào nút "Tạo báo giá" trên trang quản lý báo giá hoặc từ trang chi tiết dự án. Hệ thống hiển thị form tạo báo giá mới.
+Nhập thông tin chung: a. Người dùng chọn khách hàng từ danh sách. b. Người dùng chọn dự án liên quan (nếu có). c. Hệ thống tự động điền ngày báo giá là ngày hiện tại, thời hạn hiệu lực mặc định 30 ngày.
+Nhập danh sách sản phẩm:
+ a. Người dùng thêm từng sản phẩm vào báo giá gồm: tên sản phẩm, mã (code), quy cách (spec), loại kính (glass), phụ kiện (accessories), kích thước (rộng × cao), số lượng, đơn vị, đơn giá.
+ b. Người dùng có thể thêm nhiều sản phẩm. Hệ thống tự động tính thành tiền = số lượng × đơn giá.
+Thiết lập các khoản phụ phí: 
+a. Người dùng nhập tỷ lệ lợi nhuận (%), chiết khấu (%), thuế VAT (mặc định 10%), phí vận chuyển. 
+b. Hệ thống tự động tính: tổng phụ (subtotal) = tổng thành tiền các sản phẩm; lợi nhuận = subtotal × % lợi nhuận; tổng cộng = subtotal + lợi nhuận − chiết khấu + VAT + phí vận chuyển.
+Người dùng kích nút "Lưu". Hệ thống kiểm tra: khách hàng đã chọn, danh sách sản phẩm không rỗng.
+Xác nhận và lưu trữ:
+ a. Hệ thống tự động sinh mã báo giá theo định dạng VRBG-xxx (ví dụ: VRBG001, VRBG002).
+ b. Hệ thống lưu thông tin báo giá vào bảng quotations với trạng thái mặc định "Nháp" , phiên bản V1. 
+c. Hệ thống lưu danh sách sản phẩm vào bảng quotation_items. 
+d. Nếu có gắn dự án, hệ thống cập nhật mã dự án thành VRBG-xxx và trạng thái dự án thành "Chờ báo giá" . 
+e. Hệ thống cập nhật tổng giá trị dự án.
+ f. Hệ thống tạo thông báo cho người dùng liên quan.
+ g. Hệ thống hiển thị thông báo "Tạo báo giá thành công". Use case kết thúc.
+3.2. Các luồng rẽ nhánh
+Tại bước 5, nếu chưa chọn khách hàng, hệ thống hiển thị thông báo "Vui lòng chọn khách hàng" và yêu cầu nhập lại. Người dùng có thể nhập lại hoặc hủy bỏ.
+Tại bước 5, nếu danh sách sản phẩm rỗng (chưa thêm sản phẩm nào), hệ thống hiển thị thông báo "Vui lòng thêm ít nhất một mục vào báo giá". Quay lại bước 3.
+Tại bước 3a, nếu sản phẩm có tên rỗng hoặc số lượng ≤ 0, hệ thống bỏ qua sản phẩm đó và không lưu.
+Tại bất kỳ thời điểm nào, nếu xảy ra lỗi trong quá trình lưu, hệ thống thực hiện rollback toàn bộ giao dịch (transaction), hiển thị thông báo lỗi và use case kết thúc.
+4. Các yêu cầu đặc biệt
+Toàn bộ quá trình lưu báo giá sử dụng cơ chế Transaction (Begin → Commit / Rollback) để đảm bảo tính toàn vẹn dữ liệu.
+Mã báo giá VRBG-xxx được tự động sinh và đảm bảo không trùng lặp.
+Thuế VAT mặc định 10% nếu không nhập.
+Tiền đặt cọc mặc định 30% tổng phụ nếu không chỉ định.
+Báo giá mới luôn ở trạng thái "Nháp" và phiên bản V1.
+Ngày báo giá tự động theo múi giờ Việt Nam (UTC+7).
+5. Tiền điều kiện
+Người dùng đã đăng nhập vào hệ thống và có quyền tạo báo giá.
+Khách hàng liên quan đã được tạo trước trong hệ thống.
+6. Hậu điều kiện
+Nếu use case kết thúc thành công, báo giá mới được tạo trong bảng quotations cùng danh sách sản phẩm trong bảng quotation_items. Nếu có dự án liên quan, mã và trạng thái dự án được cập nhật.
+7. Điểm mở rộng
+Sau khi tạo, người dùng có thể cập nhật trạng thái báo giá: Nháp → Gửi KH → Chốt giá → Ký hợp đồng.
+Người dùng có thể tạo phiên bản mới (V2, V3) từ báo giá hiện tại.
+Khi báo giá được "Chốt giá", hệ thống tự động tạo phiếu thu đặt cọc.
+4) Use Case Quản lý phiếu thu
+ a) Biểu đồ Use Case chi tiết 
+
+Hình :Biểu đồ Use Case Quản lý phiếu thu
+Biểu đồ thể hiện tác nhân Kế toán tương tác với chức năng "Quản lý thu chi". Bao gồm: Tạo phiếu thu/chi, Ghi sổ, Hủy phiếu (include Tạo phiếu đảo), Xem dashboard tài chính.
+b) Đặc tả Use Case 
+1. Tên Use Case
+Quản lý phiếu thu
+2. Mô tả vắn tắt
+Use case này cho phép người dùng quản lý phiếu thu (giao dịch loại revenue) trong hệ thống tài chính, bao gồm: tạo phiếu thu mới với trạng thái Nháp, ghi sổ phiếu thu để cập nhật công nợ phải thu, và hủy phiếu thu (nếu đã ghi sổ thì tạo phiếu đảo ngược).
+3. Luồng sự kiện
+3.1. Luồng cơ bản
+Use case bắt đầu khi người dùng kích vào nút "Tạo phiếu thu" trên trang quản lý tài chính. Hệ thống hiển thị form tạo phiếu thu mới.
+Nhập thông tin phiếu thu:
+ a. Người dùng chọn ngày giao dịch, chọn khách hàng, chọn dự án liên quan (nếu có). 
+b. Người dùng nhập số tiền, mô tả nội dung thu, danh mục (category), phương thức thanh toán (tiền mặt / chuyển khoản), mã tham chiếu. 
+c. Người dùng có thể thêm các mục chi tiết (items) gồm: tên mục, mã, số lượng, đơn giá, thành tiền. 
+d. Người dùng kích nút "Lưu".
+Hệ thống kiểm tra dữ liệu: ngày giao dịch, loại giao dịch (revenue), và số tiền không được trống.
+Hệ thống tự động sinh mã phiếu theo định dạng THU-yyyy-xxxx (ví dụ: THU-2026-0001). Nếu mã đã tồn tại, hệ thống tự động tăng số thứ tự.
+Hệ thống lưu phiếu thu vào bảng financial_transactions với trạng thái mặc định "Nháp" (draft). Nếu có chi tiết mục thu, lưu vào bảng financial_transaction_items.
+Hệ thống hiển thị thông báo "Tạo giao dịch thành công" cùng mã phiếu. Use case kết thúc.
+Ghi sổ (Post): Khi người dùng kích nút "Ghi sổ" trên phiếu thu Nháp: 
+a. Hệ thống chuyển trạng thái phiếu từ draft sang posted. 
+b. Hệ thống tìm công nợ phải thu (receivable) của khách hàng theo dự án trong bảng debts. 
+c. Hệ thống cập nhật: tăng paid_amount, giảm remaining_amount. Nếu remaining_amount ≤ 0 thì trạng thái công nợ chuyển thành paid. 
+d. Hiển thị "Đã ghi sổ thành công". Use case kết thúc.
+3.2. Các luồng rẽ nhánh
+Tại bước 3, nếu thiếu ngày giao dịch, loại giao dịch hoặc số tiền, hệ thống hiển thị thông báo "Thiếu thông tin bắt buộc" và yêu cầu nhập lại. Người dùng có thể nhập lại hoặc hủy bỏ.
+Tại bước 7a, nếu phiếu đã ở trạng thái posted, hệ thống hiển thị thông báo "Giao dịch đã được ghi sổ rồi". Use case kết thúc.
+Tại bước 7a, nếu phiếu đã ở trạng thái cancelled, hệ thống hiển thị thông báo "Không thể ghi sổ giao dịch đã hủy". Use case kết thúc.
+Hủy phiếu thu: Khi người dùng kích nút "Hủy phiếu": 
+a. Hệ thống yêu cầu nhập lý do hủy. Nếu không nhập, hiển thị "Vui lòng nhập lý do hủy". 
+b. Nếu phiếu đang ở trạng thái draft: hệ thống đổi trạng thái thành cancelled và ghi lý do. 
+c. Nếu phiếu đang ở trạng thái posted: hệ thống tạo phiếu đảo ngược (expense) với cùng số tiền, trạng thái posted, mô tả "Phiếu đảo của THU-yyyy-xxxx: [lý do]". Đồng thời tăng lại công nợ phải thu của khách hàng (hoàn ngược paid_amount). Sau đó đánh dấu phiếu gốc là cancelled. 
+d. Hiển thị "Đã hủy thành công" (hoặc "Đã hủy và tạo phiếu đảo thành công").
+Tại bất kỳ thời điểm nào, nếu xảy ra lỗi server, hệ thống hiển thị thông báo lỗi và use case kết thúc.
+4. Các yêu cầu đặc biệt
+Mã phiếu thu THU-yyyy-xxxx được sinh tự động, đảm bảo duy nhất trong hệ thống (retry tối đa 10 lần, fallback dùng timestamp).
+Phiếu thu mới luôn ở trạng thái "Nháp" (draft), phải ghi sổ mới ảnh hưởng công nợ.
+Khi hủy phiếu đã ghi sổ, bắt buộc tạo phiếu đảo để đảm bảo tính toàn vẹn kế toán (không xóa dữ liệu).
+Phiếu đảo có loại ngược lại (revenue → expense) với reference_number = REVERSAL-{id}.
+Lý do hủy được ghi vào trường mô tả với prefix [HỦY: ...].
+5. Tiền điều kiện
+Người dùng đã đăng nhập và có quyền quản lý tài chính.
+Khách hàng và dự án liên quan đã tồn tại trong hệ thống (nếu chọn).
+6. Hậu điều kiện
+Tạo thành công: Phiếu thu mới tồn tại trong bảng financial_transactions với trạng thái draft.
+Ghi sổ thành công: Trạng thái phiếu chuyển thành posted, công nợ phải thu (receivable) của khách hàng được giảm tương ứng.
+Hủy thành công: Phiếu chuyển trạng thái cancelled. Nếu đã ghi sổ, phiếu đảo được tạo và công nợ được hoàn ngược.
+7. Điểm mở rộng
+Phiếu thu có thể được tạo tự động khi xác nhận đặt cọc 40% từ báo giá (liên kết UC Tạo báo giá).
+Đồng bộ tài chính từ dự án: hệ thống tự tạo phiếu thu từ tiền cọc báo giá đã duyệt.
+4) Use Case Nhập kho vật tư
+ a) Biểu đồ Use Case chi tiết 
+
+Hình :Biểu đồ chi tiết Use Case Nhập kho vật tư
+Biểu đồ thể hiện tác nhân Nhân viên kho tương tác với chức năng "Nhập kho vật tư". Bao gồm: Tạo phiếu nhập, Thêm vật tư vào phiếu, Cập nhật tồn kho. Extend: Cảnh báo tồn kho thấp.
+b) Đặc tả Use Case
+1. Tên Use Case
+Nhập kho vật tư
+2. Mô tả vắn tắt
+Use case này cho phép người dùng tạo phiếu nhập kho vật tư (nhôm, kính, phụ kiện, vật tư phụ) vào hệ thống. Hệ thống tự động cập nhật số lượng tồn kho, đồng bộ bảng phụ kiện (nếu là phụ kiện), kiểm tra cảnh báo tồn kho thấp, và tạo thông báo cho người dùng liên quan.
+3. Luồng sự kiện
+3.1. Luồng cơ bản
+Use case bắt đầu khi người dùng kích vào nút "Nhập kho" trên trang quản lý kho. Hệ thống hiển thị form nhập kho.
+Nhập thông tin phiếu nhập: a. Người dùng chọn ngày nhập (mặc định ngày hiện tại). b. Người dùng chọn loại nguồn nhập (source_type): mua hàng purchase), sản xuất trả về (production_return), khác. c. Người dùng nhập tên nhà cung cấp, mã tham chiếu nguồn, ghi chú (nếu có).
+Nhập danh sách vật tư: a. Với mỗi vật tư, người dùng nhập: loại vật tư (item_type: aluminum/glass/accessory/auxiliary), mã vật tư item_code), tên vật tư, số lượng, đơn vị, đơn giá, vị trí kho. b. Hệ thống tự động tính thành tiền = đơn giá × số lượng. c. Người dùng có thể thêm nhiều vật tư trong cùng một phiếu.
+Người dùng kích nút "Lưu". Hệ thống kiểm tra danh sách vật tư không rỗng.
+Hệ thống xử lý nhập kho (trong transaction): 
+a. Tự động sinh mã phiếu nhập NK-yyyy-xxxx (ví dụ: NK-2026-0001). 
+b. Với mỗi vật tư trong danh sách: 
+- Lưu chi tiết vào bảng inventory_in. 
+- Nếu là phụ kiện (accessory): tìm theo item_code trong bảng accessories → cập nhật stock_quantity += số lượng nhập, cập nhật giá mua; nếu chưa tồn tại thì tạo mới. 
+- Tìm trong bảng inventory theo item_cod: nếu đã có → cập nhật quantity += số lượng nhập, cập nhật giá; nếu chưa có → INSERT mới. - Kiểm tra cảnh báo tồn kho: nếu quantity < min_stock_level → tạo cảnh báo low_stoc hoặc out_of_stock; nếu đủ → đánh dấu cảnh báo cũ là resolved. 
+c. Commit Transaction.
+Hệ thống tạo thông báo nhập kho cho từng vật tư. Hiển thị "Nhập kho thành công" cùng mã phiếu và danh sách vật tư đã nhập. Use case kết thúc.
+3.2. Các luồng rẽ nhánh
+Tại bước 4, nếu danh sách vật tư rỗng, hệ thống hiển thị thông báo "Vui lòng thêm ít nhất một vật tư" và yêu cầu nhập lại.
+Tại bước 5, nếu xảy ra lỗi trong quá trình lưu (lỗi CSDL, constraint violation...), hệ thống thực hiện Rollback toàn bộ transaction, hiển thị thông báo lỗi, không có dữ liệu nào bị thay đổi. Use case kết thúc.
+Nhập kho từ sản xuất trả về: Khi người dùng chọn source_type = production_return, hệ thống tự động gắn mã lệnh sản xuất (LSX-xxx) làm source_reference và ghi chú "Nhập kho từ sản xuất trả về". Các bước còn lại giống luồng cơ bản.
+4. Các yêu cầu đặc biệt
+Toàn bộ quá trình nhập kho sử dụng Transaction (Begin → Commit / Rollback) đảm bảo tính toàn vẹn: hoặc tất cả vật tư được cập nhật, hoặc không có gì thay đổi.
+Mã phiếu nhập NK-yyyy-xxxx tự động sinh, đếm theo năm.
+Nếu nhập phụ kiện (accessory) chưa có trong hệ thống, tự tạo mới với min_stock_level = 10, is_active = 1, sale_price = purchase_price.
+Hệ thống tự động kiểm tra tồn kho so với ngưỡng tối thiểu (min_stock_level) sau mỗi lần nhập, tạo/giải quyết cảnh báo tương ứng.
+Hỗ trợ nhiều loại nguồn nhập: mua hàng (purchase), sản xuất trả về (production_return).
+5. Tiền điều kiện
+Người dùng đã đăng nhập và có quyền quản lý kho.
+Thông tin nhà cung cấp đã sẵn sàng (nếu nhập từ mua hàng).
+6. Hậu điều kiện
+Phiếu nhập mới được lưu trong bảng inventory_in.
+Số lượng tồn kho trong bảng inventory được cập nhật (tăng).
+Nếu là phụ kiện, bảng accessories cũng được đồng bộ.
+Cảnh báo tồn kho được tạo hoặc giải quyết nếu cần.
+7. Điểm mở rộng
+Nhập kho từ sản xuất trả về (liên kết lệnh sản xuất).
+Lọc danh sách phiếu nhập theo: nguồn nhập, khoảng thời gian, nhà cung cấp.
+Xem chi tiết phiếu nhập theo mã phiếu.
+3.2.5. Phân tích hệ thống
+1) Use Case Đăng nhập 
+a)Biểu đồ hoạt động
+
+Hình : Biểu đồ hoạt động Use Case Đăng Nhập
+Mô tả luồng xử lý đăng nhập từ nhập thông tin, kiểm tra hợp lệ đến xác thực tài khoản và trả kết quả.
+b) Biểu đồ trình tự
+
+Hình : Biểu đồ trình tự Use Case Đăng nhập
+Thể hiện trình tự tương tác giữa UI, Controller và Database trong quá trình xác thực người dùng.
+c)Biểu đồ phân tích
+
+Hình :Biểu đồ phân tích Use Case Đăng nhập
+Mô tả mô hình boundary–control–entity trong chức năng đăng nhập.
+2) Use Case Tạo dự án
+a)Biểu đồ hoạt động
+
+Hình :Biểu đồ hoạt động Use Case Tạo dự án
+Mô tả quy trình tạo dự án từ nhập dữ liệu, kiểm tra hợp lệ đến lưu vào hệ thống.
+
+b) Biểu đồ trình tự
+
+Hình :Biểu đồ trình tự Use Case Tạo dự án
+
+Thể hiện sự tương tác giữa các thành phần khi xử lý yêu cầu tạo dự án.
+c)Biểu đồ phân tích
+
+Hình :Biểu đồ phân tích Use Case Tạo dự án
+
+Mô tả cấu trúc phân lớp giao diện, điều khiển và thực thể trong chức năng tạo dự án.
+3) Use Case Tạo báo giá
+a)Biểu đồ hoạt động
+
+Hình :Biểu đồ hoạt động Use Case Tạo báo giá
+
+Mô tả quy trình lập báo giá và lưu dữ liệu theo cơ chế transaction.
+b) Biểu đồ trình tự
+
+Hình :Biểu đồ trình tự Use Case Tạo báo giá
+
+Thể hiện trình tự xử lý và lưu thông tin báo giá vào cơ sở dữ liệu.
+c)Biểu đồ phân tích
+
+Hình :Biểu đồ phân tích Use Case Tạo báo giá
+
+Mô tả sự phân tách giữa lớp giao diện, xử lý nghiệp vụ và thực thể báo giá.
+4) Use Case Quản lý phiếu thu
+a)Biểu đồ hoạt động
+
+Hình :Biểu đồ hoạt động Use Case Quản lý phiếu thu
+
+Mô tả quy trình tạo và cập nhật phiếu thu trong hệ thống.
+b) Biểu đồ trình tự
+
+Hình :Biểu đồ trình tự Use Case Quản lý phiếu thu
+
+Thể hiện sự tương tác giữa giao diện, controller và cơ sở dữ liệu khi xử lý phiếu thu.
+c)Biểu đồ phân tích
+
+Hình :Biểu đồ phân tích Use Case Quản lý phiếu thu
+
+Mô tả cấu trúc boundary–control–entity của chức năng quản lý phiếu thu.
+5) Use Case Nhập kho vật tư
+a)Biểu đồ hoạt động
+
+Hình :Biểu đồ hoạt động Use Case Nhập kho vật tư
+Mô tả quy trình nhập kho và cập nhật tồn kho.
+b) Biểu đồ trình tự
+
+Hình :Biểu đồ trình tự Use Case Nhập kho vật tư
+
+Thể hiện trình tự xử lý khi lưu phiếu nhập và cập nhật dữ liệu kho.
+c)Biểu đồ phân tích
+
+Hình :Biểu đồ phân tích Use Case Nhập kho vật tư
+Mô tả cấu trúc phân lớp trong chức năng nhập kho vật tư.
+3.2.6. Thiết kế hệ thống
+a) Biểu đồ thực thể liên kết
+- Biểu đồ thực thể liên kết mức logic  
+
+Hình : Biểu đồ thực thể liên kết mức logic
+Mô tả các thực thể chính và mối quan hệ dữ liệu của hệ thống.
+- Biểu đồ thực thể liên kết mức vật lý
+
+Hình : Biểu đồ thực thể liên kết mức vật lý
+Thể hiện cấu trúc bảng, khóa chính và khóa ngoại trong cơ sở dữ liệu triển khai.
+b)Thiết kế giao diện hệ thống
+1) Use Case Đăng nhập 
+a)Hình dung màn hình 
+
+Hình : Hình dung màn hình trang Đăng nhập
+Hình minh họa giao diện chức năng Đăng nhập của hệ thống. Màn hình bao gồm các trường nhập tên đăng nhập và mật khẩu cùng các nút chức năng tương ứng. Thiết kế giao diện đảm bảo tính đơn giản, trực quan và hỗ trợ kiểm tra dữ liệu đầu vào trước khi gửi yêu cầu xác thực đến hệ thống.
+b)Biểu đồ lớp màn hình
+
+Hình :Biểu đồ lớp màn hình Use Case Đăng nhập
+Biểu đồ lớp màn hình thể hiện cấu trúc các thành phần giao diện của chức năng Đăng nhập và mối quan hệ với lớp xử lý nghiệp vụ. Biểu đồ làm rõ vai trò của lớp giao diện trong việc tiếp nhận dữ liệu, gửi yêu cầu xác thực và nhận phản hồi từ hệ thống.
+c)Biểu đồ cộng tác màn hình 
+
+Hình :Biểu đồ cộng tác màn hình Use Case Đăng nhập
+Biểu đồ cộng tác mô tả sự phối hợp giữa các thành phần giao diện và lớp xử lý khi người dùng thực hiện thao tác đăng nhập. Các thông điệp được trao đổi nhằm kiểm tra thông tin xác thực và trả kết quả đăng nhập thành công hoặc thất bại.
+2)Use Case Tạo dự án
+a)Hình dung màn hình 
+
+Hình :Hình dung màn hình trang Tạo dự án
+Hình minh họa giao diện chức năng Tạo dự án với các trường nhập liệu bao gồm mã dự án, tên dự án, khách hàng, ngày bắt đầu, hạn hoàn thành và địa chỉ thi công. Giao diện được thiết kế nhằm hỗ trợ người dùng nhập đầy đủ thông tin và đảm bảo tính hợp lệ trước khi lưu trữ dữ liệu.
+b)Biểu đồ lớp màn hình
+
+Hình :Biểu đồ lớp màn hình Use Case Tạo dự án
+Biểu đồ mô tả các thành phần giao diện và cách chúng tương tác với lớp xử lý phía backend.
+c)Biểu đồ cộng tác màn hình 
+
+Hình :Biểu đồ cộng tácmàn hình Use Case Tạo dự án
+Biểu đồ lớp màn hình mô tả cấu trúc các thành phần giao diện của chức năng Tạo dự án và mối liên kết với lớp xử lý nghiệp vụ. Biểu đồ giúp xác định rõ vai trò của từng thành phần trong quá trình thu thập dữ liệu và gửi yêu cầu đến hệ thống.
+3) Use Case Tạo báo giá
+a)Hình dung màn hình 
+
+Hình :Hình dung màn hình trang Tạo báo giá
+Hình minh họa giao diện chức năng Tạo báo giá, cho phép người dùng lựa chọn dự án, nhập thông tin hạng mục và giá trị tương ứng. Giao diện được thiết kế nhằm hỗ trợ việc tính toán và tổng hợp giá trị báo giá một cách chính xác.
+b)Biểu đồ lớp màn hình
+
+Hình :Biểu đồ lớp màn hình Use Case Tạo báo giá
+Biểu đồ lớp màn hình mô tả cấu trúc các thành phần giao diện của chức năng Tạo báo giá và sự tương tác với lớp nghiệp vụ. Biểu đồ thể hiện cách dữ liệu được truyền từ giao diện đến hệ thống để xử lý và lưu trữ.
+c)Biểu đồ cộng tác màn hình 
+
+Hình :Biểu đồ cộng tác Use Case Tạo báo giá
+Biểu đồ cộng tác thể hiện sự phối hợp giữa các thành phần giao diện và lớp xử lý nghiệp vụ trong quá trình lập báo giá. Biểu đồ làm rõ thứ tự gửi và nhận thông điệp giữa các đối tượng trong hệ thống.
+4) Use Case Quản lý phiếu thu
+a)Hình dung màn hình 
+
+Hình :Hình dung màn hình trang Quản lý phiếu thu
+Hình minh họa giao diện chức năng Quản lý phiếu thu, cho phép người dùng theo dõi, tạo mới và cập nhật thông tin các khoản thanh toán. Giao diện đảm bảo hiển thị đầy đủ thông tin và hỗ trợ tra cứu thuận tiện.
+b)Biểu đồ lớp màn hình
+
+Hình :Biểu đồ lớp màn hình Use Case Quản lý phiếu thu
+Biểu đồ lớp màn hình thể hiện cấu trúc các thành phần giao diện của chức năng Quản lý phiếu thu và mối quan hệ với lớp xử lý nghiệp vụ. Biểu đồ giúp làm rõ cách tổ chức dữ liệu và xử lý thông tin thanh toán.
+c)Biểu đồ cộng tác màn hình 
+
+Hình :Biểu đồ cộng tác màn hình Use Case Quản lý phiếu thu
+Biểu đồ cộng tác mô tả quá trình trao đổi thông tin giữa giao diện và lớp nghiệp vụ khi thực hiện các thao tác tạo hoặc cập nhật phiếu thu. Biểu đồ nhấn mạnh sự phối hợp giữa các thành phần trong hệ thống.
+5) Use Case Nhập kho vật tư
+a)Hình dung màn hình 
+
+Hình :Hình dung màn hình Nhập kho vật tư
+Hình minh họa giao diện chức năng Nhập kho vật tư, cho phép người dùng nhập thông tin vật tư, số lượng và đơn giá. Thiết kế giao diện hỗ trợ việc kiểm tra dữ liệu trước khi cập nhật tồn kho
+b)Biểu đồ lớp màn hình
+
+Hình :Biểu đồ lớp màn hình Use Case Nhập kho vật tư
+Biểu đồ lớp màn hình mô tả cấu trúc các thành phần giao diện và mối quan hệ với lớp xử lý nghiệp vụ trong chức năng Nhập kho vật tư. Biểu đồ giúp làm rõ vai trò của từng lớp trong quá trình xử lý dữ liệu nhập kho.
+c)Biểu đồ cộng tác màn hình 
+
+Hình :Biểu đồ cộng tác màn hình Use Case Nhập kho vật tư
+Biểu đồ cộng tác thể hiện sự trao đổi thông điệp giữa giao diện và các lớp xử lý khi thực hiện thao tác nhập kho. Biểu đồ giúp làm rõ trình tự xử lý và cập nhật dữ liệu tồn kho trong hệ thống.
+3.3. Xây dựng hệ thống
+3.3.1. Môi trường cài đặt và Công nghệ sử dụng
+a) Môi trường phát triển
+Bảng : Các môi trường sử dụng trong hệ thống
+b) Kiến trúc hệ thống
+Hệ thống ViralWindow được xây dựng theo kiến trúc Client-Server, sử dụng mô hình MVC (Model-View-Controller) và giao tiếp thông qua RESTful API.
+
+Hình :Kiến trúc hệ thống của hệ thống
+c) Công nghệ sử dụng
+Phía Server (Backend)
+Bảng : Công nghệ backend sử dụng trong hệ thống
+Phía Client (Frontend)
+Bảng : Công nghệ fontend sử dụng trong hệ thống
+Cơ sở dữ liệu
+Bảng : Bảng cơ sở dữ liệu trong hệ thống
+
+
+3.3.2. Các chức năng của hệ thống
+a) Đăng nhập 
+
+Hình :Màn hình giao diện trang Đăng nhập
+- Trang đăng nhập là giao diện đầu tiên mà người dùng tiếp cận khi truy cập hệ thống. Bố cục gồm hai phần: bên trái hiển thị thương hiệu ViralWindow cùng mô tả các tính năng nổi bật của hệ thống; bên phải chứa form đăng nhập với hai trường Email và Mật khẩu.
+- Các chức năng chính của trang:
+Xác thực người dùng bằng Email và Mật khẩu, gửi yêu cầu đến API /api/auth/login và nhận về JWT token.
+Nút "Ghi nhớ đăng nhập" sử dụng localStorage để lưu token, giúp người dùng không cần đăng nhập lại khi mở trình duyệt.
+Nút toggle cho phép hiện/ẩn mật khẩu khi nhập.
+Liên kết "Quên mật khẩu" chuyển hướng đến trang khôi phục tài khoản.
+Logo và tên công ty được tải động từ API /api/company-settings, cho phép tùy chỉnh theo doanh nghiệp.
+Hiển thị thông báo lỗi khi nhập sai thông tin đăng nhập.
+
+b) Tổng quan - Dashboard 
+
+Hình : Màn hình giao diện trang Dashboard
+- Sau khi đăng nhập thành công, người dùng được chuyển đến trang Dashboard – giao diện tổng quan của hệ thống. Bố cục gồm thanh sidebar bên trái chứa menu điều hướng và vùng nội dung chính bên phải.
+- Các chức năng chính của trang:
+Hiển thị các thẻ KPI tổng quan: Tổng số dự án, Dự án đang thực hiện, Dự án hoàn thành, Tổng doanh thu.
+Pipeline quy trình dự án: thể hiện số lượng dự án theo từng giai đoạn (Mới → Thiết kế → Sản xuất → Lắp đặt → Hoàn thành).
+Thống kê nhanh: Tổng khách hàng, Báo giá chờ duyệt, Công nợ phải thu.
+Cảnh báo: Hiển thị các dự án sắp đến hạn, công nợ quá hạn, tồn kho thấp.
+Các nút truy cập nhanh: Tạo dự án mới, Tạo báo giá, Nhập kho, Tạo phiếu thu.
+Hoạt động gần đây: Danh sách các thao tác mới nhất trong hệ thống.
+
+
+c) Quản lý dự án 
+
+Hình  Màn hình giao diện trang Quản lý dự án
+- Trang quản lý dự án là module nghiệp vụ cốt lõi của hệ thống, cho phép theo dõi toàn bộ vòng đời dự án từ khi tiếp nhận đến khi hoàn thành.
+- Các chức năng chính của trang:
+Hiển thị danh sách dự án dưới dạng bảng với các cột: Mã dự án, Tên dự án, Khách hàng, Trạng thái, Ngày tạo.
+Các thẻ KPI phía trên: Tổng dự án, Đang thực hiện, Hoàn thành, Đã hủy.
+Thanh tìm kiếm và bộ lọc: Lọc theo trạng thái, tìm kiếm theo tên/mã dự án.
+Thêm dự án mới: Mở form nhập thông tin gồm mã dự án, tên, khách hàng, ngày bắt đầu, hạn hoàn thành, địa chỉ thi công.
+Chỉnh sửa dự án: Cập nhật thông tin, thay đổi trạng thái dự án.
+Xóa / Hủy dự án: Chuyển dự án sang trạng thái "Đã hủy" thay vì xóa vĩnh viễn.
+Xem chi tiết dự án: Hiển thị đầy đủ thông tin dự án, lịch sử thay đổi, các báo giá liên quan.
+
+d) Tạo báo giá 
+
+Hình  Màn hình giao diện trang Tạo báo giá
+- Trang báo giá hỗ trợ quy trình lập và quản lý báo giá cho các dự án nhôm kính.
+- Các chức năng chính của trang:
+Danh sách báo giá: Mã báo giá, Khách hàng, Dự án, Ngày lập, Trạng thái (Nháp / Đã gửi / Đã duyệt / Từ chối / Ký hợp đồng), Tổng tiền.
+Tạo báo giá mới: Chọn dự án và khách hàng, thêm từng hạng mục sản phẩm (tên, đơn vị, số lượng, đơn giá).
+Tính toán tự động: Tổng phụ, phần trăm lợi nhuận, chiết khấu, VAT, phí vận chuyển, tổng tiền cuối cùng.
+Quản lý phiên bản: Cho phép tạo phiên bản mới từ báo giá gốc khi khách hàng yêu cầu điều chỉnh.
+Cập nhật trạng thái: Chuyển đổi trạng thái báo giá theo quy trình (Nháp → Gửi → Duyệt → Ký hợp đồng).
+Xem chi tiết: Hiển thị danh sách sản phẩm, số tiền từng hạng mục, thông tin đặt cọc.
+e) Quản lý tài chính - Phiếu thu 
+
+Hình : Màn hình giao diện trang Phiếu thu
+- Module tài chính gồm hai phần chính: Quản lý thu chi theo dự án và Theo dõi công nợ khách hàng.
+- Quản lý thu chi:
+Danh sách phiếu thu/chi: Mã phiếu, Loại (Thu/Chi), Dự án liên quan, Số tiền, Ngày giao dịch, Phương thức thanh toán.
+Tạo phiếu giao dịch mới: Chọn dự án, nhập số tiền, phương thức thanh toán (Tiền mặt / Chuyển khoản), ghi chú.
+Chi tiết giao dịch: Cho phép một phiếu giao dịch có nhiều dòng chi tiết (thu tiền đợt 1, đợt 2...).
+Tổng hợp thu chi: Hiển thị tổng thu, tổng chi, chênh lệch theo từng dự án.
+- Quản lý công nợ:
+Danh sách công nợ: Khách hàng, Dự án, Tổng giá trị hợp đồng, Đã thanh toán, Còn nợ.
+Cập nhật tự động: Khi tạo phiếu thu mới, số tiền còn nợ được tự động giảm tương ứng.
+Cảnh báo: Hiển thị các khoản nợ quá hạn.
+
+f) Màn hình Kho vật tư - Nhập kho 
+
+Hình : Màn hình giao diện trang Nhập kho
+- Trang quản lý kho hỗ trợ theo dõi tồn kho vật tư nhôm, kính và phụ kiện.
+- Các chức năng chính của trang:
+Danh sách tồn kho: Tên vật tư, Mã, Loại (Nhôm / Kính / Phụ kiện), Nhà cung cấp, Số lượng tồn, Đơn vị.
+Nhập kho: Tạo phiếu nhập kho với mã phiếu tự động, chọn vật tư, nhập số lượng. Hệ thống tự động cập nhật số lượng tồn.
+Xuất kho: Tạo phiếu xuất kho liên kết với dự án, trừ số lượng tồn kho tương ứng.
+Cảnh báo tồn kho thấp: Tự động hiển thị cảnh báo khi số lượng tồn dưới mức tối thiểu.
+Lịch sử nhập/xuất: Tra cứu lịch sử giao dịch kho theo từng vật tư.
+3.4. Kiểm thử hệ thống
+3.4.1. Phương pháp kiểm thử
+Hệ thống ViralWindow được kiểm thử bằng phương pháp kiểm thử hộp đen (Black-box Testing) — kiểm tra chức năng dựa trên đầu vào và đầu ra mong đợi, không quan tâm đến cấu trúc mã nguồn bên trong.
+Các kỹ thuật áp dụng:
+Phân lớp tương đương (Equivalence Partitioning): Chia dữ liệu đầu vào thành các lớp tương đương, kiểm tra 1 giá trị đại diện mỗi lớp.
+Phân tích giá trị biên (Boundary Value Analysis): Kiểm tra các giá trị tại biên của miền dữ liệu.
+Kiểm thử luồng chính / luồng rẽ nhánh: Kiểm tra cả kịch bản thành công và kịch bản lỗi.
+3.4.2. Kế hoạch kiểm thử
+Bảng : Bảng lên kế hoạch danh sách kiểm thử các chức năng
+
+
+3.4.3. Bảng test case chi tiết
+a) Module Đăng nhập
+Bảng : Bảng kết quả kiểm thử Đăng nhập
+
+
+b) Module Tạo dự án
+Bảng : Bảng kết quả kiểm thử Tạo báo giá
+
+c) Module Quản lý phiếu thu
+Bảng  Bảng kết quả kiểm thử Phiếu thu
+
+d) Module Nhập kho vật tư
+Bảng : Bảng kết quả kiểm thử Nhập kho vật tư
+
+
+
+
+e) Module Tạo báo giá
+Bảng : Bảng kết quả kiểm thử Tạo báo giá
+
+3.4.4. Tổng hợp kết quả kiểm thử
+Bảng : Bảng tổng hợp kết quả kiểm thử
+
+3.4.5. Nhận xét kết quả kiểm thử
+Tất cả 27 test case đều đạt yêu cầu, hệ thống hoạt động đúng theo đặc tả use case.
+Xác thực dữ liệu: Hệ thống kiểm tra đầy đủ các trường bắt buộc, trả về thông báo lỗi rõ ràng bằng tiếng Việt.
+Tính toàn vẹn dữ liệu: Sử dụng Transaction (Begin/Commit/Rollback) trong các chức năng quan trọng (nhập kho, ghi sổ phiếu thu) đảm bảo dữ liệu nhất quán.
+Xử lý ngoại lệ: Hệ thống xử lý tốt các trường hợp đặc biệt: hủy phiếu đã ghi sổ (tạo phiếu đảo), nhập phụ kiện mới (tự tạo), tồn kho thấp (tạo cảnh báo).
+Bảo mật: Mật khẩu được mã hóa bằng bcryptjs, xác thực bằng JWT token, phân quyền theo vai trò.
+3.5. Những vấn đề còn tồn tại và hướng giải quyết
+3.5.1. Những vấn đề còn tồn tại
+Mặc dù hệ thống ViralWindow App đã hoàn thành các module nghiệp vụ cốt lõi và đưa vào sử dụng thử nghiệm, phần mềm vẫn còn một số hạn chế cần tiếp tục cải thiện:
+a) Module BOM Engine chưa hoàn thiện đầy đủ: Hiện tại engine mới hỗ trợ 5 dòng sản phẩm cơ bản (cửa đi mở quay, cửa trượt, cửa sổ, vách kính, lan can). Tuy nhiên trong thực tế, doanh nghiệp còn có các sản phẩm phức tạp hơn như cửa xếp trượt (folding door), mái kính (skylight), cầu thang kính mà phần mềm chưa hỗ trợ tính toán tự động. Ngoài ra, các công thức BOM hiện tại chỉ áp dụng được cho hệ nhôm mặc định, chưa cho phép tùy chỉnh linh hoạt theo từng hệ nhôm cụ thể.
+b) Chưa có module báo cáo và thống kê nâng cao: Phần mềm mới có Dashboard tổng quan cơ bản. Chưa có các chức năng xuất báo cáo doanh thu theo tháng/quý/năm, báo cáo công nợ tổng hợp, hay biểu đồ phân tích xu hướng kinh doanh giúp ban lãnh đạo ra quyết định.
+c) Giao diện chưa tối ưu trên thiết bị di động: Hiện tại giao diện được phát triển chủ yếu cho máy tính bàn (desktop). Trên điện thoại và máy tính bảng, một số trang hiển thị chưa tối ưu, đặc biệt các bảng dữ liệu nhiều cột và các form nhập liệu phức tạp.
+d) Chưa tích hợp gửi thông báo và email tự động: Phần mềm chưa có chức năng gửi email báo giá trực tiếp cho khách hàng, hay gửi thông báo nhắc nhở khi công nợ quá hạn, khi dự án sắp đến hạn hoàn thành.
+e) Chưa có hệ thống kiểm thử tự động (Unit Test): Toàn bộ quá trình kiểm thử hiện tại đều thực hiện thủ công trên trình duyệt và Postman. Điều này khiến việc phát hiện lỗi khi bổ sung tính năng mới trở nên khó khăn và dễ gây lỗi hồi quy (regression bug).
+3.5.2. Hướng giải quyết
+a) Hoàn thiện và mở rộng BOM Engine: Bổ sung thêm các module tính toán cho các dòng sản phẩm còn thiếu (cửa xếp trượt, mái kính, cầu thang kính). Xây dựng cơ chế cấu hình BOM rules linh hoạt theo từng hệ nhôm, cho phép Mentor hoặc kỹ thuật viên tự định nghĩa công thức tính mà không cần thay đổi mã nguồn.
+b) Phát triển module báo cáo thống kê: Xây dựng các trang báo cáo với biểu đồ trực quan (sử dụng thư viện Chart.js), hỗ trợ lọc theo thời gian và xuất file Excel/PDF để phục vụ công tác quản lý.
+c) Tối ưu giao diện responsive: Áp dụng thiết kế responsive cho toàn bộ hệ thống, đảm bảo trải nghiệm tốt trên mọi kích thước màn hình, đặc biệt trên điện thoại để nhân viên có thể tra cứu dữ liệu khi đi công trình.
+d) Tích hợp hệ thống thông báo: Kết nối với dịch vụ gửi email (Nodemailer) để gửi báo giá cho khách hàng và thông báo nhắc nhở nội bộ khi có sự kiện quan trọng (công nợ quá hạn, dự án sắp đến deadline).
+e) Xây dựng bộ kiểm thử tự động: Áp dụng framework kiểm thử Jest để viết unit test cho các API Backend và BOM Engine, giúp phát hiện lỗi sớm và đảm bảo chất lượng phần mềm khi mở rộng tính năng.
+KẾT LUẬN VÀ KIẾN NGHỊ
+Sau quá trình thực tập và trực tiếp tham gia phát triển dự án, điều em cảm thấy tự hào nhất là đã xây dựng được hệ thống ViralWindow App với bốn phân hệ chính gồm: Dự án, Báo giá, Tài chính và Kho vật tư. Trong thời gian thực tập, em đã áp dụng các kiến thức đã học và sử dụng Node.js, Express và MySQL để xây dựng hệ thống API phục vụ cho các chức năng quản lý cơ bản của công ty. Đặc biệt, phần module BOM Engine là phần khiến em đầu tư nhiều thời gian và công sức nhất, vì phải tìm hiểu kỹ nghiệp vụ thực tế để có thể tự động hóa việc bóc tách vật tư từ dữ liệu JSON. Sau nhiều lần chỉnh sửa và trao đổi với anh/chị kỹ thuật, hệ thống đã cho ra kết quả tính toán tương đối chính xác so với cách làm thủ công trước đây. Ngoài ra, em cũng được trải nghiệm quy trình phát triển phần mềm theo hướng Agile/Scrum, từ phân tích yêu cầu, viết tài liệu SRS cho đến kiểm thử hệ thống với nhiều kịch bản khác nhau trước khi demo cho công ty.
+Tuy vậy, em cũng nhận thấy bản thân còn nhiều hạn chế. Do thời gian thực tập có giới hạn nên một số chức năng nâng cao vẫn chưa thể hoàn thiện. Việc tối ưu hiệu năng hệ thống khi dữ liệu tăng lên nhiều cũng mới chỉ dừng ở mức cơ bản. Bên cạnh đó, đây là lần đầu tiên em tham gia xây dựng một hệ thống tương đối đầy đủ từ đầu đến cuối, nên kinh nghiệm về thiết kế kiến trúc và tổ chức mã nguồn vẫn còn cần phải học hỏi thêm.
+Thông qua đợt thực tập này, em nhận ra mình cần tiếp tục trau dồi kiến thức chuyên sâu hơn về tối ưu hệ thống, bảo mật và kiến trúc phần mềm để có thể xây dựng những sản phẩm hoàn chỉnh và chuyên nghiệp hơn. Trong thời gian tới, em dự định sẽ tìm hiểu thêm về phát triển ứng dụng di động cũng như các công nghệ mới như AI để có thể áp dụng vào các bài toán thực tế. Đồng thời, em cũng sẽ cố gắng rèn luyện kỹ năng làm việc nhóm và quản lý thời gian tốt hơn để chuẩn bị cho môi trường làm việc chính thức sau khi ra trường.
+
+NHẬT KÝ THỰC TẬP
+Họ và tên: Lê Văn Hải           Mã sinh viên: 2022605948
+Đơn vị thực tập: Công ty Cổ phần ViralWindow
+Người hướng dẫn tại doanh nghiệp: Lâm Tuấn Phong
+Bảng : Bảng nhật ký thực tập
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+TÀI LIỆU THAM KHẢO
+Tiếng Việt
+[1] Nguyễn Văn Bảo, Trần Minh Đức (2018), “Phân tích và thiết kế hệ thống thông tin trong doanh nghiệp”, Tạp chí Công nghệ Thông tin và Truyền thông, 12(4), tr. 45-52.
+[2] Lê Đình Cường (2020), “Ứng dụng kiến trúc REST trong xây dựng hệ thống quản lý trực tuyến”, Tạp chí Khoa học và Công nghệ, 58(2), tr. 73-80.
+[3] Hoàng Quang Huy (2016), Giáo trình kiểm thử phần mềm, Nhà xuất bản Thống kê.
+[4] Trần Công Hùng (2019), Cơ sở dữ liệu và hệ quản trị cơ sở dữ liệu, Nhà xuất bản Giáo dục Việt Nam.
+Tiếng Anh
+[5] Ian Sommerville (2016), Software Engineering, Pearson Education.
+[6] Roger S. Pressman, Bruce R. Maxim (2014), Software Engineering: A Practitioner’s Approach, McGraw-Hill Education.
+[7] Abraham Silberschatz, Henry F. Korth, S. Sudarshan (2011), Database System Concepts, McGraw-Hill Education.
+[8] Martin Kleppmann (2017), Designing Data-Intensive Applications, O’Reilly Media.
+[9] Roy Thomas Fielding (2000), “Architectural Styles and the Design of Network-Based Software Architectures”, Doctoral Dissertation, University of California, Irvine.
+[10] William Stallings (2017), Cryptography and Network Security: Principles and Practice, Pearson Education.
+
+

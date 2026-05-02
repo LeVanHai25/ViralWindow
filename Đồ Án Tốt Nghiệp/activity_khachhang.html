@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Biểu đồ hoạt động – Quản lý khách hàng</title>
+  <style>
+    body { margin: 0; background: #fff; font-family: "Times New Roman", serif; }
+    svg { display: block; margin: 20px auto; }
+  </style>
+</head>
+<body>
+<svg width="720" height="1140" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#000"/>
+    </marker>
+  </defs>
+
+  <!-- OUTER BORDER -->
+  <rect x="5" y="5" width="710" height="1130" fill="white" stroke="#000" stroke-width="1.5"/>
+
+  <!-- SWIMLANE HEADERS -->
+  <rect x="5" y="5" width="355" height="42" fill="white" stroke="#000" stroke-width="1"/>
+  <rect x="360" y="5" width="355" height="42" fill="white" stroke="#000" stroke-width="1"/>
+  <text x="182" y="31" text-anchor="middle" font-size="13" font-weight="bold" font-family="Times New Roman">Người dùng</text>
+  <text x="537" y="31" text-anchor="middle" font-size="13" font-weight="bold" font-family="Times New Roman">Hệ thống</text>
+
+  <!-- LANE DIVIDER -->
+  <line x1="360" y1="47" x2="360" y2="1135" stroke="#000" stroke-width="1" stroke-dasharray="6,4"/>
+
+  <!-- ═══ NODES ═══ -->
+
+  <!-- START -->
+  <circle cx="182" cy="78" r="13" fill="#000"/>
+  <line x1="182" y1="91" x2="182" y2="110" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- U1: Click menu -->
+  <rect x="55" y="112" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="182" y="136" text-anchor="middle" font-size="12" font-family="Times New Roman">Chọn menu "Khách hàng"</text>
+
+  <!-- arrow U1 → S1 -->
+  <line x1="310" y1="131" x2="398" y2="131" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- S1: Hiển thị danh sách -->
+  <rect x="400" y="112" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="527" y="136" text-anchor="middle" font-size="12" font-family="Times New Roman">Hiển thị danh sách khách hàng</text>
+
+  <!-- arrow S1 ↓ then ← to U2 -->
+  <line x1="527" y1="150" x2="527" y2="172" stroke="#000" stroke-width="1.5"/>
+  <line x1="527" y1="172" x2="310" y2="172" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- U2: Chọn thêm mới -->
+  <rect x="55" y="175" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="182" y="199" text-anchor="middle" font-size="12" font-family="Times New Roman">Nhấn nút "Thêm mới" (hoặc Sửa)</text>
+  
+  <!-- arrow U2 → S2 -->
+  <line x1="310" y1="194" x2="398" y2="194" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- S2: Hiển thị form -->
+  <rect x="400" y="175" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="527" y="199" text-anchor="middle" font-size="12" font-family="Times New Roman">Hiển thị Form thông tin</text>
+
+  <!-- arrow S2 ↓ then ← to U3 -->
+  <line x1="527" y1="213" x2="527" y2="235" stroke="#000" stroke-width="1.5"/>
+  <line x1="527" y1="235" x2="310" y2="235" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- U3: Nhập thông tin -->
+  <rect x="55" y="238" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="182" y="262" text-anchor="middle" font-size="12" font-family="Times New Roman">Nhập thông tin (Tên, SĐT, Địa chỉ...)</text>
+  <line x1="182" y1="276" x2="182" y2="295" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- U4: Nhấn Lưu -->
+  <rect x="55" y="297" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="182" y="321" text-anchor="middle" font-size="12" font-family="Times New Roman">Nhấn nút "Lưu thông tin"</text>
+
+  <!-- arrow U4 → S3 -->
+  <line x1="310" y1="316" x2="398" y2="316" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- S3: Validate -->
+  <rect x="400" y="297" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="527" y="321" text-anchor="middle" font-size="12" font-family="Times New Roman">Kiểm tra thông tin bắt buộc</text>
+  <line x1="527" y1="335" x2="527" y2="354" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- D1: Hợp lệ? -->
+  <polygon points="527,354 615,382 527,410 439,382" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="527" y="378" text-anchor="middle" font-size="11" font-family="Times New Roman">Dữ liệu</text>
+  <text x="527" y="392" text-anchor="middle" font-size="11" font-family="Times New Roman">hợp lệ?</text>
+
+  <!-- [invalid] → error → back to U3 -->
+  <line x1="615" y1="382" x2="690" y2="382" stroke="#000" stroke-width="1.5"/>
+  <text x="650" y="376" text-anchor="middle" font-size="10" font-family="Times New Roman">[invalid]</text>
+  <line x1="690" y1="382" x2="690" y2="257" stroke="#000" stroke-width="1.5"/>
+  <line x1="690" y1="257" x2="310" y2="257" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="645" y="273" text-anchor="middle" font-size="10" font-family="Times New Roman">[Báo lỗi, nhập lại]</text>
+
+  <!-- [valid] → down -->
+  <line x1="527" y1="410" x2="527" y2="429" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="548" y="424" font-size="10" font-family="Times New Roman">[valid]</text>
+
+  <!-- S4: Kiểm tra SĐT DB -->
+  <rect x="400" y="431" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="527" y="455" text-anchor="middle" font-size="12" font-family="Times New Roman">Kiểm tra trùng số điện thoại trong DB</text>
+  <line x1="527" y1="469" x2="527" y2="488" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- D2: Trùng SĐT? -->
+  <polygon points="527,488 615,516 527,544 439,516" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="527" y="512" text-anchor="middle" font-size="11" font-family="Times New Roman">Đã tồn tại</text>
+  <text x="527" y="526" text-anchor="middle" font-size="11" font-family="Times New Roman">SĐT này?</text>
+
+  <!-- [yes] → error → LEFT -->
+  <line x1="439" y1="516" x2="310" y2="516" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="372" y="509" text-anchor="middle" font-size="10" font-family="Times New Roman">[yes]</text>
+  <rect x="110" y="497" width="200" height="38" rx="8" fill="white" stroke="#000" stroke-width="1"/>
+  <text x="210" y="517" text-anchor="middle" font-size="10" font-family="Times New Roman">Cảnh báo: "Khách hàng</text>
+  <text x="210" y="531" text-anchor="middle" font-size="10" font-family="Times New Roman">đã tồn tại trong hệ thống"</text>
+  
+  <!-- Arrow back from warning up to U3 -->
+  <line x1="110" y1="516" x2="30" y2="516" stroke="#000" stroke-width="1.5"/>
+  <line x1="30" y1="516" x2="30" y2="257" stroke="#000" stroke-width="1.5"/>
+  <line x1="30" y1="257" x2="55" y2="257" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="35" y="400" text-anchor="start" font-size="10" font-family="Times New Roman">[Nhập SĐT khác]</text>
+
+  <!-- [no] → down -->
+  <line x1="527" y1="544" x2="527" y2="563" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="545" y="558" font-size="10" font-family="Times New Roman">[no]</text>
+
+  <!-- S5: Lưu CSDL -->
+  <rect x="400" y="565" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="527" y="589" text-anchor="middle" font-size="12" font-family="Times New Roman">Lưu bản ghi vào bảng Customers</text>
+  <line x1="527" y1="603" x2="527" y2="622" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- S6: Ghi log -->
+  <rect x="400" y="624" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="527" y="648" text-anchor="middle" font-size="12" font-family="Times New Roman">Ghi log hành động cập nhật</text>
+  <line x1="527" y1="662" x2="527" y2="681" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- S7: Thông báo thành công -->
+  <rect x="400" y="683" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="527" y="707" text-anchor="middle" font-size="12" font-family="Times New Roman">Hiển thị thông báo "Thành công"</text>
+  <line x1="527" y1="721" x2="527" y2="740" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+  
+  <!-- S8: Tải lại danh sách -->
+  <rect x="400" y="742" width="255" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="527" y="766" text-anchor="middle" font-size="12" font-family="Times New Roman">Tải lại danh sách khách hàng</text>
+  <line x1="527" y1="780" x2="527" y2="799" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- END -->
+  <circle cx="527" cy="813" r="13" fill="none" stroke="#000" stroke-width="2.5"/>
+  <circle cx="527" cy="813" r="8" fill="#000"/>
+</svg>
+
+<p style="text-align:center; font-style:italic; font-family:'Times New Roman'; font-size:13px; margin-top:4px;">
+  Hình 2.y. Biểu đồ hoạt động use case Quản lý khách hàng
+</p>
+</body>
+</html>

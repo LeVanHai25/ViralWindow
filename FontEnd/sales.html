@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -1683,8 +1683,6 @@
             if (!sessionStorage.getItem('token')) { sessionStorage.setItem('token', token); const u = localStorage.getItem('user'); if (u) sessionStorage.setItem('user', u); }
             return true;
         }
-                return true;
-            }
 
             // Load sidebar user info
             async function loadSidebarUserInfo() {
@@ -3809,10 +3807,12 @@
                     const url = customerId ? `${API_BASE}/customers/${customerId}` : `${API_BASE}/customers`;
                     const method = customerId ? 'PUT' : 'POST';
 
+                    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
                     const response = await fetch(url, {
                         method: method,
                         headers: {
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
                         },
                         body: JSON.stringify(data)
                     });
@@ -3822,15 +3822,21 @@
                     if (result.success) {
                         const message = customerId ? 'Cập nhật khách hàng thành công!' : 'Thêm khách hàng thành công!';
                         const description = customerId ? '' : `Mã: ${result.data.customer_code || 'Tự tạo'}`;
-                        showSuccessNotification(message, description);
+                        if (window.VWModal) {
+                            VWModal.toast(message + (description ? ' - ' + description : ''), 'success');
+                        } else {
+                            alert(message);
+                        }
                         closeCustomerModal();
                         loadCustomers();
                     } else {
-                        alert('Lỗi: ' + (result.message || 'Không thể lưu'));
+                        if (window.VWModal) VWModal.alert('Lỗi', result.message || 'Không thể lưu');
+                        else alert('Lỗi: ' + (result.message || 'Không thể lưu'));
                     }
                 } catch (error) {
                     console.error('Lỗi:', error);
-                    alert('Lỗi kết nối server');
+                    if (window.VWModal) VWModal.alert('Lỗi', 'Lỗi kết nối server: ' + error.message);
+                    else alert('Lỗi kết nối server');
                 }
             }
 

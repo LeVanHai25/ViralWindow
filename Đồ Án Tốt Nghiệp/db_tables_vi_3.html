@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Bảng CSDL Tiếng Việt – Nhóm 3</title>
+  <style>body{margin:20px;background:#fff;font-family:Arial,sans-serif}svg{display:block;margin:15px auto}</style>
+</head>
+<body>
+
+<!-- BẢNG 6: KHO VẬT TƯ -->
+<svg width="720" height="340" xmlns="http://www.w3.org/2000/svg">
+  <text x="360" y="22" text-anchor="middle" font-size="14" font-weight="bold">Bảng 2.6. KHO_VAT_TU – Bảng tồn kho vật tư</text>
+  <rect x="20" y="35" width="680" height="30" fill="#d4a373" stroke="#a52a2a" stroke-width="1"/>
+  <text x="45" y="55" font-size="11" font-weight="bold" fill="#fff">STT</text>
+  <text x="85" y="55" font-size="11" font-weight="bold" fill="#fff">Tên trường</text>
+  <text x="235" y="55" font-size="11" font-weight="bold" fill="#fff">Kiểu dữ liệu</text>
+  <text x="385" y="55" font-size="11" font-weight="bold" fill="#fff">Ràng buộc</text>
+  <text x="520" y="55" font-size="11" font-weight="bold" fill="#fff">Mô tả</text>
+  <g font-size="11">
+    <rect x="20" y="65" width="680" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="81">1</text><text x="85" y="81" font-weight="bold">ma_vat_tu</text><text x="235" y="81">INT</text><text x="385" y="81">Khóa chính</text><text x="520" y="81">Mã vật tư</text>
+    <rect x="20" y="87" width="680" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="103">2</text><text x="85" y="103">ma_vat_tu_tu_sinh</text><text x="235" y="103">VARCHAR(50)</text><text x="385" y="103">Duy nhất</text><text x="520" y="103">Mã vật tư duy nhất</text>
+    <rect x="20" y="109" width="680" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="125">3</text><text x="85" y="125">ten_vat_tu</text><text x="235" y="125">VARCHAR(255)</text><text x="385" y="125">Bắt buộc</text><text x="520" y="125">Tên vật tư</text>
+    <rect x="20" y="131" width="680" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="147">4</text><text x="85" y="147">danh_muc</text><text x="235" y="147">VARCHAR(100)</text><text x="385" y="147"></text><text x="520" y="147">Nhôm / Kính / Phụ kiện</text>
+    <rect x="20" y="153" width="680" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="169">5</text><text x="85" y="169">loai_vat_tu</text><text x="235" y="169">VARCHAR(50)</text><text x="385" y="169"></text><text x="520" y="169">Loại chi tiết vật tư</text>
+    <rect x="20" y="175" width="680" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="191">6</text><text x="85" y="191">don_vi</text><text x="235" y="191">VARCHAR(20)</text><text x="385" y="191"></text><text x="520" y="191">Đơn vị (m, kg, tấm, cái)</text>
+    <rect x="20" y="197" width="680" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="213">7</text><text x="85" y="213">so_luong_ton</text><text x="235" y="213">INT</text><text x="385" y="213">Mặc định 0</text><text x="520" y="213">Số lượng tồn kho hiện tại</text>
+    <rect x="20" y="219" width="680" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="235">8</text><text x="85" y="235">muc_toi_thieu</text><text x="235" y="235">INT</text><text x="385" y="235">Mặc định 0</text><text x="520" y="235">Ngưỡng cảnh báo tối thiểu</text>
+    <rect x="20" y="241" width="680" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="257">9</text><text x="85" y="257">muc_toi_da</text><text x="235" y="257">INT</text><text x="385" y="257">Mặc định 0</text><text x="520" y="257">Ngưỡng tối đa cho phép</text>
+    <rect x="20" y="263" width="680" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="279">10</text><text x="85" y="279">don_gia_nhap</text><text x="235" y="279">DECIMAL(15,2)</text><text x="385" y="279">Mặc định 0.00</text><text x="520" y="279">Đơn giá nhập kho (VNĐ)</text>
+    <rect x="20" y="285" width="680" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="301">11</text><text x="85" y="301">nha_cung_cap</text><text x="235" y="301">VARCHAR(255)</text><text x="385" y="301"></text><text x="520" y="301">Tên nhà cung cấp</text>
+    <rect x="20" y="307" width="680" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="323">12</text><text x="85" y="323">ngay_tao</text><text x="235" y="323">TIMESTAMP</text><text x="385" y="323">Tự động</text><text x="520" y="323">Ngày nhập hệ thống</text>
+  </g>
+</svg>
+
+<!-- BẢNG 7: HẠNG MỤC DỰ ÁN -->
+<svg width="720" height="340" xmlns="http://www.w3.org/2000/svg">
+  <text x="360" y="22" text-anchor="middle" font-size="14" font-weight="bold">Bảng 2.7. HANG_MUC_DU_AN – Bảng hạng mục dự án</text>
+  <rect x="20" y="35" width="680" height="30" fill="#d4a373" stroke="#a52a2a" stroke-width="1"/>
+  <text x="45" y="55" font-size="11" font-weight="bold" fill="#fff">STT</text>
+  <text x="85" y="55" font-size="11" font-weight="bold" fill="#fff">Tên trường</text>
+  <text x="235" y="55" font-size="11" font-weight="bold" fill="#fff">Kiểu dữ liệu</text>
+  <text x="385" y="55" font-size="11" font-weight="bold" fill="#fff">Ràng buộc</text>
+  <text x="520" y="55" font-size="11" font-weight="bold" fill="#fff">Mô tả</text>
+  <g font-size="11">
+    <rect x="20" y="65" width="680" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="81">1</text><text x="85" y="81" font-weight="bold">ma_hang_muc</text><text x="235" y="81">INT</text><text x="385" y="81">Khóa chính</text><text x="520" y="81">Mã hạng mục</text>
+    <rect x="20" y="87" width="680" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="103">2</text><text x="85" y="103">ma_du_an</text><text x="235" y="103">INT</text><text x="385" y="103">Khóa ngoại → DU_AN</text><text x="520" y="103">Dự án sở hữu</text>
+    <rect x="20" y="109" width="680" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="125">3</text><text x="85" y="125">ma_hang_muc_code</text><text x="235" y="125">VARCHAR(50)</text><text x="385" y="125"></text><text x="520" y="125">Mã code hạng mục</text>
+    <rect x="20" y="131" width="680" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="147">4</text><text x="85" y="147">ten_hang_muc</text><text x="235" y="147">VARCHAR(255)</text><text x="385" y="147"></text><text x="520" y="147">Tên (Cửa đi, Cửa sổ...)</text>
+    <rect x="20" y="153" width="680" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="169">5</text><text x="85" y="169">loai_hang_muc</text><text x="235" y="169">VARCHAR(50)</text><text x="385" y="169"></text><text x="520" y="169">Cửa đi / Cửa sổ / Vách kính</text>
+    <rect x="20" y="175" width="680" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="191">6</text><text x="85" y="191">chieu_rong_mm</text><text x="235" y="191">INT</text><text x="385" y="191"></text><text x="520" y="191">Chiều rộng (mm)</text>
+    <rect x="20" y="197" width="680" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="213">7</text><text x="85" y="213">chieu_cao_mm</text><text x="235" y="213">INT</text><text x="385" y="213"></text><text x="520" y="213">Chiều cao (mm)</text>
+    <rect x="20" y="219" width="680" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="235">8</text><text x="85" y="235">so_luong</text><text x="235" y="235">INT</text><text x="385" y="235">Mặc định 1</text><text x="520" y="235">Số lượng sản phẩm</text>
+    <rect x="20" y="241" width="680" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="257">9</text><text x="85" y="257">he_nhom</text><text x="235" y="257">VARCHAR(50)</text><text x="385" y="257"></text><text x="520" y="257">Hệ nhôm sử dụng</text>
+    <rect x="20" y="263" width="680" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="279">10</text><text x="85" y="279">don_gia</text><text x="235" y="279">DECIMAL(15,2)</text><text x="385" y="279">Mặc định 0.00</text><text x="520" y="279">Đơn giá sản phẩm</text>
+    <rect x="20" y="285" width="680" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="301">11</text><text x="85" y="301">trang_thai</text><text x="235" y="301">VARCHAR(50)</text><text x="385" y="301">Mặc định 'cho_xu_ly'</text><text x="520" y="301">Chờ xử lý / Đang SX / Xong</text>
+    <rect x="20" y="307" width="680" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="323">12</text><text x="85" y="323">ngay_tao</text><text x="235" y="323">TIMESTAMP</text><text x="385" y="323">Tự động</text><text x="520" y="323">Ngày tạo</text>
+  </g>
+</svg>
+
+<!-- BẢNG 8: VẬT TƯ BOM DỰ ÁN -->
+<svg width="720" height="310" xmlns="http://www.w3.org/2000/svg">
+  <text x="360" y="22" text-anchor="middle" font-size="14" font-weight="bold">Bảng 2.8. VAT_TU_BOM – Bảng vật tư bóc tách (BOM)</text>
+  <rect x="20" y="35" width="680" height="30" fill="#d4a373" stroke="#a52a2a" stroke-width="1"/>
+  <text x="45" y="55" font-size="11" font-weight="bold" fill="#fff">STT</text>
+  <text x="85" y="55" font-size="11" font-weight="bold" fill="#fff">Tên trường</text>
+  <text x="235" y="55" font-size="11" font-weight="bold" fill="#fff">Kiểu dữ liệu</text>
+  <text x="385" y="55" font-size="11" font-weight="bold" fill="#fff">Ràng buộc</text>
+  <text x="520" y="55" font-size="11" font-weight="bold" fill="#fff">Mô tả</text>
+  <g font-size="11">
+    <rect x="20" y="65" width="680" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="81">1</text><text x="85" y="81" font-weight="bold">ma_ban_ghi</text><text x="235" y="81">INT</text><text x="385" y="81">Khóa chính</text><text x="520" y="81">Mã bản ghi BOM</text>
+    <rect x="20" y="87" width="680" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="103">2</text><text x="85" y="103">ma_du_an</text><text x="235" y="103">INT</text><text x="385" y="103">Khóa ngoại → DU_AN</text><text x="520" y="103">Dự án liên quan</text>
+    <rect x="20" y="109" width="680" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="125">3</text><text x="85" y="125">ma_hang_muc</text><text x="235" y="125">INT</text><text x="385" y="125">Khóa ngoại → HANG_MUC</text><text x="520" y="125">Hạng mục cần vật tư</text>
+    <rect x="20" y="131" width="680" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="147">4</text><text x="85" y="147">ten_vat_tu</text><text x="235" y="147">VARCHAR(255)</text><text x="385" y="147"></text><text x="520" y="147">Tên vật tư cần dùng</text>
+    <rect x="20" y="153" width="680" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="169">5</text><text x="85" y="169">ma_vat_tu</text><text x="235" y="169">VARCHAR(50)</text><text x="385" y="169"></text><text x="520" y="169">Mã vật tư tham chiếu</text>
+    <rect x="20" y="175" width="680" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="191">6</text><text x="85" y="191">so_luong</text><text x="235" y="191">DECIMAL(10,3)</text><text x="385" y="191">Mặc định 0</text><text x="520" y="191">Số lượng cần sử dụng</text>
+    <rect x="20" y="197" width="680" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="213">7</text><text x="85" y="213">don_vi</text><text x="235" y="213">VARCHAR(20)</text><text x="385" y="213"></text><text x="520" y="213">Đơn vị tính</text>
+    <rect x="20" y="219" width="680" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="235">8</text><text x="85" y="235">don_gia</text><text x="235" y="235">DECIMAL(15,2)</text><text x="385" y="235">Mặc định 0.00</text><text x="520" y="235">Đơn giá vật tư</text>
+    <rect x="20" y="241" width="680" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="257">9</text><text x="85" y="257">thanh_tien</text><text x="235" y="257">DECIMAL(15,2)</text><text x="385" y="257">Mặc định 0.00</text><text x="520" y="257">Thành tiền = SL × Đơn giá</text>
+    <rect x="20" y="263" width="680" height="22" fill="#fff" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="279">10</text><text x="85" y="279">chieu_dai_cat_mm</text><text x="235" y="279">INT</text><text x="385" y="279"></text><text x="520" y="279">Chiều dài cắt nhôm (mm)</text>
+    <rect x="20" y="285" width="680" height="22" fill="#fffbe6" stroke="#a52a2a" stroke-width="0.5"/>
+    <text x="45" y="301">11</text><text x="85" y="301">ngay_tao</text><text x="235" y="301">TIMESTAMP</text><text x="385" y="301">Tự động</text><text x="520" y="301">Ngày bóc tách</text>
+  </g>
+</svg>
+
+</body>
+</html>

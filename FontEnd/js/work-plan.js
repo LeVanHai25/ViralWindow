@@ -48,8 +48,9 @@ const WorkPlanModule = {
         const roleName = this.currentUser.role_name || '';
         this.isManager = userType === 'admin' || roleName === 'Super Admin' || roleName === 'Quản lý';
 
+        // Chỉ ẩn nút quản lý loại kế hoạch cho người không phải quản lý/admin
+        // Tất cả mọi người đều có thể tạo kế hoạch
         if (!this.isManager) {
-            document.querySelectorAll('[onclick="WorkPlanModule.openCreateModal()"]').forEach(btn => btn.style.display = 'none');
             const manageTypeBtn = document.querySelector('[onclick="WorkPlanModule.openManageTypesModal()"]');
             if (manageTypeBtn) manageTypeBtn.style.display = 'none';
         }
@@ -740,7 +741,7 @@ const WorkPlanModule = {
         
         let statusPillsHtml = '';
         statuses.forEach(s => {
-            const disableAttr = !this.isManager ? 'disabled style="pointer-events: none; opacity: 0.8;"' : '';
+            const disableAttr = '';
             if (s.v === plan.status) {
                 statusPillsHtml += `<button ${disableAttr} class="px-3 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap bg-blue-50 text-blue-700 border border-blue-200 shadow-sm" onclick="WorkPlanModule.updatePlanStatus(${plan.id}, '${s.v}')">${s.label}</button>`;
             } else {
@@ -860,7 +861,6 @@ const WorkPlanModule = {
                 </div>
             </div>
             
-            ${this.isManager ? `
             <div class="flex gap-2 shrink-0">
                 <button class="h-10 px-4 flex items-center justify-center gap-2 rounded-xl border-2 border-blue-500 text-blue-600 font-bold hover:bg-blue-50 transition shadow-sm bg-white text-sm" onclick="WorkPlanModule.openEditModal(${plan.id})">
                     <i class="fa-solid fa-pen"></i> Sửa Kế Hoạch
@@ -869,7 +869,6 @@ const WorkPlanModule = {
                     <i class="fa-solid fa-trash-can"></i>
                 </button>
             </div>
-            ` : ''}
         </div>
         
         <h2 class="text-2xl font-extrabold text-gray-800 leading-snug ${subtitleHtml ? 'mb-2' : 'mb-5'}">${plan.title}</h2>

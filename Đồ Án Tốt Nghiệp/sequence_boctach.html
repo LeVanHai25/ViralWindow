@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Biểu đồ trình tự – Bóc tách vật tư</title>
+  <style>
+    body { margin: 0; background: #fff; font-family: "Times New Roman", serif; }
+    canvas { display: block; margin: 20px auto; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+<canvas id="sd" width="1000" height="850"></canvas>
+<script>
+const canvas = document.getElementById("sd");
+const ctx = canvas.getContext("2d");
+
+function line(x1,y1,x2,y2,dash=[]){
+  ctx.save(); ctx.setLineDash(dash);
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  ctx.restore();
+}
+function arrowRight(x1,y1,x2,y2,label,dashed=false){
+  ctx.save();
+  ctx.setLineDash(dashed?[6,4]:[]);
+  ctx.strokeStyle="#c00"; ctx.lineWidth=1.2;
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  const ang=Math.atan2(y2-y1,x2-x1);
+  ctx.fillStyle="#c00";
+  ctx.beginPath();
+  ctx.moveTo(x2,y2);
+  ctx.lineTo(x2-10*Math.cos(ang-0.35),y2-10*Math.sin(ang-0.35));
+  ctx.lineTo(x2-10*Math.cos(ang+0.35),y2-10*Math.sin(ang+0.35));
+  ctx.closePath(); ctx.fill();
+  const mx=(x1+x2)/2, my=Math.min(y1,y2)-5;
+  ctx.fillStyle="#000"; ctx.font="11px Times New Roman";
+  ctx.textAlign="center"; ctx.fillText(label,mx,my);
+  ctx.restore();
+}
+function stickFigure(x,y,label){
+  ctx.save(); ctx.strokeStyle="#000"; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.arc(x,y+8,8,0,2*Math.PI); ctx.stroke();
+  line(x,y+16,x,y+34); line(x-12,y+22,x+12,y+22);
+  line(x,y+34,x-10,y+48); line(x,y+34,x+10,y+48);
+  ctx.font="12px Times New Roman"; ctx.textAlign="center"; ctx.fillText(label,x,y+62);
+  ctx.restore();
+}
+function boundary(x,y,label){
+  ctx.save(); ctx.strokeStyle="#000"; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.arc(x,y+18,14,0,2*Math.PI); ctx.stroke();
+  line(x-14,y+4,x-14,y+32); line(x-20,y+18,x-14,y+18);
+  ctx.font="12px Times New Roman"; ctx.textAlign="center"; ctx.fillText(label,x,y+50);
+  ctx.restore();
+}
+function control(x,y,label){
+  ctx.save(); ctx.strokeStyle="#000"; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.arc(x,y+18,14,0,2*Math.PI); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x-4,y+4); ctx.lineTo(x,y); ctx.lineTo(x+4,y+4); ctx.stroke();
+  ctx.font="12px Times New Roman"; ctx.textAlign="center"; ctx.fillText(label,x,y+50);
+  ctx.restore();
+}
+function entity(x,y,label){
+  ctx.save(); ctx.strokeStyle="#000"; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.arc(x,y+14,14,0,2*Math.PI); ctx.stroke();
+  line(x-14,y+28,x+14,y+28);
+  ctx.font="12px Times New Roman"; ctx.textAlign="center"; ctx.fillText(label,x,y+50);
+  ctx.restore();
+}
+
+const xActor = 70;
+const xUI    = 230;
+const xCtrl  = 440;
+const xModel = 680;
+const xDB    = 900;
+const LIFEY  = 100;
+const BOTTOM = 830;
+
+ctx.font="bold 15px Times New Roman"; ctx.textAlign="center";
+ctx.fillText("Hình 2.z. Biểu đồ trình tự Use Case Bóc tách vật tư (BOM)", 500, 25);
+
+stickFigure(xActor, 35, ": NhanVienKyThuat");
+boundary(xUI, 35, ": KyThuatUI");
+control(xCtrl, 35, ": TechnicalController");
+entity(xModel, 35, ": Formula_BOM_Model");
+entity(xDB, 35, ": HeThongCSDL");
+
+[xActor, xUI, xCtrl, xModel, xDB].forEach(x => line(x, LIFEY, x, BOTTOM, [6,5]));
+
+const steps = [
+  { y:140, fx:xActor, tx:xUI, label:"1: Chọn dự án cần bóc tách()", ret:false },
+  { y:175, fx:xUI, tx:xCtrl, label:"2: Lấy danh sách sản phẩm (GET)()", ret:false },
+  { y:210, fx:xCtrl, tx:xDB, label:"3: SELECT items FROM project_items()", ret:false },
+  { y:245, fx:xDB, tx:xCtrl, label:"4: Trả về danh sách bộ cửa()", ret:true },
+  { y:280, fx:xCtrl, tx:xUI, label:"5: Hiển thị danh sách lên lưới()", ret:true },
+  { y:320, fx:xActor, tx:xUI, label:"6: Nhập kích thước (W, H) từng bộ cửa()", ret:false },
+  { y:360, fx:xActor, tx:xUI, label:"7: Nhấn 'Tính toán bóc tách'()", ret:false },
+  { y:400, fx:xUI, tx:xCtrl, label:"8: Gửi dữ liệu kích thước (POST)()", ret:false },
+  { y:440, fx:xCtrl, tx:xDB, label:"9: SELECT formulas FROM cutting_formulas()", ret:false },
+  { y:475, fx:xDB, tx:xCtrl, label:"10: Trả về công thức cắt nhôm, kính()", ret:true },
+  { y:515, fx:xCtrl, tx:xCtrl, label:"11: Tính toán chiều dài thanh, tấm kính()", ret:false, self:true },
+  { y:565, fx:xCtrl, tx:xCtrl, label:"12: Thống kê số lượng phụ kiện (Hardware)()", ret:false, self:true },
+  { y:615, fx:xCtrl, tx:xUI, label:"13: Hiển thị bảng BOM dự kiến()", ret:true },
+  { y:655, fx:xActor, tx:xUI, label:"14: Xác nhận lưu bảng BOM()", ret:false },
+  { y:695, fx:xUI, tx:xCtrl, label:"15: Lưu kết quả bóc tách()", ret:false },
+  { y:735, fx:xCtrl, tx:xModel, label:"16: saveBOMResult(data)()", ret:false },
+  { y:775, fx:xModel, tx:xDB, label:"17: INSERT INTO bom_details()", ret:false },
+  { y:810, fx:xDB, tx:xUI, label:"18: Thông báo 'Bóc tách thành công'()", ret:true }
+];
+
+steps.forEach(s => {
+  if(s.self){
+    ctx.save(); ctx.strokeStyle="#c00"; ctx.lineWidth=1.2;
+    ctx.beginPath(); ctx.moveTo(s.fx, s.y); ctx.lineTo(s.fx+40, s.y);
+    ctx.lineTo(s.fx+40, s.y+25); ctx.lineTo(s.fx+2, s.y+25); ctx.stroke();
+    ctx.fillStyle="#c00"; ctx.beginPath();
+    ctx.moveTo(s.fx+2,s.y+25); ctx.lineTo(s.fx+12,s.y+20); ctx.lineTo(s.fx+12,s.y+30);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle="#000"; ctx.font="11px Times New Roman"; ctx.textAlign="left";
+    ctx.fillText(s.label, s.fx+45, s.y+15); ctx.restore();
+  } else {
+    arrowRight(s.fx, s.y, s.tx, s.y, s.label, s.ret);
+  }
+});
+</script>
+</body>
+</html>

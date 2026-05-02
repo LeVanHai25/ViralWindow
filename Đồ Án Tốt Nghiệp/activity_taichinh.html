@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Biểu đồ hoạt động – Quản lý Tài chính (Gọn)</title>
+  <style>
+    body { margin: 0; background: #fff; font-family: "Times New Roman", serif; }
+    svg { display: block; margin: 20px auto; }
+  </style>
+</head>
+<body>
+<svg width="760" height="710" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#000"/>
+    </marker>
+  </defs>
+
+  <!-- OUTER BORDER -->
+  <rect x="5" y="5" width="750" height="700" fill="white" stroke="#000" stroke-width="1.5"/>
+
+  <!-- SWIMLANE HEADERS -->
+  <rect x="5"   y="5" width="375" height="42" fill="white" stroke="#000" stroke-width="1"/>
+  <rect x="380" y="5" width="375" height="42" fill="white" stroke="#000" stroke-width="1"/>
+  <text x="192" y="31" text-anchor="middle" font-size="14" font-weight="bold" font-family="Times New Roman">Kế toán / Quản lý</text>
+  <text x="567" y="31" text-anchor="middle" font-size="14" font-weight="bold" font-family="Times New Roman">Hệ thống</text>
+
+  <!-- LANE DIVIDER -->
+  <line x1="380" y1="47" x2="380" y2="705" stroke="#000" stroke-width="1" stroke-dasharray="6,4"/>
+
+  <!-- START -->
+  <circle cx="192" cy="70" r="11" fill="#000"/>
+  <line x1="192" y1="81" x2="192" y2="100" stroke="#000" stroke-width="1.2" marker-end="url(#arr)"/>
+
+  <!-- U1: Chọn menu -->
+  <rect x="80" y="100" width="220" height="32" rx="16" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="190" y="120" text-anchor="middle" font-size="12" font-family="Times New Roman">Chọn menu "Tài chính"</text>
+  <line x1="192" y1="132" x2="192" y2="155" stroke="#000" stroke-width="1.2" marker-end="url(#arr)"/>
+
+  <!-- D1: Lựa chọn nghiệp vụ -->
+  <polygon points="192,155 280,185 192,215 104,185" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="192" y="181" text-anchor="middle" font-size="11" font-family="Times New Roman">Nghiệp vụ?</text>
+
+  <!-- ════════════ FLOW: GHI NHẬN THU/CHI ════════════ -->
+  
+  <line x1="104" y1="185" x2="60" y2="185" stroke="#000" stroke-width="1.2"/>
+  <line x1="60" y1="185" x2="60" y2="230" stroke="#000" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="75" y="180" text-anchor="middle" font-size="10" font-family="Times New Roman" font-style="italic">[Thu]</text>
+
+  <line x1="192" y1="215" x2="192" y2="230" stroke="#000" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="210" y="225" text-anchor="middle" font-size="10" font-family="Times New Roman" font-style="italic">[Chi]</text>
+
+  <!-- Action: Tạo phiếu -->
+  <rect x="40" y="230" width="300" height="32" rx="6" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="190" y="250" text-anchor="middle" font-size="11" font-family="Times New Roman">Nhấn "Tạo phiếu mới" (Thu hoặc Chi)</text>
+  <line x1="192" y1="262" x2="192" y2="285" stroke="#000" stroke-width="1.2" marker-end="url(#arr)"/>
+
+  <!-- Action: Chọn đối tượng -->
+  <rect x="40" y="285" width="300" height="32" rx="6" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="190" y="305" text-anchor="middle" font-size="11" font-family="Times New Roman">Chọn Khách hàng / Dự án / Nhà CC</text>
+  <line x1="340" y1="301" x2="422" y2="301" stroke="#000" stroke-width="1.2" marker-end="url(#arr)"/>
+
+  <!-- S1: Hiển thị nợ -->
+  <rect x="422" y="285" width="280" height="32" rx="16" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="562" y="305" text-anchor="middle" font-size="11" font-family="Times New Roman">Hệ thống hiển thị số tiền còn nợ / phải trả</text>
+  <line x1="562" y1="317" x2="562" y2="340" stroke="#000" stroke-width="1.2"/>
+  <line x1="562" y1="340" x2="312" y2="340" stroke="#000" stroke-width="1.2" marker-end="url(#arr)"/>
+
+  <!-- U2: Nhập thông tin -->
+  <rect x="60" y="324" width="252" height="32" rx="16" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="186" y="344" text-anchor="middle" font-size="11" font-family="Times New Roman">Nhập số tiền, hình thức, nội dung</text>
+  <line x1="186" y1="356" x2="186" y2="380" stroke="#000" stroke-width="1.2" marker-end="url(#arr)"/>
+
+  <!-- U3: Lưu -->
+  <rect x="80" y="380" width="220" height="32" rx="16" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="190" y="400" text-anchor="middle" font-size="11" font-family="Times New Roman">Nhấn "Lưu phiếu"</text>
+  <line x1="300" y1="396" x2="422" y2="396" stroke="#000" stroke-width="1.2" marker-end="url(#arr)"/>
+
+  <!-- S2: Xử lý DB -->
+  <rect x="422" y="375" width="298" height="50" rx="8" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="571" y="393" text-anchor="middle" font-size="11" font-family="Times New Roman">Cập nhật giảm trừ công nợ &</text>
+  <text x="571" y="409" text-anchor="middle" font-size="11" font-family="Times New Roman">số dư tài khoản tương ứng</text>
+  <line x1="571" y1="425" x2="571" y2="450" stroke="#000" stroke-width="1.2" marker-end="url(#arr)"/>
+
+  <!-- S3: Lưu chứng từ & Thông báo -->
+  <rect x="422" y="450" width="298" height="32" rx="16" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="571" y="470" text-anchor="middle" font-size="11" font-family="Times New Roman">Lưu chứng từ, thông báo & cho phép in</text>
+  <line x1="571" y1="482" x2="571" y2="640" stroke="#000" stroke-width="1.2"/>
+
+  <!-- ════════════ FLOW: BÁO CÁO ════════════ -->
+
+  <line x1="280" y1="185" x2="680" y2="185" stroke="#000" stroke-width="1.2"/>
+  <line x1="680" y1="185" x2="680" y2="520" stroke="#000" stroke-width="1.2"/>
+  <line x1="680" y1="520" x2="312" y2="520" stroke="#000" stroke-width="1.2" marker-end="url(#arr)"/>
+  <text x="500" y="180" text-anchor="middle" font-size="10" font-family="Times New Roman" font-style="italic">[Báo cáo]</text>
+
+  <!-- U-BC1: Chọn menu BC -->
+  <rect x="60" y="504" width="252" height="32" rx="16" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="186" y="524" text-anchor="middle" font-size="11" font-family="Times New Roman">Chọn "Báo cáo doanh thu"</text>
+  <line x1="186" y1="536" x2="186" y2="560" stroke="#000" stroke-width="1.2" marker-end="url(#arr)"/>
+
+  <!-- U-BC2: Chọn time -->
+  <rect x="60" y="560" width="252" height="32" rx="16" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="186" y="580" text-anchor="middle" font-size="11" font-family="Times New Roman">Chọn khoảng thời gian báo cáo</text>
+  <line x1="312" y1="576" x2="422" y2="576" stroke="#000" stroke-width="1.2" marker-end="url(#arr)"/>
+
+  <!-- S-BC1: Query & Chart -->
+  <rect x="422" y="560" width="298" height="50" rx="8" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="571" y="578" text-anchor="middle" font-size="11" font-family="Times New Roman">Truy vấn dữ liệu &</text>
+  <text x="571" y="594" text-anchor="middle" font-size="11" font-family="Times New Roman">Hiển thị biểu đồ so sánh Thu/Chi</text>
+  <line x1="571" y1="610" x2="571" y2="640" stroke="#000" stroke-width="1.2"/>
+
+  <!-- END -->
+  <circle cx="571" cy="660" r="11" fill="none" stroke="#000" stroke-width="2"/>
+  <circle cx="571" cy="660" r="7" fill="#000"/>
+  <line x1="571" y1="640" x2="571" y2="649" stroke="#000" stroke-width="1.2"/>
+
+</svg>
+
+<p style="text-align:center; font-style:italic; font-family:'Times New Roman'; font-size:13px; margin-top:2px;">
+  Hình 2.x. Biểu đồ hoạt động use case Quản lý tài chính
+</p>
+</body>
+</html>"/>
+  <circle cx="571" cy="1075" r="8" fill="#000"/>
+  <line x1="571" y1="1050" x2="571" y2="1062" stroke="#000" stroke-width="1.5"/>
+
+</svg>
+
+<p style="text-align:center; font-style:italic; font-family:'Times New Roman'; font-size:13px; margin-top:4px;">
+  Hình 2.x. Biểu đồ hoạt động use case Quản lý tài chính
+</p>
+</body>
+</html>
+

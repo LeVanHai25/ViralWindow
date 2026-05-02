@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Index – Biểu đồ hoạt động ViralWindow</title>
+  <style>
+    body { margin: 30px; background: #fff; font-family: "Times New Roman", serif; }
+    h1 { font-size: 18px; text-align: center; margin-bottom: 6px; }
+    p.sub { text-align: center; font-size: 13px; color: #555; margin-bottom: 24px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: #000; color: #fff; padding: 8px 10px; text-align: left; }
+    td { padding: 8px 10px; border-bottom: 1px solid #ccc; }
+    tr:hover td { background: #f5f5f5; }
+    a { color: #000; text-decoration: underline; }
+    .badge { font-size: 11px; color: #555; }
+  </style>
+</head>
+<body>
+  <h1>Danh sách Biểu đồ hoạt động – Đồ án tốt nghiệp ViralWindow</h1>
+  <p class="sub">Nhấn vào tên biểu đồ để mở và chụp màn hình đưa vào báo cáo</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>STT</th>
+        <th>Tên Use Case</th>
+        <th>Actor chính</th>
+        <th>File</th>
+        <th>Ghi chú</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td>Đăng nhập</td>
+        <td>Người dùng / Hệ thống</td>
+        <td><a href="activity_dangnhap_v2.html" target="_blank">activity_dangnhap_v2.html</a></td>
+        <td class="badge">✅ Có fail count, account lock</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>Quản lý khách hàng</td>
+        <td>Nhân viên KD / Hệ thống</td>
+        <td><a href="activity_khachhang.html" target="_blank">activity_khachhang.html</a></td>
+        <td class="badge">✅ Kiểm tra trùng SĐT</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>Quản lý dự án</td>
+        <td>Quản lý / Hệ thống</td>
+        <td><a href="activity_duan.html" target="_blank">activity_duan.html</a></td>
+        <td class="badge">✅ Tạo mới dự án</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>Lập báo giá</td>
+        <td>Nhân viên KD / Hệ thống</td>
+        <td><a href="activity_baogia_v2.html" target="_blank">activity_baogia_v2.html</a></td>
+        <td class="badge">✅ Tra đơn giá, xuất PDF</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>Thiết kế &amp; Bóc tách vật tư</td>
+        <td>Nhân viên KT / Hệ thống</td>
+        <td><a href="activity_boctach_v2.html" target="_blank">activity_boctach_v2.html</a></td>
+        <td class="badge">✅ Tính BOM, đối chiếu tồn kho</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>Nhập kho vật tư</td>
+        <td>Nhân viên Kho / Hệ thống</td>
+        <td><a href="activity_nhapkho.html" target="_blank">activity_nhapkho.html</a></td>
+        <td class="badge">✅ Cộng (+) tồn kho</td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td>Xuất kho vật tư</td>
+        <td>Nhân viên Kho / Hệ thống</td>
+        <td><a href="activity_xuatkho.html" target="_blank">activity_xuatkho.html</a></td>
+        <td class="badge">✅ Kiểm tra đủ hàng, trừ (-) tồn kho</td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td>Kiểm kê kho</td>
+        <td>Nhân viên Kho / Hệ thống</td>
+        <td><a href="activity_kiemke.html" target="_blank">activity_kiemke.html</a></td>
+        <td class="badge">✅ Điều chỉnh lệch, xuất báo cáo</td>
+      </tr>
+      <tr>
+        <td>9</td>
+        <td>Quản lý mẫu sản phẩm</td>
+        <td>Nhân viên KT / Admin</td>
+        <td><a href="activity_sanpham.html" target="_blank">activity_sanpham.html</a></td>
+        <td class="badge">✅ Thiết lập công thức cắt</td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td>Quản lý người dùng</td>
+        <td>Quản trị viên / Hệ thống</td>
+        <td><a href="activity_nguoidung.html" target="_blank">activity_nguoidung.html</a></td>
+        <td class="badge">✅ Phân quyền, mã hóa mật khẩu</td>
+      </tr>
+      <tr>
+        <td>11</td>
+        <td>Quản lý tài chính</td>
+        <td>Kế toán, Quản lý / Hệ thống</td>
+        <td><a href="activity_taichinh.html" target="_blank">activity_taichinh.html</a></td>
+        <td class="badge">✅ Thu/Chi, theo dõi công nợ</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="margin-top:20px; font-size:12px; font-style:italic; color:#666;">
+    * Tất cả biểu đồ sử dụng Swimlane (Người dùng | Hệ thống), 
+    guard condition [valid]/[invalid], mũi tên liền, đúng chuẩn UML 2.x — 
+    phù hợp đưa vào báo cáo tốt nghiệp.
+  </p>
+</body>
+</html>

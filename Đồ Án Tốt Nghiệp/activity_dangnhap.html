@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Biểu đồ hoạt động – Đăng nhập</title>
+  <style>
+    body { margin: 0; background: #fff; font-family: "Times New Roman", serif; }
+    svg { display: block; margin: 20px auto; }
+  </style>
+</head>
+<body>
+<svg id="diagram" width="560" height="980" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- ── BORDER FRAME ── -->
+  <rect x="10" y="10" width="540" height="960" fill="white" stroke="#333" stroke-width="1.5"/>
+
+  <!-- ── TITLE ── -->
+  <text x="280" y="40" text-anchor="middle" font-size="14" font-weight="bold" font-family="Times New Roman">2.3.1. Biểu đồ hoạt động use case Đăng nhập</text>
+
+  <!-- ════════════════════════════════
+       HELPER DEFINITIONS
+  ════════════════════════════════ -->
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#333"/>
+    </marker>
+  </defs>
+
+  <!-- ── STYLES shorthand via JS below ── -->
+
+  <!-- ══════════════ START ══════════════ -->
+  <!-- Start node: filled black circle -->
+  <circle cx="280" cy="75" r="13" fill="#222"/>
+
+  <!-- Arrow down -->
+  <line x1="280" y1="88" x2="280" y2="108" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ══ ACT 1: Người dùng truy cập trang đăng nhập ══ -->
+  <rect x="145" y="110" width="270" height="44" rx="22" ry="22" fill="#cce5ff" stroke="#333" stroke-width="1.2"/>
+  <text x="280" y="137" text-anchor="middle" font-size="12" font-family="Times New Roman">Người dùng truy cập trang đăng nhập</text>
+
+  <line x1="280" y1="154" x2="280" y2="174" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ══ ACT 2: Hệ thống hiển thị form đăng nhập ══ -->
+  <rect x="145" y="176" width="270" height="44" rx="22" ry="22" fill="#cce5ff" stroke="#333" stroke-width="1.2"/>
+  <text x="280" y="203" text-anchor="middle" font-size="12" font-family="Times New Roman">Hệ thống hiển thị form đăng nhập</text>
+
+  <line x1="280" y1="220" x2="280" y2="240" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ══ ACT 3: Người dùng nhập email và mật khẩu ══ -->
+  <rect x="145" y="242" width="270" height="44" rx="22" ry="22" fill="#cce5ff" stroke="#333" stroke-width="1.2"/>
+  <text x="280" y="269" text-anchor="middle" font-size="12" font-family="Times New Roman">Người dùng nhập email và mật khẩu</text>
+
+  <line x1="280" y1="286" x2="280" y2="306" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ══ ACT 4: Người dùng nhấn nút "Đăng nhập" ══ -->
+  <rect x="145" y="308" width="270" height="44" rx="22" ry="22" fill="#cce5ff" stroke="#333" stroke-width="1.2"/>
+  <text x="280" y="335" text-anchor="middle" font-size="12" font-family="Times New Roman">Người dùng nhấn nút "Đăng nhập"</text>
+
+  <line x1="280" y1="352" x2="280" y2="372" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ══ DECISION 1: Dữ liệu hợp lệ? ══ -->
+  <!-- Diamond: center (280, 400), half=35 -->
+  <polygon points="280,372 350,400 280,428 210,400" fill="#fffbcc" stroke="#333" stroke-width="1.2"/>
+  <text x="280" y="396" text-anchor="middle" font-size="11" font-family="Times New Roman">Dữ liệu</text>
+  <text x="280" y="410" text-anchor="middle" font-size="11" font-family="Times New Roman">hợp lệ?</text>
+
+  <!-- Branch: Không hợp lệ → LEFT -->
+  <line x1="210" y1="400" x2="120" y2="400" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="160" y="393" text-anchor="middle" font-size="11" fill="#c00" font-family="Times New Roman">Không</text>
+
+  <!-- Error box LEFT -->
+  <rect x="30" y="376" width="90" height="48" rx="8" ry="8" fill="#ffd6d6" stroke="#333" stroke-width="1.2"/>
+  <text x="75" y="397" text-anchor="middle" font-size="10" font-family="Times New Roman">Hiển thị lỗi:</text>
+  <text x="75" y="411" text-anchor="middle" font-size="10" font-family="Times New Roman">Nhập thiếu</text>
+  <text x="75" y="423" text-anchor="middle" font-size="10" font-family="Times New Roman">thông tin</text>
+
+  <!-- Arrow back up from error to ACT3 (Nhập lại) -->
+  <line x1="75" y1="376" x2="75" y2="264" stroke="#333" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <line x1="75" y1="264" x2="145" y2="264" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="48" y="320" text-anchor="middle" font-size="10" fill="#333" font-family="Times New Roman" transform="rotate(-90,48,320)">Nhập lại</text>
+
+  <!-- Branch: Hợp lệ → DOWN -->
+  <line x1="280" y1="428" x2="280" y2="448" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="306" y="442" font-size="11" fill="#007700" font-family="Times New Roman">Hợp lệ</text>
+
+  <!-- ══ ACT 5: Hệ thống kiểm tra tài khoản trong CSDL ══ -->
+  <rect x="130" y="450" width="300" height="44" rx="22" ry="22" fill="#cce5ff" stroke="#333" stroke-width="1.2"/>
+  <text x="280" y="477" text-anchor="middle" font-size="12" font-family="Times New Roman">Hệ thống kiểm tra tài khoản trong CSDL</text>
+
+  <line x1="280" y1="494" x2="280" y2="514" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ══ DECISION 2: Tài khoản tồn tại? ══ -->
+  <polygon points="280,514 355,542 280,570 205,542" fill="#fffbcc" stroke="#333" stroke-width="1.2"/>
+  <text x="280" y="538" text-anchor="middle" font-size="11" font-family="Times New Roman">Tài khoản</text>
+  <text x="280" y="552" text-anchor="middle" font-size="11" font-family="Times New Roman">tồn tại?</text>
+
+  <!-- Branch: Không → RIGHT (end error) -->
+  <line x1="355" y1="542" x2="455" y2="542" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="400" y="535" text-anchor="middle" font-size="11" fill="#c00" font-family="Times New Roman">Không</text>
+  <rect x="456" y="518" width="82" height="48" rx="8" ry="8" fill="#ffd6d6" stroke="#333" stroke-width="1.2"/>
+  <text x="497" y="539" text-anchor="middle" font-size="10" font-family="Times New Roman">Hiển thị lỗi:</text>
+  <text x="497" y="553" text-anchor="middle" font-size="10" font-family="Times New Roman">Không tìm</text>
+  <text x="497" y="565" text-anchor="middle" font-size="10" font-family="Times New Roman">thấy TK</text>
+  <!-- End bullet -->
+  <line x1="497" y1="566" x2="497" y2="590" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <circle cx="497" cy="604" r="10" fill="none" stroke="#333" stroke-width="2"/>
+  <circle cx="497" cy="604" r="6" fill="#333"/>
+
+  <!-- Branch: Có → DOWN -->
+  <line x1="280" y1="570" x2="280" y2="590" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="305" y="584" font-size="11" fill="#007700" font-family="Times New Roman">Có</text>
+
+  <!-- ══ DECISION 3: Mật khẩu đúng? ══ -->
+  <polygon points="280,590 355,618 280,646 205,618" fill="#fffbcc" stroke="#333" stroke-width="1.2"/>
+  <text x="280" y="614" text-anchor="middle" font-size="11" font-family="Times New Roman">Mật khẩu</text>
+  <text x="280" y="628" text-anchor="middle" font-size="11" font-family="Times New Roman">đúng?</text>
+
+  <!-- Branch: Sai → LEFT (end error) -->
+  <line x1="205" y1="618" x2="105" y2="618" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="153" y="610" text-anchor="middle" font-size="11" fill="#c00" font-family="Times New Roman">Sai</text>
+  <rect x="22" y="594" width="84" height="48" rx="8" ry="8" fill="#ffd6d6" stroke="#333" stroke-width="1.2"/>
+  <text x="64" y="615" text-anchor="middle" font-size="10" font-family="Times New Roman">Hiển thị lỗi:</text>
+  <text x="64" y="629" text-anchor="middle" font-size="10" font-family="Times New Roman">Sai mật</text>
+  <text x="64" y="643" text-anchor="middle" font-size="10" font-family="Times New Roman">khẩu</text>
+  <!-- End bullet -->
+  <line x1="64" y1="642" x2="64" y2="666" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <circle cx="64" cy="680" r="10" fill="none" stroke="#333" stroke-width="2"/>
+  <circle cx="64" cy="680" r="6" fill="#333"/>
+
+  <!-- Branch: Đúng → DOWN -->
+  <line x1="280" y1="646" x2="280" y2="666" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="305" y="660" font-size="11" fill="#007700" font-family="Times New Roman">Đúng</text>
+
+  <!-- ══ ACT 6: Hệ thống tạo JWT Token và phiên làm việc ══ -->
+  <rect x="115" y="668" width="330" height="44" rx="22" ry="22" fill="#d4edda" stroke="#333" stroke-width="1.2"/>
+  <text x="280" y="695" text-anchor="middle" font-size="12" font-family="Times New Roman">Hệ thống tạo JWT Token và phiên làm việc</text>
+
+  <line x1="280" y1="712" x2="280" y2="732" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ══ ACT 7: Ghi nhận lịch sử đăng nhập (Log) ══ -->
+  <rect x="145" y="734" width="270" height="44" rx="22" ry="22" fill="#d4edda" stroke="#333" stroke-width="1.2"/>
+  <text x="280" y="761" text-anchor="middle" font-size="12" font-family="Times New Roman">Ghi nhận lịch sử đăng nhập (Log)</text>
+
+  <line x1="280" y1="778" x2="280" y2="798" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ══ ACT 8: Điều hướng đến Dashboard ══ -->
+  <rect x="145" y="800" width="270" height="44" rx="22" ry="22" fill="#d4edda" stroke="#333" stroke-width="1.2"/>
+  <text x="280" y="827" text-anchor="middle" font-size="12" font-family="Times New Roman">Điều hướng đến trang Dashboard</text>
+
+  <line x1="280" y1="844" x2="280" y2="864" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ══ ACT 9: Hiển thị thông báo đăng nhập thành công ══ -->
+  <rect x="145" y="866" width="270" height="44" rx="22" ry="22" fill="#d4edda" stroke="#333" stroke-width="1.2"/>
+  <text x="280" y="893" text-anchor="middle" font-size="12" font-family="Times New Roman">Hiển thị thông báo đăng nhập thành công</text>
+
+  <line x1="280" y1="910" x2="280" y2="930" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ══ END ══ -->
+  <circle cx="280" cy="944" r="12" fill="none" stroke="#333" stroke-width="2.5"/>
+  <circle cx="280" cy="944" r="7" fill="#222"/>
+
+  <!-- ══ CAPTION ══ -->
+  <!-- Caption below border -->
+</svg>
+
+<!-- Caption outside SVG -->
+<p style="text-align:center; font-style:italic; font-family:'Times New Roman'; font-size:13px; margin-top:4px;">
+  Hình 2.x. Biểu đồ hoạt động use case Đăng nhập
+</p>
+</body>
+</html>

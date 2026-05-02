@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Biểu đồ hoạt động – Theo dõi và Quản lý tồn kho vật tư</title>
+  <style>
+    body { margin: 0; background: #fff; font-family: "Times New Roman", serif; }
+    svg { display: block; margin: 20px auto; }
+  </style>
+</head>
+<body>
+<svg width="760" height="1200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#000"/>
+    </marker>
+  </defs>
+
+  <!-- OUTER BORDER -->
+  <rect x="5" y="5" width="750" height="1190" fill="white" stroke="#000" stroke-width="1.5"/>
+
+  <!-- SWIMLANE HEADERS -->
+  <rect x="5"   y="5" width="375" height="42" fill="white" stroke="#000" stroke-width="1"/>
+  <rect x="380" y="5" width="375" height="42" fill="white" stroke="#000" stroke-width="1"/>
+  <text x="192" y="31" text-anchor="middle" font-size="13" font-weight="bold" font-family="Times New Roman">Nhân viên Kho / Quản lý</text>
+  <text x="567" y="31" text-anchor="middle" font-size="13" font-weight="bold" font-family="Times New Roman">Hệ thống</text>
+
+  <!-- LANE DIVIDER -->
+  <line x1="380" y1="47" x2="380" y2="1195" stroke="#000" stroke-width="1" stroke-dasharray="6,4"/>
+
+  <!-- ════════════════ NODES ════════════════ -->
+
+  <!-- START -->
+  <circle cx="192" cy="78" r="13" fill="#000"/>
+  <line x1="192" y1="91" x2="192" y2="110" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- U1: Click menu -->
+  <rect x="60" y="112" width="272" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="196" y="136" text-anchor="middle" font-size="12" font-family="Times New Roman">Chọn menu "Kho &amp; Vật tư" → "Kho vật tư"</text>
+  <line x1="332" y1="131" x2="420" y2="131" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- S1: Hiển thị dashboard 3 thẻ -->
+  <rect x="422" y="112" width="298" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="571" y="127" text-anchor="middle" font-size="12" font-family="Times New Roman">Hiển thị thẻ tổng quan: Tổng mặt hàng,</text>
+  <text x="571" y="143" text-anchor="middle" font-size="12" font-family="Times New Roman">Cảnh báo tồn kho, Giá trị tồn kho</text>
+  <line x1="571" y1="150" x2="571" y2="168" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- S2: Hiển thị tab Tồn kho -->
+  <rect x="422" y="170" width="298" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="571" y="185" text-anchor="middle" font-size="12" font-family="Times New Roman">Hiển thị tab "Tồn kho" mặc định &amp;</text>
+  <text x="571" y="201" text-anchor="middle" font-size="12" font-family="Times New Roman">danh sách vật tư theo phân loại</text>
+  <line x1="571" y1="208" x2="571" y2="226" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- S3: Kiểm tra Min/Max -->
+  <rect x="422" y="228" width="298" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="571" y="252" text-anchor="middle" font-size="12" font-family="Times New Roman">Phân tích định mức Min/Max từng vật tư</text>
+  <line x1="571" y1="266" x2="571" y2="285" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- D1: Tồn < Min ? -->
+  <polygon points="571,285 660,313 571,341 482,313" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="571" y="309" text-anchor="middle" font-size="11" font-family="Times New Roman">Tồn kho</text>
+  <text x="571" y="323" text-anchor="middle" font-size="11" font-family="Times New Roman">&lt; Min?</text>
+
+  <!-- [yes] → LEFT: Sắp hết, tính Cần nhập -->
+  <line x1="482" y1="313" x2="380" y2="313" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="429" y="306" text-anchor="middle" font-size="10" font-family="Times New Roman">[yes]</text>
+  <rect x="100" y="293" width="280" height="40" rx="8" fill="white" stroke="#000" stroke-width="1"/>
+  <text x="240" y="313" text-anchor="middle" font-size="10" font-family="Times New Roman">Gán nhãn "Sắp hết", tính Cần nhập</text>
+  <text x="240" y="327" text-anchor="middle" font-size="10" font-family="Times New Roman">= Max − Tồn; cộng vào thẻ Cảnh báo</text>
+  <!-- merge down -->
+  <line x1="240" y1="333" x2="240" y2="390" stroke="#000" stroke-width="1.5"/>
+  <line x1="240" y1="390" x2="482" y2="390" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- [no] → D2 -->
+  <line x1="571" y1="341" x2="571" y2="360" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="592" y="354" font-size="10" font-family="Times New Roman">[no]</text>
+
+  <!-- D2: Tồn > Max ? -->
+  <polygon points="571,360 655,385 571,410 487,385" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="571" y="381" text-anchor="middle" font-size="11" font-family="Times New Roman">Tồn kho</text>
+  <text x="571" y="395" text-anchor="middle" font-size="11" font-family="Times New Roman">&gt; Max?</text>
+
+  <!-- [yes] → Gán "Dư hàng" -->
+  <line x1="655" y1="385" x2="720" y2="385" stroke="#000" stroke-width="1.5"/>
+  <text x="683" y="378" text-anchor="middle" font-size="10" font-family="Times New Roman">[yes]</text>
+  <rect x="720" y="367" width="25" height="40" rx="4" fill="white" stroke="#000" stroke-width="1"/>
+  <text x="732" y="390" text-anchor="middle" font-size="9" font-family="Times New Roman" transform="rotate(90,732,390)">Gán "Dư hàng"</text>
+  <line x1="732" y1="367" x2="732" y2="390" stroke="#000" stroke-width="1"/>
+  <!-- Merge to S4 -->
+  <line x1="745" y1="385" x2="745" y2="430" stroke="#000" stroke-width="1.5"/>
+  <line x1="745" y1="430" x2="660" y2="430" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- [no] → Gán "Bình thường" then merge -->
+  <line x1="571" y1="410" x2="571" y2="430" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="592" y="424" font-size="10" font-family="Times New Roman">[no]→"Bình thường"</text>
+
+  <!-- S4: Cập nhật lưới hoàn chỉnh (merge point) -->
+  <rect x="422" y="430" width="298" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="571" y="454" text-anchor="middle" font-size="12" font-family="Times New Roman">Hiển thị lưới dữ liệu hoàn chỉnh với nhãn</text>
+  <line x1="571" y1="468" x2="571" y2="487" stroke="#000" stroke-width="1.5"/>
+  <line x1="571" y1="487" x2="380" y2="487" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- D3 (User): Chọn hành động -->
+  <polygon points="192,487 300,515 192,543 84,515" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="192" y="511" text-anchor="middle" font-size="11" font-family="Times New Roman">Chọn</text>
+  <text x="192" y="525" text-anchor="middle" font-size="11" font-family="Times New Roman">hành động?</text>
+
+  <!-- [Tìm kiếm] → down LEFT -->
+  <line x1="84" y1="515" x2="30" y2="515" stroke="#000" stroke-width="1.5"/>
+  <text x="55" y="508" text-anchor="middle" font-size="10" font-family="Times New Roman">[Tìm]</text>
+  <line x1="30" y1="515" x2="30" y2="565" stroke="#000" stroke-width="1.5"/>
+  <rect x="30" y="565" width="180" height="38" rx="8" fill="white" stroke="#000" stroke-width="1"/>
+  <text x="120" y="589" text-anchor="middle" font-size="10" font-family="Times New Roman">Nhập từ khóa / chọn sắp xếp</text>
+  <line x1="210" y1="584" x2="380" y2="584" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="382" y="565" width="270" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="517" y="589" text-anchor="middle" font-size="12" font-family="Times New Roman">Lọc và trả về danh sách phù hợp</text>
+  <!-- back to D3 -->
+  <line x1="517" y1="603" x2="517" y2="620" stroke="#000" stroke-width="1.5"/>
+  <line x1="517" y1="620" x2="192" y2="620" stroke="#000" stroke-width="1.5"/>
+  <line x1="192" y1="620" x2="192" y2="543" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="340" y="635" text-anchor="middle" font-size="10" font-family="Times New Roman">[retry]</text>
+
+  <!-- [Thêm/Sửa/Xóa] → DOWN from D3 -->
+  <line x1="192" y1="543" x2="192" y2="645" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="210" y="640" font-size="10" font-family="Times New Roman">[CRUD]</text>
+
+  <!-- U-CRUD: Nhập/cập nhật form -->
+  <rect x="60" y="647" width="272" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="196" y="671" text-anchor="middle" font-size="12" font-family="Times New Roman">Nhập / Cập nhật thông tin vật tư</text>
+  <line x1="332" y1="666" x2="420" y2="666" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- S5: Validate -->
+  <rect x="422" y="647" width="298" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="571" y="671" text-anchor="middle" font-size="12" font-family="Times New Roman">Kiểm tra tính hợp lệ dữ liệu</text>
+  <line x1="571" y1="685" x2="571" y2="704" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- D4: Hợp lệ? -->
+  <polygon points="571,704 655,729 571,754 487,729" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="571" y="725" text-anchor="middle" font-size="11" font-family="Times New Roman">Dữ liệu</text>
+  <text x="571" y="739" text-anchor="middle" font-size="11" font-family="Times New Roman">hợp lệ?</text>
+
+  <!-- [invalid] → back -->
+  <line x1="655" y1="729" x2="720" y2="729" stroke="#000" stroke-width="1.5"/>
+  <text x="683" y="722" text-anchor="middle" font-size="10" font-family="Times New Roman">[invalid]</text>
+  <line x1="720" y1="729" x2="720" y2="666" stroke="#000" stroke-width="1.5"/>
+  <line x1="720" y1="666" x2="332" y2="666" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- [valid] → save -->
+  <line x1="571" y1="754" x2="571" y2="773" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="592" y="767" font-size="10" font-family="Times New Roman">[valid]</text>
+
+  <!-- S6: Lưu CSDL -->
+  <rect x="422" y="775" width="298" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="571" y="799" text-anchor="middle" font-size="12" font-family="Times New Roman">Lưu / Cập nhật vào bảng Materials (DB)</text>
+  <line x1="571" y1="813" x2="571" y2="832" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- S7: Tải lại -->
+  <rect x="422" y="834" width="298" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="571" y="858" text-anchor="middle" font-size="12" font-family="Times New Roman">Tải lại danh sách &amp; thống kê mới nhất</text>
+  <line x1="571" y1="872" x2="571" y2="891" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- [Xuất Excel] → RIGHT from D3 (via special branch) -->
+  <line x1="300" y1="515" x2="380" y2="515" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="338" y="508" text-anchor="middle" font-size="10" font-family="Times New Roman">[Excel]</text>
+
+  <!-- S8: Tạo Excel -->
+  <rect x="422" y="893" width="298" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="571" y="917" text-anchor="middle" font-size="12" font-family="Times New Roman">Xuất file Excel tồn kho về máy người dùng</text>
+  <line x1="571" y1="931" x2="571" y2="950" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Merge from Excel branch (draw arrow from [Excel] D3 to S8) -->
+  <!-- Arrow from D3 [Excel] to S8: D3 right → down to y=893 area -->
+  <!-- Actually already connected at y=515 going right to system, need to go down to S8 -->
+  <line x1="571" y1="515" x2="571" y2="534" stroke="#000" stroke-width="1.5"/>
+  <!-- Already handled by S4 flow; here draw Excel special path -->
+  <!-- From D3 [Excel] side note goes to right of system  -->
+  <!-- Connect the reload (S7) flow to END -->
+
+  <!-- S9: Thông báo thành công -->
+  <rect x="422" y="952" width="298" height="38" rx="19" fill="white" stroke="#000" stroke-width="1.2"/>
+  <text x="571" y="976" text-anchor="middle" font-size="12" font-family="Times New Roman">Thông báo / Tải xuống thành công</text>
+  <line x1="571" y1="990" x2="571" y2="1010" stroke="#000" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- END -->
+  <circle cx="571" cy="1024" r="13" fill="none" stroke="#000" stroke-width="2.5"/>
+  <circle cx="571" cy="1024" r="8" fill="#000"/>
+
+  <!-- Connect S7 tải lại → S8 → S9 → END (for CRUD path ending) -->
+  <line x1="571" y1="872" x2="422" y2="872" stroke="#000" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="490" y="868" text-anchor="middle" font-size="9" fill="#555" font-family="Times New Roman">[CRUD done → kết thúc]</text>
+  <line x1="422" y1="872" x2="422" y2="1024" stroke="#000" stroke-width="1" stroke-dasharray="3,2"/>
+  <line x1="422" y1="1024" x2="558" y2="1024" stroke="#000" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#arr)"/>
+</svg>
+
+<p style="text-align:center; font-style:italic; font-family:'Times New Roman'; font-size:13px; margin-top:4px;">
+  Hình 2.x. Biểu đồ hoạt động use case Theo dõi và Quản lý tồn kho vật tư
+</p>
+</body>
+</html>

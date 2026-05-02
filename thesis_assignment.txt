@@ -1,0 +1,19 @@
+
+PHIẾU GIAO ĐỀ TÀI ĐỒ ÁN TỐT NGHIỆP
+Họ tên sinh viên: Lê Văn Hải                                                    Mã SV:2022605948
+Lớp: 2022DHCNTT06             Ngành: Công Nghệ Thông Tin             Khóa:K17
+Tên đề tài: Xây dựng hệ thống quản lý kinh doanh và sản xuất cho doanh nghiệp nhỏ
+Mục tiêu đề tài: 
+Khảo sát và phân tích quy trình kinh doanh và sản xuất tại doanh nghiệp thực tế, từ đó xác định các yêu cầu nghiệp vụ cần thiết cho hệ thống phần mềm.
+Phân tích và mô hình hóa hệ thống thông qua các mô hình UML nhằm mô tả các chức năng và luồng xử lý dữ liệu của hệ thống quản lý.
+Thiết kế kiến trúc hệ thống phần mềm trên nền tảng Web và xây dựng cơ sở dữ liệu quan hệ nhằm đảm bảo khả năng lưu trữ và quản lý dữ liệu hiệu quả.
+Xây dựng hệ thống phần mềm quản lý với các chức năng chính như quản lý khách hàng, quản lý đơn hàng, quản lý kho vật tư, quản lý sản xuất và báo cáo thống kê.
+Thực hiện kiểm thử và đánh giá hệ thống nhằm đảm bảo hệ thống hoạt động ổn định và đáp ứng yêu cầu quản lý của doanh nghiệp.
+Kết quả dự kiến:
+Báo cáo khảo sát và tài liệu đặc tả yêu cầu hệ thống (Software Requirements Specification – SRS).
+Bộ mô hình phân tích hệ thống gồm các biểu đồ UML như Use Case Diagram, Activity Diagram, Class Diagram và sơ đồ thực thể liên kết (ERD).
+Tài liệu thiết kế hệ thống bao gồm thiết kế kiến trúc phần mềm, thiết kế cơ sở dữ liệu và thiết kế giao diện người dùng.
+Hệ thống phần mềm quản lý kinh doanh và sản xuất trên nền tảng Web với các chức năng: quản lý khách hàng, quản lý đơn hàng, quản lý kho vật tư, quản lý sản xuất và báo cáo thống kê.
+Báo cáo đồ án tốt nghiệp hoàn chỉnh cùng tài liệu hướng dẫn cài đặt và sử dụng hệ thống.
+Thời gian thực hiện: từ 02/03/2026 đến 04/05/2025.
+

@@ -46,12 +46,12 @@ function initCustomerModal() {
     document.body.appendChild(modal);
 
     // Add event listeners
-    document.getElementById('customerModalCloseBtn').addEventListener('click', closeCustomerModal);
-    document.getElementById('customerModalBackdrop').addEventListener('click', closeCustomerModal);
+    document.getElementById('customerModalCloseBtn').addEventListener('click', closeCustomerInfoModal);
+    document.getElementById('customerModalBackdrop').addEventListener('click', closeCustomerInfoModal);
 }
 
 // Close modal
-function closeCustomerModal() {
+function closeCustomerInfoModal() {
     const modal = document.getElementById('customerModalContainer');
     if (modal) modal.classList.add('hidden');
 }
@@ -217,7 +217,7 @@ async function showCustomerModal(customerId, customerName) {
         document.querySelectorAll('.project-link-item').forEach(item => {
             item.addEventListener('click', function () {
                 const projectId = this.getAttribute('data-project-id');
-                closeCustomerModal();
+                closeCustomerInfoModal();
                 // Navigate to project detail
                 window.location.href = `project-detail.html?id=${projectId}`;
             });
@@ -230,5 +230,7 @@ async function showCustomerModal(customerId, customerName) {
 }
 
 // Export functions for global use
+window.showCustomerInfoModal = showCustomerInfoModal;
+window.closeCustomerInfoModal = closeCustomerInfoModal;
+// Keep backward compat for showCustomerModal
 window.showCustomerModal = showCustomerModal;
-window.closeCustomerModal = closeCustomerModal;
