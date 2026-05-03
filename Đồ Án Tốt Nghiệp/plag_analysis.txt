@@ -1,0 +1,11 @@
+Số lượng trích dẫn tìm thấy (dạng [1], [2]): 14
+
+--- Mẫu văn bản Chương 1 ---
+CHƯƠNG   1:   TỔNG   QUAN   VỀ   CÔNG   NGHỆ   SỬ   DỤNG   VÀ   MÔI TRƯỜNG TRIỂN KHAI 11 1.1. Giới   thiệu   về   HTML5, CSS3, JavaScript 11 1.1.1 1.1.1.Giới   thiệu   HTML 11 1.1.2 1.1.2. Giới   thiệu   về   CSS   và  JavaScript 12 1.1.3 1.1.3.Tổng   quan   về   Responsive   Web 13 1.2. Giới   thiệu   về  Node.js và Express.js 13 1.3. Giới   thiệu   về   MySQL 14 1.4. Giới thiệu về Google Generative AI (Gemini API) 16 2 CHƯƠNG   2:
+Cụm từ boilerplate 'Trong thời đại công nghệ' xuất hiện: 0 lần
+Cụm từ boilerplate 'Sự phát triển mạnh mẽ' xuất hiện: 0 lần
+Cụm từ boilerplate 'Như chúng ta đã biết' xuất hiện: 0 lần
+Cụm từ boilerplate 'Theo wikipedia' xuất hiện: 0 lần
+Cụm từ boilerplate 'Khái niệm về' xuất hiện: 0 lần
+
+Số lượng Use Case tìm thấy cấu trúc chuẩn: 0
