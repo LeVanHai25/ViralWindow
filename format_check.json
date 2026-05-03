@@ -1,0 +1,45 @@
+{
+  "total_paragraphs": 647,
+  "body_paragraphs": 559,
+  "margins_ok": [
+    "Lề trái: 3.5cm ✅ (chuẩn 3.5cm)",
+    "Lề phải: 2.0cm ✅ (chuẩn 2.0cm)"
+  ],
+  "margins_issues": [
+    "Lề trên: 2.5cm ❌ (chuẩn 3.0cm, lệch 0.5cm)",
+    "Lề dưới: 2.0cm ❌ (chuẩn 3.0cm, lệch 1.0cm)"
+  ],
+  "font_issues_count": 0,
+  "font_issues_sample": [],
+  "size_issues_count": 312,
+  "size_issues_sample": [
+    "Dòng 4: 14.0pt – 'TRƯỜNG ĐẠI HỌC CÔNG NGHIỆP HÀ NỘI'",
+    "Dòng 5: 14.0pt – '---------------------------------------'",
+    "Dòng 9: 14.0pt – 'Ngành Công Nghệ Thông Tin'",
+    "Dòng 15: 14.0pt – 'GVHD\t: ThS. Nguyễn Ngọc Khải Sinh viên\t: Lê Văn Hải'",
+    "Dòng 16: 14.0pt – 'Mã số sinh viên: 2022605948'"
+  ],
+  "align_issues_count": 4,
+  "indent_issues_count": 1,
+  "indent_issues_sample": [
+    "Dòng 635: indent=0.81cm (cần 1.25cm) – 'Mục tiêu đầu tiên của kiểm thử là xác nhận rằng tấ'"
+  ],
+  "heading_issues_count": 68,
+  "heading_issues_sample": [
+    "Dòng 3: Heading chưa in đậm – 'BỘ CÔNG THƯƠNG'",
+    "Dòng 8: Heading chưa in đậm – 'ĐỒ ÁN TỐT NGHIỆP ĐẠI HỌC'",
+    "Dòng 12: Heading chưa in đậm – 'XÂY DỰNG HỆ THỐNG QUẢN LÝ SẢN XUẤT VÀ KINH DOANH C'",
+    "Dòng 24: Heading chưa in đậm – 'DANH MỤC BẢNG BIỂU'",
+    "Dòng 66: Heading chưa in đậm – 'DANH MỤC HÌNH ẢNH'"
+  ],
+  "figure_count": 70,
+  "table_count": 80,
+  "ref_count": 12,
+  "refs_sample": [
+    "[1] Nguyễn Văn Ba (2018), Phân tích và thiết kế hệ thống thông tin, Nhà xuất bản",
+    "[2] Phạm Văn Ất (2017), Kỹ thuật lập trình – Từ cơ bản đến nâng cao, Nhà xuất bả",
+    "[3] Nguyễn Thị Thu Thủy (2020), Cơ sở dữ liệu – Lý thuyết và thực hành, Nhà xuất",
+    "[4] Sommerville I. (2015), Software Engineering (10th ed.), Pearson Education, L",
+    "[5] Flanagan D. (2020), JavaScript: The Definitive Guide (7th ed.), O’Reilly Med"
+  ]
+}

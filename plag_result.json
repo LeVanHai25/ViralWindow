@@ -1,0 +1,83 @@
+﻿{
+  "total": 326,
+  "high_count": 9,
+  "med_count": 3,
+  "low_count": 314,
+  "avg_score": 7.58,
+  "high_samples": [
+    {
+      "text": "Trong bß╗æi cß║únh cuß╗Öc C├ích mß║íng c├┤ng nghiß╗çp 4.0, chuyß╗ân ─æß╗òi sß╗æ ─æ├ú trß╗ƒ th├ánh y├¬u cß║ºu tß║Ñt yß║┐u ─æß╗æi vß╗¢i c├íc doanh nghiß╗çp nhß║▒m n├óng cao hiß╗çu quß║ú quß║ún l├╜ v├á n─âng lß╗▒c cß║ính tranh. ─Éß║╖c biß╗çt, sß╗▒ ph├ít triß╗ân cß╗ºa c├í",
+      "reason": "C├óu mß╗ƒ ─æß║ºu phß╗ò biß║┐n",
+      "score": 75,
+      "matched": "C├ích mß║íng c├┤ng nghiß╗çp 4.0, chuyß╗ân ─æß╗òi sß╗æ ─æ├ú trß╗ƒ th├ánh y├¬u cß║º"
+    },
+    {
+      "text": "HTML (Hypertext Markup Language ΓÇô Ng├┤n ngß╗» ─æ├ính dß║Ñu si├¬u v─ân bß║ún) l├á ng├┤n ngß╗» ─æ├ính dß║Ñu chuß║⌐n d├╣ng soß║ín thß║úo c├íc t├ái liß╗çu World Wide Web, chß╗ë r├╡ mß╗Öt trang Web ─æ╞░ß╗úc hiß╗ân thß╗ï nh╞░ thß║┐ n├áo trong tr├¼nh duyß╗ç",
+      "reason": "─Éß╗ïnh ngh─⌐a HTML ΓÇô xuß║Ñt hiß╗çn trong h├áng tr─âm ─æß╗ô ├ín CNTT",
+      "score": 95,
+      "matched": "HTML (Hypertext Markup Language"
+    },
+    {
+      "text": "CSS (Cascading Style Sheets) l├á mß╗Öt ng├┤n ngß╗» quy ─æß╗ïnh c├ích tr├¼nh b├áy cho c├íc t├ái liß╗çu viß║┐t bß║▒ng HTML, XHTML, XML, SVG hay UML, v.v. CSS cung cß║Ñp nhiß╗üu thuß╗Öc t├¡nh tr├¼nh b├áy cho c├íc ─æß╗æi t╞░ß╗úng vß╗¢i sß╗▒ s├ín",
+      "reason": "─Éß╗ïnh ngh─⌐a CSS ΓÇô rß║Ñt phß╗ò biß║┐n",
+      "score": 92,
+      "matched": "CSS (Cascading Style Sheets) l├á mß╗Öt ng├┤n ngß╗» quy ─æß╗ïnh c├ích t"
+    },
+    {
+      "text": "Responsive web design (RWD) l├á mß╗Öt ph╞░╞íng ph├íp thiß║┐t kß║┐ web nhß║▒m tß║ío ra c├íc trang web c├│ khß║ú n─âng th├¡ch ß╗⌐ng vß╗¢i mß╗ìi k├¡ch th╞░ß╗¢c m├án h├¼nh v├á thiß║┐t bß╗ï kh├íc nhau. ─Éiß╗üu n├áy ─æß║úm bß║úo ng╞░ß╗¥i d├╣ng c├│ trß║úi nghiß╗ç",
+      "reason": "─Éß╗ïnh ngh─⌐a RWD ΓÇô phß╗ò biß║┐n",
+      "score": 82,
+      "matched": "Responsive web design (RWD) l├á mß╗Öt ph╞░╞íng ph├íp thiß║┐t kß║┐ web"
+    },
+    {
+      "text": "Node.js l├á mß╗Öt m├┤i tr╞░ß╗¥ng chß║íy (runtime) cho JavaScript ph├¡a m├íy chß╗º, ─æ╞░ß╗úc x├óy dß╗▒ng tr├¬n engine V8 cß╗ºa Google Chrome. Kh├┤ng giß╗æng nh╞░ JavaScript truyß╗ün thß╗æng chß╗ë chß║íy tr├¬n tr├¼nh duyß╗çt, Node.js cho ph├⌐",
+      "reason": "─Éß╗ïnh ngh─⌐a Node.js ΓÇô phß╗ò biß║┐n",
+      "score": 88,
+      "matched": "Node.js l├á mß╗Öt m├┤i tr╞░ß╗¥ng chß║íy (runtime) cho JavaScript ph├¡a"
+    },
+    {
+      "text": "Express.js l├á mß╗Öt framework web tß╗æi giß║ún v├á linh hoß║ít ─æ╞░ß╗úc x├óy dß╗▒ng tr├¬n nß╗ün tß║úng Node.js. Express.js cung cß║Ñp c├íc c├┤ng cß╗Ñ v├á t├¡nh n─âng cß║ºn thiß║┐t ─æß╗â ph├ít triß╗ân ß╗⌐ng dß╗Ñng web v├á API mß╗Öt c├ích nhanh ch├│ng",
+      "reason": "─Éß╗ïnh ngh─⌐a Express.js ΓÇô phß╗ò biß║┐n",
+      "score": 80,
+      "matched": "Express.js l├á mß╗Öt framework web tß╗æi giß║ún v├á linh hoß║ít"
+    },
+    {
+      "text": "MySQL l├á mß╗Öt hß╗ç quß║ún trß╗ï c╞í sß╗ƒ dß╗» liß╗çu quan hß╗ç (RDBMS ΓÇô Relational Database Management System) m├ú nguß╗ôn mß╗ƒ, ─æ╞░ß╗úc sß╗¡ dß╗Ñng rß╗Öng r├úi trong c├íc ß╗⌐ng dß╗Ñng web v├á hß╗ç thß╗æng th├┤ng tin. MySQL sß╗¡ dß╗Ñng SQL (Struc",
+      "reason": "─Éß╗ïnh ngh─⌐a MySQL ΓÇô rß║Ñt phß╗ò biß║┐n",
+      "score": 90,
+      "matched": "MySQL l├á mß╗Öt hß╗ç quß║ún trß╗ï c╞í sß╗ƒ dß╗» liß╗çu quan hß╗ç (RDBMS"
+    },
+    {
+      "text": "SQL l├á ng├┤n ngß╗» ti├¬u chuß║⌐n d├╣ng ─æß╗â l├ám viß╗çc vß╗¢i c├íc hß╗ç quß║ún trß╗ï c╞í sß╗ƒ dß╗» liß╗çu quan hß╗ç nh╞░ MySQL, Oracle Database, v├á Microsoft SQL Server. SQL cho ph├⌐p ng╞░ß╗¥i d├╣ng thß╗▒c hiß╗çn c├íc thao t├íc c╞í bß║ún nh╞░:",
+      "reason": "─Éß╗ïnh ngh─⌐a SQL ΓÇô gi├ío khoa",
+      "score": 85,
+      "matched": "SQL l├á ng├┤n ngß╗» ti├¬u chuß║⌐n d├╣ng ─æß╗â l├ám viß╗çc vß╗¢i c├íc hß╗ç quß║ún "
+    },
+    {
+      "text": "Google Generative AI l├á nß╗ün tß║úng tr├¡ tuß╗ç nh├ón tß║ío do Google ph├ít triß╗ân, cung cß║Ñp c├íc m├┤ h├¼nh AI c├│ khß║ú n─âng tß║ío sinh nß╗Öi dung (Generative AI) nh╞░ v─ân bß║ún, h├¼nh ß║únh, m├ú nguß╗ôn v├á nhiß╗üu dß║íng dß╗» liß╗çu kh├íc",
+      "reason": "M├┤ tß║ú Gemini ΓÇô c├│ thß╗â tß╗½ docs Google",
+      "score": 70,
+      "matched": "Google Generative AI l├á nß╗ün tß║úng tr├¡ tuß╗ç nh├ón tß║ío do Google "
+    }
+  ],
+  "med_samples": [
+    {
+      "text": "Hß╗ç thß╗æng phß║úi hß╗ù trß╗ú x├íc thß╗▒c ng╞░ß╗¥i d├╣ng th├┤ng qua email v├á mß║¡t khß║⌐u, duy tr├¼ phi├¬n l├ám viß╗çc bß║▒ng JSON Web Token. Quß║ún trß╗ï vi├¬n c├│ quyß╗ün tß║ío mß╗¢i t├ái khoß║ún ng╞░ß╗¥i d├╣ng, chß╗ënh sß╗¡a th├┤ng tin, k├¡ch hoß║ít ho",
+      "reason": "Thuß║¡t ngß╗» RBAC ΓÇô chuy├¬n ng├ánh",
+      "score": 30,
+      "matched": "Role-Based Access Control"
+    },
+    {
+      "text": "Ph├ón quyß╗ün theo m├┤ h├¼nh Role-Based Access Control:\nHß╗ç thß╗æng ph├ón chia quyß╗ün truy cß║¡p theo vai tr├▓ nhß║▒m ─æß║úm bß║úo nguy├¬n tß║»c Least Privilege (─æß║╖c quyß╗ün tß╗æi thiß╗âu):",
+      "reason": "Thuß║¡t ngß╗» RBAC ΓÇô chuy├¬n ng├ánh",
+      "score": 30,
+      "matched": "Role-Based Access Control"
+    },
+    {
+      "text": "Triß╗ân khai th├ánh c├┤ng c╞í chß║┐ bß║úo mß║¡t vß╗¢i JWT (JSON Web Token) v├á m├┤ h├¼nh ph├ón quyß╗ün RBAC (Role-Based Access Control).",
+      "reason": "Thuß║¡t ngß╗» RBAC ΓÇô chuy├¬n ng├ánh",
+      "score": 30,
+      "matched": "Role-Based Access Control"
+    }
+  ]
+}
