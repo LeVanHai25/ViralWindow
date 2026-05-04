@@ -4,6 +4,7 @@
 <head>
     <script src="js/auth-helper.js"></script>
     <script src="js/config.js"></script>
+    <script src="js/theme-manager.js"></script>
     <script src="js/vw-modal.js"></script>
     <script src="js/modal-system.js"></script>
     <script src="js/user-settings.js"></script>
@@ -78,14 +79,14 @@
 
         .main-content {
             margin-left: 280px;
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            background: var(--bg-main);
             min-height: 100vh;
         }
 
         /* Hero Section - Industrial Style */
         .hero-section {
-            background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
-            border-bottom: 1px solid var(--gray-200);
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border-subtle);
         }
 
         .hero-company-info {
@@ -101,10 +102,9 @@
             text-decoration: none;
             position: relative;
             overflow: hidden;
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: var(--shadow-glass);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            box-shadow: var(--shadow-sm);
         }
 
         .stat-card::before {
@@ -991,9 +991,9 @@
             <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <!-- Left: Greeting -->
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-800 mb-1">Xin chào, <span id="heroUserName">Quản lý</span>!
+                    <h1 class="text-3xl font-bold mb-1" style="color: var(--text-primary)">Xin chào, <span id="heroUserName">Quản lý</span>!
                     </h1>
-                    <p class="text-gray-600" id="heroDateTime">Hôm nay là Thứ 3, ngày 31/12/2024</p>
+                    <p id="heroDateTime" style="color: var(--text-secondary)">Hôm nay là Thứ 3, ngày 31/12/2024</p>
                 </div>
 
                 <!-- Right: Clock + Weather side by side -->
