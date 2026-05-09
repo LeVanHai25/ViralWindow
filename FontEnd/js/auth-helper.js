@@ -4,26 +4,76 @@
  * 
  * MUST be loaded FIRST before any other scripts in <head>
  * This ensures Remember Login works across all pages
+ * 
+ * FIX: Added JWT expiry check to prevent redirect loop when
+ * Chrome auto-fills credentials with an expired token in localStorage.
  */
 
 (function () {
     'use strict';
 
-    // Immediately sync token on load (synchronous, before anything else runs)
+    // ============================================
+    // JWT EXPIRY CHECK (Client-side)
+    // Decode JWT payload and check exp field
+    // ============================================
+    function isTokenExpired(token) {
+        if (!token) return true;
+        try {
+            // JWT format: header.payload.signature
+            const parts = token.split('.');
+            if (parts.length !== 3) return true;
+            
+            const payload = JSON.parse(atob(parts[1]));
+            if (!payload.exp) return false; // No expiry = never expires (unusual but safe)
+            
+            // exp is in seconds, Date.now() is in milliseconds
+            // Subtract 60s buffer to handle clock skew
+            return (payload.exp * 1000) < (Date.now() - 60000);
+        } catch (e) {
+            console.warn('[AuthHelper] Cannot parse token expiry:', e.message);
+            return true; // If can't parse, consider expired for safety
+        }
+    }
+
+    // ============================================
+    // TOKEN SYNC: localStorage → sessionStorage
+    // Only sync if token is still valid (not expired)
+    // ============================================
     const localToken = localStorage.getItem('token');
     const sessionToken = sessionStorage.getItem('token');
 
-    // If token exists in localStorage but not in sessionStorage, user has "Remember Me" enabled
     if (localToken && !sessionToken) {
-        sessionStorage.setItem('token', localToken);
-        const localUser = localStorage.getItem('user');
-        if (localUser) {
-            sessionStorage.setItem('user', localUser);
+        // FIX: Check expiry BEFORE syncing
+        if (isTokenExpired(localToken)) {
+            // Token đã hết hạn → xóa sạch localStorage, không sync
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('rememberMe');
+            console.log('[AuthHelper] Token expired in localStorage, cleared');
+        } else {
+            // Token còn hạn → sync vào sessionStorage
+            sessionStorage.setItem('token', localToken);
+            const localUser = localStorage.getItem('user');
+            if (localUser) {
+                sessionStorage.setItem('user', localUser);
+            }
+            console.log('[AuthHelper] Token synced from localStorage');
         }
-        console.log('[AuthHelper] Token synced from localStorage');
     }
 
-    // Expose global auth helper functions
+    // Also check sessionStorage token for expiry on load
+    if (sessionToken && isTokenExpired(sessionToken)) {
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('user');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('rememberMe');
+        console.log('[AuthHelper] Token expired in sessionStorage, cleared both storages');
+    }
+
+    // ============================================
+    // AUTH HELPER API
+    // ============================================
     window.AuthHelper = {
         /**
          * Get token - prioritize sessionStorage, fallback to localStorage
@@ -46,9 +96,19 @@
 
         /**
          * Check if user is authenticated
+         * FIX: Now also checks JWT expiry, not just token existence
          */
         isAuthenticated: function () {
-            return !!this.getToken();
+            const token = this.getToken();
+            if (!token) return false;
+            
+            // FIX: Verify token hasn't expired
+            if (isTokenExpired(token)) {
+                console.log('[AuthHelper] isAuthenticated: token expired, clearing auth');
+                this.clearAuth();
+                return false;
+            }
+            return true;
         },
 
         /**
@@ -97,10 +157,13 @@
 
         /**
          * Redirect to login page
+         * FIX: Added reason parameter for anti-loop protection
+         * @param {string} reason - 'expired' | 'unauthorized' | undefined
          */
-        redirectToLogin: function () {
+        redirectToLogin: function (reason) {
             this.clearAuth();
-            window.location.href = 'login.html';
+            const suffix = reason ? '?reason=' + reason : '';
+            window.location.href = 'login.html' + suffix;
         },
 
         /**
@@ -169,25 +232,44 @@
         window.location.href = 'login.html';
     };
 
-    // Global fetch interceptor to handle SESSION_EXPIRED
-    // This wraps the native fetch to auto-logout when session is terminated
+    // ============================================
+    // FETCH INTERCEPTOR (with anti-loop protection)
+    // Handles SESSION_EXPIRED and invalid token responses
+    // ============================================
+    let _isRedirecting = false; // Anti-loop: prevent multiple redirects
+
     const originalFetch = window.fetch;
     window.fetch = async function (...args) {
         const response = await originalFetch.apply(this, args);
 
+        // Only intercept API requests, ignore external/static requests
+        const url = typeof args[0] === 'string' ? args[0] : (args[0]?.url || '');
+        const isApiRequest = url.includes('/api/');
+        if (!isApiRequest) return response;
+
+        // Don't intercept if already redirecting (anti-loop)
+        if (_isRedirecting) return response;
+
         const responseClone = response.clone();
 
-        if (response.status === 401) {
+        if (response.status === 401 || response.status === 403) {
             try {
                 const data = await responseClone.json();
-                if (data.code === 'SESSION_EXPIRED') {
-                    alert('Phiên đăng nhập đã hết hạn hoặc đã bị đăng xuất từ thiết bị khác.');
+                
+                // Session explicitly revoked OR token invalid/expired
+                if (data.code === 'SESSION_EXPIRED' || 
+                    data.message === 'Token không hợp lệ' ||
+                    data.message === 'Không có token xác thực') {
+                    
+                    _isRedirecting = true; // Prevent further redirects
+                    
+                    console.log('[AuthHelper] Session expired/invalid, redirecting to login');
                     window.AuthHelper.clearAuth();
-                    window.location.href = 'login.html';
+                    window.location.href = 'login.html?reason=expired';
                     return response;
                 }
             } catch (e) {
-                // Ignore JSON parse errors
+                // Ignore JSON parse errors (e.g., non-JSON 401 responses)
             }
         }
 

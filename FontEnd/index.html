@@ -1405,12 +1405,13 @@
         const API_BASE = window.API_BASE || '/api';
 
         // Check authentication - use AuthHelper to support Remember Me (localStorage fallback)
+        // FIX: Redirect with ?reason=expired to break potential loop
         function checkAuth() {
             // AuthHelper syncs localStorage → sessionStorage on load (in auth-helper.js)
-            // Always use AuthHelper so Remember Me works correctly across sessions
+            // AuthHelper.isAuthenticated() now checks JWT expiry too
             if (window.AuthHelper) {
                 if (!window.AuthHelper.isAuthenticated()) {
-                    window.location.href = 'login.html';
+                    window.location.href = 'login.html?reason=expired';
                     return false;
                 }
                 return true;
@@ -1801,11 +1802,48 @@
         });
 
         // Initialize
+        // FIX: Validate token with server before loading dashboard data
+        // This prevents the case where client-side JWT check passes but server rejects
         document.addEventListener('DOMContentLoaded', function () {
-            loadUnreadCount();
-            loadCompanyLogo();
+            if (!checkAuth()) return; // Redirect to login if not authenticated
+            
+            // Validate token with server, then load dashboard
+            validateTokenAndLoadDashboard();
+        });
 
-            if (checkAuth()) {
+        async function validateTokenAndLoadDashboard() {
+            try {
+                const token = window.AuthHelper 
+                    ? window.AuthHelper.getToken() 
+                    : sessionStorage.getItem('token');
+                
+                if (!token) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const response = await fetch(`${API_BASE}/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) {
+                    // Token rejected by server → redirect to login
+                    console.log('[Index] Token rejected by server, status:', response.status);
+                    if (window.AuthHelper) window.AuthHelper.clearAuth();
+                    else {
+                        sessionStorage.removeItem('token');
+                        sessionStorage.removeItem('user');
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                    }
+                    window.location.href = 'login.html?reason=expired';
+                    return;
+                }
+
+                // Token valid → load all dashboard data
+                console.log('[Index] Token validated, loading dashboard');
+                loadUnreadCount();
+                loadCompanyLogo();
                 loadSidebarUserInfo();
                 loadHeaderUserInfo();
                 loadDashboardStats();
@@ -1819,8 +1857,22 @@
                     loadDashboardStats();
                     loadUnreadCount();
                 }, 30000);
+            } catch (error) {
+                console.error('[Index] Token validation error:', error);
+                // Network error → still try to load (might be offline/slow)
+                // Don't redirect on network errors to avoid loop when server is down
+                loadUnreadCount();
+                loadCompanyLogo();
+                loadSidebarUserInfo();
+                loadHeaderUserInfo();
+                loadDashboardStats();
+                loadHeroSection();
+                loadWorkflowPipeline();
+                loadCompanyOverview();
+                loadAlerts();
+                loadRecentActivities();
             }
-        });
+        }
 
         // Load Hero Section with Live Clock
         async function loadHeroSection() {
