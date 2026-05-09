@@ -218,12 +218,12 @@
 
                 <div id="alertMessage" class="alert-box"></div>
 
-                <form id="loginForm" onsubmit="handleLogin(event)">
+                <form id="loginForm" onsubmit="handleLogin(event)" autocomplete="on">
                     <div class="field">
                         <label for="email">Email</label>
                         <div class="inp-wrap">
                             <span class="inp-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></span>
-                            <input type="email" id="email" name="email" required placeholder="Nhập email của bạn" class="inp">
+                            <input type="email" id="email" name="email" required placeholder="Nhập email của bạn" class="inp" autocomplete="email">
                         </div>
                         <p id="emailError" class="err hidden"></p>
                     </div>
@@ -232,7 +232,7 @@
                         <label for="password">Mật khẩu</label>
                         <div class="inp-wrap">
                             <span class="inp-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg></span>
-                            <input type="password" id="password" name="password" required placeholder="Nhập mật khẩu" class="inp inp-pr">
+                            <input type="password" id="password" name="password" required placeholder="Nhập mật khẩu" class="inp inp-pr" autocomplete="current-password">
                             <button type="button" class="btn-eye" onclick="togglePasswordVisibility()">
                                 <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                             </button>
@@ -258,6 +258,8 @@
 
 <script>
     const API_BASE = window.API_BASE || '/api';
+    let _autoLoginAttempted = false; // Chặn auto-login lặp vô hạn
+    const MAX_LOGIN_RETRIES = 2; // Số lần retry khi server lỗi (cold start)
 
     function togglePasswordVisibility() {
         const p = document.getElementById('password');
@@ -294,14 +296,78 @@
             ? 'display:block;background:#FEF2F2;color:#991B1B;border:1px solid #FECACA;'
             : 'display:block;background:#F0FDF4;color:#166534;border:1px solid #BBF7D0;';
         el.textContent = msg;
-        setTimeout(() => el.style.display = 'none', 5000);
+        if (type === 'error') {
+            setTimeout(() => el.style.display = 'none', 6000);
+        }
     }
 
+    // ============================================
+    // SHOW AUTO-LOGIN PROGRESS UI
+    // ============================================
+    function showAutoLoginProgress(msg) {
+        const el = document.getElementById('alertMessage');
+        el.style.cssText = 'display:block;background:#EFF6FF;color:#1E40AF;border:1px solid #BFDBFE;';
+        el.innerHTML = '<span style="display:inline-flex;align-items:center;gap:8px;">' +
+            '<span style="display:inline-block;width:16px;height:16px;border:2px solid #93C5FD;border-top-color:#1E40AF;border-radius:50%;animation:spin .7s linear infinite;"></span>' +
+            msg + '</span>';
+    }
+
+    // ============================================
+    // CORE LOGIN FUNCTION (with retry for server errors)
+    // ============================================
+    async function performLogin(email, password, rememberMe, retryCount = 0) {
+        try {
+            const res = await fetch(`${API_BASE}/auth/login`, {
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({email, password, remember_me: rememberMe})
+            });
+            const result = await res.json();
+            
+            if (result.success) {
+                // Đăng nhập thành công
+                if (window.AuthHelper) {
+                    window.AuthHelper.saveAuth(result.data.token, result.data.user, rememberMe);
+                } else {
+                    sessionStorage.setItem('token', result.data.token);
+                    sessionStorage.setItem('user', JSON.stringify(result.data.user));
+                }
+                return { success: true };
+            } else {
+                // Server trả về lỗi logic (sai mật khẩu, etc.)
+                // Nếu là "Lỗi server" (500) → thử lại
+                if (result.message === 'Lỗi server' && retryCount < MAX_LOGIN_RETRIES) {
+                    console.log(`[Login] Server error, retry ${retryCount + 1}/${MAX_LOGIN_RETRIES}...`);
+                    await new Promise(r => setTimeout(r, 2000)); // Chờ 2s
+                    return performLogin(email, password, rememberMe, retryCount + 1);
+                }
+                return { success: false, message: result.message || 'Email hoặc mật khẩu không đúng' };
+            }
+        } catch(e) {
+            console.error('[Login] Network error:', e);
+            // Network error → thử lại
+            if (retryCount < MAX_LOGIN_RETRIES) {
+                console.log(`[Login] Network error, retry ${retryCount + 1}/${MAX_LOGIN_RETRIES}...`);
+                await new Promise(r => setTimeout(r, 2000));
+                return performLogin(email, password, rememberMe, retryCount + 1);
+            }
+            return { success: false, message: 'Lỗi kết nối server. Vui lòng thử lại sau.' };
+        }
+    }
+
+    // ============================================
+    // HANDLE LOGIN FORM SUBMIT (user clicks button)
+    // ============================================
     async function handleLogin(event) {
         event.preventDefault();
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         const rememberMe = document.getElementById('rememberMe').checked;
+
+        if (!email || !password) {
+            showAlert('Vui lòng nhập email và mật khẩu');
+            return;
+        }
 
         document.getElementById('emailError').classList.add('hidden');
         document.getElementById('passwordError').classList.add('hidden');
@@ -311,34 +377,78 @@
         const btnLoader = document.getElementById('loginButtonLoader');
         btn.disabled = true; btnText.classList.add('hidden'); btnLoader.classList.remove('hidden');
 
-        try {
-            const res = await fetch(`${API_BASE}/auth/login`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({email, password, remember_me: rememberMe})
-            });
-            const result = await res.json();
-            if (result.success) {
-                if (window.AuthHelper) window.AuthHelper.saveAuth(result.data.token, result.data.user, rememberMe);
-                else { sessionStorage.setItem('token', result.data.token); sessionStorage.setItem('user', JSON.stringify(result.data.user)); }
-                showAlert('Đăng nhập thành công!', 'success');
-                setTimeout(() => window.location.href = 'index.html', 1000);
-            } else {
-                showAlert(result.message || 'Email hoặc mật khẩu không đúng');
-                btn.disabled = false; btnText.classList.remove('hidden'); btnLoader.classList.add('hidden');
-            }
-        } catch(e) {
-            console.error(e); showAlert('Lỗi kết nối server. Vui lòng thử lại sau.');
+        const result = await performLogin(email, password, rememberMe);
+        
+        if (result.success) {
+            showAlert('Đăng nhập thành công!', 'success');
+            setTimeout(() => window.location.href = 'index.html', 800);
+        } else {
+            showAlert(result.message);
             btn.disabled = false; btnText.classList.remove('hidden'); btnLoader.classList.add('hidden');
         }
     }
 
+    // ============================================
+    // AUTO-LOGIN: Tự đăng nhập khi Chrome auto-fill
+    // Chỉ kích hoạt khi token hết hạn (reason=expired)
+    // ============================================
+    function attemptAutoLogin() {
+        if (_autoLoginAttempted) return;
+        _autoLoginAttempted = true;
+
+        // Chờ Chrome auto-fill xong (thường mất 300-800ms)
+        // Thử nhiều lần với interval ngắn để bắt sớm nhất có thể
+        let checkCount = 0;
+        const maxChecks = 10;
+        const checkInterval = 200; // Kiểm tra mỗi 200ms, tổng max 2s
+
+        const checker = setInterval(async () => {
+            checkCount++;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // Chrome đã auto-fill cả 2 field
+            if (email && password && email.includes('@') && password.length >= 1) {
+                clearInterval(checker);
+                console.log('[AutoLogin] Chrome auto-fill detected, logging in automatically...');
+                
+                showAutoLoginProgress('Đang tự động đăng nhập...');
+
+                // Tự động tick "Ghi nhớ đăng nhập" để lần sau cũng được nhớ
+                document.getElementById('rememberMe').checked = true;
+
+                // Thực hiện login
+                const result = await performLogin(email, password, true);
+                
+                if (result.success) {
+                    showAlert('Đăng nhập tự động thành công!', 'success');
+                    setTimeout(() => window.location.href = 'index.html', 500);
+                } else {
+                    // Auto-login thất bại → hiển thị lại form bình thường
+                    showAlert('Tự động đăng nhập thất bại. ' + result.message);
+                    console.log('[AutoLogin] Failed:', result.message);
+                }
+                return;
+            }
+
+            // Hết số lần kiểm tra → Chrome không auto-fill, hiển thị form bình thường
+            if (checkCount >= maxChecks) {
+                clearInterval(checker);
+                console.log('[AutoLogin] Chrome did not auto-fill, showing login form');
+                showAlert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', 'error');
+            }
+        }, checkInterval);
+    }
+
+    // ============================================
+    // PAGE INITIALIZATION
+    // ============================================
     document.addEventListener('DOMContentLoaded', () => {
-        // FIX: Anti-loop protection for expired token redirects
         const params = new URLSearchParams(window.location.search);
         const reason = params.get('reason');
         
         if (reason === 'expired') {
-            // Đến từ redirect do token hết hạn → xóa sạch auth, hiển thị thông báo
+            // Đến từ redirect do token hết hạn
             if (window.AuthHelper) window.AuthHelper.clearAuth();
             else {
                 sessionStorage.removeItem('token');
@@ -346,17 +456,20 @@
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
             }
-            showAlert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', 'error');
-            // Xóa query string khỏi URL để tránh hiển thị lại message khi refresh
+            // Xóa query string khỏi URL
             window.history.replaceState({}, '', 'login.html');
+            
+            // Thử auto-login bằng Chrome auto-fill
+            showAutoLoginProgress('Đang kiểm tra đăng nhập tự động...');
+            attemptAutoLogin();
         } else {
-            // Chỉ redirect nếu token thực sự còn hợp lệ (isAuthenticated kiểm tra cả expiry)
+            // Truy cập bình thường - kiểm tra token còn hạn không
             const ok = window.AuthHelper 
                 ? window.AuthHelper.isAuthenticated() 
                 : !!sessionStorage.getItem('token');
             if (ok) {
                 window.location.href = 'index.html';
-                return; // Ngăn load thêm
+                return;
             }
         }
         
