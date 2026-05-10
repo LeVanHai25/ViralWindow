@@ -1,0 +1,16 @@
+Về mặt phân tích nghiệp vụ và dữ liệu, hệ thống Use Case được xây dựng với 10 use case trọng yếu, mỗi use case đều được phân tích chi tiết thông qua bảng đặc tả, biểu đồ hoạt động, biểu đồ trình tự và biểu đồ VOPC, từ đó làm rõ luồng nghiệp vụ và tương tác giữa các thành phần. Song song đó, cơ sở dữ liệu được thiết kế với 12 bảng quan hệ đảm bảo toàn vẹn tham chiếu và đáp ứng đầy đủ các yêu cầu lưu trữ của hệ thống. Toàn bộ kết quả thiết kế đạt được trong chương này là nền tảng kỹ thuật vững chắc để triển khai giai đoạn cài đặt và thử nghiệm hệ thống ở Chương 3.
+CÀI ĐẶT VÀ TRIỂN KHAI HỆ THỐNG
+Công nghệ và môi trường phát triển
+Công nghệ sử dụng
+Môi trường phát triển
+Cài đặt các chức năng của hệ thống
+Xem tổng quan hoạt động
+Theo dõi công việc cá nhân
+Xem danh sách công việc trong dự án (Bảng Kanban)
+Gửi yêu cầu phê duyệt công việc
+Phê duyệt kết quả công việc
+Quản lý thành viên dự án
+Xem thống kê dự án
+Lưu trữ và chia sẻ tài liệu dự án
+Nhận và xử lý thông báo
+Đăng ký và đăng nhập tài khoản

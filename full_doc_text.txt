@@ -1,0 +1,742 @@
+BỘ CÔNG THƯƠNG
+TRƯỜNG ĐẠI HỌC CÔNG NGHIỆP HÀ NỘI
+---------------------------------------
+ĐỒ ÁN TỐT NGHIỆP ĐẠI HỌC
+Ngành Công Nghệ Thông Tin
+XÂY DỰNG HỆ THỐNG QUẢN LÝ SẢN XUẤT VÀ KINH DOANH CHO DOANH NGHIỆP NHỎ
+GVHD: TS. Nguyễn Ngọc Khải Sinh viên	: Lê Văn Hải
+Mã số sinh viên: 2022605948
+Hà Nội - 2026
+LỜI CẢM ƠN
+Để hoàn thành đồ án tốt nghiệp này, em xin gửi lời cảm ơn chân thành tới các thầy cô Trường Công nghệ Thông tin và Truyền thông, Trường Đại học Công nghiệp Hà Nội đã tận tình giảng dạy và trang bị cho em những kiến thức chuyên môn trong suốt quá trình học tập.
+Em xin bày tỏ lòng biết ơn sâu sắc tới thầy Nguyễn Ngọc Khải, người đã trực tiếp hướng dẫn, hỗ trợ và đưa ra những định hướng quý báu giúp em hoàn thiện đồ án này.
+Do thời gian và kinh nghiệm thực tế còn hạn chế, đồ án không tránh khỏi những thiếu sót. Em kính mong nhận được sự góp ý của các thầy cô để có thể hoàn thiện hơn nữa kiến thức và kỹ năng của bản thân. Cuối cùng, em kính chúc thầy cô luôn dồi dào sức khỏe, hạnh phúc và thành đạt. Em xin chân thành cảm ơn!
+Sinh viên thực hiện
+Lê Văn Hải
+MỤC LỤC
+DANH MỤC CÁC TỪ VIẾT TẮT
+DANH MỤC BẢNG BIỂU
+Bảng 2.1: Mô tả các Actors	19
+Bảng 2.2: Yêu cầu phi chức năng	21
+Bảng 2.3: Mô tả use case Đăng nhập	24
+Bảng 2.4: Mô tả use case Quản lý khách hàng	28
+Bảng 2.5: Mô tả use case Quản lý dự án	32
+Bảng 2.6: Mô tả use case Thiết kế & Bóc tách vật tư	36
+Bảng 2.7:Mô tả use case Quản lý kho vật tư	42
+Bảng 2.8: Mô tả use case Lập báo giá	46
+Bảng 2.9: Mô tả use case Quản lý người dùng	50
+Bảng 2.10: Quản lý tài chính	56
+Bảng 2.11: Chi tiết bảng CHUC_VU	61
+Bảng 2.12: Chi tiết bảng QUYEN_HAN	61
+Bảng 2.13: Chi tiết bảng CHUC_VU_QUYEN	62
+Bảng 2.14: Chi tiết bảng NGUOI_DUNG	62
+Bảng 2.15: Chi tiết bảng PHIEN_DANG_NHAP	62
+Bảng 2.16: Chi tiết bảng THONG_BAO	63
+Bảng 2.17: Chi tiết bảng KHACH_HANG	63
+Bảng 2.18: Chi tiết bảng DU_AN	64
+Bảng 2.19: Chi tiết bảng MAU_SAN_PHAM	64
+Bảng 2.20: Chi tiết bảng SAN_PHAM_DU_AN	65
+Bảng 2.21: Chi tiết bảng VAT_TU_BOM	66
+Bảng 2.22: Chi tiết bảng BAO_GIA	66
+Bảng 2.23: Chi tiết bảng CHI_TIET_BAO_GIA	67
+Bảng 2.24: Chi tiết bảng GIAO_DICH_TAI_CHINH	68
+Bảng 2.25: Chi tiết bảng CHI_TIET_GIAO_DICH	68
+Bảng 2.26: Chi tiết bảng CONG_NO	69
+Bảng 2.27: Chi tiết bảng TON_KHO	69
+Bảng 2.28: Chi tiết bảng TON_KHO	70
+Bảng 3.1: Danh sách các thư viện phụ thuộc chính của hệ thống ViralWindow	75
+Bảng 3.2: Bố cục và chức năng các khu vực giao diện	76
+Bảng 4.1: Kết quả kiểm thử chức năng Đăng nhập	87
+Bảng 4.2: Kết quả kiểm thử chức năng Quản lý khách hàng	88
+Bảng 4.3: Kết quả kiểm thử chức năng Quản lý dự án	88
+Bảng 4.4: Kết quả kiểm thử chức năng Quản lý kỹ thuật	88
+Bảng 4.5: Kết quả kiểm thử chức năng Quản lý kho vật tư	89
+Bảng 4.6: Kết quả kiểm thử chức năng Lập báo giá	89
+Bảng 4.7: : Kết quả kiểm thử chức năng Quản lý người dùng	89
+Bảng 4.8: : Kết quả kiểm thử chức năng Quản lý tài chính	89
+Bảng 4.9:Tổng hợp kết quả kiểm thử	90
+DANH MỤC HÌNH ẢNH
+Hình 1.1: Cấu trúc của file HTML sử dụng Visual Studio Code	12
+Hình 2.1: Biểu đồ use case tổng quan	19
+Hình 2.2: Biểu đồ hoạt động use case Đăng nhập	26
+Hình 2.3:Biểu đồ trình tự use case Đăng nhập	27
+Hình 2.4: Biểu đồ lớp phân tích use case Đăng nhập	28
+Hình 2.5: Biểu đồ hoạt động use case Quản lý khách hàng	30
+Hình 2.6: Biểu đồ trình tự use case Quản lý khách hàng	31
+Hình 2.7: Biểu đồ lớp phân tích use case Quản lý khách hàng	32
+Hình 2.8: Biểu đồ hoạt động use case Quản lý dự án	34
+Hình 2.9: Biểu đồ trình tự use case Quản lý dự án	35
+Hình 2.10: Biểu đồ lớp phân tích use case Quản lý dự án	36
+Hình 2.11: Biểu đồ hoạt động use case Quản lý kỹ thuật	39
+Hình 2.12: Biểu đồ trình tự use case Quản lý kỹ thuật	40
+Hình 2.13: Biểu đồ lớp phân tích use case Quản lý kỹ thuật	41
+Hình 2.14: Biểu đồ hoạt động use case Quản lý kho vật tư	44
+Hình 2.15: Biểu đồ trình tự use case Quản lý kho vật tư	45
+Hình 2.16: Biểu đồ lớp phân tích use case Quản lý kho vật tư	46
+Hình 2.17: Biểu đồ hoạt động use case Lập báo giá	48
+Hình 2.18: Biểu đồ trình tự use case Lập báo giá	49
+Hình 2.19: Biểu đồ lớp phân tích use case Lập báo giá	50
+Hình 2.20: Biểu đồ hoạt động use case Quản lý người dùng	53
+Hình 2.21: Biểu đồ trình tự use case Quản lý người dùng	54
+Hình 2.22: Biểu đồ lớp phân tích use case Quản lý người dùng	55
+Hình 2.23: Biểu đồ hoạt động use case Quản lý tài chính	58
+Hình 2.24: Biểu đồ trình tự use case Quản lý tài chính	59
+Hình 2.25: Biểu đồ lớp phân tích use case Quản lý tài chính	60
+Hình 2.26: Biểu đồ thực thể liên kết	61
+Hình 3.1: Giao diện trang Đăng nhập	77
+Hình 3.2: Giao diện Trang chủ	78
+Hình 3.3: Giao diện trang Quản lý Dự án	79
+Hình 3.4: Giao diện trang Quản lý Kho vật tư	81
+Hình 3.5: Giao diện trang Quản lý tài chính	82
+Hình 3.6: Giao diện quản lý người dùng	83
+Hình 3.7: Giao diện Quản lý phân quyền	84
+Hình 3.8: Giao diện Cài đặt hệ thống	85
+MỞ ĐẦU
+Lý do chọn đề tài
+Trong bối cảnh chuyển đổi số và sự phát triển của Cách mạng công nghiệp 4.0, các doanh nghiệp ngày càng cần ứng dụng công nghệ thông tin vào quản lý và vận hành nhằm nâng cao hiệu quả hoạt động và khả năng cạnh tranh. Đặc biệt, các hệ thống phần mềm quản lý hiện đại giúp doanh nghiệp tập trung hóa dữ liệu, tự động hóa quy trình nghiệp vụ và giảm thiểu sai sót trong quá trình xử lý công việc.
+Tuy nhiên, tại nhiều doanh nghiệp sản xuất nhỏ, đặc biệt trong lĩnh vực nhôm kính, hoạt động quản lý vẫn chủ yếu được thực hiện thủ công hoặc dựa trên các công cụ rời rạc như bảng tính. Các công việc như lập báo giá, bóc tách vật tư, quản lý kho và theo dõi tiến độ dự án thường thiếu sự đồng bộ, dễ xảy ra sai lệch dữ liệu và gây khó khăn trong việc kiểm soát tổng thể.
+Xuất phát từ thực tế đó, đề tài “Xây dựng hệ thống quản lý sản xuất và kinh doanh cho doanh nghiệp nhỏ” được thực hiện nhằm xây dựng một hệ thống phần mềm hỗ trợ quản lý tập trung, tự động hóa các quy trình nghiệp vụ chính trong doanh nghiệp. Hệ thống hướng đến việc cải thiện hiệu quả quản lý, giảm thiểu sai sót và hỗ trợ nhà quản lý trong việc theo dõi và ra quyết định.
+Đồng thời, việc thực hiện đề tài cũng giúp vận dụng các kiến thức đã học vào bài toán thực tế, từ đó nâng cao kỹ năng phân tích, thiết kế và phát triển phần mềm của bản thân trước khi tốt nghiệp.
+Mục tiêu đề tài
+Mục tiêu của đề tài là xây dựng một hệ thống phần mềm quản lý dành cho doanh nghiệp sản xuất và thi công cửa nhôm kính, nhằm số hóa và hỗ trợ các quy trình nghiệp vụ chính như lập báo giá, bóc tách vật tư (BOM), quản lý kho, theo dõi tiến độ dự án và quản lý thu chi.
+Hệ thống giúp giảm sai sót trong quá trình làm việc, tăng hiệu quả quản lý, đồng thời cung cấp chức năng phân quyền và báo cáo để hỗ trợ người quản lý kiểm soát hoạt động và ra quyết định.
+Đối tượng và phạm vi nghiên cứu
+Đối tượng nghiên cứu là các nghiệp vụ trong doanh nghiệp sản xuất và thi công cửa nhôm kính như báo giá, bóc tách vật tư (BOM), quản lý kho, dự án và tài chính, cùng các công nghệ xây dựng hệ thống Web.
+Phạm vi đề tài tập trung xây dựng hệ thống quản lý cho doanh nghiệp nhỏ, gồm các chức năng chính: khách hàng, báo giá, vật tư, kho, dự án và thu chi.
+Đề tài không bao gồm ứng dụng di động, không tích hợp phần cứng và không hướng tới hệ thống quy mô lớn.
+Cấu trúc báo cáo
+Báo cáo được tổ chức thành 4 chương chính:
+Chương 1: Tổng quan về công nghệ sử dụng và môi trường triển khai
+Chương 2: Phân tích và thiết kế hệ thống
+Chương 3: Kết quả chương trình
+Chương 4: Kiểm thử chức năng
+CHƯƠNG 1: TỔNG QUAN VỀ CÔNG NGHỆ SỬ DỤNG VÀ MÔI TRƯỜNG TRIỂN KHAI
+Giới thiệu về HTML5, CSS3, JavaScript
+1.1.1.Giới thiệu HTML
+HTML5 là phiên bản mới nhất của ngôn ngữ đánh dấu siêu văn bản, đóng vai trò xây dựng cấu trúc nội dung cho các trang web hiện đại. Thay vì chỉ đơn thuần định dạng văn bản như các phiên bản trước, HTML5 bổ sung nhiều thẻ ngữ nghĩa như <article>, <section>, <nav> giúp tổ chức nội dung rõ ràng và hỗ trợ tốt cho SEO. Trong dự án, HTML5 được chọn vì khả năng tương thích đa trình duyệt và hỗ trợ đầy đủ các tính năng web app hiện đại [2].
+Ngôn ngữ HTML dùng các tag hoặc các đoạn mã lệnh để chỉ cho các trình duyệt (Web browsers) cách hiển thị các thành phần của trang như text và graphics.
+HTML là ngôn ngữ xác định cấu trúc của thông tin.
+HTML sử dụng một loạt các thẻ và thuộc tính và được dùng để hiển thị văn bản và các thông tin khác, cung cấp siêu liên kết tới các tài liệu khác. Là một tập tin có phần mở rộng là HTML
+Cấu trúc của file HTML gồm Cấu trúc chung của html gồm có thẻ <!
+DOCTYPE html> dùng để xác định rằng code bạn đang dùng là html.
+Cặp thẻ đóng mở <html> </html> chứa toàn bộ các dòng lệnh html bên trong (sau này còn là code của Javascript và CSS khi chèn vào)
+Tiếp đến là 2 cặp thẻ <head></head> chứa thông tin của webpage và đặc trưng bởi thẻ <title></title>, mà mặc định sẽ không được hiển thị trên web
+Thẻ <body></body> chứa toàn bộ nội dung html sẽ hiển thị lên trên trang web của chúng ta.hai cặp thẻ này là duy nhất trong web; và nhiều cặp thẻ khác đặt trong hai cặp thẻ trên để tạo lên trang web. [2]
+HTML có thể trên nhiều trình soạn thảo, dự án này nhóm em dùng Visual Studio Code để soạn thảo HTML và JavaScript để thiết kế, viết mã và phát triển website.
+Dưới đây là hình minh họa câu trúc file HTML.
+Hình 1.1: Cấu trúc của file HTML sử dụng Visual Studio Code
+1.1.2.Giới thiệu về CSS và JavaScript
+CSS3 là công nghệ tạo kiểu giao diện giúp tách biệt hoàn toàn phần trình bày ra khỏi cấu trúc HTML, mang lại sự linh hoạt và dễ bảo trì hơn cho dự án. Nhờ hệ thống Cascade và Specificity, CSS3 cho phép định nghĩa các quy tắc trình bày nhất quán trên toàn hệ thống. Trong hệ thống, CSS3 được sử dụng để xây dựng bộ design system thống nhất cho tất cả các module từ dashboard, bảng dữ liệu đến form nhập liệu, đảm bảo giao diện nhất quán và dễ bảo trì [3].
+CSS xử lý một phần giao diện của trang web. Sử dụng CSS, bạn có thể kiểm soát màu sắc của văn bản, kiểu phông chữ, khoảng cách giữa các đoạn văn, cách các cột được đặt kích thước và bố cục, hình ảnh hoặc màu nền nào được sử dụng, thiết kế bố cục, các biến thể hiển thị cho các thiết bị và kích thước màn hình khác nhau cũng như hàng loạt các hiệu ứng khác.
+Cách CSS hoạt động đó chính là tìm kiếm dựa trên vùng chọn chẳng hạn như thẻ HTML, ID, class, v.v. Sau đó, nó sẽ áp dụng những thuộc tính buộc phải thay đổi lên các vùng đã chọn.
+HTML và CSS có mối quan hệ gắn bó mật thiết với nhau. Nếu HTML là nền tảng của một trang web thì CSS là tất cả tính thẩm mỹ của toàn bộ trang web đó. [3]
+Với HTML chỉ biểu diễn thông tin chứ chưa phải là các trang Web động có khả năng đáp ứng các sự kiện từ phía người dùng. JavaScript là ngôn ngữ dưới dạng Script có thể gắn với các file HTML. Được trình duyệt diễn dịch, trình duyệt đọc JavaScript dưới dạng mã nguồn. JavaScript là ngôn ngữ dựa trên đối tượng, nghĩa là bao gồm nhiều kiểu đối tượng, ví dụ Math với tất cả chức năng toán học. Nhưng JavaScript không là ngôn ngữ hướng đối tượng như C++, Java.
+1.1.3.Tổng quan về Responsive Web
+a)Định nghĩa:
+Thiết kế giao diện thích ứng (Responsive Design) là phương pháp xây dựng giao diện web có khả năng tự điều chỉnh bố cục theo kích thước thiết bị của người dùng. Đối với hệ thống, do người dùng chủ yếu là nhân viên làm việc tại xưởng hoặc văn phòng với nhiều loại thiết bị khác nhau, việc áp dụng responsive design giúp đảm bảo trải nghiệm nhất quán trên máy tính để bàn, laptop và máy tính bảng mà không cần xây dựng ứng dụng riêng biệt cho từng nền tảng.
+b)Lợi ích:
+Trải nghiệm người dùng tốt hơn: Người dùng có thể truy cập và sử dụng trang web dễ dàng trên mọi thiết bị.
+SEO tốt hơn: Google ưu tiên các trang web có thiết kế responsive trong kết quả tìm kiếm.
+Tiết kiệm chi phí và thời gian: Chỉ cần duy trì một trang web thay vì nhiều phiên bản cho các thiết bị khác nhau.
+Tăng khả năng tiếp cận: Đảm bảo trang web hoạt động tốt trên nhiều loại thiết bị và kích thước màn hình.
+c) Các Nguyên Tắc Cơ Bản của Responsive Web:
+Fluid Grid Layouts: Sử dụng các lưới linh hoạt để bố trí các thành phần trên trang.
+Flexible Images: Hình ảnh điều chỉnh kích thước tự động theo kích thước màn hình.
+Media Queries: Sử dụng CSS media queries để áp dụng các kiểu dáng khác nhau cho các kích thước màn hình khác nhau.
+Viewport Meta Tag: Thiết lập viewport để đảm bảo trang web hiển thị đúng trên các thiết bị di động.
+Giới thiệu về Node.js và Express.js
+Node.js là nền tảng runtime cho phép thực thi JavaScript ở phía máy chủ, được xây dựng trên V8 engine của Google Chrome. Điểm khác biệt cốt lõi của Node.js so với các nền tảng backend truyền thống là cơ chế xử lý bất đồng bộ (non-blocking I/O), giúp hệ thống phản hồi nhiều yêu cầu đồng thời mà không cần tạo thêm luồng xử lý mới. Đây là lý do nhóm lựa chọn Node.js cho hệ thống, khi cần xử lý đồng thời các kết nối từ nhiều nhân viên khác nhau và tích hợp thông báo thời gian thực qua Socket.IO [7].
+Một trong những đặc điểm nổi bật của Node.js là cơ chế non-blocking I/O (bất đồng bộ, không chặn). Điều này giúp hệ thống có thể xử lý nhiều yêu cầu đồng thời mà không cần tạo nhiều luồng (thread), từ đó tối ưu hiệu năng và tài nguyên hệ thống. Nhờ đó, Node.js đặc biệt phù hợp với các ứng dụng cần xử lý nhiều kết nối cùng lúc như chat realtime, streaming, hoặc hệ thống API.
+Ngoài ra, Node.js có hệ sinh thái rất lớn thông qua npm (Node Package Manager) – kho thư viện mã nguồn mở phong phú, giúp lập trình viên dễ dàng tích hợp và mở rộng chức năng cho ứng dụng.
+Express.js được nhóm lựa chọn là framework backend vì tính tối giản, linh hoạt và phù hợp với kiến trúc RESTful API của hệ thống. Express.js không áp đặt cấu trúc cứng nhắc, cho phép nhóm tự tổ chức mã nguồn theo mô hình MVC phù hợp với yêu cầu dự án. Hệ thống middleware của Express.js cũng giúp tích hợp nhanh chóng các thành phần xác thực JWT, xử lý CORS và logging mà không cần viết lại từ đầu [8].
+Các đặc điểm chính của Express.js gồm:
+Routing (định tuyến): Cho phép định nghĩa các URL và phương thức HTTP (GET, POST, PUT, DELETE) để xử lý yêu cầu từ client.
+Middleware: Cơ chế trung gian giúp xử lý request/response như xác thực, logging, xử lý dữ liệu trước khi trả về kết quả.
+Tích hợp dễ dàng: Có thể kết nối với nhiều hệ quản trị cơ sở dữ liệu như MySQL, MongoDB.
+Hiệu năng cao: Nhẹ, tối giản, phù hợp xây dựng RESTful API và hệ thống backend.
+Giới thiệu về MySQL
+MySQL 8.0 được lựa chọn làm hệ quản trị cơ sở dữ liệu chính cho dự án vì ba lý do cốt lõi: tính ổn định cao sau nhiều năm phát triển, khả năng tích hợp tốt với Node.js thông qua thư viện mysql2, và hỗ trợ đầy đủ các tính năng giao dịch (Transaction) cần thiết để đảm bảo tính nhất quán khi xử lý nghiệp vụ tài chính và kho vật tư. MySQL sử dụng SQL làm ngôn ngữ tương tác dữ liệu và hỗ trợ storage engine InnoDB đảm bảo tính toàn vẹn tham chiếu giữa các bảng [9].
+Tổng quan về SQL
+SQL (Structured Query Language) là ngôn ngữ truy vấn chuẩn được dùng để tương tác với cơ sở dữ liệu quan hệ. Trong hệ thống, SQL được sử dụng để thực hiện đầy đủ các nghiệp vụ dữ liệu, bao gồm:
+Truy vấn dữ liệu (SELECT)
+Thêm dữ liệu (INSERT)
+Cập nhật dữ liệu (UPDATE)
+Xóa dữ liệu (DELETE)
+Ngoài ra, SQL còn hỗ trợ định nghĩa cấu trúc dữ liệu (DDL), kiểm soát truy cập (DCL) và quản lý giao dịch (TCL), góp phần đảm bảo tính toàn vẹn và nhất quán của dữ liệu.
+Kiến trúc và nguyên lý hoạt động của MySQL
+MySQL hoạt động theo mô hình Client – Server, bao gồm:
+Client: Ứng dụng hoặc người dùng gửi các câu lệnh SQL
+MySQL Server: Tiếp nhận, xử lý truy vấn và trả kết quả
+Dữ liệu trong MySQL được tổ chức dưới dạng các bảng (table), mỗi bảng gồm:
+Hàng (row): Đại diện cho một bản ghi
+Cột (column): Đại diện cho thuộc tính của dữ liệu
+Các bảng có thể liên kết với nhau thông qua:
+Khóa chính (Primary Key): Định danh duy nhất cho mỗi bản ghi
+Khóa ngoại (Foreign Key): Thiết lập mối quan hệ giữa các bảng
+Đặc điểm nổi bật của MySQL
+Hiệu năng cao: Xử lý nhanh với khối lượng dữ liệu lớn
+Mã nguồn mở: Miễn phí, dễ triển khai và tùy biến
+Đa nền tảng: Hỗ trợ nhiều hệ điều hành (Windows, Linux, macOS)
+Bảo mật tốt: Hỗ trợ xác thực người dùng và phân quyền truy cập
+Hỗ trợ chỉ mục (Index): Tăng tốc độ truy vấn dữ liệu
+Storage Engine linh hoạt: Điển hình như InnoDB hỗ trợ giao dịch và đảm bảo toàn vẹn dữ liệu
+Ưu điểm của MySQL
+Dễ học, dễ sử dụng
+Cộng đồng lớn, tài liệu phong phú
+Tích hợp tốt với nhiều ngôn ngữ lập trình như Node.js, PHP, Java
+Phù hợp với cả hệ thống nhỏ và lớn
+Nhược điểm của MySQL
+Một số tính năng nâng cao bị hạn chế so với các hệ quản trị khác
+Khả năng xử lý các hệ thống cực lớn có thể kém hơn một số giải pháp chuyên biệt
+Ứng dụng thực tế
+MySQL được sử dụng rộng rãi trong:
+Xây dựng website và ứng dụng web
+Hệ thống quản lý (quản lý khách hàng, nhân sự, dự án,…)
+Thương mại điện tử
+Hệ thống backend kết hợp với Node.js và Express.js
+Giới thiệu về Google Generative AI (Gemini API)
+Gemini API là dịch vụ AI tổng quát (Generative AI) do Google phát triển, được tích hợp vào hệ thống nhằm xây dựng tính năng trợ lý ảo thông minh. Khác với các chatbot đơn giản, Gemini có khả năng hiểu ngữ cảnh nghiệp vụ cụ thể của ngành cửa nhôm kính và đưa ra gợi ý phân tích dữ liệu phù hợp. Trong phạm vi dự án, Gemini API được sử dụng để hỗ trợ nhân viên kinh doanh tra cứu thông tin kỹ thuật và phân tích báo cáo tài chính theo yêu cầu tự nhiên (natural language query).
+Gemini API là giao diện lập trình ứng dụng cho phép các nhà phát triển tích hợp trực tiếp các mô hình Gemini vào hệ thống phần mềm, từ đó xây dựng các tính năng thông minh như chatbot, hỗ trợ viết nội dung, phân tích dữ liệu và tự động hóa quy trình.
+Đặc điểm nổi bật của Gemini API
+Đa phương thức (Multimodal):
+Có khả năng xử lý và kết hợp nhiều loại dữ liệu (text, image, audio, video) trong cùng một tác vụ.
+Hiểu ngữ cảnh tốt:
+Mô hình Gemini có khả năng hiểu và duy trì ngữ cảnh hội thoại dài, giúp phản hồi chính xác và tự nhiên hơn.
+Tạo nội dung thông minh:
+Hỗ trợ sinh văn bản, viết mã lập trình, tóm tắt tài liệu, dịch ngôn ngữ và nhiều tác vụ AI khác.
+Khả năng mở rộng cao:
+Dễ dàng tích hợp vào các hệ thống web, mobile hoặc backend thông qua API.
+Tích hợp hệ sinh thái Google:
+Có thể kết hợp với các dịch vụ như Google Cloud, Firebase, BigQuery để xây dựng hệ thống mạnh mẽ.
+Nguyên lý hoạt động
+Gemini API hoạt động theo mô hình Client – Server:
+Ứng dụng (Client) gửi yêu cầu (prompt) đến API
+Hệ thống AI của Google xử lý yêu cầu bằng mô hình Gemini
+Trả về kết quả (response) cho ứng dụng
+Ví dụ:
+Người dùng nhập câu hỏi → hệ thống gửi prompt → Gemini xử lý → trả về câu trả lời → hiển thị trên giao diện.
+Ứng dụng thực tế
+Gemini API được ứng dụng trong nhiều lĩnh vực:
+Xây dựng chatbot thông minh
+Hỗ trợ viết nội dung tự động
+Phân tích và tóm tắt tài liệu
+Sinh mã lập trình (code generation)
+Trợ lý ảo trong hệ thống quản lý
+Ưu điểm
+Khả năng xử lý ngôn ngữ tự nhiên mạnh mẽ
+Hỗ trợ đa dạng tác vụ AI
+Dễ tích hợp thông qua API
+Được phát triển bởi Google với hạ tầng mạnh
+Nhược điểm
+Phụ thuộc vào kết nối internet
+Có thể phát sinh chi phí khi sử dụng ở quy mô lớn
+Cần kiểm soát nội dung đầu ra để đảm bảo độ chính xác
+CHƯƠNG 2: PHÂN TÍCH VÀ THIẾT KẾ HỆ THỐNG
+Sơ đồ use case tổng quan
+Biểu đồ Use Case tổng quan mô tả khái quát toàn bộ các chức năng chính của hệ thống và sự tương tác giữa các tác nhân (Actors) với các chức năng (Use cases) đó. Hệ thống được thiết kế với 03 tác nhân (Actor) chính tham gia vào quy trình nghiệp vụ:
+Hình 2.1: Biểu đồ use case tổng quan
+Mô tả các Actors
+Bảng 2.1: Mô tả các Actors
+Vai trò của các Actors
+Hệ thống chia làm 2 nhóm chính: nhân viên và người quản trị (quản lý và quản trị viên/admin).
+Mô tả nhóm người dùng:
++ Nhân viên: Là người dùng chính của hệ thống, bao gồm nhân viên kinh doanh, nhân viên kỹ thuật, nhân viên kho và nhân viên sản xuất. Nhân viên có quyền thực hiện các nghiệp vụ hàng ngày như: quản lý khách hàng, lập báo giá, quản lý dự án, thiết kế – bóc tách vật tư, quản lý kho, theo dõi sản xuất, lắp đặt – bàn giao, ghi nhận thu chi, chấm công, gửi đơn nghỉ phép, trao đổi tin nhắn nội bộ và xem thông báo hệ thống.
++ Quản lý: Là cấp trên trực tiếp của nhân viên, chịu trách nhiệm giám sát và điều phối hoạt động. Quản lý có toàn bộ quyền của Nhân viên, đồng thời được bổ sung các quyền: duyệt báo giá, duyệt yêu cầu mua hàng, phê duyệt đơn nghỉ phép, xem báo cáo tổng hợp (doanh thu, sản xuất, tồn kho), quản lý nhân sự (chấm công, ca làm việc) và giám sát tiến độ dự án tổng thể.
++ Quản trị viên (Admin): Là người có quyền cao nhất trong hệ thống, chịu trách nhiệm quản trị và vận hành toàn bộ hệ thống. Admin kế thừa toàn bộ quyền của Quản lý, ngoài ra còn có các quyền riêng: đăng ký tài khoản người dùng mới, quản lý người dùng (kích hoạt/vô hiệu hóa, đặt lại mật khẩu), phân quyền hệ thống (gán vai trò và quyền hạn cho từng chức vụ), quản lý đại lý/chi nhánh, cấu hình các thông số hệ thống.
+Yêu cầu chức năng
+a) Chức năng quản trị hệ thống
+Hệ thống phải hỗ trợ xác thực người dùng thông qua email và mật khẩu, duy trì phiên làm việc bằng JSON Web Token. Quản trị viên có quyền tạo mới tài khoản người dùng, chỉnh sửa thông tin, kích hoạt hoặc vô hiệu hóa tài khoản. Hệ thống phải hỗ trợ cơ chế phân quyền dựa trên Role-Based Access Control nhằm kiểm soát truy cập theo vai trò. Ngoài ra, hệ thống phải cho phép quản lý đại lý/chi nhánh và cấu hình các tham số dùng chung của hệ thống.
+b) Chức năng khách hàng và kinh doanh
+Hệ thống phải cho phép quản lý thông tin khách hàng, lưu trữ lịch sử tương tác và hỗ trợ quản lý lịch hẹn. Hệ thống phải quản lý danh mục sản phẩm, hỗ trợ lập báo giá tự động, xuất báo giá ra PDF hoặc Excel, đồng thời hỗ trợ quy trình phê duyệt báo giá trước khi gửi cho khách hàng.
+c) Chức năng dự án và kỹ thuật
+Hệ thống phải cho phép quản lý toàn bộ vòng đời dự án từ khởi tạo đến hoàn thành. Đồng thời, hệ thống phải hỗ trợ tính toán kỹ thuật, bóc tách vật tư và sinh bảng danh mục vật tư Bill of Materials phục vụ cho sản xuất và mua hàng.
+d) Chức năng vật tư và sản xuất
+Hệ thống phải quản lý nhập kho, xuất kho, theo dõi tồn kho và phát cảnh báo khi vật tư xuống dưới mức an toàn. Hệ thống phải hỗ trợ lập yêu cầu mua hàng, theo dõi tiến độ sản xuất tại xưởng và ghi nhận tiêu hao vật tư thực tế trong quá trình gia công.
+e) Chức năng thi công và tài chính
+Hệ thống phải cho phép cập nhật tiến độ thi công, lưu trữ biên bản bàn giao và hình ảnh nghiệm thu. Bên cạnh đó, hệ thống phải hỗ trợ quản lý thu chi, theo dõi công nợ khách hàng và công nợ nhà cung cấp theo từng dự án.
+f) Chức năng nội bộ và báo cáo
+Hệ thống phải hỗ trợ gửi thông báo thời gian thực thông qua Socket.IO khi có sự kiện phát sinh. Đồng thời, hệ thống phải hỗ trợ chấm công, quản lý nghỉ phép, tổng hợp số liệu, lập báo cáo thống kê và lưu vết các thao tác quan trọng trong nhật ký hệ thống.
+Yêu cầu phi chức năng
+Bảng 2.2: Yêu cầu phi chức năng
+Thiết kế hệ thống
+Use Case Đăng nhập
+Mô tả chi tiết Use Case
+Bảng 2.3: Mô tả use case Đăng nhập
+Biểu đồ hoạt động:
+Hình 2.2: Biểu đồ hoạt động use case Đăng nhập
+Biểu đồ trình tự:
+Hình 2.3:Biểu đồ trình tự use case Đăng nhập
+Biểu đồ lớp phân tích:
+Hình 2.4: Biểu đồ lớp phân tích use case Đăng nhập
+Use Case Quản lý khách hàng
+Mô tả chi tiết Use Case
+Bảng 2.4: Mô tả use case Quản lý khách hàng
+Biểu đồ hoạt động:
+Hình 2.5: Biểu đồ hoạt động use case Quản lý khách hàng
+Biểu đồ trình tự:
+Hình 2.6: Biểu đồ trình tự use case Quản lý khách hàng
+Biểu đồ lớp phân tích:
+Hình 2.7: Biểu đồ lớp phân tích use case Quản lý khách hàng
+Use Case Quản lý dự án
+Mô tả chi tiết Use Case
+Bảng 2.5: Mô tả use case Quản lý dự án
+Biểu đồ hoạt động:
+Hình 2.8: Biểu đồ hoạt động use case Quản lý dự án
+Biểu đồ trình tự:
+Hình 2.9: Biểu đồ trình tự use case Quản lý dự án
+Biểu đồ lớp phân tích:
+Hình 2.10: Biểu đồ lớp phân tích use case Quản lý dự án
+Use Case Quản lý kỹ thuật
+Mô tả chi tiết Use Case
+Bảng 2.6: Mô tả use case Thiết kế & Bóc tách vật tư
+Biểu đồ hoạt động:
+Hình 2.11: Biểu đồ hoạt động use case Quản lý kỹ thuật
+Biểu đồ trình tự:
+Hình 2.12: Biểu đồ trình tự use case Quản lý kỹ thuật
+Biểu đồ lớp phân tích:
+Hình 2.13: Biểu đồ lớp phân tích use case Quản lý kỹ thuật
+Use Case Quản lý kho vật tư
+Mô tả chi tiết Use Case
+Bảng 2.7:Mô tả use case Quản lý kho vật tư
+Biểu đồ hoạt động:
+Hình 2.14: Biểu đồ hoạt động use case Quản lý kho vật tư
+Biểu đồ trình tự:
+Hình 2.15: Biểu đồ trình tự use case Quản lý kho vật tư
+Biểu đồ lớp phân tích:
+Hình 2.16: Biểu đồ lớp phân tích use case Quản lý kho vật tư
+Use Case Lập báo giá
+Mô tả chi tiết Use Case
+Bảng 2.8: Mô tả use case Lập báo giá
+Biểu đồ hoạt động:
+Hình 2.17: Biểu đồ hoạt động use case Lập báo giá
+Biểu đồ trình tự:
+Hình 2.18: Biểu đồ trình tự use case Lập báo giá
+Biểu đồ lớp phân tích:
+Hình 2.19: Biểu đồ lớp phân tích use case Lập báo giá
+Use Case Quản lý người dùng
+Mô tả chi tiết Use Case
+Bảng 2.9: Mô tả use case Quản lý người dùng
+Biểu đồ hoạt động:
+Hình 2.20: Biểu đồ hoạt động use case Quản lý người dùng
+Biểu đồ trình tự:
+Hình 2.21: Biểu đồ trình tự use case Quản lý người dùng
+Biểu đồ lớp phân tích:
+Hình 2.22: Biểu đồ lớp phân tích use case Quản lý người dùng
+Use Case Quản lý tài chính
+Mô tả chi tiết Use Case
+Bảng 2.10: Quản lý tài chính
+Biểu đồ hoạt động:
+Hình 2.23: Biểu đồ hoạt động use case Quản lý tài chính
+Biểu đồ trình tự:
+Hình 2.24: Biểu đồ trình tự use case Quản lý tài chính
+Biểu đồ lớp phân tích:
+Hình 2.25: Biểu đồ lớp phân tích use case Quản lý tài chính
+Thiết kế cơ sở dữ liệu
+2.6.1. Biểu đồ thực thể liên kết
+Hình 2.26: Biểu đồ thực thể liên kết
+2.6.2. Thiết kế bảng
+Bảng 2.11: Chi tiết bảng CHUC_VU
+Bảng 2.12: Chi tiết bảng QUYEN_HAN
+Bảng 2.13: Chi tiết bảng CHUC_VU_QUYEN
+Bảng 2.14: Chi tiết bảng NGUOI_DUNG
+Bảng 2.15: Chi tiết bảng PHIEN_DANG_NHAP
+Bảng 2.16: Chi tiết bảng THONG_BAO
+Bảng 2.17: Chi tiết bảng KHACH_HANG
+Bảng 2.18: Chi tiết bảng DU_AN
+Bảng 2.19: Chi tiết bảng MAU_SAN_PHAM
+Bảng 2.20: Chi tiết bảng SAN_PHAM_DU_AN
+Bảng 2.21: Chi tiết bảng VAT_TU_BOM
+Bảng 2.22: Chi tiết bảng BAO_GIA
+Bảng 2.23: Chi tiết bảng CHI_TIET_BAO_GIA
+Bảng 2.24: Chi tiết bảng GIAO_DICH_TAI_CHINH
+Bảng 2.25: Chi tiết bảng CHI_TIET_GIAO_DICH
+Bảng 2.26: Chi tiết bảng CONG_NO
+Bảng 2.27: Chi tiết bảng TON_KHO
+Bảng 2.28: Chi tiết bảng TON_KHO
+CHƯƠNG 3: XÂY DỰNG HỆ THỐNG
+Công nghệ và môi trường sử dụng
+Với những ưu điểm của công nghệ đã được trình bày ở Chương 1, hãy quyết định sử dụng công nghệ này để xây dựng và phát triển hệ thống. Cụ thể:
+Người dùng giao diện cấp độ (Frontend): Sử dụng HTML5, CSS3 và JavaScript (ES6+) tinh khiết để xây dựng các giao diện hiển thị, đảm bảo hệ thống có tốc độ tải trang nhanh, tương thích tốt trên nhiều loại thiết bị (Máy tính để bàn, Máy tính bảng) mà không phụ thuộc vào các framework nặng hơn.
+Tầng xử lý nghiệp vụ (Backend): Sử dụng môi trường Node.js kết hợp cùng framework Express.js để xây dựng các RESTful API. Lựa chọn này giúp hệ thống xử lý mượt mà với số lượng lớn các kết nối đồng thời và đáp ứng tốt các tác vụ nặng như tính toán phân tích vật tư (BOM) hoặc xuất tệp báo cáo.
+Tầng lưu trữ dữ liệu (Cơ sở dữ liệu): Lựa chọn MySQL 8.0, một hệ quản trị cơ sở dữ liệu quan hệ mạnh mẽ, đảm bảo tính toàn vẹn, bảo mật và lưu trữ toàn bộ dữ liệu phức hợp của dự án, khách hàng và kho vật tư.
+Hỗ trợ tiên tiến của công nghệ:
+Socket.io: Được tích hợp để xử lý luồng truyền thông thời gian thực (Thời gian thực), hỗ trợ hiển thị ngay lập tức các thông báo và tin nhắn nội bộ.
+Google Gemini AI API: Ứng dụng trí tuệ nhân tạo để xây dựng thông tin ảo hỗ trợ, giúp giải đáp các thắc mắc về kỹ thuật và hỗ trợ phân tích các dữ liệu kinh doanh.
+Bảo mật trong hệ thống
+Trong bối cảnh chuyển đổi số, các hệ thống quản trị doanh nghiệp (ERP) luôn đối mặt với nhiều nguy cơ về an ninh mạng. Đối với hệ thống, bảo mật không chỉ nhằm bảo vệ dữ liệu tài chính mà còn đảm bảo bí mật kinh doanh và tính ổn định của quy trình vận hành.
+Hệ thống được xây dựng theo nguyên tắc Defense in Depth (phòng thủ nhiều lớp), triển khai các cơ chế bảo vệ từ tầng ứng dụng đến tầng dữ liệu nhằm giảm thiểu rủi ro bảo mật một cách toàn diện.
+3.2.1. Cơ chế xác thực và kiểm soát truy cập (RBAC)
+Xác thực và phân quyền là lớp bảo vệ đầu tiên nhằm ngăn chặn các truy cập trái phép.
+Mã hóa mật khẩu bằng bcrypt:
+Hệ thống không lưu mật khẩu dưới dạng văn bản thuần mà sử dụng kỹ thuật băm (hashing) kết hợp muối (salt), giúp chống lại các cuộc tấn công như brute-force và rainbow table.
+Xác thực bằng JSON Web Token (JWT):
+Sau khi đăng nhập thành công, hệ thống cấp một token chứa thông tin người dùng (user_id, role, exp). Token được ký bằng khóa bí mật nhằm đảm bảo tính toàn vẹn và xác thực.
+Phân quyền theo mô hình Role-Based Access Control:
+Hệ thống phân chia quyền truy cập theo vai trò nhằm đảm bảo nguyên tắc Least Privilege (đặc quyền tối thiểu):
+Minh họa triển khai RBAC Middleware trong hệ thống:
+// middleware/authMiddleware.js
+const requirePermission = (permCode) => async (req, res, next) => {
+const [rows] = await db.query(
+`SELECT qh.ma_code FROM CHUC_VU_QUYEN cvq
+JOIN QUYEN_HAN qh ON cvq.ma_quyen = qh.id
+WHERE cvq.ma_chuc_vu = ? AND qh.ma_code = ?`,
+[req.user.roleId, permCode]
+);
+if (rows.length === 0)
+return res.status(403).json({ message: `Không có quyền [${permCode}]` });
+next();
+};
+// Áp dụng: chỉ CUSTOMER_DELETE mới xóa được khách hàng
+router.delete('/customers/:id', verifyToken,
+requirePermission('CUSTOMER_DELETE'), deleteCustomer);
+Admin: Toàn quyền quản trị hệ thống
+Manager: Quản lý và phê duyệt báo giá
+Staff: Thao tác trong phạm vi được cấp phép
+3.2.2. Bảo mật dữ liệu và phòng chống tấn công Web
+Hệ thống áp dụng các biện pháp bảo mật theo khuyến nghị của OWASP nhằm hạn chế các lỗ hổng phổ biến:
+Ngăn chặn SQL Injection:
+Sử dụng Prepared Statements khi truy vấn MySQL để tách biệt hoàn toàn dữ liệu và câu lệnh SQL.
+Phòng chống Cross-Site Scripting (XSS):
+Dữ liệu đầu vào được kiểm tra và dữ liệu đầu ra được mã hóa (escape) trước khi hiển thị.
+Cấu hình Cross-Origin Resource Sharing (CORS):
+Giới hạn các domain được phép truy cập API nhằm ngăn chặn các yêu cầu giả mạo từ bên thứ ba.
+3.2.3. Giám sát và nhật ký truy vết (Activity Log)
+Hệ thống không chỉ tập trung vào phòng ngừa mà còn chú trọng khả năng giám sát và phát hiện sự cố:
+Ghi nhật ký hoạt động:
+Mọi thao tác thay đổi dữ liệu đều được ghi lại trong bảng activity_logs, bao gồm: ID người dùng, hành động, dữ liệu bị tác động, thời gian và địa chỉ IP.
+Đảm bảo tính toàn vẹn:
+Nhật ký được thiết kế theo cơ chế chỉ cho phép ghi mới (append-only), không cho phép chỉnh sửa hoặc xóa, đảm bảo tính minh bạch phục vụ kiểm toán.
+Cảnh báo thời gian thực:
+Kết hợp với Socket.IO để phát hiện và cảnh báo ngay lập tức các hành vi bất thường như đăng nhập thất bại nhiều lần hoặc thao tác xóa dữ liệu quy mô lớn.
+Triển khai hệ thống
+3.3.1. Môi trường triển khai
+Hệ thống được thiết kế để triển khai linh hoạt trên nhiều môi trường, từ máy chủ nội bộ (On-premise) đến các nền tảng điện toán đám mây (Cloud). Trong giai đoạn phát triển và kiểm thử, hệ thống được triển khai trên môi trường cục bộ với cấu hình như sau:
+Yêu cầu phần cứng tối thiểu:
+CPU: Intel Core i5 hoặc tương đương
+RAM: 8GB (khuyến nghị 16GB)
+Dung lượng lưu trữ: ≥ 10GB trống
+Yêu cầu phần mềm:
+Hệ điều hành: Windows 10/11 hoặc Ubuntu 20.04 LTS trở lên
+Node.js: phiên bản 18.x LTS
+MySQL: phiên bản 8.0 trở lên
+npm (Node Package Manager): phiên bản 9.x
+3.3.2. Cấu trúc thư mục và tổ chức mã nguồn
+Mã nguồn được tổ chức theo mô hình phân tầng, tuân thủ nguyên tắc Separation of Concerns, giúp tăng khả năng bảo trì và mở rộng hệ thống.
+ViralWindow/
+├── backend/                  
+│   ├── config/               
+│   ├── controllers/          
+│   ├── middleware/           
+│   ├── routes/               
+│   ├── uploads/              
+│   └── server.js             
+│
+├── FontEnd/                  
+│   ├── css/                  
+│   ├── js/                   
+│   ├── components/           
+│   └── *.html                
+└── package.json
+Cấu trúc này cho phép tách biệt rõ ràng giữa tầng giao diện và tầng xử lý nghiệp vụ, đồng thời hỗ trợ phát triển song song giữa các nhóm.
+3.3.3. Quản lý gói phụ thuộc và thư viện
+Hệ thống sử dụng npm để quản lý các thư viện phụ thuộc. Các thư viện chính bao gồm:
+Bảng 3.1: Danh sách các thư viện phụ thuộc chính của hệ thống
+// backend/controllers/bomController.js
+function optimizeCutting(pieces, barLen=6000, kerf=3) {
+const sorted = [...pieces].sort((a,b) => b.length - a.length);
+const bars = [];
+for (const piece of sorted) {
+let placed = false;
+for (const bar of bars) {
+const used = bar.reduce((s,p) => s + p.length + kerf, 0);
+if (used + piece.length + kerf <= barLen) {
+bar.push(piece); placed = true; break;
+}
+}
+if (!placed) bars.push([piece]);
+}
+const totalUsed = pieces.reduce((s,p) => s + p.length, 0);
+const waste = ((barLen*bars.length - totalUsed)/(barLen*bars.length)*100).toFixed(1);
+return { totalBars: bars.length, wastePercent: waste };
+}
+Giao diện chung
+Hệ thống được thiết kế theo phong cách giao diện hiện đại (Modern UI), hướng đến sự đơn giản, trực quan và dễ sử dụng. Thiết kế tập trung vào việc giúp người dùng thao tác nhanh chóng và giảm thiểu sai sót trong quá trình làm việc.
+Giao diện sử dụng tông màu chủ đạo là xanh dương đậm kết hợp với nền trắng và xám nhạt, tạo cảm giác chuyên nghiệp, đồng thời đảm bảo độ tương phản tốt để dễ quan sát trong thời gian dài.
+Nguyên tắc thiết kế:
+Tính nhất quán (Consistency):
+Các thành phần như nút bấm, biểu tượng, bảng dữ liệu được sử dụng đồng nhất trên toàn hệ thống, giúp người dùng dễ làm quen và sử dụng.
+Phân cấp thông tin (Hierarchy):
+Những thông tin quan trọng như số liệu tổng quan, trạng thái được hiển thị nổi bật bằng kích thước và màu sắc, giúp người dùng dễ nhận biết.
+Phản hồi người dùng (Feedback):
+Hệ thống hiển thị thông báo sau mỗi thao tác như thành công, cảnh báo hoặc lỗi để người dùng nắm được trạng thái xử lý.
+Khả năng tiếp cận (Accessibility):
+Font chữ rõ ràng, màu sắc dễ nhìn, phù hợp với nhiều đối tượng người dùng.
+Bố cục tổng thể hệ thống giao diện được tổ chức thành 3 khu vực chính như sau:
+Bảng 3.2: Bố cục và chức năng các khu vực giao diện
+Cách bố trí này giúp tối ưu luồng thao tác, giảm thời gian tìm kiếm chức năng và nâng cao hiệu suất làm việc.
+3.4.1. Giao diện Đăng nhập
+Trang đăng nhập là điểm truy cập đầu tiên của hệ thống, đảm bảo chỉ những người dùng được cấp quyền mới có thể sử dụng các chức năng bên trong.
+Hình 3.1: Giao diện trang Đăng nhập
+Mô tả giao diện:
+Bố cục hai cột (Split-panel):
+Cột bên trái hiển thị hình ảnh thương hiệu  indow cùng các tính năng nổi bật của hệ thống.
+Cột bên phải chứa biểu mẫu đăng nhập được căn giữa màn hình.
+Biểu mẫu đăng nhập bao gồm:
+Trường nhập Email và Mật khẩu có biểu tượng minh họa.
+Chức năng hiển thị/ẩn mật khẩu thông qua nút chuyển đổi (toggle).
+Tùy chọn “Ghi nhớ đăng nhập” giúp duy trì phiên làm việc.
+Liên kết điều hướng đến trang Đăng ký và Quên mật khẩu.
+Thông báo lỗi hiển thị trực tiếp bên dưới biểu mẫu khi dữ liệu không hợp lệ.
+Đánh giá: Giao diện được thiết kế đơn giản, trực quan, giúp người dùng thao tác nhanh chóng và dễ dàng ngay từ lần đầu sử dụng.
+3.4.2. Giao diện Trang chủ
+Trang chủ cung cấp cái nhìn tổng quan về tình trạng hoạt động của doanh nghiệp, là nơi đầu tiên người dùng tiếp cận sau khi đăng nhập thành công vào hệ thống.
+Hình 3.2: Giao diện Trang chủ
+Mô tả giao diện:
+•	Thẻ thống kê (KPI):
+Hiển thị các số liệu quan trọng như:
+o	Dự án đang chạy
+o	Báo giá chờ duyệt
+o	Lệnh sản xuất
+o	Dự án hoàn thành
+•	Tổng quan công ty:
+Hiển thị số lượng khách hàng, tổng dự án, số lượng vật tư trong kho và doanh thu tháng hiện tại.
+•	Cảnh báo:
+Thông báo các vấn đề cần chú ý như thiếu hàng, vật tư sắp hết hoặc dự án trễ tiến độ.
+•	Thao tác nhanh:
+Cho phép truy cập nhanh đến các chức năng thường dùng như tạo báo giá, quản lý khách hàng, kho vật tư và cài đặt hệ thống.
+•	Hoạt động gần đây:
+Hiển thị các thao tác mới nhất trong hệ thống theo thứ tự thời gian thực.
+Đánh giá: Trang chủ được thiết kế trực quan, giúp người dùng nắm bắt nhanh tình hình và đưa ra quyết định kịp thời mà không cần truy cập nhiều màn hình khác nhau.
+3.4.3. Giao diện Quản lý Dự án
+Màn hình Quản lý Dự án hỗ trợ theo dõi toàn bộ vòng đời dự án từ khi tiếp nhận đến khi bàn giao.
+Hình 3.3: Giao diện trang Quản lý Dự án
+Mô tả giao diện:
+Danh sách dự án:
+Hiển thị dưới dạng bảng với các thông tin: mã dự án, khách hàng, giá trị hợp đồng, ngày bắt đầu, thời hạn và trạng thái.
+Hỗ trợ tìm kiếm, lọc theo trạng thái và phân trang.
+Thanh tiến độ (Progress Bar) thể hiện mức độ hoàn thành.
+Thao tác:
+Tạo dự án mới.
+Xem chi tiết, chỉnh sửa và xóa trực tiếp trên từng dòng.
+Bộ lọc trạng thái:
+Đang thực hiện, Hoàn thành, Tạm dừng.
+Đánh giá: Giao diện hỗ trợ quản lý và điều phối nhiều dự án hiệu quả, phù hợp với doanh nghiệp quy mô vừa và lớn.
+3.4.4. Giao diện Lập Báo giá
+Màn hình Lập Báo giá hỗ trợ tạo báo giá và tự động tính toán vật tư dựa trên thông số kỹ thuật.
+Mô tả giao diện:
+Thông tin chung:
+Chọn hoặc tạo mới khách hàng.
+Nhập thông tin công trình.
+Bảng hạng mục:
+Nhập loại cửa, hệ nhôm, kích thước, số lượng,...
+Tự động sinh danh sách vật tư (BOM).
+Tóm tắt:
+Tổng chi phí, lợi nhuận, chiết khấu.
+Xuất file:
+Hỗ trợ xuất PDF.
+Đánh giá: Giúp giảm sai sót và tiết kiệm thời gian so với phương pháp thủ công.
+3.4.5. Giao diện Quản lý Kho vật tư
+Màn hình hỗ trợ quản lý nhập – xuất – tồn kho theo thời gian thực.
+Hình 3.4: Giao diện trang Quản lý Kho vật tư
+Mô tả giao diện:
+Danh mục vật tư:
+Hiển thị mã, tên, số lượng tồn.
+Cảnh báo tồn kho thấp bằng màu sắc.
+Phiếu nhập/xuất:
+Ghi nhận đầy đủ thông tin giao dịch.
+Lịch sử:
+Theo dõi biến động kho.
+Cảnh báo:
+Hiển thị vật tư sắp hết.
+Đánh giá: Giúp kiểm soát tồn kho chính xác và kịp thời.
+3.4.6. Giao diện Quản lý Tài chính
+Màn hình cung cấp công cụ theo dõi thu chi và công nợ.
+Hình 3.5: Giao diện trang Quản lý tài chính
+Mô tả giao diện:
+Tổng quan:
+Biểu đồ thu – chi – lợi nhuận.
+Phiếu thu/chi:
+Liên kết với dự án.
+Công nợ:
+Theo dõi thanh toán.
+Báo cáo:
+Xuất dữ liệu theo kỳ.
+Đánh giá: Hỗ trợ ra quyết định dựa trên dữ liệu tài chính thực tế.
+3.5. Giao diện Quản trị
+3.5.1. Giao diện Quản lý Người dùng
+Cho phép quản trị viên kiểm soát toàn bộ tài khoản hệ thống.
+Hình 3.6: Giao diện quản lý người dùng
+Mô tả giao diện:
+Danh sách người dùng:
+Hiển thị thông tin và trạng thái.
+Thao tác:
+Tạo, sửa, vô hiệu hóa tài khoản.
+Vai trò:
+Admin, Quản lý, Kinh doanh, Kho, Tài chính.
+Đánh giá: Đảm bảo kiểm soát truy cập và bảo mật hệ thống.
+3.5.2. Giao diện Quản lý Phân quyền
+Cho phép cấu hình quyền truy cập chi tiết.
+Hình 3.7: Giao diện Quản lý phân quyền
+Mô tả giao diện:
+Ma trận quyền:
+Checkbox cho các quyền CRUD.
+Cập nhật:
+Áp dụng tức thì.
+Bảo vệ Admin:
+Không cho chỉnh sửa.
+Đánh giá: Linh hoạt và đảm bảo đúng phạm vi quyền hạn.
+3.5.3. Giao diện Cài đặt Hệ thống
+Cho phép cấu hình toàn bộ hệ thống.
+Hình 3.8: Giao diện Cài đặt hệ thống
+Mô tả giao diện:
+Thông tin doanh nghiệp:
+Logo, địa chỉ,...
+Thông báo:
+Cảnh báo tồn kho.
+Chi nhánh:
+Quản lý đa cơ sở.
+Nhật ký hệ thống:
+Ghi lại toàn bộ hoạt động.
+Đánh giá: Giúp tùy chỉnh hệ thống linh hoạt mà không cần can thiệp mã nguồn.
+CHƯƠNG 4: KIỂM THỬ HỆ THỐNG
+4.1. Mục tiêu kiểm thử
+Quá trình kiểm thử hệ thống được thực hiện nhằm đảm bảo hệ thống hoạt động ổn định, chính xác và đáp ứng đầy đủ các yêu cầu đã đề ra trong giai đoạn phân tích và thiết kế. Việc kiểm thử không chỉ giúp phát hiện lỗi mà còn đánh giá mức độ hoàn thiện của hệ thống trước khi đưa vào sử dụng thực tế.
+4.1.1. Đảm bảo hệ thống vận hành đúng yêu cầu
+Mục tiêu đầu tiên của kiểm thử là xác nhận rằng tất cả các chức năng trong hệ thống đã được triển khai đúng theo thiết kế ban đầu. Các nghiệp vụ cốt lõi như:
+Đăng nhập và xác thực người dùng
+Quản lý khách hàng và dự án
+Lập báo giá và tính toán vật tư (BOM)
+Quản lý kho và tài chính
+đều phải hoạt động chính xác, không xảy ra sai lệch dữ liệu.
+4.1.2. Phát hiện và loại bỏ lỗi
+Kiểm thử giúp phát hiện các lỗi trong hệ thống, bao gồm:
+Lỗi logic nghiệp vụ (sai tính toán, sai quy trình)
+Lỗi dữ liệu (thiếu ràng buộc, sai định dạng)
+Lỗi giao diện (hiển thị sai, UX chưa tối ưu)
+Lỗi real-time (Socket.IO không đồng bộ)
+Việc phát hiện sớm các lỗi này giúp giảm thiểu rủi ro khi triển khai thực tế.
+4.1.3. Kiểm tra bảo mật và phân quyền
+Hệ thống được kiểm thử nhằm đảm bảo:
+Người dùng chỉ truy cập được chức năng đúng với vai trò (RBAC)
+Ngăn chặn truy cập trái phép
+Bảo vệ các chức năng quan trọng
+4.1.4. Đánh giá hiệu suất và độ ổn định
+Hệ thống được đánh giá khả năng:
+Xử lý nhiều người dùng đồng thời
+Phản hồi nhanh với các thao tác
+Hoạt động ổn định trong thời gian dài
+Đặc biệt kiểm tra tính năng real-time thông qua Socket.IO.
+4.1.5. Đánh giá khả năng ứng dụng thực tế
+Hệ thống phải giải quyết được các vấn đề thực tế như:
+Quản lý dự án tập trung
+Kiểm soát tồn kho chính xác
+Tự động hóa báo giá
+4.2. Kiểm thử hệ thống
+4.2.1. Kiểm thử chức năng Đăng nhập
+Bảng 4.1: Kết quả kiểm thử chức năng Đăng nhập
+4.2.2. Kiểm thử chức năng Quản lý khách hàng
+Bảng 4.2: Kết quả kiểm thử chức năng Quản lý khách hàng
+4.2.3. Kiểm thử chức năng Quản lý dự án
+Bảng 4.3: Kết quả kiểm thử chức năng Quản lý dự án
+4.2.4. Kiểm thử chức năng Quản lý kỹ thuật
+Bảng 4.4: Kết quả kiểm thử chức năng Quản lý kỹ thuật
+4.2.5. Kiểm thử chức năng Kho vật tư
+Bảng 4.5: Kết quả kiểm thử chức năng Quản lý kho vật tư
+4.2.6. Kiểm thử chức năng Báo giá
+Bảng 4.6: Kết quả kiểm thử chức năng Lập báo giá
+4.2.7. Kiểm thử chức năng Người dùng
+Bảng 4.7: : Kết quả kiểm thử chức năng Quản lý người dùng
+4.2.8. Kiểm thử chức năng Tài chính
+Bảng 4.8. Kết quả kiểm thử
+Bảng 4.8: : Kết quả kiểm thử chức năng Quản lý tài chính
+4.2.9. Kiểm thử bảo mật
+Hệ thống được kiểm thử theo danh sách OWASP Top 10, tập trung vào các mối đe dọa phổ biến nhất đối với ứng dụng web:
+4.3. Tổng kết kết quả kiểm thử
+Bảng 4.9:Tổng hợp kết quả kiểm thử
++ Đánh giá tổng thể hệ thống:
+Tỷ lệ đạt: 93,5%
+Trạng thái: Hệ thống vận hành ổn định, đáp ứng tốt các yêu cầu chức năng cốt lõi.
++ Các lỗi và hạn chế còn tồn tại:
+Dữ liệu: Thiếu các ràng buộc (constraints) chặt chẽ giữa các trường dữ liệu.
+Bảo mật & Logic: Chưa triển khai quy trình kiểm tra dữ liệu (Validation) ở phía Backend.
+Tính năng bổ trợ: Hệ thống chưa tích hợp tính năng gửi thông báo tự động đến người dùng.
+4.4. Đánh giá môi trường vận hành
+Trình duyệt: Chrome, Edge
+Thiết bị: Desktop, Laptop
+Hoạt động ổn định, giao diện nhất quán.
+KẾT LUẬN
+Đề tài “Xây dựng hệ thống quản lý sản xuất và kinh doanh cho doanh nghiệp nhỏ” được thực hiện với mục tiêu xây dựng một hệ thống quản trị doanh nghiệp (ERP) chuyên biệt, đáp ứng các nhu cầu quản lý thực tế trong lĩnh vực sản xuất và thi công cửa nhôm kính. Hệ thống hướng đến việc số hóa toàn bộ quy trình vận hành, từ khâu tiếp nhận khách hàng, lập báo giá, quản lý dự án, điều phối sản xuất, quản lý kho vật tư cho đến theo dõi tài chính, nhằm nâng cao hiệu quả quản lý, giảm thiểu sai sót và tối ưu nguồn lực doanh nghiệp.
+Trong quá trình thực hiện đề tài, tác giả không chỉ hoàn thành việc xây dựng một hệ thống phần mềm có tính ứng dụng thực tế cao mà còn tích lũy được nhiều kiến thức và kinh nghiệm quý báu trong lĩnh vực phát triển phần mềm.
+1. Những kết quả đạt được
+Về mặt công nghệ
+Nắm vững quy trình phát triển phần mềm hoàn chỉnh theo thực tế, bao gồm các giai đoạn: khảo sát yêu cầu, phân tích hệ thống, thiết kế kiến trúc, lập trình, kiểm thử và triển khai.
+Xây dựng thành công hệ thống web đa vai trò (Admin, Manager, Sales, Inventory, Finance), đáp ứng đầy đủ các nghiệp vụ đặc thù của doanh nghiệp sản xuất cửa nhôm kính.
+Làm chủ các công nghệ phát triển giao diện hiện đại như HTML5, CSS3, JavaScript (ES6+), đảm bảo giao diện thân thiện và dễ sử dụng.
+Thành thạo việc xây dựng RESTful API bằng Node.js và Express.js, xử lý hiệu quả các nghiệp vụ phía máy chủ.
+Hiểu và áp dụng tốt việc thiết kế cơ sở dữ liệu quan hệ với MySQL 8.0, bao gồm chuẩn hóa dữ liệu, thiết lập ràng buộc và sử dụng Transaction để đảm bảo tính toàn vẹn.
+Triển khai thành công cơ chế bảo mật với JWT (JSON Web Token) và mô hình phân quyền RBAC (Role-Based Access Control).
+Tích hợp công nghệ thời gian thực thông qua Socket.IO, giúp hệ thống cập nhật dữ liệu tức thời.
+Bước đầu ứng dụng trí tuệ nhân tạo thông qua Google Gemini AI API để hỗ trợ xử lý và mở rộng tính năng thông minh.
+Sử dụng hiệu quả các công cụ phát triển phần mềm như Visual Studio Code, Postman, MySQL Workbench và Git.
+Về mặt chức năng và triển khai hệ thống
+Hệ thống đã đáp ứng tốt các yêu cầu nghiệp vụ thực tế:
+Đối với nhân viên kinh doanh (Sales):
+Tạo dự án và lập báo giá nhanh chóng.
+Tự động bóc tách vật tư (BOM) dựa trên hệ nhôm và kích thước thực tế.
+Đối với bộ phận kho:
+Quản lý tồn kho theo thời gian thực.
+Tạo phiếu nhập/xuất kho chính xác.
+Cảnh báo tồn kho thấp trực quan.
+Đối với bộ phận tài chính:
+Ghi nhận thu chi, theo dõi công nợ khách hàng.
+Xem báo cáo doanh thu, chi phí và lợi nhuận theo thời gian.
+Đối với quản trị viên:
+Quản lý tài khoản và phân quyền người dùng.
+Theo dõi nhật ký hoạt động hệ thống (Activity Log).
+Giám sát toàn bộ hệ thống.
+Hệ thống đã được kiểm thử với tỷ lệ thành công cao (93,5%), cho thấy tính ổn định và khả năng đáp ứng yêu cầu nghiệp vụ trong môi trường thực tế.
+2. Hạn chế của hệ thống
+Mặc dù đạt được nhiều kết quả tích cực, hệ thống vẫn còn một số hạn chế:
+Hệ thống hiện đang triển khai trên môi trường On-premise, chưa áp dụng kiến trúc phân tán hoặc cân bằng tải.
+Chưa kiểm thử khả năng chịu tải với số lượng lớn người dùng đồng thời.
+Tính năng cảnh báo tồn kho mới dừng ở mức hiển thị, chưa có cơ chế Push Notification tự động.
+Giao diện chưa được tối ưu hoàn toàn cho thiết bị di động.
+Chưa triển khai các cơ chế bảo mật nâng cao như:
+Giao thức HTTPS/SSL
+Xác thực hai yếu tố (2FA)
+3. Hướng phát triển trong tương lai
+Để nâng cao chất lượng và khả năng ứng dụng thực tế, hệ thống có thể được phát triển theo các hướng sau:
+Hoàn thiện hệ thống, khắc phục các lỗi còn tồn tại và tối ưu hiệu năng xử lý.
+Triển khai hệ thống lên nền tảng Cloud, áp dụng các mô hình:
+High Availability (tính sẵn sàng cao)
+Load Balancing (cân bằng tải)
+Phát triển ứng dụng di động (iOS/Android) phục vụ nhân viên tại công trường.
+Nâng cấp tích hợp AI:
+Dự báo nhu cầu vật tư
+Phân tích xu hướng doanh thu
+Đề xuất kế hoạch sản xuất và nhập hàng tối ưu
+Áp dụng kiểm thử tự động:
+Unit Test
+Integration Test
+Tích hợp với các hệ thống bên ngoài:
+Phần mềm kế toán (MISA, Fast Accounting)
+Phần mềm CAD (AutoCAD, SketchUp)
+Phát triển hệ thống giao tiếp nội bộ (Chat realtime) giữa các bộ phận, gắn với từng dự án cụ thể.
+4. Tổng kết
+Có thể khẳng định rằng hệ thống đã đạt được mục tiêu đề ra ban đầu, cung cấp một giải pháp quản lý toàn diện, hỗ trợ doanh nghiệp nâng cao hiệu quả vận hành và từng bước chuyển đổi số.
+Đề tài không chỉ mang ý nghĩa học thuật mà còn có giá trị thực tiễn cao, có thể tiếp tục phát triển thành một sản phẩm phần mềm hoàn chỉnh, phục vụ trực tiếp cho doanh nghiệp trong ngành xây dựng và sản xuất cửa nhôm kính.
+TÀI LIỆU THAM KHẢO
+Tiếng Việt
+[1] Nguyễn Văn Ba (2018), Phân tích và thiết kế hệ thống thông tin, Nhà xuất bản Đại học Quốc gia Hà Nội, Hà Nội.
+[2] Phạm Văn Ất (2017), Kỹ thuật lập trình – Từ cơ bản đến nâng cao, Nhà xuất bản Khoa học và Kỹ thuật, Hà Nội.
+[3] Nguyễn Thị Thu Thủy (2020), Cơ sở dữ liệu – Lý thuyết và thực hành, Nhà xuất bản Giáo dục Việt Nam, Hà Nội.
+Tiếng Anh
+[4] Sommerville I. (2015), Software Engineering (10th ed.), Pearson Education, London.
+[5] Flanagan D. (2020), JavaScript: The Definitive Guide (7th ed.), O’Reilly Media, Sebastopol, California.
+[6] Haverbeke M. (2018), Eloquent JavaScript: A Modern Introduction to Programming (3rd ed.), No Starch Press, San Francisco, California.
+[7] OpenJS Foundation (2024), “Node.js Documentation”, Node.js, Available at: https://nodejs.org/en/docs
+[8] OpenJS Foundation (2024), “Express.js – Fast, unopinionated, minimalist web framework for Node.js”, Express.js, Available at: https://expressjs.com
+[9] Oracle Corporation (2024), “MySQL 8.0 Reference Manual”, MySQL, Available at: https://dev.mysql.com/doc/refman/8.0/en/
+[10] Auth0 (2024), “Introduction to JSON Web Tokens”, Auth0, Available at: https://jwt.io/introduction
+[11] OWASP Foundation (2023), “OWASP Top Ten – The Ten Most Critical Web Application Security Risks”, OWASP, Available at: https://owasp.org/www-project-top-ten/
+[12] Socket.IO (2024), “Socket.IO Documentation – Bidirectional and low-latency communication”, Socket.IO, Available at: https://socket.io/docs/v4/

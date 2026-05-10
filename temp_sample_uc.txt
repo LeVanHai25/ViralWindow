@@ -1,0 +1,91 @@
+--- Context ---
+Hình  1.1. Sơ đồ kiến trúc hệ thống	7
+Hình  2.1. Biểu đồ use case tổng quát của hệ thống	15
+Hình  2.2. Biểu đồ hoạt động use case Gửi yêu cầu phê duyệt	30
+Hình  2.3. Biểu đồ hoạt động use case Kiểm duyệt công việc	31
+Hình  2.4. Biểu đồ trình tự use case Gửi yêu cầu phê duyệt	32
+--- Context ---
+Hình  2.1. Biểu đồ use case tổng quát của hệ thống	15
+Hình  2.2. Biểu đồ hoạt động use case Gửi yêu cầu phê duyệt	30
+Hình  2.3. Biểu đồ hoạt động use case Kiểm duyệt công việc	31
+Hình  2.4. Biểu đồ trình tự use case Gửi yêu cầu phê duyệt	32
+Hình  2.5. Biểu đồ VOPC use case Gửi yêu cầu phê duyệt	32
+--- Context ---
+Hình  2.2. Biểu đồ hoạt động use case Gửi yêu cầu phê duyệt	30
+Hình  2.3. Biểu đồ hoạt động use case Kiểm duyệt công việc	31
+Hình  2.4. Biểu đồ trình tự use case Gửi yêu cầu phê duyệt	32
+Hình  2.5. Biểu đồ VOPC use case Gửi yêu cầu phê duyệt	32
+Hình  2.6. Biểu đồ trình tự Use case Kiểm duyệt công việc	33
+--- Context ---
+Hình  2.4. Biểu đồ trình tự use case Gửi yêu cầu phê duyệt	32
+Hình  2.5. Biểu đồ VOPC use case Gửi yêu cầu phê duyệt	32
+Hình  2.6. Biểu đồ trình tự Use case Kiểm duyệt công việc	33
+Hình  2.7. Biểu đồ VOPC use case Kiểm duyệt công việc	33
+Hình  2.8. Biểu đồ trình tự use case Quản lý công việc	34
+--- Context ---
+Hình  2.6. Biểu đồ trình tự Use case Kiểm duyệt công việc	33
+Hình  2.7. Biểu đồ VOPC use case Kiểm duyệt công việc	33
+Hình  2.8. Biểu đồ trình tự use case Quản lý công việc	34
+Hình  2.9. Biểu đồ VOPC use case Quản lý công việc	35
+Hình  2.10. Biểu đồ trình tự use case Xem thống kê dự án	35
+--- Context ---
+Hình  2.8. Biểu đồ trình tự use case Quản lý công việc	34
+Hình  2.9. Biểu đồ VOPC use case Quản lý công việc	35
+Hình  2.10. Biểu đồ trình tự use case Xem thống kê dự án	35
+Hình  2.11. Biểu đồ VOPC use case Xem thống kê dự án	36
+Hình  2.12. Biểu đồ trình tự use case Quản lý thành viên	37
+--- Context ---
+Hình  2.10. Biểu đồ trình tự use case Xem thống kê dự án	35
+Hình  2.11. Biểu đồ VOPC use case Xem thống kê dự án	36
+Hình  2.12. Biểu đồ trình tự use case Quản lý thành viên	37
+Hình  2.13. Biểu đồ VOPC use case Quản lý thành viên	38
+Hình  2.14. Biểu đồ trình tự use case Bình luận	38
+--- Context ---
+Hình  2.12. Biểu đồ trình tự use case Quản lý thành viên	37
+Hình  2.13. Biểu đồ VOPC use case Quản lý thành viên	38
+Hình  2.14. Biểu đồ trình tự use case Bình luận	38
+Hình  2.15. Biểu đồ VOPC use case Bình luận	39
+Hình  2.16. Biểu đồ trình tự use case Xem công việc cá nhân	39
+--- Context ---
+Hình  2.14. Biểu đồ trình tự use case Bình luận	38
+Hình  2.15. Biểu đồ VOPC use case Bình luận	39
+Hình  2.16. Biểu đồ trình tự use case Xem công việc cá nhân	39
+Hình  2.17. Biểu đồ VOPC use case Xem công việc cá nhân	40
+Hình  2.18. Biểu đồ trình tự Use case Quản lý dự án	40
+--- Context ---
+Hình  2.16. Biểu đồ trình tự use case Xem công việc cá nhân	39
+Hình  2.17. Biểu đồ VOPC use case Xem công việc cá nhân	40
+Hình  2.18. Biểu đồ trình tự Use case Quản lý dự án	40
+Hình  2.19. Biểu đồ VOPC use case Quản lý dự án	41
+Hình  2.20. Biểu đồ trình tự use case Quản lý tài liệu	41
+--- Context ---
+Hình  2.18. Biểu đồ trình tự Use case Quản lý dự án	40
+Hình  2.19. Biểu đồ VOPC use case Quản lý dự án	41
+Hình  2.20. Biểu đồ trình tự use case Quản lý tài liệu	41
+Hình  2.21. Biểu đồ VOPC use case Quản lý tài liệu	42
+Hình  2.22. Biểu đồ trình tự use case Nhận thông báo thời gian thực	42
+--- Context ---
+Hình  2.20. Biểu đồ trình tự use case Quản lý tài liệu	41
+Hình  2.21. Biểu đồ VOPC use case Quản lý tài liệu	42
+Hình  2.22. Biểu đồ trình tự use case Nhận thông báo thời gian thực	42
+Hình  2.23. Biểu đồ VOPC use case Nhận thông báo thời gian thực	43
+Hình  2.24. Biểu đồ lớp chính của hệ thống	44
+--- Context ---
+Phân tích use case
+Biểu đồ hoạt động
+Biểu đồ hoạt động (Activity Diagram) mô tả luồng xử lý chi tiết của các use case trọng yếu trong hệ thống. Hai use case được lựa chọn để vẽ biểu đồ hoạt động là Gửi yêu cầu phê duyệt và Kiểm duyệt công việc, do đây là hai use case đặc thù nhất, thể hiện rõ nhất quy trình kiểm soát chất lượng của hệ thống.
+Hình 2.2 thể hiện biểu đồ hoạt động của use case Gửi yêu cầu phê duyệt, mô tả các bước từ khi Thành viên khởi tạo yêu cầu đến khi công việc chuyển sang trạng thái Chờ duyệt và thông báo được gửi đến Quản lý.
+--- Context ---
+Phân tích use case
+Biểu đồ hoạt động
+Biểu đồ hoạt động (Activity Diagram) mô tả luồng xử lý chi tiết của các use case trọng yếu trong hệ thống. Hai use case được lựa chọn để vẽ biểu đồ hoạt động là Gửi yêu cầu phê duyệt và Kiểm duyệt công việc, do đây là hai use case đặc thù nhất, thể hiện rõ nhất quy trình kiểm soát chất lượng của hệ thống.
+Hình 2.2 thể hiện biểu đồ hoạt động của use case Gửi yêu cầu phê duyệt, mô tả các bước từ khi Thành viên khởi tạo yêu cầu đến khi công việc chuyển sang trạng thái Chờ duyệt và thông báo được gửi đến Quản lý.
+--- Context ---
+Hình 2.2 thể hiện biểu đồ hoạt động của use case Gửi yêu cầu phê duyệt, mô tả các bước từ khi Thành viên khởi tạo yêu cầu đến khi công việc chuyển sang trạng thái Chờ duyệt và thông báo được gửi đến Quản lý.
+Hình  .. Biểu đồ hoạt động use case Gửi yêu cầu phê duyệt
+Hình 2.3 thể hiện biểu đồ hoạt động của use case Kiểm duyệt công việc, mô tả luồng xử lý của Quản lý khi phê duyệt hoặc từ chối công việc đang ở trạng thái Chờ duyệt, bao gồm cả luồng bắt buộc nhập lý do khi từ chối.
+--- Context ---
+Hình 2.3 thể hiện biểu đồ hoạt động của use case Kiểm duyệt công việc, mô tả luồng xử lý của Quản lý khi phê duyệt hoặc từ chối công việc đang ở trạng thái Chờ duyệt, bao gồm cả luồng bắt buộc nhập lý do khi từ chối.
+Hình  .. Biểu đồ hoạt động use case Kiểm duyệt công việc
+Biểu đồ trình tự và VOPC
+Biểu đồ trình tự (Sequence Diagram) mô tả thứ tự trao đổi thông điệp giữa các đối tượng trong hệ thống theo thời gian. Biểu đồ VOPC (View Of Participating Classes) bổ sung bằng cách thể hiện các lớp tham gia và quan hệ giữa chúng trong từng use case. Cặp biểu đồ này được xây dựng cho tất cả 10 use case trọng yếu của hệ thống.

@@ -1,0 +1,200 @@
+BỘ CÔNG THƯƠNG
+TRƯỜNG ĐẠI HỌC CÔNG NGHIỆP HÀ NỘI
+---------------------------------------
+ĐỒ ÁN TỐT NGHIỆP ĐẠI HỌC
+Ngành Công Nghệ Thông Tin
+XÂY DỰNG HỆ THỐNG QUẢN LÝ SẢN XUẤT VÀ KINH DOANH CHO DOANH NGHIỆP NHỎ
+GVHD: TS. Nguyễn Ngọc Khải Sinh viên	: Lê Văn Hải
+Mã số sinh viên: 2022605948
+Hà Nội - 2026
+LỜI CẢM ƠN
+Để hoàn thành đồ án tốt nghiệp này, em xin gửi lời cảm ơn chân thành tới các thầy cô Trường Công nghệ Thông tin và Truyền thông, Trường Đại học Công nghiệp Hà Nội đã tận tình giảng dạy và trang bị cho em những kiến thức chuyên môn trong suốt quá trình học tập.
+Em xin bày tỏ lòng biết ơn sâu sắc tới thầy Nguyễn Ngọc Khải, người đã trực tiếp hướng dẫn, hỗ trợ và đưa ra những định hướng quý báu giúp em hoàn thiện đồ án này.
+Do thời gian và kinh nghiệm thực tế còn hạn chế, đồ án không tránh khỏi những thiếu sót. Em kính mong nhận được sự góp ý của các thầy cô để có thể hoàn thiện hơn nữa kiến thức và kỹ năng của bản thân. Cuối cùng, em kính chúc thầy cô luôn dồi dào sức khỏe, hạnh phúc và thành đạt. Em xin chân thành cảm ơn!
+Sinh viên thực hiện
+Lê Văn Hải
+MỤC LỤC
+DANH MỤC CÁC TỪ VIẾT TẮT
+DANH MỤC BẢNG BIỂU
+Bảng 2.1: Mô tả các Actors	19
+Bảng 2.2: Yêu cầu phi chức năng	21
+Bảng 2.3: Mô tả use case Đăng nhập	24
+Bảng 2.4: Mô tả use case Quản lý khách hàng	28
+Bảng 2.5: Mô tả use case Quản lý dự án	32
+Bảng 2.6: Mô tả use case Thiết kế & Bóc tách vật tư	36
+Bảng 2.7:Mô tả use case Quản lý kho vật tư	42
+Bảng 2.8: Mô tả use case Lập báo giá	46
+Bảng 2.9: Mô tả use case Quản lý người dùng	50
+Bảng 2.10: Quản lý tài chính	56
+Bảng 2.11: Chi tiết bảng CHUC_VU	61
+Bảng 2.12: Chi tiết bảng QUYEN_HAN	61
+Bảng 2.13: Chi tiết bảng CHUC_VU_QUYEN	62
+Bảng 2.14: Chi tiết bảng NGUOI_DUNG	62
+Bảng 2.15: Chi tiết bảng PHIEN_DANG_NHAP	62
+Bảng 2.16: Chi tiết bảng THONG_BAO	63
+Bảng 2.17: Chi tiết bảng KHACH_HANG	63
+Bảng 2.18: Chi tiết bảng DU_AN	64
+Bảng 2.19: Chi tiết bảng MAU_SAN_PHAM	64
+Bảng 2.20: Chi tiết bảng SAN_PHAM_DU_AN	65
+Bảng 2.21: Chi tiết bảng VAT_TU_BOM	66
+Bảng 2.22: Chi tiết bảng BAO_GIA	66
+Bảng 2.23: Chi tiết bảng CHI_TIET_BAO_GIA	67
+Bảng 2.24: Chi tiết bảng GIAO_DICH_TAI_CHINH	68
+Bảng 2.25: Chi tiết bảng CHI_TIET_GIAO_DICH	68
+Bảng 2.26: Chi tiết bảng CONG_NO	69
+Bảng 2.27: Chi tiết bảng TON_KHO	69
+Bảng 2.28: Chi tiết bảng TON_KHO	70
+Bảng 3.1: Danh sách các thư viện phụ thuộc chính của hệ thống ViralWindow	75
+Bảng 3.2: Bố cục và chức năng các khu vực giao diện	76
+Bảng 4.1: Kết quả kiểm thử chức năng Đăng nhập	87
+Bảng 4.2: Kết quả kiểm thử chức năng Quản lý khách hàng	88
+Bảng 4.3: Kết quả kiểm thử chức năng Quản lý dự án	88
+Bảng 4.4: Kết quả kiểm thử chức năng Quản lý kỹ thuật	88
+Bảng 4.5: Kết quả kiểm thử chức năng Quản lý kho vật tư	89
+Bảng 4.6: Kết quả kiểm thử chức năng Lập báo giá	89
+Bảng 4.7: : Kết quả kiểm thử chức năng Quản lý người dùng	89
+Bảng 4.8: : Kết quả kiểm thử chức năng Quản lý tài chính	89
+Bảng 4.9:Tổng hợp kết quả kiểm thử	90
+DANH MỤC HÌNH ẢNH
+Hình 1.1: Cấu trúc của file HTML sử dụng Visual Studio Code	12
+Hình 2.1: Biểu đồ use case tổng quan	19
+Hình 2.2: Biểu đồ hoạt động use case Đăng nhập	26
+Hình 2.3:Biểu đồ trình tự use case Đăng nhập	27
+Hình 2.4: Biểu đồ lớp phân tích use case Đăng nhập	28
+Hình 2.5: Biểu đồ hoạt động use case Quản lý khách hàng	30
+Hình 2.6: Biểu đồ trình tự use case Quản lý khách hàng	31
+Hình 2.7: Biểu đồ lớp phân tích use case Quản lý khách hàng	32
+Hình 2.8: Biểu đồ hoạt động use case Quản lý dự án	34
+Hình 2.9: Biểu đồ trình tự use case Quản lý dự án	35
+Hình 2.10: Biểu đồ lớp phân tích use case Quản lý dự án	36
+Hình 2.11: Biểu đồ hoạt động use case Quản lý kỹ thuật	39
+Hình 2.12: Biểu đồ trình tự use case Quản lý kỹ thuật	40
+Hình 2.13: Biểu đồ lớp phân tích use case Quản lý kỹ thuật	41
+Hình 2.14: Biểu đồ hoạt động use case Quản lý kho vật tư	44
+Hình 2.15: Biểu đồ trình tự use case Quản lý kho vật tư	45
+Hình 2.16: Biểu đồ lớp phân tích use case Quản lý kho vật tư	46
+Hình 2.17: Biểu đồ hoạt động use case Lập báo giá	48
+Hình 2.18: Biểu đồ trình tự use case Lập báo giá	49
+Hình 2.19: Biểu đồ lớp phân tích use case Lập báo giá	50
+Hình 2.20: Biểu đồ hoạt động use case Quản lý người dùng	53
+Hình 2.21: Biểu đồ trình tự use case Quản lý người dùng	54
+Hình 2.22: Biểu đồ lớp phân tích use case Quản lý người dùng	55
+Hình 2.23: Biểu đồ hoạt động use case Quản lý tài chính	58
+Hình 2.24: Biểu đồ trình tự use case Quản lý tài chính	59
+Hình 2.25: Biểu đồ lớp phân tích use case Quản lý tài chính	60
+Hình 2.26: Biểu đồ thực thể liên kết	61
+Hình 3.1: Giao diện trang Đăng nhập	77
+Hình 3.2: Giao diện Trang chủ	78
+Hình 3.3: Giao diện trang Quản lý Dự án	79
+Hình 3.4: Giao diện trang Quản lý Kho vật tư	81
+Hình 3.5: Giao diện trang Quản lý tài chính	82
+Hình 3.6: Giao diện quản lý người dùng	83
+Hình 3.7: Giao diện Quản lý phân quyền	84
+Hình 3.8: Giao diện Cài đặt hệ thống	85
+MỞ ĐẦU
+Lý do chọn đề tài
+Trong bối cảnh chuyển đổi số và sự phát triển của Cách mạng công nghiệp 4.0, các doanh nghiệp ngày càng cần ứng dụng công nghệ thông tin vào quản lý và vận hành nhằm nâng cao hiệu quả hoạt động và khả năng cạnh tranh. Đặc biệt, các hệ thống phần mềm quản lý hiện đại giúp doanh nghiệp tập trung hóa dữ liệu, tự động hóa quy trình nghiệp vụ và giảm thiểu sai sót trong quá trình xử lý công việc.
+Tuy nhiên, tại nhiều doanh nghiệp sản xuất nhỏ, đặc biệt trong lĩnh vực nhôm kính, hoạt động quản lý vẫn chủ yếu được thực hiện thủ công hoặc dựa trên các công cụ rời rạc như bảng tính. Các công việc như lập báo giá, bóc tách vật tư, quản lý kho và theo dõi tiến độ dự án thường thiếu sự đồng bộ, dễ xảy ra sai lệch dữ liệu và gây khó khăn trong việc kiểm soát tổng thể.
+Xuất phát từ thực tế đó, đề tài “Xây dựng hệ thống quản lý sản xuất và kinh doanh cho doanh nghiệp nhỏ” được thực hiện nhằm xây dựng một hệ thống phần mềm hỗ trợ quản lý tập trung, tự động hóa các quy trình nghiệp vụ chính trong doanh nghiệp. Hệ thống hướng đến việc cải thiện hiệu quả quản lý, giảm thiểu sai sót và hỗ trợ nhà quản lý trong việc theo dõi và ra quyết định.
+Đồng thời, việc thực hiện đề tài cũng giúp vận dụng các kiến thức đã học vào bài toán thực tế, từ đó nâng cao kỹ năng phân tích, thiết kế và phát triển phần mềm của bản thân trước khi tốt nghiệp.
+Mục tiêu đề tài
+Mục tiêu của đề tài là xây dựng một hệ thống phần mềm quản lý dành cho doanh nghiệp sản xuất và thi công cửa nhôm kính, nhằm số hóa và hỗ trợ các quy trình nghiệp vụ chính như lập báo giá, bóc tách vật tư (BOM), quản lý kho, theo dõi tiến độ dự án và quản lý thu chi.
+Hệ thống giúp giảm sai sót trong quá trình làm việc, tăng hiệu quả quản lý, đồng thời cung cấp chức năng phân quyền và báo cáo để hỗ trợ người quản lý kiểm soát hoạt động và ra quyết định.
+Đối tượng và phạm vi nghiên cứu
+Đối tượng nghiên cứu là các nghiệp vụ trong doanh nghiệp sản xuất và thi công cửa nhôm kính như báo giá, bóc tách vật tư (BOM), quản lý kho, dự án và tài chính, cùng các công nghệ xây dựng hệ thống Web.
+Phạm vi đề tài tập trung xây dựng hệ thống quản lý cho doanh nghiệp nhỏ, gồm các chức năng chính: khách hàng, báo giá, vật tư, kho, dự án và thu chi.
+Đề tài không bao gồm ứng dụng di động, không tích hợp phần cứng và không hướng tới hệ thống quy mô lớn.
+Cấu trúc báo cáo
+Báo cáo được tổ chức thành 4 chương chính:
+Chương 1: Tổng quan về công nghệ sử dụng và môi trường triển khai
+Chương 2: Phân tích và thiết kế hệ thống
+Chương 3: Kết quả chương trình
+Chương 4: Kiểm thử chức năng
+CHƯƠNG 1: TỔNG QUAN VỀ CÔNG NGHỆ SỬ DỤNG VÀ MÔI TRƯỜNG TRIỂN KHAI
+Giới thiệu về HTML5, CSS3, JavaScript
+1.1.1.Giới thiệu HTML
+HTML5 là phiên bản mới nhất của ngôn ngữ đánh dấu siêu văn bản, đóng vai trò xây dựng cấu trúc nội dung cho các trang web hiện đại. Thay vì chỉ đơn thuần định dạng văn bản như các phiên bản trước, HTML5 bổ sung nhiều thẻ ngữ nghĩa như <article>, <section>, <nav> giúp tổ chức nội dung rõ ràng và hỗ trợ tốt cho SEO. Trong dự án, HTML5 được chọn vì khả năng tương thích đa trình duyệt và hỗ trợ đầy đủ các tính năng web app hiện đại [2].
+Ngôn ngữ HTML dùng các tag hoặc các đoạn mã lệnh để chỉ cho các trình duyệt (Web browsers) cách hiển thị các thành phần của trang như text và graphics.
+HTML là ngôn ngữ xác định cấu trúc của thông tin.
+HTML sử dụng một loạt các thẻ và thuộc tính và được dùng để hiển thị văn bản và các thông tin khác, cung cấp siêu liên kết tới các tài liệu khác. Là một tập tin có phần mở rộng là HTML
+Cấu trúc của file HTML gồm Cấu trúc chung của html gồm có thẻ <!
+DOCTYPE html> dùng để xác định rằng code bạn đang dùng là html.
+Cặp thẻ đóng mở <html> </html> chứa toàn bộ các dòng lệnh html bên trong (sau này còn là code của Javascript và CSS khi chèn vào)
+Tiếp đến là 2 cặp thẻ <head></head> chứa thông tin của webpage và đặc trưng bởi thẻ <title></title>, mà mặc định sẽ không được hiển thị trên web
+Thẻ <body></body> chứa toàn bộ nội dung html sẽ hiển thị lên trên trang web của chúng ta.hai cặp thẻ này là duy nhất trong web; và nhiều cặp thẻ khác đặt trong hai cặp thẻ trên để tạo lên trang web. [2]
+HTML có thể trên nhiều trình soạn thảo, dự án này nhóm em dùng Visual Studio Code để soạn thảo HTML và JavaScript để thiết kế, viết mã và phát triển website.
+Dưới đây là hình minh họa câu trúc file HTML.
+Hình 1.1: Cấu trúc của file HTML sử dụng Visual Studio Code
+1.1.2.Giới thiệu về CSS và JavaScript
+CSS3 là công nghệ tạo kiểu giao diện giúp tách biệt hoàn toàn phần trình bày ra khỏi cấu trúc HTML, mang lại sự linh hoạt và dễ bảo trì hơn cho dự án. Nhờ hệ thống Cascade và Specificity, CSS3 cho phép định nghĩa các quy tắc trình bày nhất quán trên toàn hệ thống. Trong hệ thống, CSS3 được sử dụng để xây dựng bộ design system thống nhất cho tất cả các module từ dashboard, bảng dữ liệu đến form nhập liệu, đảm bảo giao diện nhất quán và dễ bảo trì [3].
+CSS xử lý một phần giao diện của trang web. Sử dụng CSS, bạn có thể kiểm soát màu sắc của văn bản, kiểu phông chữ, khoảng cách giữa các đoạn văn, cách các cột được đặt kích thước và bố cục, hình ảnh hoặc màu nền nào được sử dụng, thiết kế bố cục, các biến thể hiển thị cho các thiết bị và kích thước màn hình khác nhau cũng như hàng loạt các hiệu ứng khác.
+Cách CSS hoạt động đó chính là tìm kiếm dựa trên vùng chọn chẳng hạn như thẻ HTML, ID, class, v.v. Sau đó, nó sẽ áp dụng những thuộc tính buộc phải thay đổi lên các vùng đã chọn.
+HTML và CSS có mối quan hệ gắn bó mật thiết với nhau. Nếu HTML là nền tảng của một trang web thì CSS là tất cả tính thẩm mỹ của toàn bộ trang web đó. [3]
+Với HTML chỉ biểu diễn thông tin chứ chưa phải là các trang Web động có khả năng đáp ứng các sự kiện từ phía người dùng. JavaScript là ngôn ngữ dưới dạng Script có thể gắn với các file HTML. Được trình duyệt diễn dịch, trình duyệt đọc JavaScript dưới dạng mã nguồn. JavaScript là ngôn ngữ dựa trên đối tượng, nghĩa là bao gồm nhiều kiểu đối tượng, ví dụ Math với tất cả chức năng toán học. Nhưng JavaScript không là ngôn ngữ hướng đối tượng như C++, Java.
+1.1.3.Tổng quan về Responsive Web
+a)Định nghĩa:
+Thiết kế giao diện thích ứng (Responsive Design) là phương pháp xây dựng giao diện web có khả năng tự điều chỉnh bố cục theo kích thước thiết bị của người dùng. Đối với hệ thống, do người dùng chủ yếu là nhân viên làm việc tại xưởng hoặc văn phòng với nhiều loại thiết bị khác nhau, việc áp dụng responsive design giúp đảm bảo trải nghiệm nhất quán trên máy tính để bàn, laptop và máy tính bảng mà không cần xây dựng ứng dụng riêng biệt cho từng nền tảng.
+b)Lợi ích:
+Trải nghiệm người dùng tốt hơn: Người dùng có thể truy cập và sử dụng trang web dễ dàng trên mọi thiết bị.
+SEO tốt hơn: Google ưu tiên các trang web có thiết kế responsive trong kết quả tìm kiếm.
+Tiết kiệm chi phí và thời gian: Chỉ cần duy trì một trang web thay vì nhiều phiên bản cho các thiết bị khác nhau.
+Tăng khả năng tiếp cận: Đảm bảo trang web hoạt động tốt trên nhiều loại thiết bị và kích thước màn hình.
+c) Các Nguyên Tắc Cơ Bản của Responsive Web:
+Fluid Grid Layouts: Sử dụng các lưới linh hoạt để bố trí các thành phần trên trang.
+Flexible Images: Hình ảnh điều chỉnh kích thước tự động theo kích thước màn hình.
+Media Queries: Sử dụng CSS media queries để áp dụng các kiểu dáng khác nhau cho các kích thước màn hình khác nhau.
+Viewport Meta Tag: Thiết lập viewport để đảm bảo trang web hiển thị đúng trên các thiết bị di động.
+Giới thiệu về Node.js và Express.js
+Node.js là nền tảng runtime cho phép thực thi JavaScript ở phía máy chủ, được xây dựng trên V8 engine của Google Chrome. Điểm khác biệt cốt lõi của Node.js so với các nền tảng backend truyền thống là cơ chế xử lý bất đồng bộ (non-blocking I/O), giúp hệ thống phản hồi nhiều yêu cầu đồng thời mà không cần tạo thêm luồng xử lý mới. Đây là lý do nhóm lựa chọn Node.js cho hệ thống, khi cần xử lý đồng thời các kết nối từ nhiều nhân viên khác nhau và tích hợp thông báo thời gian thực qua Socket.IO [7].
+Một trong những đặc điểm nổi bật của Node.js là cơ chế non-blocking I/O (bất đồng bộ, không chặn). Điều này giúp hệ thống có thể xử lý nhiều yêu cầu đồng thời mà không cần tạo nhiều luồng (thread), từ đó tối ưu hiệu năng và tài nguyên hệ thống. Nhờ đó, Node.js đặc biệt phù hợp với các ứng dụng cần xử lý nhiều kết nối cùng lúc như chat realtime, streaming, hoặc hệ thống API.
+Ngoài ra, Node.js có hệ sinh thái rất lớn thông qua npm (Node Package Manager) – kho thư viện mã nguồn mở phong phú, giúp lập trình viên dễ dàng tích hợp và mở rộng chức năng cho ứng dụng.
+Express.js được nhóm lựa chọn là framework backend vì tính tối giản, linh hoạt và phù hợp với kiến trúc RESTful API của hệ thống. Express.js không áp đặt cấu trúc cứng nhắc, cho phép nhóm tự tổ chức mã nguồn theo mô hình MVC phù hợp với yêu cầu dự án. Hệ thống middleware của Express.js cũng giúp tích hợp nhanh chóng các thành phần xác thực JWT, xử lý CORS và logging mà không cần viết lại từ đầu [8].
+Các đặc điểm chính của Express.js gồm:
+Routing (định tuyến): Cho phép định nghĩa các URL và phương thức HTTP (GET, POST, PUT, DELETE) để xử lý yêu cầu từ client.
+Middleware: Cơ chế trung gian giúp xử lý request/response như xác thực, logging, xử lý dữ liệu trước khi trả về kết quả.
+Tích hợp dễ dàng: Có thể kết nối với nhiều hệ quản trị cơ sở dữ liệu như MySQL, MongoDB.
+Hiệu năng cao: Nhẹ, tối giản, phù hợp xây dựng RESTful API và hệ thống backend.
+Giới thiệu về MySQL
+MySQL 8.0 được lựa chọn làm hệ quản trị cơ sở dữ liệu chính cho dự án vì ba lý do cốt lõi: tính ổn định cao sau nhiều năm phát triển, khả năng tích hợp tốt với Node.js thông qua thư viện mysql2, và hỗ trợ đầy đủ các tính năng giao dịch (Transaction) cần thiết để đảm bảo tính nhất quán khi xử lý nghiệp vụ tài chính và kho vật tư. MySQL sử dụng SQL làm ngôn ngữ tương tác dữ liệu và hỗ trợ storage engine InnoDB đảm bảo tính toàn vẹn tham chiếu giữa các bảng [9].
+Tổng quan về SQL
+SQL (Structured Query Language) là ngôn ngữ truy vấn chuẩn được dùng để tương tác với cơ sở dữ liệu quan hệ. Trong hệ thống, SQL được sử dụng để thực hiện đầy đủ các nghiệp vụ dữ liệu, bao gồm:
+Truy vấn dữ liệu (SELECT)
+Thêm dữ liệu (INSERT)
+Cập nhật dữ liệu (UPDATE)
+Xóa dữ liệu (DELETE)
+Ngoài ra, SQL còn hỗ trợ định nghĩa cấu trúc dữ liệu (DDL), kiểm soát truy cập (DCL) và quản lý giao dịch (TCL), góp phần đảm bảo tính toàn vẹn và nhất quán của dữ liệu.
+Kiến trúc và nguyên lý hoạt động của MySQL
+MySQL hoạt động theo mô hình Client – Server, bao gồm:
+Client: Ứng dụng hoặc người dùng gửi các câu lệnh SQL
+MySQL Server: Tiếp nhận, xử lý truy vấn và trả kết quả
+Dữ liệu trong MySQL được tổ chức dưới dạng các bảng (table), mỗi bảng gồm:
+Hàng (row): Đại diện cho một bản ghi
+Cột (column): Đại diện cho thuộc tính của dữ liệu
+Các bảng có thể liên kết với nhau thông qua:
+Khóa chính (Primary Key): Định danh duy nhất cho mỗi bản ghi
+Khóa ngoại (Foreign Key): Thiết lập mối quan hệ giữa các bảng
+Đặc điểm nổi bật của MySQL
+Hiệu năng cao: Xử lý nhanh với khối lượng dữ liệu lớn
+Mã nguồn mở: Miễn phí, dễ triển khai và tùy biến
+Đa nền tảng: Hỗ trợ nhiều hệ điều hành (Windows, Linux, macOS)
+Bảo mật tốt: Hỗ trợ xác thực người dùng và phân quyền truy cập
+Hỗ trợ chỉ mục (Index): Tăng tốc độ truy vấn dữ liệu
+Storage Engine linh hoạt: Điển hình như InnoDB hỗ trợ giao dịch và đảm bảo toàn vẹn dữ liệu
+Ưu điểm của MySQL
+Dễ học, dễ sử dụng
+Cộng đồng lớn, tài liệu phong phú
+Tích hợp tốt với nhiều ngôn ngữ lập trình như Node.js, PHP, Java
+Phù hợp với cả hệ thống nhỏ và lớn
+Nhược điểm của MySQL
+Một số tính năng nâng cao bị hạn chế so với các hệ quản trị khác
+Khả năng xử lý các hệ thống cực lớn có thể kém hơn một số giải pháp chuyên biệt
+Ứng dụng thực tế
+MySQL được sử dụng rộng rãi trong:
+Xây dựng website và ứng dụng web
+Hệ thống quản lý (quản lý khách hàng, nhân sự, dự án,…)
+Thương mại điện tử
+Hệ thống backend kết hợp với Node.js và Express.js
+Giới thiệu về Google Generative AI (Gemini API)
+Gemini API là dịch vụ AI tổng quát (Generative AI) do Google phát triển, được tích hợp vào hệ thống nhằm xây dựng tính năng trợ lý ảo thông minh. Khác với các chatbot đơn giản, Gemini có khả năng hiểu ngữ cảnh nghiệp vụ cụ thể của ngành cửa nhôm kính và đưa ra gợi ý phân tích dữ liệu phù hợp. Trong phạm vi dự án, Gemini API được sử dụng để hỗ trợ nhân viên kinh doanh tra cứu thông tin kỹ thuật và phân tích báo cáo tài chính theo yêu cầu tự nhiên (natural language query).
+Gemini API là giao diện lập trình ứng dụng cho phép các nhà phát triển tích hợp trực tiếp các mô hình Gemini vào hệ thống phần mềm, từ đó xây dựng các tính năng thông minh như chatbot, hỗ trợ viết nội dung, phân tích dữ liệu và tự động hóa quy trình.
+Đặc điểm nổi bật của Gemini API

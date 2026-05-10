@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <!-- FIX: meta charset phải đứng đầu tiên (trước bất kỳ script nào) -->
+    <meta charset="UTF-8">
+    <!-- FIX: config.js phải load TRƯỚC auth-helper.js để window.API_BASE được định nghĩa -->
+    <script src="js/config.js"></script>
     <script src="js/auth-helper.js"></script>
     <script src="js/modal-system.js"></script>
     <script src="js/user-settings.js"></script>
-    <meta charset="UTF-8">
     <link rel="icon" type="image/png" href="favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng nhập - Hệ thống quản lý cửa nhôm kính</title>
@@ -143,7 +146,7 @@
             .form-container { max-width: 100%; }
         }
     </style>
-    <script src="js/config.js"></script>
+    <!-- config.js đã được load ở đầu <head> - không cần load lại ở đây -->
     <script src="js/theme-manager.js"></script>
     <link rel="stylesheet" href="css/mobile-responsive.css">
     <script src="js/vw-modal.js"></script>

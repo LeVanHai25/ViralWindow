@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -904,8 +904,12 @@
                 if (result.success && result.data) {
                     projectsData = result.data;
 
-                    // Filter only completed projects (progress >= 100)
-                    completedProjects = projectsData.filter(p => (p.progress_percent || 0) >= 100);
+                    // Filter only completed projects (progress >= 100 or status is completed)
+                    completedProjects = projectsData.filter(p => {
+                        const status = (p.status || '').toLowerCase();
+                        const progress = parseFloat(p.progress_percent || 0);
+                        return status === 'completed' || status === 'handover' || progress >= 100;
+                    });
 
                     // Update KPIs
                     updateKPIs();

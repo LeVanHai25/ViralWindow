@@ -105,17 +105,26 @@ function activityLogMiddleware(req, res, next) {
 
     const startTime = Date.now();
 
-    // Capture original response methods
+    // FIX: Guard chống double-log.
+    // Express's res.json() internally calls res.send().
+    // Nếu override cả hai, logAfterResponse() sẽ bị gọi 2 lần mỗi request.
+    // Giải pháp: chỉ override res.json, dùng _logged flag để chặn.
+    let _logged = false;
+
+    // Capture original json method only
     const originalJson = res.json.bind(res);
-    const originalSend = res.send.bind(res);
 
     const logAfterResponse = () => {
+        // Chỉ ghi log đúng 1 lần duy nhất per request
+        if (_logged) return;
+        _logged = true;
+
         const duration = Date.now() - startTime;
 
-        // Cố gắng lấy thông tin user từ session/token (populdated bởi optionalAuth)
+        // Lấy thông tin user từ token (populated bởi optionalAuth middleware)
         const user = req.user || {};
         const userId = user.id || null;
-        const userName = user.fullname || user.name || user.username || null;
+        const userName = user.full_name || user.fullname || user.name || user.username || null;
 
         const logData = {
             user_id: userId,
@@ -130,7 +139,7 @@ function activityLogMiddleware(req, res, next) {
             request_body: JSON.stringify(sanitizeBody(req.body))?.substring(0, 2000),
         };
 
-        // Ghi log (Async)
+        // Ghi log bất đồng bộ - không block response
         db.query(
             `INSERT INTO activity_logs 
              (user_id, user_name, method, url, action_description, status_code, duration_ms, ip_address, user_agent, request_body)
@@ -154,14 +163,11 @@ function activityLogMiddleware(req, res, next) {
         });
     };
 
+    // FIX: Chỉ override res.json (KHÔNG override res.send)
+    // res.json() sẽ tự gọi res.send() bên trong — không cần override thêm
     res.json = function (data) {
         logAfterResponse();
         return originalJson(data);
-    };
-
-    res.send = function (data) {
-        logAfterResponse();
-        return originalSend(data);
     };
 
     next();

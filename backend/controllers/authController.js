@@ -104,13 +104,21 @@ exports.register = async (req, res) => {
             }
         });
     } catch (err) {
-        console.error(err);
+        // FIX: Log chi tiết để debug
+        console.error('[Auth] Register error:', {
+            message: err.message,
+            code: err.code,
+            email: req.body?.email,
+            stack: err.stack
+        });
         res.status(500).json({
             success: false,
-            message: "Lỗi server"
+            message: "Lỗi server",
+            ...(process.env.NODE_ENV !== 'production' && { debug: err.message, errCode: err.code })
         });
     }
 };
+
 
 // Login
 exports.login = async (req, res) => {
@@ -212,10 +220,17 @@ exports.login = async (req, res) => {
             }
         });
     } catch (err) {
-        console.error(err);
+        // FIX: Log chi tiết để debug - biết chính xác lỗi từ đâu
+        console.error('[Auth] Login error:', {
+            message: err.message,
+            code: err.code,
+            email: req.body?.email,
+            stack: err.stack
+        });
         res.status(500).json({
             success: false,
-            message: "Lỗi server"
+            message: "Lỗi server",
+            ...(process.env.NODE_ENV !== 'production' && { debug: err.message, errCode: err.code })
         });
     }
 };

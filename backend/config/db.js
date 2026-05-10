@@ -79,7 +79,14 @@ const EXCLUDED_TABLES = [
     'activity_logs',
     'inventory_warehouses',
     'aluminum_warehouse_stock',
-    'user_presence'
+    'user_presence',
+    // FIX: Bảng security có AUTO_INCREMENT riêng (sau migration trong server.js).
+    // AutoID wrapper chạy FOR UPDATE trên pool không có transaction context
+    // gây race condition khi nhiều request login đồng thời trên TiDB Cloud.
+    'login_history',
+    'user_sessions',
+    // FIX: Bảng quản lý password reset cũng có ló hổng tương tự
+    'password_resets',
 ];
 
 /**

@@ -233,9 +233,9 @@ async function changePassword(req, res) {
 async function logLoginAttempt(userId, req, status, failureReason = null) {
     try {
         const userAgent = req.headers['user-agent'] || '';
-        const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
+        // FIX: req.connection deprecated, thêm fallback req.socket
+        const ipAddress = req.ip || req.socket?.remoteAddress || req.connection?.remoteAddress || 'unknown';
 
-        // Parse user agent for browser/OS info
         const browserInfo = parseUserAgent(userAgent);
 
         await pool.query(`
@@ -244,7 +244,7 @@ async function logLoginAttempt(userId, req, status, failureReason = null) {
         `, [
             userId,
             ipAddress,
-            userAgent,
+            userAgent.substring(0, 500), // FIX: Giới hạn độ dài tránh overflow
             browserInfo.device,
             browserInfo.browser,
             browserInfo.os,
@@ -252,7 +252,13 @@ async function logLoginAttempt(userId, req, status, failureReason = null) {
             failureReason
         ]);
     } catch (error) {
-        console.error('Error logging login attempt:', error);
+        // FIX: Log có structure để dễ debug hơn
+        console.error('[Security] Error logging login attempt:', {
+            code: error.code,
+            message: error.message,
+            userId,
+            status
+        });
     }
 }
 
@@ -260,18 +266,23 @@ async function logLoginAttempt(userId, req, status, failureReason = null) {
  * Create session record (called from auth controller)
  */
 async function createSession(userId, token, req) {
+    const userAgent = req.headers['user-agent'] || '';
+    // FIX: req.connection deprecated in newer Node versions, use req.socket
+    const ipAddress = req.ip || req.socket?.remoteAddress || req.connection?.remoteAddress || 'unknown';
+    const browserInfo = parseUserAgent(userAgent);
+
+    // Bước 1: Dọn dẹp sessions hết hạn - không để fail block bước 2
     try {
-        const userAgent = req.headers['user-agent'] || '';
-        const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
-
-        const browserInfo = parseUserAgent(userAgent);
-
-        // Deactivate expired sessions
         await pool.query(`
             UPDATE user_sessions SET is_active = FALSE WHERE expires_at < NOW()
         `);
+    } catch (cleanupErr) {
+        // Không block login nếu cleanup fail (ví dụ table chưa tồn tại)
+        console.warn('[Security] Session cleanup skipped:', cleanupErr.code || cleanupErr.message);
+    }
 
-        // Create new session
+    // Bước 2: Tạo session mới - tách riêng để error rõ ràng hơn
+    try {
         await pool.query(`
             INSERT INTO user_sessions (user_id, session_token, ip_address, device_info, browser, os, expires_at)
             VALUES (?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 30 DAY))
@@ -284,7 +295,12 @@ async function createSession(userId, token, req) {
             browserInfo.os
         ]);
     } catch (error) {
-        console.error('Error creating session:', error);
+        console.error('[Security] Error creating session:', {
+            code: error.code,
+            message: error.message,
+            userId
+        });
+        // Không throw - login vẫn thành công dù session record fail
     }
 }
 

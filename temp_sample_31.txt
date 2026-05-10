@@ -1,0 +1,165 @@
+Công nghệ và môi trường phát triển
+Công nghệ sử dụng
+Hệ thống được xây dựng theo kiến trúc Client-Server với hai tầng phát triển độc lập là Backend và Frontend. Việc lựa chọn công nghệ dựa theo các tiêu chí: hiệu năng cao, hỗ trợ realtime, hệ sinh thái thư viện phong phú và phù hợp với quy mô đồ án. Bảng 3.1 tổng hợp toàn bộ công nghệ được sử dụng trong hệ thống.
+Bảng  3.1 Các công nghệ sử dụng trong hệ thống
+Phần dưới đây trình bày chi tiết từng công nghệ theo hai nhóm Backend và Frontend.
+Phía Backend
+ASP.NET Core 8: là nền tảng phát triển ứng dụng web mã nguồn mở của Microsoft, hỗ trợ xây dựng REST API hiệu năng cao, chạy đa nền tảng trên Windows và Linux. Hệ thống sử dụng ASP.NET Core 8 làm nền tảng chính cho toàn bộ tầng xử lý nghiệp vụ, cung cấp API cho frontend tiêu thụ và xử lý các tác vụ bất đồng bộ.
+Entity Framework Core: là framework ORM (Object-Relational Mapping) cho phép tương tác với cơ sở dữ liệu thông qua các đối tượng C# thay vì viết câu lệnh SQL trực tiếp. Hệ thống áp dụng phương pháp Code-First, định nghĩa cấu trúc bảng thông qua các class model và quản lý thay đổi schema thông qua Migration.
+SignalR: là thư viện của ASP.NET Core cho phép bổ sung chức năng giao tiếp realtime vào ứng dụng web. SignalR tự động lựa chọn giao thức phù hợp nhất — ưu tiên WebSocket — để thiết lập kênh liên lạc hai chiều giữa server và client. Hệ thống sử dụng SignalR để đồng bộ trạng thái Kanban Board, gửi thông báo và cập nhật kho tài liệu theo thời gian thực.
+JWT (JSON Web Token): là chuẩn mở RFC 7519 định nghĩa phương thức truyền thông tin xác thực giữa các bên dưới dạng JSON được ký số. Hệ thống sử dụng JWT Bearer Authentication để xác thực stateless, mỗi request đính kèm token trong header Authorization, đảm bảo bảo mật cho tất cả API endpoint.
+Cloudinary: là dịch vụ quản lý tài sản kỹ thuật số trên đám mây, hỗ trợ upload, lưu trữ, xử lý và phân phối file ảnh, video và tài liệu. Hệ thống sử dụng Cloudinary để lưu trữ ảnh đại diện người dùng, file đính kèm khi gửi yêu cầu phê duyệt và tài liệu trong kho lưu trữ dự án.
+Phía Frontend
+React 18: là thư viện JavaScript mã nguồn mở của Meta để xây dựng giao diện người dùng theo mô hình component. Với cơ chế Virtual DOM và Concurrent Rendering, React 18 đảm bảo hiệu năng cao khi cập nhật giao diện. Toàn bộ giao diện hệ thống được xây dựng dưới dạng Single Page Application với React 18.
+TypeScript: là ngôn ngữ lập trình mở rộng của JavaScript, bổ sung hệ thống kiểu tĩnh giúp phát hiện lỗi ngay tại thời điểm biên dịch thay vì runtime. Toàn bộ mã nguồn frontend được viết bằng TypeScript nhằm tăng độ tin cậy và khả năng bảo trì về lâu dài.
+TanStack Query: là thư viện quản lý trạng thái server cho React, cung cấp cơ chế caching thông minh, background refetching, optimistic update và đồng bộ dữ liệu tự động. Hệ thống sử dụng TanStack Query để quản lý toàn bộ dữ liệu từ API, thay thế hoàn toàn việc dùng useEffect để fetch dữ liệu thủ công.
+Tailwind CSS: là framework CSS theo hướng utility-first, cho phép xây dựng giao diện trực tiếp trong JSX thông qua các class tiện ích mà không cần viết file CSS riêng. Hệ thống sử dụng Tailwind CSS để xây dựng giao diện responsive, hỗ trợ dark mode và light mode nhất quán trên toàn bộ ứng dụng.
+Môi trường phát triển
+Quá trình phát triển hệ thống sử dụng các công cụ hỗ trợ được trình bày trong bảng 3.2 dưới đây.
+Bảng  . Công cụ sử dụng trong quá trình phát triển
+Cài đặt các chức năng của hệ thống
+Phần này trình bày chi tiết chức năng và giao diện của từng màn hình trong hệ thống.
+Xem tổng quan hoạt động
+Trang Tổng quan là màn hình đầu tiên người dùng nhìn thấy sau khi đăng nhập thành công, đóng vai trò trung tâm điều hướng và cung cấp cái nhìn tổng thể về hoạt động cá nhân trong hệ thống. Giao diện được chia thành ba khu vực chính:
+- Khu vực điều hướng: Menu bên trái bao gồm các mục Tổng quan, Công việc, Hộp thư, Dự án và Cài đặt. Khi người dùng chọn một dự án cụ thể, sidebar tự động mở rộng hiển thị các mục con gồm Bảng Kanban, Thành viên, Thống kê, Tài liệu và Cài đặt dự án.
+- Khu vực nội dung chính: Phía trên hiển thị lời chào cá nhân hóa kèm tên người dùng và tóm tắt số lượng công việc đang thực hiện. Biểu đồ cột thể hiện số lượng công việc hoàn thành trong 7 ngày gần nhất giúp người dùng theo dõi xu hướng làm việc của bản thân. Bên cạnh là các chỉ số nhanh: số dự án đang tham gia và tỷ lệ hoàn thành đúng hạn.
+- Khu vực thao tác nhanh: Cho phép người dùng tạo công việc cá nhân hoặc tạo dự án mới chỉ với một thao tác, kèm danh sách các công việc gần đây để truy cập nhanh mà không cần điều hướng thủ công.
+Hình  .. Giao diện trang Tổng quan hoạt động
+Theo dõi công việc cá nhân
+Trang Công việc là một trong những tính năng đặc trưng nhất của hệ thống, giải quyết trực tiếp bài toán phân tán thông tin khi người dùng tham gia nhiều dự án cùng lúc. Thay vì phải truy cập từng dự án riêng lẻ để xem công việc của mình, trang này tự động tổng hợp toàn bộ công việc chưa hoàn thành từ tất cả dự án về một màn hình duy nhất, đồng thời tích hợp cả công việc cá nhân do người dùng tự tạo.
+Phía trên trang là phần "Focus hôm nay", tự động gợi ý công việc quan trọng nhất cần ưu tiên xử lý dựa trên sự kết hợp giữa thời hạn còn lại và mức độ ưu tiên. Danh sách công việc được phân thành hai nhóm rõ ràng: nhóm "Cá nhân" gồm các công việc do người dùng tự tạo, và nhóm "Dự án" gồm các công việc được giao từ các dự án đang tham gia. Mỗi công việc hiển thị đầy đủ tiêu đề, tên dự án, trạng thái hiện tại và thời hạn còn lại. Người dùng có thể nhấn vào bất kỳ công việc nào để xem chi tiết và được điều hướng trực tiếp đến bảng Kanban tương ứng để cập nhật tiến độ.
+Hình  .. Giao diện danh sách công việc cá nhân
+Xem danh sách công việc trong dự án (Bảng Kanban)
+Bảng Kanban là giao diện quản lý công việc trung tâm của mỗi dự án, được tổ chức theo phương pháp Kanban với 4 cột tương ứng 4 trạng thái của vòng đời công việc: Cần làm, Đang làm, Chờ duyệt và Hoàn thành. Mỗi công việc được thể hiện dưới dạng thẻ trực quan, hiển thị tiêu đề, thời hạn, mức độ ưu tiên và ảnh đại diện của người được gán thực hiện.
+Người dùng có thể cập nhật trạng thái công việc của mình. Đặc biệt, khi công việc được chuyển từ cột Đang làm sang Chờ duyệt, hệ thống tự động hiển thị form yêu cầu cung cấp bằng chứng hoàn thành. Đây là cơ chế bắt buộc nhằm đảm bảo mọi công việc khi chuyển sang trạng thái chờ duyệt đều có minh chứng kèm theo, tránh tình trạng báo hoàn thành nhưng thực tế chưa hoàn thành.
+Tất cả thay đổi trên bảng Kanban được đồng bộ realtime đến toàn bộ thành viên trong dự án thông qua SignalR, đảm bảo mọi người luôn nhìn thấy trạng thái mới nhất mà không cần tải lại trang.
+Hình  .. Bảng Kanban cập nhật tiến độ
+Gửi yêu cầu phê duyệt công việc
+Khi thành viên thay đổi công việc từ cột “Đang làm” sang cột “Chờ duyệt”, hệ thống hiển thị form Gửi yêu cầu phê duyệt. Đây là bước bắt buộc trong quy trình, thành viên phải cung cấp ít nhất một trong hai loại bằng chứng: file đính kèm (ảnh, tài liệu, video,...) hoặc văn bản mô tả kết quả công việc. Hệ thống không cho phép bỏ trống cả 2 trường này nhằm đảm bảo tính minh bạch và chất lượng đầu ra.
+Hình  .. Form gửi yêu cầu phê duyệt công việc
+Phê duyệt kết quả công việc
+Khi nhận được thông báo có công việc cần kiểm duyệt, Quản lý truy cập vào thẻ công việc đang ở trạng thái Chờ duyệt để xem xét kết quả. Giao diện kiểm duyệt hiển thị đầy đủ thông tin: tiêu đề, mô tả, người thực hiện, deadline, mức độ ưu tiên, file bằng chứng đính kèm hoặc văn bản mô tả từ thành viên. Quản lý có thể xem trước file trực tiếp trên trình duyệt thông qua URL Cloudinary mà không cần tải xuống.
+Quản lý có hai lựa chọn xử lý:
+- Phê duyệt: Hệ thống cập nhật trạng thái và gửi thông báo realtime đến thành viên thực hiện.
+- Từ chối: Hệ thống bắt buộc Quản lý nhập lý do từ chối trước khi xác nhận. Công việc trở về trạng thái Đang làm, ghi lịch sử bị từ chối kèm lí do, đồng thởi gửi thông báo đến thành viên để điều chỉnh và gửi lại.
+Hình  .. Giao diện phê duyệt công việc
+Quản lý thành viên dự án
+Giao diện Quản lý thành viên cho phép quản trị toàn bộ nhân sự của dự án và thành viên xem danh sách nhân sự dự án. Danh sách thành viên được hiển thị dưới dạng thẻ, mỗi thẻ bao gồm ảnh đại diện, họ tên, email, ngày tham gia vai trò hiện tại, nếu người xem là Quản lý thì hiển thị thêm các chỉ số hiệu suất cơ bản: tổng số công việc được giao, số công việc đã hoàn thành, đang thực hiện và đang chờ duyệt. Thông tin này giúp Quản lý dễ dàng đánh giá hiệu suất từng thành viên và điều chỉnh phân công công việc phù hợp.
+Quản lý có thể thực hiện ba thao tác chính:
+- Thêm thành viên mới: Nhập email người dùng đã có tài khoản trong hệ thống, chọn vai trò phù hợp và xác nhận.
+- Thay đổi vai trò: Nhấn vào badge vai trò của thành viên, chọn vai trò mới từ danh sách. Thay đổi có hiệu lực ngay lập tức và được ghi nhận vào lịch sử hoạt động dự án.
+- Xóa thành viên: Nhấn biểu tượng xóa trên thẻ, xác nhận qua popup và thành viên bị xóa khỏi dự án.
+Hình  .. Giao diện quản lý thành viên
+Xem thống kê dự án
+Trang Thống kê cung cấp cái nhìn tổng quan về tiến độ và hiệu suất của toàn bộ dự án thông qua các chỉ số và biểu đồ trực quan, hỗ trợ Quản lý đưa ra quyết định điều phối nguồn lực kịp thời và chính xác.
+Khu vực phía trên hiển thị các chỉ số tổng quan: tổng số công việc, số công việc đã hoàn thành, tỷ lệ phần trăm hoàn thành và số công việc đang bị trễ hạn được đánh dấu màu cảnh báo để PM kịp thời xử lý. Phần biểu đồ trực quan thể hiện phân bố công việc theo trạng thái (Todo, In Progress, Pending, Completed) và theo mức độ ưu tiên (Cao, Trung bình, Thấp). Khi người dùng là Quản lý, hệ thống hiển thị thêm biểu đồ hiệu suất từng thành viên với tỷ lệ hoàn thành công việc được giao. Ngoài ra, Quản lý có thể xuất báo cáo tiến độ dưới dạng file Excel hoặc PDF phục vụ cho mục đích tổng kết và báo cáo với các bên liên quan.
+Hình  .. Bảng phân tích tiến độ dự án
+Lưu trữ và chia sẻ tài liệu dự án
+Kho tài liệu dự án là không gian lưu trữ tập trung, cho phép tất cả thành viên upload và quản lý tài liệu chung trên cùng một nền tảng, thay thế cho việc gửi file rời rạc qua Email hay Zalo. Giao diện hỗ trợ kéo thả trực tiếp hoặc nhấn để chọn file từ máy tính, với giới hạn 50MB mỗi file và hỗ trợ mọi định dạng phổ biến.
+Danh sách file hiển thị theo dạng lưới, mỗi file thể hiện tên, dung lượng, định dạng và thời gian upload. Người dùng có thể tìm kiếm file theo tên hoặc lọc theo loại tài liệu gồm Ảnh, PDF, Word, Excel và Khác. Nhấn vào file để xem trước trực tiếp trên trình duyệt thông qua URL xem trước do Cloudinary cung cấp, không cần tải xuống. Thành viên có quyền phù hợp có thể tải xuống hoặc xóa file khỏi kho tài liệu.
+Hình  .. Kho lưu trữ tài liệu dự án
+Nhận và xử lý thông báo
+Trung tâm thông báo là nơi tập hợp toàn bộ thông báo liên quan đến hoạt động công việc và phê duyệt trong hệ thống. Tất cả thông báo được đẩy đến người dùng theo thời gian thực thông qua SignalR mà không cần tải lại trang, đồng thời được lưu bền vững trong cơ sở dữ liệu để người dùng có thể xem lại bất kỳ lúc nào.
+Ngoài thông báo in-app, hệ thống còn hỗ trợ gửi thông báo qua Telegram Bot cho các sự kiện quan trọng như được giao công việc mới, công việc được phê duyệt hoặc bị từ chối. Người dùng có thể liên kết tài khoản Telegram thông qua token một lần được tạo tự động bởi hệ thống và gửi đến Telegram Bot để hoàn tất kết nối.
+Hình  .. Trung tâm thông báo hệ thống
+Đăng ký và đăng nhập tài khoản
+Đây là điểm vào của hệ thống, nơi người dùng xác thực danh tính trước khi truy cập các chức năng bên trong. Giao diện đăng nhập được thiết kế tối giản, tập trung vào hai trường nhập liệu chính là Email và Mật khẩu, kèm theo tùy chọn "Ghi nhớ đăng nhập" và liên kết "Quên mật khẩu". Người dùng chưa có tài khoản có thể chuyển sang trang đăng ký thông qua liên kết ở cuối form.
+Hình  .. Giao diện trang đăng nhập và đăng ký
+KẾT LUẬN CHƯƠNG 3
+Chương 3 đã trình bày toàn bộ quá trình cài đặt và triển khai hệ thống quản lý công việc theo dự án và hỗ trợ cộng tác nhóm trực tuyến. Về công nghệ, hệ thống được xây dựng trên nền tảng ASP.NET Core 8 kết hợp với React 18, sử dụng SignalR để xử lý giao tiếp realtime, JWT để xác thực stateless và Cloudinary để lưu trữ file trên đám mây. Sự kết hợp giữa TypeScript, TanStack Query và Tailwind CSS ở tầng Frontend giúp đảm bảo mã nguồn có độ tin cậy cao, giao diện nhất quán và trải nghiệm người dùng mượt mà trên cả hai chế độ dark mode và light mode.
+Về mặt chức năng, chương đã mô tả chi tiết giao diện và luồng xử lý của 10 chức năng cốt lõi, bao gồm các tính năng đặc trưng của hệ thống như cơ chế phê duyệt hai chiều với bằng chứng bắt buộc, trang Công việc tổng hợp công việc đa dự án, thông báo realtime in-app kết hợp Telegram Bot và kho tài liệu tập trung theo dự án.
+Về triển khai, hệ thống được đưa lên môi trường đám mây với Backend trên Render.com, Frontend trên Vercel và cơ sở dữ liệu trên Clever Cloud, áp dụng quy trình Continuous Deployment tích hợp với GitHub giúp tự động hóa việc cập nhật phiên bản mới. Toàn bộ kết quả cài đặt được ghi nhận trong chương này sẽ là cơ sở để tiến hành kiểm thử chức năng và đánh giá hệ thống một cách toàn diện trong Chương 4.
+KIỂM THỬ VÀ ĐÁNH GIÁ HỆ THỐNG
+Chương này trình bày quá trình kiểm thử toàn bộ các chức năng cốt lõi của hệ thống nhằm xác minh hệ thống hoạt động đúng theo các yêu cầu đã đặc tả ở chương 2. Nội dung được tổ chức theo ba phần: chiến lược kiểm thử, kiết quả kiểm thử từng chức năng và đánh giá tổng thể hệ thống.
+Chiến lược kiểm thử
+Mục tiêu kiểm thử
+Quá trình kiểm thử hệ thống được thực hiện nhằm đạt được các mục tiêu cụ thể sau:
+Thứ nhất, đảm bảo hệ thống vận hành đúng theo yêu cầu đặt ra. Toàn bộ các chức năng đã được cài đặt cần được xác nhận hoạt động đúng với thiết kế ban đầu, đặc biệt là các nghiệp vụ cốt lõi bao gồm quy trình gửi duyệt và phê duyệt công việc, quản lý task theo dự án và cơ chế phân quyền người dùng.
+Thứ hai, phát hiện và loại bỏ lỗi trong quá trình vận hành. Kiểm thử tập trung vào việc phát hiện các lỗi phát sinh trong quá trình xử lý logic nghiệp vụ, đặc biệt là các lỗi liên quan đến luồng phê duyệt và kiểm soát chất lượng đầu ra. Bên cạnh đó, các lỗi về giao diện người dùng, trải nghiệm tương tác và cơ chế thông báo thời gian thực cũng được kiểm tra và ghi nhận đầy đủ.
+Thứ ba, kiểm tra tính bảo mật và cơ chế phân quyền. Hệ thống cần đảm bảo mỗi người dùng chỉ có thể thực hiện các thao tác trong phạm vi quyền hạn được gán, tương ứng với từng vai trò cụ thể là Quản lý, thành viên, người xem. Đồng thời, các hành động có tính ảnh hưởng cao như phê duyệt, từ chối yêu cầu hay xóa dự án phải được kiểm soát chặt chẽ, chỉ cho phép thực hiện bởi người dùng có đủ thẩm quyền.
+Thứ tư, đánh giá hiệu suất và độ ổn định của hệ thống. Khả năng cập nhật dữ liệu theo thời gian thực được kiểm tra trong điều kiện có nhiều người dùng cùng thao tác đồng thời. Thời gian phản hồi của các thao tác cơ bản cũng được ghi nhận nhằm đánh giá mức độ đáp ứng của hệ thống trong môi trường thực tế.
+Thứ năm, xác nhận hệ thống đáp ứng được nhu cầu thực tiễn. Đây là mục tiêu quan trọng nhằm đảm bảo hệ thống giải quyết được các vấn đề đã được xác định trong giai đoạn khảo sát, bao gồm tình trạng thông tin phân tán, thiếu cơ chế kiểm soát chất lượng công việc và khó khăn trong việc theo dõi tiến độ dự án.
+Phương pháp kiểm thử
+Hệ thống được kiểm thử theo phương pháp kiểm thử hộp đen - tập trung kiểm tra hành vi bên ngoài của hệ thống dựa trên đầu vào và đầu ra mà không quan tâm đến cấu trúc mã nguồn bên trong. Phương pháp này phù hợp để xác minh hệ thống đáp ứng đúng yêu cầu chức năng từ góc nhìn của người dùng cuối.
+Kiểm thử chức năng
+Kiểm thử chức năng Quản lý dự án
+Chức năng Quản lý dự án bao gồm ba luồng nghiệp vụ chính: tạo mới, chỉnh sửa và xóa dự án. Bảng 4.1 trình bày các test case kiểm thử chức năng này.
+Bảng  . Test case kiểm thử chức năng Quản lý dự án
+Kiểm thử chức năng Quản lý công việc (Kanban)
+Chức năng Quản lý công việc là nghiệp vụ trung tâm của hệ thống, bao gồm tạo công việc, cập nhật trạng thái công việc. Bảng 4.2 trình bày các test case kiểm thử chức năng này.
+Bảng  . Test case kiểm thử chức năng Quản lý công việc
+Kiểm thử chức năng Gửi yêu cầu phê duyệt
+Chức năng Gửi yêu cầu phê duyệt là bước khởi đầu của quy trình kiểm soát chất lượng — một trong những tính năng đặc trưng nhất của hệ thống. Bảng 4.3 trình bày các test case kiểm thử chức năng này.
+Bảng  4.3 Test case kiểm thử chức năng Gửi yêu cầu phê duyệt
+Kiểm thử chức năng Kiểm duyệt công việc
+Chức năng Kiểm duyệt công việc cho phép Manager phê duyệt hoặc từ chối task đang ở trạng thái Pending. Đặc biệt, hệ thống bắt buộc nhập lý do khi từ chối - đây là điểm cần kiểm thử kỹ để đảm bảo cơ chế kiểm soát chất lượng hoạt động đúng. Bảng 4.4 trình bày các test case kiểm thử chức năng này.
+Bảng  . Test case kiểm thử chức năng Kiểm duyệt công việc
+Kiểm thử chức năng Quản lý thành viên
+Chức năng Quản lý thành viên cho phép Manager thêm, thay đổi vai trò và xóa thành viên khỏi dự án. Bảng 4.5 trình bày các test case kiểm thử chức năng này.
+Bảng  . Test case kiểm thử chức năng Quản lý thành viên
+Kiểm thử chức năng Bình luận
+Chức năng Bình luận cho phép thành viên trao đổi trực tiếp trên thẻ công việc. Bảng 4.6 trình bày các test case kiểm thử chức năng này.
+Bảng  . Test case kiểm thử chức năng Bình luận
+Kiểm thử chức năng Xem công việc cá nhân
+Chức năng My Task tổng hợp công việc từ nhiều nguồn về một màn hình duy nhất. Bảng 4.7 trình bày các test case kiểm thử chức năng này.
+Bảng  . Test case kiểm thử chức năng Xem công việc cá nhân
+Kiểm thử chức năng Thông báo
+Chức năng Thông báo đảm bảo người dùng nhận được thông tin kịp thời về các sự kiện trong hệ thống theo thời gian thực. Bảng 4.8 trình bày các test case kiểm thử chức năng này.
+Bảng  . Test case kiểm thử chức năng Thông báo
+Kiểm thử chức năng Quản lý tài liệu
+Chức năng Tài liệu dự án cho phép thành viên upload, xem trước và xóa file tài liệu. Bảng 4.9 trình bày các test case kiểm thử chức năng này.
+Bảng  . Test case kiểm thử chức năng Quản lý tài liệu
+Kiểm thử chức năng Xem thống kê dự án
+Chức năng Xem thống kê dự án cung cấp cho người dùng cái nhìn tổng quan về tiến độ và tình trạng công việc trong dự án thông qua các số liệu và biểu đồ trực quan. Đây là cơ sở để Quản lý đánh giá hiệu quả làm việc của nhóm và đưa ra quyết định điều phối kịp thời.
+Bảng  . Test case kiểm thử chức năng Xem thống kê dự án
+Tổng hợp kết quả kiểm thử
+Sau khi thực hiện đầy đủ các test case trên tất cả chức năng, kết quả kiểm thử được tổng hợp trong Bảng 4.11 dưới đây.
+Bảng  .Kết quả kiểm thử
+Kết quả kiểm thử cho thấy toàn bộ 38 test case trên 10 nhóm chức năng đều đạt kết quả đúng như mong đợi với tỷ lệ đạt 100%. Các kịch bản không hợp lệ (nhập sai dữ liệu, bỏ trống trường bắt buộc, vượt quyền...) đều được hệ thống xử lý chính xác với thông báo lỗi phù hợp. Đặc biệt, cơ chế phê duyệt bắt buộc nhập lý do khi từ chối và cơ chế realtime qua SignalR đều hoạt động ổn định trong suốt quá trình kiểm thử.
+Đánh giá hệ thống
+Kết quả đạt được
+Sau quá trình phân tích, thiết kế, cài đặt và kiểm thử, hệ thống đã đạt được các kết quả sau:
+- Đáp ứng đầy đủ yêu cầu chức năng: Toàn bộ 10 nhóm chức năng đã đặc tả trong Chương 2 được cài đặt và hoạt động đúng theo yêu cầu, bao gồm bảng Kanban, cơ chế phê duyệt hai chiều, trang Công việc tổng hợp, kho tài liệu, thông báo đa kênh và báo cáo tiến độ.
+- Giao diện tiếng Việt thân thiện: Toàn bộ giao diện được xây dựng bằng tiếng Việt, hỗ trợ dark mode và light mode, responsive trên cả máy tính và thiết bị di động.
+- Realtime hoạt động ổn định: Cơ chế đồng bộ dữ liệu realtime qua SignalR hoạt động chính xác, thông báo được đẩy đến người dùng tức thì mà không cần tải lại trang.
+- Kiểm soát chất lượng hiệu quả: Cơ chế phê duyệt bắt buộc kèm bằng chứng và lý do từ chối giải quyết đúng pain point về thiếu minh bạch trong quản lý nhóm mà các công cụ hiện tại chưa có.
+- Thông báo đa kênh: Tích hợp thành công thông báo in-app qua WebSocket và thông báo qua Telegram Bot, phù hợp với thói quen sử dụng của người dùng Việt Nam.
+Hạn chế còn tồn tại
+Bên cạnh các kết quả đạt được, hệ thống còn một số hạn chế cần ghi nhận:
+- Chưa hỗ trợ chat nhóm realtime: Chức năng bình luận hiện chỉ hoạt động trong phạm vi từng task, chưa có kênh trao đổi chung theo dự án.
+- Chưa có lịch công việc (Calendar view): Hệ thống chưa cung cấp chế độ xem lịch để người dùng theo dõi deadline trực quan theo ngày/tuần/tháng.
+- Chưa hỗ trợ ứng dụng di động native: Hệ thống hiện chỉ chạy trên trình duyệt web, chưa có ứng dụng iOS/Android riêng.
+- Tính năng tự động còn đơn giản: Chức năng gợi ý phân công dựa trên số lượng công việc còn hạn chế, chưa xét đến năng lực, chuyên môn hay khối lượng công việc thực tế của từng thành viên.
+- Chưa triển khai lên môi trường thực tế: Hệ thống hiện chỉ chạy trên môi trường local, chưa được deploy lên server công khai để người dùng thực tế trải nghiệm.
+Tóm lại, chương này đã trình bày toàn bộ quá trình kiểm thử hệ thống với 38 test case trên 10 nhóm chức năng chính, đạt tỷ lệ thành công 100%. Kết quả kiểm thử xác nhận hệ thống hoạt động đúng theo yêu cầu đặc tả, xử lý chính xác cả kịch bản hợp lệ lẫn không hợp lệ. Bên cạnh những kết quả tích cực, nhóm tác giả cũng ghi nhận một số hạn chế còn tồn tại, tạo cơ sở cho các hướng phát triển tiếp theo được trình bày trong phần Kết luận.
+KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN
+1. Kết luận
+Đồ án tốt nghiệp với đề tài "Xây dựng hệ thống quản lý công việc theo dự án và hỗ trợ cộng tác nhóm trực tuyến" đã được thực hiện nhằm giải quyết bài toán thực tiễn: phần lớn các nhóm làm việc tại Việt Nam - đặc biệt là sinh viên, nhóm khởi nghiệp nhỏ và doanh nghiệp vừa và nhỏ - đang thiếu một công cụ quản lý công việc phù hợp về ngôn ngữ, chi phí và quy trình kiểm soát chất lượng.
+Sau quá trình khảo sát, phân tích, thiết kế, cài đặt và kiểm thử, hệ thống đã được xây dựng thành công với các kết quả nổi bật sau:
+- Hoàn thành đầy đủ 10 nhóm chức năng cốt lõi: Quản lý dự án và thành viên, trang Kanban với 4 trạng thái công việc, cơ chế phê duyệt hai chiều bắt buộc kèm bằng chứng, trang Công việc tổng hợp đa dự án, kho tài liệu tập trung, thông báo realtime qua WebSocket và Telegram, thống kê tiến độ và xuất báo cáo Excel/PDF.
+- Kiểm thử thành công 38 test case: Toàn bộ 10 nhóm chức năng được kiểm thử theo phương pháp Black-box với tỷ lệ đạt 100%, bao gồm đầy đủ các kịch bản hợp lệ và không hợp lệ.
+- Giải quyết đúng điểm khác biệt so với các công cụ hiện có: Giao diện tiếng Việt thân thiện, cơ chế phê duyệt minh bạch và thông báo qua Telegram là ba tính năng mà Trello, Jira và Asana đều không có đồng thời - đây là lợi thế cạnh tranh rõ ràng của hệ thống đối với người dùng Việt Nam.
+Về mặt kỹ thuật, hệ thống được xây dựng trên nền tảng ASP.NET Core 8 kết hợp React 18 với kiến trúc Client–Server rõ ràng, áp dụng các công nghệ hiện đại như SignalR cho realtime, JWT cho xác thực stateless, Entity Framework Core Code-First cho quản lý cơ sở dữ liệu và Cloudinary cho lưu trữ file đám mây. Kết quả này không chỉ đáp ứng mục tiêu đề tài mà còn giúp nhóm tác giả tích lũy được kinh nghiệm thực tế về phát triển phần mềm full-stack theo quy trình chuyên nghiệp.
+2. Hướng phát triển
+Dựa trên những hạn chế còn tồn tại, nhóm tác giả đề xuất các hướng phát triển tiếp theo cho hệ thống trong tương lai:
+- Triển khai lên môi trường thực tế: Deploy hệ thống lên các nền tảng đám mây (Render, Vercel, Clever Cloud) để người dùng thực tế có thể truy cập và trải nghiệm, thu thập phản hồi để cải thiện liên tục.
+- Bổ sung chế độ xem lịch (Calendar View): Cho phép người dùng theo dõi deadline công việc theo ngày, tuần và tháng trực quan, giúp lập kế hoạch cá nhân hiệu quả hơn.
+- Phát triển ứng dụng di động: Xây dựng ứng dụng iOS và Android bằng React Native để mở rộng khả năng truy cập từ thiết bị di động, phù hợp với xu hướng làm việc linh hoạt.
+- Thêm kênh chat theo dự án: Bổ sung không gian trao đổi chung theo dự án (project chat) để nhóm có thể thảo luận không chỉ trong phạm vi từng task.
+- Tích hợp Google Calendar và Zalo: Đồng bộ deadline công việc với Google Calendar và hỗ trợ thông báo qua Zalo — hai nền tảng phổ biến nhất tại Việt Nam — để mở rộng khả năng tiếp cận người dùng.
+TÀI LIỆU THAM KHẢO
+[1] Nguyễn Thị Thanh Huyền, Ngô Thị Bích Thúy, Phạm Kim Phượng (2011), Giáo trình phân tích thiết kế hệ thống, Nhà xuất bản Giáo dục Việt Nam, Hà Nội.
+[2] Nguyễn Thị Thanh Huyền, Ngô Thị Bích Thúy (2011), Giáo trình cơ sở dữ liệu, Nhà xuất bản Giáo dục Việt Nam, Hà Nội.
+[3] Nguyễn Trung Phú, Đỗ Thị Minh Nguyệt, Trần Phương Nhung (2019), Giáo trình thiết kế web, Nhà xuất bản Thống kê, Hà Nội.
+[4] Nguyễn Văn Ba (2006), Phân tích và thiết kế hệ thống thông tin, Nhà xuất bản Đại học Quốc gia Hà Nội, Hà Nội.
+[5] Cloudinary Ltd (2024), Cloudinary Documentation, https://cloudinary.com/documentation, truy cập ngày 10/03/2025.
+[6] Jones M. B., Bradley J., Sakimura N. (2015), JSON Web Token (JWT), RFC 7519, Internet Engineering Task Force (IETF), https://datatracker.ietf.org/doc/html/rfc7519, truy cập ngày 05/03/2025.
+[7] Meta Open Source (2024), React Documentation, https://react.dev, truy cập ngày 12/03/2025.
+[8] Microsoft Corporation (2024), ASP.NET Core Documentation, Microsoft Learn, https://learn.microsoft.com/en-us/aspnet/core, truy cập ngày 03/03/2025.
+[9] Microsoft Corporation (2024), Entity Framework Core Documentation, Microsoft Learn, https://learn.microsoft.com/en-us/ef/core, truy cập ngày 03/03/2025.
+[10] Microsoft Corporation (2024), Overview of ASP.NET Core SignalR, Microsoft Learn, https://learn.microsoft.com/en-us/aspnet/core/signalr/introduction, truy cập ngày 15/03/2025.
+[11] Microsoft Corporation (2024), JSON Web Token Authentication in ASP.NET Core, Microsoft Learn, https://learn.microsoft.com/en-us/aspnet/core/security/authentication/jwt-authn, truy cập ngày 08/03/2025.
+[12] Microsoft Corporation (2024), TypeScript Documentation, https://www.typescriptlang.org/docs, truy cập ngày 14/03/2025.
+[13] Tailwind Labs (2024), Tailwind CSS Documentation, https://tailwindcss.com/docs, truy cập ngày 18/03/2025.
+[14] TanStack (2024), TanStack Query v5 Documentation, https://tanstack.com/query/latest, truy cập ngày 20/03/2025.
+[15] Microsoft Corporation (2024), SQL Server Documentation, Microsoft Learn, https://learn.microsoft.com/en-us/sql/sql-server, truy cập ngày 05/03/2025.
