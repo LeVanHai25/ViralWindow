@@ -24,15 +24,22 @@
             if (parts.length !== 3) return true;
             
             const payload = JSON.parse(atob(parts[1]));
-            if (!payload.exp) return false; // No expiry = never expires (unusual but safe)
+            if (!payload.exp) return false; // No expiry = never expires
             
-            // exp is in seconds, Date.now() is in milliseconds
-            // Subtract 60s buffer to handle clock skew
-            return (payload.exp * 1000) < (Date.now() - 60000);
+            // FIX: exp is in seconds, Date.now() is in milliseconds
+            // Token expired when exp*1000 < now (NOT now-60000 which caused false-positive!)
+            return (payload.exp * 1000) < Date.now();
         } catch (e) {
             console.warn('[AuthHelper] Cannot parse token expiry:', e.message);
-            return true; // If can't parse, consider expired for safety
+            return false; // FIX: If can't parse, do NOT treat as expired (safer for new tokens)
         }
+    }
+
+    // FIX: Helper to check if currently on login page (avoid redirect loop)
+    function isOnLoginPage() {
+        const path = window.location.pathname;
+        const page = path.substring(path.lastIndexOf('/') + 1);
+        return page === 'login.html' || page === '' || path === '/';
     }
 
     // ============================================
@@ -61,8 +68,9 @@
         }
     }
 
-    // Also check sessionStorage token for expiry on load
-    if (sessionToken && isTokenExpired(sessionToken)) {
+    // FIX: Only check/clear expired sessionStorage token when NOT on login page
+    // Prevents clearing a freshly-saved token during redirect to index.html
+    if (sessionToken && isTokenExpired(sessionToken) && !isOnLoginPage()) {
         sessionStorage.removeItem('token');
         sessionStorage.removeItem('user');
         localStorage.removeItem('token');
@@ -257,9 +265,11 @@
                 const data = await responseClone.json();
                 
                 // Session explicitly revoked OR token invalid/expired
-                if (data.code === 'SESSION_EXPIRED' || 
+                // FIX: Do NOT redirect if already on login page (anti-loop)
+                if (!isOnLoginPage() && (
+                    data.code === 'SESSION_EXPIRED' || 
                     data.message === 'Token không hợp lệ' ||
-                    data.message === 'Không có token xác thực') {
+                    data.message === 'Không có token xác thực')) {
                     
                     _isRedirecting = true; // Prevent further redirects
                     
