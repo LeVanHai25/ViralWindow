@@ -17,19 +17,21 @@ const dbConfig = {
     keepAliveInitialDelay: 10000, // Gửi gói tin keep-alive sau 10 giây
     // Thêm timeout để tránh lỗi ETIMEDOUT
     connectTimeout: 60000, // 60 giây
-    acquireTimeout: 60000, // 60 giây
     // Standardize time to Vietnam (ICT)
     timezone: '+07:00',
     dateStrings: true // Return date as string to avoid JS Date object shifting
 };
 
-// TiDB Cloud / Production SSL support
+// Production SSL support (Aiven, TiDB Cloud, etc.)
+// DB_SSL=true          → bật SSL
+// DB_SSL_REJECT_UNAUTHORIZED=false → không verify CA cert (dùng khi không có ca.pem file)
 if (process.env.DB_SSL === 'true') {
+    const rejectUnauthorized = process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false';
     dbConfig.ssl = {
         minVersion: 'TLSv1.2',
-        rejectUnauthorized: true
+        rejectUnauthorized
     };
-    console.log('🔒 Database SSL enabled');
+    console.log(`🔒 Database SSL enabled (rejectUnauthorized: ${rejectUnauthorized})`);
 }
 
 const pool = mysql.createPool(dbConfig);
