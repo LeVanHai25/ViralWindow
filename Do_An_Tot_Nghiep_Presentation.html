@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo Cáo Đồ Án Tốt Nghiệp - ViralWindow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-light: #818CF8;
+            --secondary: #10B981;
+            --dark: #0F172A;
+            --dark-card: #1E293B;
+            --text-light: #F8FAFC;
+            --text-muted: #94A3B8;
+            --accent: #F43F5E;
+            --bg-gradient: linear-gradient(135deg, #0F172A 0%, #1E1B4B 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-light);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Presentation Container */
+        .presentation {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Slides */
+        .slide {
+            position: absolute;
+            width: 90%;
+            height: 85%;
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 50px;
+            opacity: 0;
+            transform: scale(0.95) translateY(20px);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        .slide.prev {
+            transform: scale(1.05) translateY(-20px);
+            opacity: 0;
+        }
+
+        /* Typography & Structure */
+        .slide-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(79, 70, 229, 0.3);
+            display: flex;
+            align-items: center;
+        }
+
+        .slide-header h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #818CF8, #F8FAFC);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .slide-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            font-size: 1.2rem;
+            line-height: 1.6;
+        }
+
+        /* Controls */
+        .controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 100;
+            background: rgba(15, 23, 42, 0.8);
+            padding: 10px 20px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn {
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: var(--primary);
+            box-shadow: 0 0 15px rgba(79, 70, 229, 0.5);
+        }
+
+        .progress-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+            z-index: 100;
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        /* Custom Components */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            height: 100%;
+        }
+        
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 25px;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-light);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .card h3 {
+            color: var(--primary-light);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        ul.styled-list {
+            list-style: none;
+        }
+
+        ul.styled-list li {
+            position: relative;
+            padding-left: 25px;
+            margin-bottom: 15px;
+            color: var(--text-muted);
+        }
+
+        ul.styled-list li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--secondary);
+            font-weight: bold;
+        }
+
+        .highlight {
+            color: var(--secondary);
+            font-weight: bold;
+        }
+
+        /* Title Slide */
+        .title-slide {
+            text-align: center;
+            justify-content: center;
+        }
+
+        .title-slide h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #818CF8, #10B981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+
+        .title-slide .subtitle {
+            font-size: 1.8rem;
+            color: var(--text-muted);
+            margin-bottom: 50px;
+        }
+
+        .author-info {
+            display: inline-block;
+            text-align: left;
+            background: rgba(0,0,0,0.2);
+            padding: 30px;
+            border-radius: 16px;
+            border-left: 4px solid var(--primary);
+        }
+
+        /* Tech Stack */
+        .tech-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            background: rgba(79, 70, 229, 0.2);
+            border: 1px solid var(--primary);
+            border-radius: 20px;
+            margin: 5px;
+            font-size: 0.9rem;
+            color: #fff;
+        }
+
+        /* Diagram Mockups */
+        .diagram-box {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 1px dashed var(--text-muted);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .flow-step {
+            background: var(--primary);
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin: 10px 0;
+            position: relative;
+            font-weight: 600;
+        }
+        
+        .flow-arrow {
+            color: var(--secondary);
+            font-size: 24px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="progress-bar" id="progressBar"></div>
+
+    <div class="presentation">
+        <!-- Slide 1: Title -->
+        <div class="slide active" id="slide-1">
+            <div class="title-slide">
+                <h1>ViralWindow</h1>
+                <div class="subtitle">Hệ thống quản lý sản xuất và kinh doanh cho doanh nghiệp nhôm kính</div>
+                
+                <div class="author-info">
+                    <p><strong>Sinh viên thực hiện:</strong> Lê Văn Hải (CNTT_2022605948)</p>
+                    <p><strong>Chuyên ngành:</strong> Công nghệ thông tin</p>
+                    <p><strong>Thời lượng trình bày:</strong> ~15 phút</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Tổng quan đề tài & Đặt vấn đề -->
+        <div class="slide" id="slide-2">
+            <div class="slide-header">
+                <h2>1. Tổng quan & Đặt vấn đề</h2>
+            </div>
+            <div class="slide-content grid-2">
+                <div class="card">
+                    <h3>Thực trạng (Đặt vấn đề)</h3>
+                    <ul class="styled-list">
+                        <li>Quản lý tại xưởng nhôm kính chủ yếu <span class="highlight">thủ công</span> hoặc dùng Excel rời rạc.</li>
+                        <li>Quy trình <strong>báo giá</strong> và <strong>bóc tách vật tư (BOM)</strong> dễ sai sót, tính toán phức tạp (kính, nhôm, phụ kiện).</li>
+                        <li>Thiếu sự đồng bộ giữa báo giá, kho bãi và tiến độ thi công.</li>
+                        <li>Các phần mềm hiện tại (KiotViet, ACT Window) không đáp ứng toàn diện nghiệp vụ đặc thù.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Mục tiêu đề tài</h3>
+                    <ul class="styled-list">
+                        <li>Số hóa nghiệp vụ lõi: <span class="highlight">Báo giá</span> & <span class="highlight">Bóc tách vật tư (BOM) tự động</span>.</li>
+                        <li>Quản lý xuyên suốt vòng đời dự án: Từ khảo sát -> thi công -> nghiệm thu.</li>
+                        <li>Kiểm soát chặt chẽ kho bãi, cảnh báo tồn kho tối thiểu.</li>
+                        <li>Cung cấp Dashboard báo cáo thông minh hỗ trợ ra quyết định.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Công nghệ sử dụng -->
+        <div class="slide" id="slide-3">
+            <div class="slide-header">
+                <h2>2. Công nghệ sử dụng</h2>
+            </div>
+            <div class="slide-content">
+                <p>Hệ thống được thiết kế theo kiến trúc <strong>Client-Server</strong> hiện đại, đảm bảo hiệu năng cao và khả năng mở rộng.</p>
+                
+                <div class="grid-3" style="margin-top: 20px;">
+                    <div class="card">
+                        <h3>🌐 Frontend</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 15px;">Xây dựng giao diện Responsive, mượt mà.</p>
+                        <div>
+                            <span class="tech-badge">HTML5/CSS3</span>
+                            <span class="tech-badge">Vanilla JS (ES6+)</span>
+                            <span class="tech-badge">Chart.js (Báo cáo)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>⚙️ Backend</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 15px;">Kiến trúc hướng sự kiện, I/O non-blocking.</p>
+                        <div>
+                            <span class="tech-badge">Node.js</span>
+                            <span class="tech-badge">Express.js</span>
+                            <span class="tech-badge">Socket.IO (Real-time)</span>
+                            <span class="tech-badge">JWT (Auth)</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>🗄️ Data & AI</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 15px;">Bảo toàn dữ liệu ACID, hỗ trợ thông minh.</p>
+                        <div>
+                            <span class="tech-badge">MySQL 8.0</span>
+                            <span class="tech-badge">Google Gemini API</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Phân tích thiết kế - Use Case -->
+        <div class="slide" id="slide-4">
+            <div class="slide-header">
+                <h2>3. Phân tích thiết kế: Tác nhân & Use Case</h2>
+            </div>
+            <div class="slide-content grid-2">
+                <div>
+                    <div class="card" style="margin-bottom: 20px;">
+                        <h3>3 Tác nhân chính (Actors)</h3>
+                        <ul class="styled-list">
+                            <li><strong>Quản trị viên (Admin):</strong> Quản lý hệ thống, phân quyền (RBAC), cấu hình.</li>
+                            <li><strong>Quản lý:</strong> Phê duyệt báo giá, giám sát tiến độ, xem báo cáo doanh thu.</li>
+                            <li><strong>Nhân viên:</strong> Lập báo giá, bóc tách vật tư, quản lý kho, theo dõi thi công.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="diagram-box">
+                    <h3 style="color: var(--primary-light); margin-bottom: 15px;">Nhóm Use Case Cốt Lõi</h3>
+                    <div style="display:flex; flex-wrap:wrap; justify-content:center; gap: 10px;">
+                        <div class="tech-badge">Quản lý Khách hàng</div>
+                        <div class="tech-badge">Quản lý Dự án</div>
+                        <div class="tech-badge" style="background: var(--accent);">Lập Báo Giá</div>
+                        <div class="tech-badge" style="background: var(--accent);">Bóc tách vật tư (BOM)</div>
+                        <div class="tech-badge">Quản lý Kho</div>
+                        <div class="tech-badge">Quản lý Tài chính</div>
+                        <div class="tech-badge">Báo cáo thông minh</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Luồng dữ liệu cốt lõi -->
+        <div class="slide" id="slide-5">
+            <div class="slide-header">
+                <h2>4. Luồng dữ liệu cốt lõi</h2>
+            </div>
+            <div class="slide-content">
+                <p>Giải quyết bài toán khó nhất: <strong>Tự động hóa Bóc tách vật tư & Báo giá</strong></p>
+                <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 40px;">
+                    <div class="diagram-box" style="width: 20%;">
+                        <strong>Khách hàng / Dự án</strong><br><small>Tiếp nhận yêu cầu</small>
+                    </div>
+                    <div class="flow-arrow">➔</div>
+                    <div class="diagram-box" style="width: 20%; border-color: var(--secondary);">
+                        <strong>Chọn Mẫu Cửa</strong><br><small>Kích thước (R x C)<br>Hệ nhôm</small>
+                    </div>
+                    <div class="flow-arrow">➔</div>
+                    <div class="diagram-box" style="width: 25%; background: rgba(16, 185, 129, 0.2);">
+                        <strong>Thuật toán Bóc tách (BOM)</strong><br>
+                        <small>➔ Tính chiều dài nhôm<br>➔ Tính diện tích kính<br>➔ Số lượng phụ kiện</small>
+                    </div>
+                    <div class="flow-arrow">➔</div>
+                    <div class="diagram-box" style="width: 20%; background: rgba(79, 70, 229, 0.2);">
+                        <strong>Lập Báo Giá / Xuất PDF</strong><br><small>Áp đơn giá, VAT, Chiết khấu</small>
+                    </div>
+                </div>
+                <p style="text-align: center; color: var(--text-muted); margin-top: 10px;"><em>Luồng này liên kết chặt chẽ với tồn kho thực tế, cảnh báo ngay khi thiếu vật tư.</em></p>
+            </div>
+        </div>
+
+        <!-- Slide 6: Cơ sở dữ liệu (ERD) -->
+        <div class="slide" id="slide-6">
+            <div class="slide-header">
+                <h2>5. Cơ sở dữ liệu: Thiết kế quan hệ</h2>
+            </div>
+            <div class="slide-content grid-2">
+                <div class="card">
+                    <h3>Kiến trúc CSDL (MySQL 8.0)</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 15px;">Đảm bảo tính toàn vẹn (ACID) và khả năng mở rộng.</p>
+                    <ul class="styled-list">
+                        <li><strong>Tài khoản & Phân quyền:</strong> NGUOI_DUNG, CHUC_VU</li>
+                        <li><strong>CRM:</strong> KHACH_HANG, DU_AN</li>
+                        <li><strong>Kỹ thuật:</strong> MAU_SAN_PHAM, SAN_PHAM_DU_AN, VAT_TU_BOM</li>
+                        <li><strong>Kinh doanh:</strong> BAO_GIA, CHI_TIET_BAO_GIA</li>
+                        <li><strong>Kho & Tài chính:</strong> VAT_TU, LICH_SU_TON_KHO, GIAO_DICH, CONG_NO</li>
+                    </ul>
+                </div>
+                <div class="diagram-box">
+                    <h3 style="color: var(--primary-light);">Liên kết thực thể chính</h3>
+                    <div style="font-family: monospace; text-align: left; background: #000; padding: 20px; border-radius: 8px; width: 100%; font-size: 14px;">
+                        KHACH_HANG (1) --- (N) DU_AN<br><br>
+                        DU_AN (1) --- (N) SAN_PHAM_DU_AN<br><br>
+                        SAN_PHAM_DU_AN (1) --- (N) VAT_TU_BOM<br><br>
+                        DU_AN (1) --- (1..N) BAO_GIA
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Kiểm thử -->
+        <div class="slide" id="slide-7">
+            <div class="slide-header">
+                <h2>6. Kiểm thử hệ thống</h2>
+            </div>
+            <div class="slide-content grid-2">
+                <div class="card">
+                    <h3>Chiến lược Kiểm thử (Hộp đen)</h3>
+                    <ul class="styled-list">
+                        <li><strong>Phương pháp:</strong> Phân vùng tương đương, Phân tích giá trị biên.</li>
+                        <li><strong>Mục tiêu:</strong> Xác minh tính đúng đắn luồng nghiệp vụ liên kết (Báo giá -> Kho -> Tài chính).</li>
+                        <li><strong>Tập trung:</strong> Module Bóc tách vật tư và tính giá.</li>
+                    </ul>
+                </div>
+                <div class="card" style="text-align: center; display: flex; flex-direction: column; justify-content: center;">
+                    <h3>Kết quả kiểm thử chức năng</h3>
+                    <div style="font-size: 4rem; font-weight: 800; color: var(--secondary); margin: 20px 0;">100%</div>
+                    <p style="color: var(--text-muted);">Pass 32/32 Test Cases kịch bản cốt lõi.</p>
+                    <div style="margin-top: 15px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                        <span class="tech-badge" style="background: rgba(16,185,129,0.2); border-color: var(--secondary);">Quản lý Khách hàng</span>
+                        <span class="tech-badge" style="background: rgba(16,185,129,0.2); border-color: var(--secondary);">Lập báo giá</span>
+                        <span class="tech-badge" style="background: rgba(16,185,129,0.2); border-color: var(--secondary);">Bóc tách BOM</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Demo -->
+        <div class="slide" id="slide-8">
+            <div class="slide-header">
+                <h2>7. Demo Sản Phẩm</h2>
+            </div>
+            <div class="slide-content text-center">
+                <div class="card" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <h3 style="font-size: 2rem; margin-bottom: 30px;">Các phân hệ trình diễn:</h3>
+                    
+                    <div class="grid-2" style="width: 80%; gap: 20px;">
+                        <div class="tech-badge" style="padding: 20px; font-size: 1.2rem; text-align: center;">1. Quản lý Dự án & CRM</div>
+                        <div class="tech-badge" style="padding: 20px; font-size: 1.2rem; text-align: center; background: var(--primary);">2. Bóc tách vật tư (BOM)</div>
+                        <div class="tech-badge" style="padding: 20px; font-size: 1.2rem; text-align: center; background: var(--secondary); color: #000;">3. Lập & Xuất Báo giá PDF</div>
+                        <div class="tech-badge" style="padding: 20px; font-size: 1.2rem; text-align: center;">4. Dashboard Báo Cáo</div>
+                    </div>
+                    
+                    <p style="margin-top: 40px; color: var(--text-muted);"><em>(Mời Hội đồng xem phần thao tác trực tiếp trên phần mềm)</em></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Kết luận -->
+        <div class="slide" id="slide-9">
+            <div class="slide-header">
+                <h2>8. Kết luận</h2>
+            </div>
+            <div class="slide-content grid-2">
+                <div class="card">
+                    <h3>🎯 Kết quả đạt được</h3>
+                    <ul class="styled-list">
+                        <li>Hoàn thiện hệ thống ERP chuyên biệt cho ngành nhôm kính</li>
+                        <li>Xây dựng thành công thuật toán tự động bóc tách vật tư (BOM)</li>
+                        <li>Liên kết thông suốt quy trình: Khách hàng ➔ Sản xuất ➔ Kho ➔ Tài chính</li>
+                        <li>Pass 100% các kịch bản kiểm thử (32/32 Test Cases)</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>💎 Giá trị hệ thống</h3>
+                    <ul class="styled-list">
+                        <li>Loại bỏ hoàn toàn sai sót do tính toán thủ công</li>
+                        <li>Rút ngắn 90% thời gian lập báo giá và danh mục vật tư</li>
+                        <li>Minh bạch hóa dòng tiền, công nợ và tình trạng tồn kho</li>
+                        <li>Đồng bộ dữ liệu Real-time, hỗ trợ Ban giám đốc ra quyết định</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Hướng phát triển -->
+        <div class="slide" id="slide-10">
+            <div class="slide-header">
+                <h2>9. Hướng phát triển</h2>
+            </div>
+            <div class="slide-content" style="display: flex; flex-direction: column; justify-content: center; height: 100%; gap: 30px; padding: 0 50px;">
+                <div class="card" style="display: flex; align-items: center; gap: 20px;">
+                    <div style="font-size: 2rem; background: var(--primary); padding: 15px; border-radius: 12px; color: white;">☁️</div>
+                    <div style="font-size: 1.5rem; font-weight: 600;">Triển khai trên nền tảng Cloud (SaaS)</div>
+                </div>
+                <div class="card" style="display: flex; align-items: center; gap: 20px;">
+                    <div style="font-size: 2rem; background: var(--secondary); padding: 15px; border-radius: 12px; color: white;">📱</div>
+                    <div style="font-size: 1.5rem; font-weight: 600;">Phát triển Mobile App hỗ trợ ngoài công trình</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 11: Thank you -->
+        <div class="slide" id="slide-11">
+            <div class="presentation" style="flex-direction: column;">
+                <h1 style="font-size: 4rem; margin-bottom: 20px; background: linear-gradient(to right, #10B981, #3B82F6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">XIN CHÂN THÀNH CẢM ƠN!</h1>
+                <p style="font-size: 1.5rem; color: var(--text-muted);">Kính mong nhận được sự đóng góp ý kiến từ Hội đồng.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+        <button class="btn" id="prevBtn">← Trước</button>
+        <span id="slideCounter" style="display: flex; align-items: center; font-weight: bold; padding: 0 10px;">1 / 10</span>
+        <button class="btn" id="nextBtn">Sau →</button>
+    </div>
+
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const slideCounter = document.getElementById('slideCounter');
+        const progressBar = document.getElementById('progressBar');
+        let currentSlide = 0;
+
+        function updateSlides() {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active', 'prev');
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                } else if (index < currentSlide) {
+                    slide.classList.add('prev');
+                }
+            });
+            slideCounter.innerText = `${currentSlide + 1} / ${slides.length}`;
+            progressBar.style.width = `${((currentSlide) / (slides.length - 1)) * 100}%`;
+            
+            prevBtn.style.opacity = currentSlide === 0 ? '0.5' : '1';
+            nextBtn.style.opacity = currentSlide === slides.length - 1 ? '0.5' : '1';
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlides();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                updateSlides();
+            }
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'Space') {
+                if (currentSlide < slides.length - 1) {
+                    currentSlide++;
+                    updateSlides();
+                }
+            } else if (e.key === 'ArrowLeft') {
+                if (currentSlide > 0) {
+                    currentSlide--;
+                    updateSlides();
+                }
+            }
+        });
+
+        updateSlides();
+    </script>
+</body>
+</html>

@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poster Đồ Án - ViralWindow ERP</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            /* Branding Colors */
+            --navy: #0F172A;
+            --navy-dark: #020617;
+            --cyan: #06B6D4;
+            --cyan-glow: rgba(6, 182, 212, 0.4);
+            --white: #FFFFFF;
+            --gray: #94A3B8;
+            --green: #10B981;
+            
+            /* Card & Glassmorphism */
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            
+            /* Typography */
+            --font-heading: 'Be Vietnam Pro', sans-serif;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #111; /* External background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px;
+        }
+
+        /* 
+         * POSTER DIMENSIONS (A0 ratio approx: 1 : 1.414)
+         * Scale: 1200px width x 1697px height 
+         */
+        .poster {
+            width: 1200px;
+            height: 1697px;
+            background: linear-gradient(145deg, var(--navy) 0%, var(--navy-dark) 100%);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+            color: var(--white);
+            font-family: var(--font-body);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Tech Grid Background Pattern */
+        .poster::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Glow effects */
+        .glow-1 {
+            position: absolute;
+            top: -100px; right: -100px;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, var(--cyan-glow) 0%, transparent 70%);
+            z-index: 0;
+        }
+        .glow-2 {
+            position: absolute;
+            bottom: 200px; left: -150px;
+            width: 700px; height: 700px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+            z-index: 0;
+        }
+
+        /* Common Elements */
+        h1, h2, h3, h4 {
+            font-family: var(--font-heading);
+        }
+
+        .z-10 { position: relative; z-index: 10; }
+
+        /* ---------------------------------
+           HEADER (20%)
+        --------------------------------- */
+        .header {
+            height: 18%; /* ~300px */
+            padding: 40px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--glass-border);
+            background: linear-gradient(180deg, rgba(15,23,42,0.8) 0%, rgba(15,23,42,0) 100%);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            flex: 1;
+        }
+
+        .logo-box {
+            background: var(--white);
+            padding: 10px;
+            border-radius: 16px;
+            width: 110px;
+            height: 110px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 20px rgba(255,255,255,0.1);
+        }
+
+        .logo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .uni-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .uni-name {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--white);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .faculty-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--cyan);
+            text-transform: uppercase;
+        }
+
+        .header-center {
+            flex: 2;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .project-title {
+            font-size: 42px;
+            font-weight: 900;
+            line-height: 1.2;
+            text-transform: uppercase;
+            background: linear-gradient(to right, #ffffff, var(--cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(6, 182, 212, 0.3);
+        }
+
+        .header-right {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .student-info {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--cyan);
+            padding: 20px 25px;
+            border-radius: 20px;
+            font-size: 16px;
+            line-height: 1.6;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3), inset 0 0 20px rgba(6,182,212,0.1);
+        }
+
+        .student-info b { color: var(--cyan); }
+
+        /* ---------------------------------
+           CONTENT GRID (65%)
+        --------------------------------- */
+        .content {
+            flex: 1;
+            padding: 40px 50px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto auto;
+            gap: 30px;
+        }
+
+        /* Glass Card Style */
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Card Header */
+        .card-title {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--cyan);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            text-transform: uppercase;
+        }
+
+        .card-title i { font-size: 24px; }
+
+        /* Common text */
+        .text-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .text-list li {
+            font-size: 18px;
+            line-height: 1.5;
+            color: var(--gray);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .text-list li i {
+            color: var(--cyan);
+            margin-top: 5px;
+            font-size: 16px;
+        }
+
+        .text-list li strong {
+            color: var(--white);
+        }
+
+        /* Highlight box */
+        .highlight-box {
+            background: rgba(6, 182, 212, 0.1);
+            border-left: 4px solid var(--cyan);
+            padding: 15px;
+            border-radius: 0 12px 12px 0;
+        }
+
+        /* -- ROW 1: Thực trạng & Giải pháp -- */
+        .row-1 { grid-column: 1 / 3; display: grid; grid-template-columns: 1fr 1.5fr; gap: 30px; }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .feature-item {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .feature-item i { font-size: 24px; color: var(--cyan); }
+        .feature-item strong { font-size: 16px; color: var(--white); }
+        .feature-item span { font-size: 14px; color: var(--gray); }
+
+        /* -- ROW 2: Tech & Flow -- */
+        .row-2 { grid-column: 1 / 3; display: grid; grid-template-columns: 1fr 1.5fr; gap: 30px; }
+
+        .tech-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .tech-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .tech-label {
+            width: 100px;
+            font-weight: 700;
+            color: var(--cyan);
+            font-size: 16px;
+        }
+
+        .tech-badges {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: rgba(255,255,255,0.1);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Flow Chart CSS */
+        .flow-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 100%;
+            padding: 20px 0;
+        }
+
+        .flow-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            width: 120px;
+            text-align: center;
+        }
+
+        .flow-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--navy);
+            border: 2px solid var(--cyan);
+            border-radius: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            color: var(--cyan);
+            box-shadow: 0 0 15px rgba(6,182,212,0.2);
+            z-index: 2;
+        }
+
+        .flow-text {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--white);
+        }
+
+        .flow-arrow {
+            flex: 1;
+            height: 2px;
+            background: dashed 2px var(--gray);
+            position: relative;
+            z-index: 1;
+            margin: 0 -20px;
+            top: -15px;
+        }
+
+        .flow-arrow::after {
+            content: '▶';
+            position: absolute;
+            right: -5px;
+            top: -10px;
+            color: var(--cyan);
+            font-size: 18px;
+        }
+
+        /* -- ROW 3: Screenshots & Results -- */
+        .row-3 { grid-column: 1 / 3; display: grid; grid-template-columns: 1.5fr 1fr; gap: 30px; }
+
+        /* Fake Dashboard UI for visual impact */
+        .dashboard-mockup {
+            width: 100%;
+            height: 300px;
+            background: #1E293B;
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+
+        .dash-header {
+            height: 40px;
+            background: #0F172A;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            gap: 8px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .dash-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .dash-dot.r { background: #EF4444; }
+        .dash-dot.y { background: #F59E0B; }
+        .dash-dot.g { background: #10B981; }
+
+        .dash-body {
+            flex: 1;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 20px;
+        }
+
+        .dash-sidebar {
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .dash-menu-item {
+            height: 30px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+        }
+
+        .dash-content {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .dash-chart {
+            flex: 1;
+            background: linear-gradient(180deg, rgba(6,182,212,0.1) 0%, transparent 100%);
+            border: 1px solid rgba(6,182,212,0.2);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Fake chart curve */
+        .dash-chart::before {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0; height: 60%;
+            border-top: 3px solid var(--cyan);
+            border-radius: 50% 50% 0 0;
+            transform: scaleX(1.5);
+        }
+
+        /* Results List */
+        .result-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 16px;
+        }
+
+        .result-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--green);
+            color: var(--white);
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+        }
+
+        .result-text {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        /* ---------------------------------
+           FOOTER (15%)
+        --------------------------------- */
+        .footer {
+            height: 15%; /* ~250px */
+            background: rgba(0,0,0,0.3);
+            border-top: 1px solid var(--glass-border);
+            padding: 30px 50px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
+        }
+
+        .future-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .future-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: var(--glass-bg);
+            padding: 15px 20px;
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .future-item i {
+            font-size: 28px;
+            color: var(--cyan);
+        }
+
+        .future-item span {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .qr-section {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 20px;
+        }
+
+        .qr-box {
+            width: 120px;
+            height: 120px;
+            background: var(--white);
+            border-radius: 16px;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Fake QR Code pattern using CSS gradients */
+        .qr-code-fake {
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            background-image: 
+                linear-gradient(45deg, #fff 25%, transparent 25%, transparent 75%, #fff 75%, #fff),
+                linear-gradient(45deg, #fff 25%, transparent 25%, transparent 75%, #fff 75%, #fff);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+
+        .qr-text {
+            text-align: right;
+        }
+        .qr-text h4 {
+            color: var(--cyan);
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+        .qr-text p {
+            color: var(--gray);
+            font-size: 14px;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="poster">
+    <div class="glow-1"></div>
+    <div class="glow-2"></div>
+
+    <!-- HEADER -->
+    <div class="header z-10">
+        <div class="header-left">
+            <div class="logo-box">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/e/e8/Logo_%C4%90%E1%BA%A1i_h%E1%BB%8Dc_C%C3%B4ng_nghi%E1%BB%87p_H%C3%A0_N%E1%BB%99i.png" alt="HaUI Logo">
+            </div>
+            <div class="uni-info">
+                <span class="uni-name">Trường Đại Học Công Nghiệp Hà Nội</span>
+                <span class="faculty-name">Trường CNTT & TT - HaUI</span>
+            </div>
+        </div>
+
+        <div class="header-center">
+            <div class="project-title">
+                Xây Dựng Hệ Thống<br>Phần Mềm ERP Sản Xuất<br>Doanh Nghiệp Nhôm Kính
+            </div>
+        </div>
+
+        <div class="header-right">
+            <div class="student-info">
+                <p>Sinh viên: <b>Lê Văn Hải</b></p>
+                <p>MSV: <b>2022605948</b></p>
+                <p style="margin-top: 5px; padding-top: 5px; border-top: 1px solid rgba(255,255,255,0.1);">GVHD: <b>TS. Nguyễn Ngọc Khải</b></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content z-10">
+        
+        <!-- ROW 1 -->
+        <div class="row-1">
+            <!-- Thực trạng -->
+            <div class="card">
+                <div class="card-title">
+                    <i class="fa-solid fa-triangle-exclamation"></i> 1. Thực Trạng
+                </div>
+                <ul class="text-list">
+                    <li><i class="fa-solid fa-xmark" style="color: #EF4444;"></i> <span>Quản lý thủ công bằng <strong>Excel, sổ sách</strong> mất nhiều thời gian.</span></li>
+                    <li><i class="fa-solid fa-xmark" style="color: #EF4444;"></i> <span>Dữ liệu <strong>rời rạc, khó đồng bộ</strong> giữa các bộ phận.</span></li>
+                    <li><i class="fa-solid fa-xmark" style="color: #EF4444;"></i> <span>Bóc tách vật tư (BOM) dễ <strong>sai sót và thất thoát</strong> vật tư sản xuất.</span></li>
+                </ul>
+            </div>
+
+            <!-- Giải pháp & Chức năng -->
+            <div class="card" style="border-color: var(--cyan); box-shadow: 0 10px 40px rgba(6,182,212,0.15);">
+                <div class="card-title">
+                    <i class="fa-solid fa-lightbulb"></i> 2. Giải Pháp: VIRALWINDOW ERP
+                </div>
+                <div class="highlight-box" style="margin-bottom: 10px;">
+                    <strong style="font-size: 18px;">Hệ thống quản lý tập trung toàn diện dữ liệu doanh nghiệp</strong>, liên kết chặt chẽ vòng đời dự án từ <em>Khách hàng → Báo giá → Kho → Sản xuất</em>.
+                </div>
+                
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <i class="fa-solid fa-users-gear"></i>
+                        <strong>Quản lý Người dùng</strong>
+                        <span>RBAC & Phân quyền chi tiết</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fa-solid fa-cogs"></i>
+                        <strong>Quản lý Sản xuất</strong>
+                        <span>Tự động BOM & Tiến độ</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                        <strong>Báo giá Thông minh</strong>
+                        <span>Tính giá tự động & Xuất PDF</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fa-solid fa-chart-line"></i>
+                        <strong>Dashboard</strong>
+                        <span>Thống kê realtime</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ROW 2 -->
+        <div class="row-2">
+            <!-- Công nghệ -->
+            <div class="card">
+                <div class="card-title">
+                    <i class="fa-solid fa-microchip"></i> 3. Kiến Trúc Công Nghệ
+                </div>
+                <div class="tech-stack">
+                    <div class="tech-row">
+                        <div class="tech-label">Frontend</div>
+                        <div class="tech-badges">
+                            <span class="badge"><i class="fa-brands fa-html5" style="color: #E34F26;"></i> HTML5</span>
+                            <span class="badge"><i class="fa-brands fa-css3-alt" style="color: #1572B6;"></i> CSS3</span>
+                            <span class="badge"><i class="fa-brands fa-js" style="color: #F7DF1E;"></i> JS</span>
+                        </div>
+                    </div>
+                    <div class="tech-row">
+                        <div class="tech-label">Backend</div>
+                        <div class="tech-badges">
+                            <span class="badge"><i class="fa-brands fa-node" style="color: #339933;"></i> Node.js</span>
+                            <span class="badge"><i class="fa-solid fa-server" style="color: var(--gray);"></i> Express</span>
+                        </div>
+                    </div>
+                    <div class="tech-row">
+                        <div class="tech-label">Database</div>
+                        <div class="tech-badges">
+                            <span class="badge"><i class="fa-solid fa-database" style="color: #4479A1;"></i> MySQL 8.0</span>
+                        </div>
+                    </div>
+                    <div class="tech-row">
+                        <div class="tech-label">AI Agent</div>
+                        <div class="tech-badges">
+                            <span class="badge" style="border: 1px solid var(--cyan);"><i class="fa-solid fa-brain" style="color: var(--cyan);"></i> Gemini API</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quy trình -->
+            <div class="card">
+                <div class="card-title">
+                    <i class="fa-solid fa-diagram-project"></i> 4. Quy Trình Hệ Thống
+                </div>
+                <div class="flow-container">
+                    <div class="flow-node">
+                        <div class="flow-icon"><i class="fa-solid fa-user-tie"></i></div>
+                        <div class="flow-text">Khách hàng<br><small style="color: var(--gray); font-weight: 400;">(Dự án)</small></div>
+                    </div>
+                    <div class="flow-arrow"></div>
+                    
+                    <div class="flow-node">
+                        <div class="flow-icon" style="border-color: var(--yellow);"><i class="fa-solid fa-file-contract" style="color: var(--yellow);"></i></div>
+                        <div class="flow-text">Lập báo giá</div>
+                    </div>
+                    <div class="flow-arrow"></div>
+                    
+                    <div class="flow-node">
+                        <div class="flow-icon" style="background: var(--cyan); color: var(--navy); border: none; transform: scale(1.1);"><i class="fa-solid fa-gear"></i></div>
+                        <div class="flow-text" style="color: var(--cyan);">BOM<br>Tự động</div>
+                    </div>
+                    <div class="flow-arrow"></div>
+                    
+                    <div class="flow-node">
+                        <div class="flow-icon" style="border-color: #F59E0B;"><i class="fa-solid fa-boxes-stacked" style="color: #F59E0B;"></i></div>
+                        <div class="flow-text">Kho vật tư</div>
+                    </div>
+                    <div class="flow-arrow"></div>
+                    
+                    <div class="flow-node">
+                        <div class="flow-icon" style="border-color: var(--green);"><i class="fa-solid fa-industry" style="color: var(--green);"></i></div>
+                        <div class="flow-text">Sản xuất &<br>Hoàn thiện</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ROW 3 -->
+        <div class="row-3">
+            <!-- Dashboard Screenshot -->
+            <div class="card" style="padding: 20px;">
+                <div class="card-title" style="padding: 0 10px 15px 10px;">
+                    <i class="fa-solid fa-desktop"></i> Hệ thống ERP Dashboard
+                </div>
+                <div class="dashboard-mockup">
+                    <div class="dash-header">
+                        <div class="dash-dot r"></div>
+                        <div class="dash-dot y"></div>
+                        <div class="dash-dot g"></div>
+                        <div style="margin-left: 20px; font-family: monospace; font-size: 12px; color: var(--gray);">erp.viralwindow.vn</div>
+                    </div>
+                    <div class="dash-body">
+                        <div class="dash-sidebar">
+                            <div class="dash-menu-item" style="background: var(--cyan); width: 100%;"></div>
+                            <div class="dash-menu-item" style="width: 80%;"></div>
+                            <div class="dash-menu-item" style="width: 90%;"></div>
+                            <div class="dash-menu-item" style="width: 70%;"></div>
+                            <div class="dash-menu-item" style="width: 85%;"></div>
+                        </div>
+                        <div class="dash-content">
+                            <div style="display: flex; gap: 15px;">
+                                <div style="flex: 1; height: 60px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 8px;"></div>
+                                <div style="flex: 1; height: 60px; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); border-radius: 8px;"></div>
+                                <div style="flex: 1; height: 60px; background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.3); border-radius: 8px;"></div>
+                            </div>
+                            <div class="dash-chart"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kết quả đạt được -->
+            <div class="card">
+                <div class="card-title">
+                    <i class="fa-solid fa-trophy" style="color: var(--yellow);"></i> 5. Kết Quả
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 15px; flex: 1; justify-content: center;">
+                    <div class="result-item">
+                        <div class="result-icon"><i class="fa-solid fa-check"></i></div>
+                        <div class="result-text">Hoàn thiện hệ thống ERP<br><small style="color: var(--gray); font-weight: 400; font-size: 15px;">Ngành nhôm kính</small></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-icon"><i class="fa-solid fa-robot"></i></div>
+                        <div class="result-text">Tự động hóa 100%<br><small style="color: var(--gray); font-weight: 400; font-size: 15px;">Quy trình BOM & tính giá</small></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-icon"><i class="fa-solid fa-vial-circle-check"></i></div>
+                        <div class="result-text">32/32 kịch bản<br><small style="color: var(--gray); font-weight: 400; font-size: 15px;">Kiểm thử đạt yêu cầu</small></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-icon"><i class="fa-solid fa-chart-line"></i></div>
+                        <div class="result-text">Giảm thời gian & sai sót<br><small style="color: var(--gray); font-weight: 400; font-size: 15px;">Quản lý vật tư hiệu quả</small></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer z-10">
+        <!-- Hướng phát triển -->
+        <div style="display: flex; flex-direction: column; justify-content: center;">
+            <div class="card-title" style="border: none; padding-bottom: 5px; margin-bottom: 10px;">
+                <i class="fa-solid fa-rocket"></i> 6. Hướng Phát Triển
+            </div>
+            <div class="future-grid">
+                <div class="future-item">
+                    <i class="fa-solid fa-cloud"></i>
+                    <span>Triển khai Cloud/SaaS</span>
+                </div>
+                <div class="future-item">
+                    <i class="fa-solid fa-mobile-screen-button"></i>
+                    <span>Phát triển Mobile App</span>
+                </div>
+                <div class="future-item">
+                    <i class="fa-solid fa-brain"></i>
+                    <span>Tích hợp AI dự báo vật tư</span>
+                </div>
+                <div class="future-item">
+                    <i class="fa-solid fa-scissors"></i>
+                    <span>Tối ưu cắt nhôm (1D Nesting)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Demo / Contact -->
+        <div class="qr-section">
+            <div class="qr-text">
+                <h4>Quét mã trải nghiệm</h4>
+                <p>Website Demo Hệ thống<br>Mã nguồn GitHub</p>
+            </div>
+            <div class="qr-box">
+                <div class="qr-code-fake"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
