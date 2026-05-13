@@ -2554,7 +2554,7 @@
 
         <!-- MODAL: Category Management for Other Items -->
         <div id="otherCategoryModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[10001] flex items-center justify-center">
-            <div class="bg-white rounded-xl p-6 w-full max-w-md">
+            <div class="bg-white rounded-xl p-6 w-full max-w-xl">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-xl font-bold">Quản lý danh mục Vật tư phụ</h2>
                     <button onclick="closeOtherCategoryManagementModal()" class="text-gray-500 hover:text-gray-700">
@@ -2576,7 +2576,7 @@
                 </div>
 
                 <!-- List -->
-                <div class="max-h-60 overflow-y-auto border border-gray-100 rounded-lg">
+                <div class="max-h-[450px] overflow-y-auto border border-gray-100 rounded-lg">
                     <table class="w-full text-sm">
                         <thead class="bg-gray-50 text-gray-600">
                             <tr>
@@ -2598,7 +2598,7 @@
 
         <!-- MODAL: Accessory Category Management (NEW) -->
         <div id="accessoryCategoryModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[10001] flex items-center justify-center p-4">
-            <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-xl overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                     <h2 class="text-xl font-bold text-gray-800">Quản lý danh mục Phụ kiện</h2>
                     <button onclick="closeAccessoryCategoryManagementModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
@@ -2621,7 +2621,7 @@
                     </div>
 
                     <!-- List -->
-                    <div class="max-h-60 overflow-y-auto border border-gray-100 rounded-lg">
+                    <div class="max-h-[450px] overflow-y-auto border border-gray-100 rounded-lg">
                         <table class="w-full text-sm">
                             <thead class="bg-gray-50 text-gray-600 sticky top-0">
                                 <tr>
@@ -9088,15 +9088,11 @@
                                 <td class="px-3 py-3 font-medium text-gray-800">${cat.name}</td>
                                 <td class="px-3 py-3 text-right">
                                     <div class="flex justify-end gap-2">
-                                        <button onclick="editAccCat(${cat.id}, '${cat.name}')" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors" title="Sửa">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
-                                            </svg>
+                                        <button onclick="editAccCat(${cat.id}, '${cat.name}')" class="bg-blue-100 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-200 text-xs font-medium transition-colors">
+                                            Sửa
                                         </button>
-                                        <button onclick="deleteAccCat(${cat.id}, '${cat.name}')" class="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors" title="Xóa">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                                            </svg>
+                                        <button onclick="deleteAccCat(${cat.id}, '${cat.name}')" class="bg-red-100 text-red-700 px-3 py-1.5 rounded hover:bg-red-200 text-xs font-medium transition-colors">
+                                            Xóa
                                         </button>
                                     </div>
                                 </td>
@@ -9166,7 +9162,7 @@
             }
 
             async function deleteAccCat(id, name) {
-                if (await confirm(`Bạn có chắc chắn muốn xóa danh mục "${name}"? Thao tác này không thể hoàn tác.`)) {
+                if (await VWModal.confirm('Xác nhận xóa', `Bạn có chắc chắn muốn xóa danh mục "${name}"? Thao tác này không thể hoàn tác.`)) {
                     try {
                         const response = await fetch(`${API_BASE}/accessories/categories/${id}`, {
                             method: 'DELETE',
@@ -9234,15 +9230,11 @@
                                 <td class="px-3 py-2 text-gray-800 font-medium">${cat.name}</td>
                                 <td class="px-3 py-2 text-right">
                                     <div class="flex justify-end gap-2">
-                                        <button onclick="editOtherCategory(${cat.id}, '${cat.name}')" class="text-blue-500 hover:text-blue-700" title="Sửa">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                                            </svg>
+                                        <button onclick="editOtherCategory(${cat.id}, '${cat.name}')" class="bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200 text-xs font-medium transition-colors">
+                                            Sửa
                                         </button>
-                                        <button onclick="deleteOtherCategory(${cat.id})" class="text-red-500 hover:text-red-700" title="Xóa">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                                            </svg>
+                                        <button onclick="deleteOtherCategory(${cat.id})" class="bg-red-100 text-red-700 px-3 py-1 rounded hover:bg-red-200 text-xs font-medium transition-colors">
+                                            Xóa
                                         </button>
                                     </div>
                                 </td>
@@ -9275,7 +9267,7 @@
                 const name = document.getElementById('catNameInput').value.trim();
 
                 if (!name) {
-                    alert('Vui lòng nhập tên danh mục');
+                    VWModal.alert('Vui lòng nhập tên danh mục');
                     return;
                 }
 
@@ -9299,16 +9291,16 @@
                         loadOtherCategoryList();
                         loadOtherCategories(); // Reload global list
                     } else {
-                        alert(result.message || 'Có lỗi xảy ra');
+                        VWModal.alert(result.message || 'Có lỗi xảy ra');
                     }
                 } catch (error) {
                     console.error('Lỗi lưu danh mục:', error);
-                    alert('Lỗi kết nối server');
+                    VWModal.alert('Lỗi kết nối server');
                 }
             }
 
             async function deleteOtherCategory(id) {
-                if (!await confirm('Bạn có chắc muốn xóa danh mục này? Hệ thống sẽ không xóa nếu danh mục đang có vật tư.')) return;
+                if (!await VWModal.confirm('Xác nhận xóa', 'Bạn có chắc muốn xóa danh mục này? Hệ thống sẽ không xóa nếu danh mục đang có vật tư.')) return;
 
                 try {
                     const response = await fetch(`${API_BASE}/inventory/other-categories/${id}`, {
@@ -9322,10 +9314,11 @@
                         loadOtherCategoryList();
                         loadOtherCategories();
                     } else {
-                        alert(result.message || 'Không thể xóa danh mục này');
+                        VWModal.alert(result.message || 'Không thể xóa danh mục này');
                     }
                 } catch (error) {
                     console.error('Lỗi xóa danh mục:', error);
+                    VWModal.alert('Lỗi server khi xóa danh mục');
                 }
             }
 
