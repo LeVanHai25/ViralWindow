@@ -544,11 +544,11 @@
         <div class="p-6">
             <!-- SUMMARY CARDS -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                <div class="kpi-card kpi-card-gradient bg-white rounded-xl shadow p-5 fade-in cursor-pointer hover:shadow-lg transition-shadow"
+                <div class="kpi-card kpi-card-gradient bg-white rounded-xl shadow p-5 fade-in cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-emerald-500"
                     onclick="showTotalItemsBreakdown()">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm text-gray-600 mb-1">Tổng mặt hàng</p>
+                            <p class="text-xs font-black uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600 mb-1">Tổng mặt hàng</p>
                             <p class="text-3xl font-bold" id="statTotalItems">0</p>
                             <p class="text-xs text-gray-500 mt-1">Tổng hợp từ 4 kho: Phụ kiện, Kho nhôm, Kính, Vật tư
                                 phụ</p>
@@ -563,11 +563,11 @@
                     </div>
                 </div>
 
-                <div class="kpi-card kpi-card-gradient bg-white rounded-xl shadow p-5 fade-in cursor-pointer hover:shadow-lg transition-shadow"
+                <div class="kpi-card kpi-card-gradient bg-white rounded-xl shadow p-5 fade-in cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-red-500"
                     onclick="showLowStockBreakdown()">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm text-gray-600 mb-1">Cảnh báo tồn kho</p>
+                            <p class="text-xs font-black uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-orange-600 mb-1">Cảnh báo tồn kho</p>
                             <p class="text-3xl font-bold text-red-600" id="statLowStock">0</p>
                             <p class="text-xs text-gray-500 mt-1">Tổng hợp từ 4 kho: Phụ kiện, Kho nhôm, Kính, Vật tư
                                 phụ</p>
@@ -582,11 +582,11 @@
                     </div>
                 </div>
 
-                <div class="kpi-card kpi-card-gradient bg-white rounded-xl shadow p-5 fade-in cursor-pointer hover:shadow-lg transition-shadow"
+                <div class="kpi-card kpi-card-gradient bg-white rounded-xl shadow p-5 fade-in cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-emerald-500"
                     onclick="showValueBreakdown()">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm text-gray-600 mb-1">Giá trị tồn kho</p>
+                            <p class="text-xs font-black uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600 mb-1">Giá trị tồn kho</p>
                             <p class="text-3xl font-bold text-green-600" id="statInventoryValue">0.0M</p>
                         </div>
                         <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -599,10 +599,10 @@
                     </div>
                 </div>
 
-                <div class="kpi-card kpi-card-gradient bg-white rounded-xl shadow p-5 fade-in">
+                <div class="kpi-card kpi-card-gradient bg-white rounded-xl shadow p-5 fade-in border-l-4 border-orange-500">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm text-gray-600 mb-1">Nhôm Đề C</p>
+                            <p class="text-xs font-black uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-orange-600 mb-1">Nhôm Đề C</p>
                             <p class="text-3xl font-bold text-orange-600" id="statScraps">0</p>
                         </div>
                         <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
@@ -9904,17 +9904,28 @@
             }
 
             function aiSelectByPriority(priority) {
+                // Reset all selections first for clear priority selection
                 aiRestockData.forEach(item => {
-                    if (item.priority === priority) item.selected = true;
+                    item.selected = (item.priority === priority);
                 });
                 renderAIRestockTable();
             }
 
             function applyMinStockToAll() {
                 aiRestockData.forEach(item => {
+                    // Always select the item when applying min stock
+                    item.selected = true;
                     // Logic: Nhập đủ để đạt gấp đôi min stock
                     const target = Math.max(item.min_stock_level * 2, 1);
                     item.suggest_qty = Math.max(Math.ceil(target - item.current_qty), 1);
+                });
+                renderAIRestockTable();
+            }
+
+            function toggleAllAIItems() {
+                const isChecked = document.getElementById('aiSelectAll')?.checked || false;
+                aiRestockData.forEach(item => {
+                    item.selected = isChecked;
                 });
                 renderAIRestockTable();
             }
@@ -9941,6 +9952,11 @@
             function updateAISelectedCount() {
                 const selected = aiRestockData.filter(item => item.selected);
                 document.getElementById('aiSelectedCount').textContent = selected.length;
+                
+                const selectAllElem = document.getElementById('aiSelectAll');
+                if (selectAllElem) {
+                    selectAllElem.checked = (aiRestockData.length > 0 && selected.length === aiRestockData.length);
+                }
                 
                 const totalQty = selected.reduce((sum, item) => sum + (item.suggest_qty || 0), 0);
                 const totalCost = selected.reduce((sum, item) => sum + ((item.suggest_qty || 0) * (item.unit_price || 0)), 0);
