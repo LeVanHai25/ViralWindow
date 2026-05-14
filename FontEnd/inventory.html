@@ -2553,54 +2553,52 @@
         </div>
 
         <!-- MODAL: Category Management for Other Items -->
-        <div id="otherCategoryModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[10001] flex items-center justify-center">
-            <div class="bg-white rounded-xl p-6 w-full max-w-xl">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl font-bold">Quản lý danh mục Vật tư phụ</h2>
-                    <button onclick="closeOtherCategoryManagementModal()" class="text-gray-500 hover:text-gray-700">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        <div id="otherCategoryModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[10001] flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
+                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                    <h2 class="text-lg font-bold text-gray-800">Quản lý danh mục Vật tư phụ</h2>
+                    <button onclick="closeOtherCategoryManagementModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
-
-                <!-- Add Form -->
-                <div class="mb-6 p-4 bg-teal-50 rounded-lg border border-teal-100">
-                    <h3 class="text-sm font-semibold text-teal-800 mb-3" id="catFormTitle">Thêm danh mục mới</h3>
-                    <div class="flex gap-2">
-                        <input type="text" id="catNameInput" class="flex-1 px-3 py-2 border border-teal-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm" placeholder="Tên danh mục...">
-                        <input type="hidden" id="catIdInput">
-                        <button onclick="saveOtherCategory()" class="bg-teal-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-teal-600 transition-colors" id="btnSaveCat">Thêm</button>
-                        <button onclick="resetCatForm()" class="hidden px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-100" id="btnCancelCat">Hủy</button>
+                
+                <div class="p-5 overflow-y-auto">
+                    <!-- Add Form -->
+                    <div class="mb-5 p-3 bg-teal-50 rounded-lg border border-teal-100">
+                        <h3 class="text-xs font-semibold text-teal-800 mb-2" id="catFormTitle">Thêm danh mục mới</h3>
+                        <div class="flex gap-2">
+                            <input type="text" id="catNameInput" class="flex-1 px-3 py-1.5 border border-teal-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm" placeholder="Tên danh mục...">
+                            <input type="hidden" id="catIdInput">
+                            <button onclick="saveOtherCategory()" class="bg-teal-500 text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-teal-600 transition-colors" id="btnSaveCat">Thêm</button>
+                            <button onclick="resetCatForm()" class="hidden px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-100" id="btnCancelCat">Hủy</button>
+                        </div>
                     </div>
-                </div>
+ 
+                    <!-- List Header -->
+                    <div class="flex bg-gray-50 text-gray-600 px-4 py-2 rounded-t-lg border border-gray-100 text-xs font-bold uppercase tracking-wider sticky top-0 z-10">
+                        <div class="flex-1">Tên danh mục</div>
+                        <div class="w-24 text-right">Thao tác</div>
+                    </div>
 
-                <!-- List -->
-                <div class="max-h-[450px] overflow-y-auto border border-gray-100 rounded-lg">
-                    <table class="w-full text-sm">
-                        <thead class="bg-gray-50 text-gray-600">
-                            <tr>
-                                <th class="px-3 py-2 text-left font-semibold">Tên danh mục</th>
-                                <th class="px-3 py-2 text-right font-semibold">Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody id="otherCategoryListTable" class="divide-y divide-gray-100">
-                            <!-- Items will be loaded here -->
-                        </tbody>
-                    </table>
-                </div>
+                    <!-- List Content -->
+                    <div id="otherCategoryListTable" class="max-h-[300px] overflow-y-auto border-x border-b border-gray-100 rounded-b-lg divide-y divide-gray-100">
+                        <!-- Items will be loaded here using Flex rows -->
+                    </div>
 
-                <div class="mt-6 flex justify-end">
-                    <button onclick="closeOtherCategoryManagementModal()" class="px-6 py-2 border border-gray-300 rounded-lg font-medium hover:bg-gray-50">Đóng</button>
+                    <div class="mt-5 flex justify-end">
+                        <button onclick="closeOtherCategoryManagementModal()" class="px-6 py-2 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 text-sm">Đóng</button>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- MODAL: Accessory Category Management (NEW) -->
         <div id="accessoryCategoryModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[10001] flex items-center justify-center p-4">
-            <div class="bg-white rounded-xl shadow-2xl w-full max-w-xl overflow-hidden">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
                 <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                    <h2 class="text-xl font-bold text-gray-800">Quản lý danh mục Phụ kiện</h2>
+                    <h2 class="text-lg font-bold text-gray-800">Quản lý danh mục Phụ kiện</h2>
                     <button onclick="closeAccessoryCategoryManagementModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -2608,35 +2606,31 @@
                     </button>
                 </div>
                 
-                <div class="p-6">
+                <div class="p-5">
                     <!-- Add Form -->
-                    <div class="mb-6 p-4 bg-teal-50 rounded-lg border border-teal-100">
-                        <h3 class="text-sm font-semibold text-teal-800 mb-3" id="accCatFormTitle">Thêm danh mục mới</h3>
+                    <div class="mb-5 p-3 bg-teal-50 rounded-lg border border-teal-100">
+                        <h3 class="text-xs font-semibold text-teal-800 mb-2" id="accCatFormTitle">Thêm danh mục mới</h3>
                         <div class="flex gap-2">
-                            <input type="text" id="accCatNameInput" class="flex-1 px-3 py-2 border border-teal-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm" placeholder="Tên danh mục...">
+                            <input type="text" id="accCatNameInput" class="flex-1 px-3 py-1.5 border border-teal-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm" placeholder="Tên danh mục...">
                             <input type="hidden" id="accCatIdInput">
-                            <button onclick="saveAccessoryCategory()" class="bg-teal-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-teal-600 transition-colors" id="btnSaveAccCat">Thêm</button>
-                            <button onclick="resetAccCatForm()" class="hidden px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-100" id="btnCancelAccCat">Hủy</button>
+                            <button onclick="saveAccessoryCategory()" class="bg-teal-500 text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-teal-600 transition-colors" id="btnSaveAccCat">Thêm</button>
+                            <button onclick="resetAccCatForm()" class="hidden px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-100" id="btnCancelAccCat">Hủy</button>
                         </div>
                     </div>
-
-                    <!-- List -->
-                    <div class="max-h-[450px] overflow-y-auto border border-gray-100 rounded-lg">
-                        <table class="w-full text-sm">
-                            <thead class="bg-gray-50 text-gray-600 sticky top-0">
-                                <tr>
-                                    <th class="px-3 py-2 text-left font-semibold">Tên danh mục</th>
-                                    <th class="px-3 py-2 text-right font-semibold">Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody id="accessoryCategoryListTable" class="divide-y divide-gray-100 text-gray-600">
-                                <!-- Items will be loaded here -->
-                            </tbody>
-                        </table>
+ 
+                    <!-- List Header -->
+                    <div class="flex bg-gray-50 text-gray-600 px-4 py-2 rounded-t-lg border border-gray-100 text-xs font-bold uppercase tracking-wider sticky top-0 z-10">
+                        <div class="flex-1">Tên danh mục</div>
+                        <div class="w-24 text-right">Thao tác</div>
                     </div>
 
-                    <div class="mt-6 flex justify-end">
-                        <button onclick="closeAccessoryCategoryManagementModal()" class="px-6 py-2 border border-gray-300 rounded-lg font-medium hover:bg-gray-50">Đóng</button>
+                    <!-- List Content -->
+                    <div id="accessoryCategoryListTable" class="max-h-[300px] overflow-y-auto border-x border-b border-gray-100 rounded-b-lg divide-y divide-gray-100">
+                        <!-- Items will be loaded here using Flex rows -->
+                    </div>
+
+                    <div class="mt-5 flex justify-end">
+                        <button onclick="closeAccessoryCategoryManagementModal()" class="px-6 py-2 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 text-sm">Đóng</button>
                     </div>
                 </div>
             </div>
@@ -9084,22 +9078,20 @@
 
                     if (result.success && result.data.length > 0) {
                         tbody.innerHTML = result.data.map(cat => `
-                            <tr>
-                                <td class="px-3 py-3 font-medium text-gray-800">${cat.name}</td>
-                                <td class="px-3 py-3 text-right">
-                                    <div class="flex justify-end gap-2">
-                                        <button onclick="editAccCat(${cat.id}, '${cat.name}')" class="bg-blue-100 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-200 text-xs font-medium transition-colors">
-                                            Sửa
-                                        </button>
-                                        <button onclick="deleteAccCat(${cat.id}, '${cat.name}')" class="bg-red-100 text-red-700 px-3 py-1.5 rounded hover:bg-red-200 text-xs font-medium transition-colors">
-                                            Xóa
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
+                            <div class="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors">
+                                <div class="flex-1 font-medium text-gray-800 break-words pr-4">${cat.name}</div>
+                                <div class="flex gap-2 shrink-0">
+                                    <button onclick="editAccCat(${cat.id}, '${cat.name}')" class="bg-blue-100 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-200 text-xs font-medium transition-colors">
+                                        Sửa
+                                    </button>
+                                    <button onclick="deleteAccCat(${cat.id}, '${cat.name}')" class="bg-red-100 text-red-700 px-3 py-1.5 rounded hover:bg-red-200 text-xs font-medium transition-colors">
+                                        Xóa
+                                    </button>
+                                </div>
+                            </div>
                         `).join('');
                     } else {
-                        tbody.innerHTML = '<tr><td colspan="2" class="px-3 py-4 text-center text-gray-400">Chưa có danh mục nào</td></tr>';
+                        tbody.innerHTML = '<div class="px-4 py-6 text-center text-gray-400 italic">Chưa có danh mục nào</div>';
                     }
                 } catch (error) {
                     console.error('Lỗi khi tải danh sách danh mục:', error);
@@ -9221,24 +9213,22 @@
                     
                     if (result.success && result.data) {
                         if (result.data.length === 0) {
-                            tbody.innerHTML = '<tr><td colspan="2" class="px-3 py-4 text-center text-gray-400">Chưa có danh mục nào.</td></tr>';
+                            tbody.innerHTML = '<div class="px-4 py-6 text-center text-gray-400 italic">Chưa có danh mục nào.</div>';
                             return;
                         }
 
                         tbody.innerHTML = result.data.map(cat => `
-                            <tr>
-                                <td class="px-3 py-2 text-gray-800 font-medium">${cat.name}</td>
-                                <td class="px-3 py-2 text-right">
-                                    <div class="flex justify-end gap-2">
-                                        <button onclick="editOtherCategory(${cat.id}, '${cat.name}')" class="bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200 text-xs font-medium transition-colors">
-                                            Sửa
-                                        </button>
-                                        <button onclick="deleteOtherCategory(${cat.id})" class="bg-red-100 text-red-700 px-3 py-1 rounded hover:bg-red-200 text-xs font-medium transition-colors">
-                                            Xóa
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
+                            <div class="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors">
+                                <div class="flex-1 font-medium text-gray-800 break-words pr-4">${cat.name}</div>
+                                <div class="flex gap-2 shrink-0">
+                                    <button onclick="editOtherCategory(${cat.id}, '${cat.name}')" class="bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200 text-xs font-medium transition-colors">
+                                        Sửa
+                                    </button>
+                                    <button onclick="deleteOtherCategory(${cat.id})" class="bg-red-100 text-red-700 px-3 py-1 rounded hover:bg-red-200 text-xs font-medium transition-colors">
+                                        Xóa
+                                    </button>
+                                </div>
+                            </div>
                         `).join('');
                     }
                 } catch (error) {
@@ -9800,11 +9790,25 @@
 
             function renderAIRestockTable() {
                 const tbody = document.getElementById('aiRestockTableBody');
+                const searchQuery = document.getElementById('aiSearchInput')?.value.toLowerCase() || '';
+                const moduleFilter = document.getElementById('aiModuleFilter')?.value || 'all';
 
-                if (aiRestockData.length === 0) {
+                let filteredData = aiRestockData.filter(item => {
+                    const matchesSearch = item.item_name.toLowerCase().includes(searchQuery) || 
+                                        item.item_code.toLowerCase().includes(searchQuery);
+                    const matchesModule = moduleFilter === 'all' || item.module_type === moduleFilter;
+                    const matchesPriority = currentAIPriorityFilter === 'all' || item.priority === currentAIPriorityFilter;
+                    return matchesSearch && matchesModule && matchesPriority;
+                });
+
+                if (filteredData.length === 0) {
                     tbody.innerHTML = `
-                        <tr><td colspan="12" class="px-4 py-10 text-center text-green-600">
-                            ✅ Tuyệt vời! Không có vật tư nào cần nhập thêm.
+                        <tr><td colspan="12" class="px-4 py-16 text-center text-gray-400">
+                            <div class="flex flex-col items-center gap-3">
+                                <i class="fas fa-search-minus text-4xl opacity-20"></i>
+                                <span>Không tìm thấy vật tư nào phù hợp với bộ lọc</span>
+                                <button onclick="resetAIRestockFilters()" class="text-indigo-600 text-sm font-bold hover:underline">Xóa tất cả bộ lọc</button>
+                            </div>
                         </td></tr>`;
                     updateAISelectedCount();
                     return;
@@ -9817,43 +9821,62 @@
                     'other': 'bg-orange-100 text-orange-700'
                 };
 
-                tbody.innerHTML = aiRestockData.map((item, idx) => {
+                tbody.innerHTML = filteredData.map((item) => {
+                    const idx = aiRestockData.findIndex(d => d.id === item.id && d.module_type === item.module_type && d.warehouse_id === item.warehouse_id);
+                    
                     const priorityBadge = item.priority === 'critical'
-                        ? '<span class="px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">🔴 Hết hàng</span>'
-                        : '<span class="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-700">🟡 Sắp hết</span>';
+                        ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700 border border-red-200">🔴 Hết hàng</span>'
+                        : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200">🟡 Sắp hết</span>';
 
                     const moduleClass = moduleColors[item.module_type] || 'bg-gray-100 text-gray-700';
-                    const rowBg = item.priority === 'critical' ? 'bg-red-50/40' : '';
+                    const rowBg = item.priority === 'critical' ? 'bg-red-50/30' : '';
+                    
+                    // Cảnh báo màu đỏ cho số lượng <= 0
+                    const qtyInputClass = item.suggest_qty <= 0 
+                        ? 'border-red-500 bg-red-50 text-red-700 focus:ring-red-500' 
+                        : 'border-indigo-200 text-indigo-700 focus:ring-indigo-500';
+
+                    // Xử lý hiển thị Hệ nhôm
+                    const systemTag = item.aluminum_system 
+                        ? `<div class="text-[10px] text-teal-600 mt-1 font-semibold">${item.aluminum_system}</div>` 
+                        : '';
 
                     return `
-                        <tr class="${rowBg} hover:bg-indigo-50/40 transition-colors">
-                            <td class="px-3 py-2 text-center">
+                        <tr class="${rowBg} hover:bg-indigo-50/50 transition-colors group">
+                            <td class="px-3 py-3 text-center">
                                 <input type="checkbox" ${item.selected ? 'checked' : ''}
-                                    onchange="toggleAIItem(${idx})"
-                                    class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+                                    onchange="toggleAIItemByObjId('${item.id}', '${item.module_type}', ${item.warehouse_id})"
+                                    class="w-5 h-5 text-indigo-600 rounded-md border-gray-300 focus:ring-indigo-500 cursor-pointer">
                             </td>
-                            <td class="px-3 py-2 font-mono text-xs text-gray-600">${item.item_code || '-'}</td>
-                            <td class="px-3 py-2 font-medium text-gray-800">${item.item_name || '-'}</td>
-                            <td class="px-3 py-2 text-center">
-                                <span class="px-2 py-0.5 rounded-full text-xs ${moduleClass}">${item.module_name}</span>
+                            <td class="px-3 py-3 font-mono text-[11px] text-gray-500">${item.item_code || '-'}</td>
+                            <td class="px-3 py-3">
+                                <div class="font-bold text-gray-900 leading-tight">${item.item_name || '-'}</div>
+                                ${systemTag}
                             </td>
-                            <td class="px-2 py-2 text-center">
-                                <span class="px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 whitespace-nowrap">${item.warehouse_name || '-'}</span>
+                            <td class="px-3 py-3 text-center">
+                                <span class="px-2 py-1 rounded text-[10px] font-bold ${moduleClass}">${item.module_name}</span>
                             </td>
-                            <td class="px-2 py-2 text-center text-xs text-gray-600 whitespace-nowrap">${item.category_name || '-'}</td>
-                            <td class="px-2 py-2 text-center">${item.aluminum_system ? '<span class="px-1.5 py-0.5 rounded text-xs bg-teal-50 text-teal-700 whitespace-nowrap">' + item.aluminum_system + '</span>' : '<span class="text-gray-300">—</span>'}</td>
-                            <td class="px-3 py-2 text-center">${priorityBadge}</td>
-                            <td class="px-3 py-2 text-center font-semibold ${item.current_qty <= 0 ? 'text-red-600' : 'text-orange-600'}">${item.current_qty} ${item.unit}</td>
-                            <td class="px-3 py-2 text-center text-gray-500">${item.min_stock_level} ${item.unit}</td>
-                            <td class="px-3 py-2 text-center bg-indigo-50/50">
-                                <input type="number" value="${item.suggest_qty}" min="1"
-                                    onchange="updateAISuggestQty(${idx}, this.value)"
-                                    class="w-20 px-2 py-1 border border-indigo-300 rounded-lg text-center text-sm font-bold text-indigo-700 bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <td class="px-3 py-3 text-center">
+                                <span class="text-[11px] text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded">${item.warehouse_name || '-'}</span>
                             </td>
-                            <td class="px-3 py-2 align-top">
-                                <textarea placeholder="Ghi chú..."
-                                    oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';updateAINote(${idx}, this.value)"
-                                    class="w-full min-w-[180px] px-2 py-1 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-indigo-400 focus:outline-none resize-none overflow-hidden leading-5"
+                            <td class="px-3 py-3 text-center text-[11px] text-gray-500">${item.category_name || '-'}</td>
+                            <td class="px-3 py-3 text-center">${priorityBadge}</td>
+                            <td class="px-3 py-3 text-center">
+                                <div class="font-bold ${item.current_qty <= 0 ? 'text-red-600' : 'text-orange-600'}">${item.current_qty}</div>
+                                <div class="text-[10px] text-gray-400 mt-0.5">Min: ${item.min_stock_level} ${item.unit}</div>
+                            </td>
+                            <td class="px-3 py-3 text-center bg-indigo-50/30">
+                                <input type="number" value="${item.suggest_qty}" min="0"
+                                    onchange="updateAISuggestQtyByObjId('${item.id}', '${item.module_type}', ${item.warehouse_id}, this.value)"
+                                    class="w-24 px-3 py-2 border rounded-xl text-center text-sm font-black transition-all ${qtyInputClass}">
+                            </td>
+                            <td class="px-3 py-3 text-right font-bold text-emerald-700 bg-emerald-50/20">
+                                ${formatCurrency(item.suggest_qty * (item.unit_price || 0))}
+                            </td>
+                            <td class="px-3 py-3">
+                                <textarea placeholder="Ghi chú nhập liệu..."
+                                    oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';updateAINoteByObjId('${item.id}', '${item.module_type}', ${item.warehouse_id}, this.value)"
+                                    class="w-full min-w-[150px] px-3 py-2 bg-transparent border-transparent hover:border-gray-200 focus:bg-white focus:border-indigo-400 rounded-lg text-xs focus:outline-none transition-all resize-none overflow-hidden leading-relaxed"
                                     rows="1">${item.note || ''}</textarea>
                             </td>
                         </tr>
@@ -9863,32 +9886,67 @@
                 updateAISelectedCount();
             }
 
-            function toggleAIItem(idx) {
-                aiRestockData[idx].selected = !aiRestockData[idx].selected;
-                updateAISelectedCount();
-            }
-
-            function toggleAllAIItems() {
-                const allChecked = document.getElementById('aiSelectAll').checked;
-                aiRestockData.forEach(item => item.selected = allChecked);
+            let currentAIPriorityFilter = 'all';
+            function filterAIRestockByPriority(priority) {
+                currentAIPriorityFilter = (currentAIPriorityFilter === priority) ? 'all' : priority;
                 renderAIRestockTable();
-                document.getElementById('aiSelectAll').checked = allChecked;
             }
 
-            function updateAISuggestQty(idx, value) {
-                aiRestockData[idx].suggest_qty = Math.max(parseInt(value) || 1, 1);
+            function filterAIRestockTable() {
+                renderAIRestockTable();
+            }
+
+            function resetAIRestockFilters() {
+                document.getElementById('aiSearchInput').value = '';
+                document.getElementById('aiModuleFilter').value = 'all';
+                currentAIPriorityFilter = 'all';
+                renderAIRestockTable();
+            }
+
+            function aiSelectByPriority(priority) {
+                aiRestockData.forEach(item => {
+                    if (item.priority === priority) item.selected = true;
+                });
+                renderAIRestockTable();
+            }
+
+            function applyMinStockToAll() {
+                aiRestockData.forEach(item => {
+                    // Logic: Nhập đủ để đạt gấp đôi min stock
+                    const target = Math.max(item.min_stock_level * 2, 1);
+                    item.suggest_qty = Math.max(Math.ceil(target - item.current_qty), 1);
+                });
+                renderAIRestockTable();
+            }
+
+            function toggleAIItemByObjId(id, type, whId) {
+                const item = aiRestockData.find(d => d.id == id && d.module_type === type && d.warehouse_id === whId);
+                if (item) item.selected = !item.selected;
                 updateAISelectedCount();
             }
 
-            function updateAINote(idx, value) {
-                aiRestockData[idx].note = value;
+            function updateAISuggestQtyByObjId(id, type, whId, value) {
+                const item = aiRestockData.find(d => d.id == id && d.module_type === type && d.warehouse_id === whId);
+                if (item) {
+                    item.suggest_qty = parseInt(value) || 0;
+                    renderAIRestockTable(); // Re-render to update warning colors and subtotal
+                }
+            }
+
+            function updateAINoteByObjId(id, type, whId, value) {
+                const item = aiRestockData.find(d => d.id == id && d.module_type === type && d.warehouse_id === whId);
+                if (item) item.note = value;
             }
 
             function updateAISelectedCount() {
                 const selected = aiRestockData.filter(item => item.selected);
                 document.getElementById('aiSelectedCount').textContent = selected.length;
-                const totalQty = selected.reduce((sum, item) => sum + item.suggest_qty, 0);
+                
+                const totalQty = selected.reduce((sum, item) => sum + (item.suggest_qty || 0), 0);
+                const totalCost = selected.reduce((sum, item) => sum + ((item.suggest_qty || 0) * (item.unit_price || 0)), 0);
+                
                 document.getElementById('aiTotalSuggestQty').textContent = totalQty;
+                document.getElementById('aiTotalEstimatedCost').textContent = formatCurrency(totalCost);
             }
 
             function closeAIRestockModal() {
@@ -11355,6 +11413,18 @@
                     filteredSystems = systems.filter(s => (s.aluminum_system || s.system_type || 'Khác') === selectedAluminumSystem);
                 }
 
+                // Lọc theo Kho: Nếu đang chọn một kho cụ thể, chỉ hiện những mặt hàng có tồn kho > 0 ở kho đó
+                if (currentAluminumWarehouseId !== 'total') {
+                    filteredSystems = filteredSystems.filter(system => {
+                        const wh = aluminumWarehouses.find(w => w.id == currentAluminumWarehouseId);
+                        let quantity = 0;
+                        if (wh && system.stocks && system.stocks[wh.warehouse_name] !== undefined) {
+                            quantity = parseInt(system.stocks[wh.warehouse_name]);
+                        }
+                        return quantity > 0;
+                    });
+                }
+
                 // Áp dụng Sắp xếp trên dữ liệu đã lọc
                 const sortedSystems = getSortedData(filteredSystems, 'aluminum', currentSorts.aluminum);
 
@@ -11701,7 +11771,7 @@
                 // Keep "Total" tab
                 let html = `<button class="sub-tab-button px-4 py-3 flex items-center gap-2 text-gray-600 hover:text-teal-600 ${currentAluminumWarehouseId === 'total' ? 'active border-b-2 border-teal-500 font-semibold text-teal-600' : ''}" 
                                 onclick="switchAluminumWarehouseTab('total', this)">
-                            Tổng 2 kho nhôm
+                            Tổng ${aluminumWarehouses.length} kho nhôm
                         </button>`;
 
                 aluminumWarehouses.forEach(wh => {
@@ -11825,9 +11895,22 @@
                 const container = document.getElementById('warehouseListContainer');
                 container.innerHTML = '<div class="text-center py-4 text-gray-400">Đang tải...</div>';
                 
-                let whList = aluminumWarehouses; // In future can filter by type
+                let whList = aluminumWarehouses; 
                 
-                let html = '';
+                let html = `
+                    <div class="mb-6 p-4 bg-teal-50 border border-teal-200 rounded-lg">
+                        <h4 class="text-sm font-bold text-teal-700 mb-2">Thêm kho mới</h4>
+                        <div class="flex gap-2">
+                            <input type="text" id="new_wh_name" placeholder="Tên kho mới (VD: Kho Miền Nam)" 
+                                   class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500">
+                            <button onclick="addNewWarehouse()" class="bg-teal-500 text-white px-4 py-2 rounded-lg hover:bg-teal-600 font-bold">
+                                Thêm
+                            </button>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                `;
+
                 whList.forEach(wh => {
                     html += `
                         <div class="flex items-center gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
@@ -11836,19 +11919,77 @@
                                 <input type="text" id="wh_name_${wh.id}" value="${wh.warehouse_name}" 
                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500">
                             </div>
-                            <button onclick="saveWarehouseName(${wh.id})" class="mt-5 bg-teal-500 text-white px-4 py-2 rounded-lg hover:bg-teal-600 text-sm font-bold shadow-sm">
-                                Lưu
-                            </button>
+                            <div class="flex gap-2 mt-5">
+                                <button onclick="saveWarehouseName(${wh.id})" class="bg-teal-500 text-white px-4 py-2 rounded-lg hover:bg-teal-600 text-sm font-bold shadow-sm">
+                                    Lưu
+                                </button>
+                                <button onclick="deleteWarehouse(${wh.id})" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 text-sm font-bold shadow-sm">
+                                    Xóa
+                                </button>
+                            </div>
                         </div>
                     `;
                 });
                 
+                html += '</div>';
                 container.innerHTML = html;
                 document.getElementById('warehouseSettingsModal').classList.remove('hidden');
             }
 
             function closeWarehouseSettingsModal() {
                 document.getElementById('warehouseSettingsModal').classList.add('hidden');
+            }
+
+            async function addNewWarehouse() {
+                const name = document.getElementById('new_wh_name').value;
+                if (!name.trim()) return alert('Vui lòng nhập tên kho');
+
+                try {
+                    const token = sessionStorage.getItem('token');
+                    const response = await fetch(`${API_BASE}/inventory-warehouses`, {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}` 
+                        },
+                        body: JSON.stringify({ 
+                            warehouse_name: name,
+                            inventory_type: 'aluminum'
+                        })
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        showSuccessNotification('Thêm kho mới thành công!');
+                        await loadAluminumWarehouses();
+                        openWarehouseSettingsModal(); // Refresh modal content
+                    } else {
+                        alert(result.message);
+                    }
+                } catch (error) {
+                    console.error('Error adding warehouse:', error);
+                }
+            }
+
+            async function deleteWarehouse(id) {
+                if (!confirm('Bạn có chắc muốn xóa kho này? Lưu ý: Tồn kho của các mặt hàng tại kho này sẽ không còn hiển thị.')) return;
+
+                try {
+                    const token = sessionStorage.getItem('token');
+                    const response = await fetch(`${API_BASE}/inventory-warehouses/${id}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        showSuccessNotification('Xóa kho thành công!');
+                        await loadAluminumWarehouses();
+                        openWarehouseSettingsModal(); // Refresh modal content
+                    } else {
+                        alert(result.message);
+                    }
+                } catch (error) {
+                    console.error('Error deleting warehouse:', error);
+                }
             }
 
             async function saveWarehouseName(id) {
@@ -14098,11 +14239,11 @@
                     <div class="text-xs text-gray-500 uppercase">Tổng cảnh báo</div>
                     <div class="text-2xl font-bold text-gray-800" id="aiTotalItems">0</div>
                 </div>
-                <div class="bg-red-50 rounded-lg p-3 border border-red-200 text-center shadow-sm">
+                <div class="bg-red-50 rounded-lg p-3 border border-red-200 text-center shadow-sm cursor-pointer hover:shadow-md transition-shadow" onclick="filterAIRestockByPriority('critical')">
                     <div class="text-xs text-red-500 uppercase">🔴 Hết hàng</div>
                     <div class="text-2xl font-bold text-red-600" id="aiCriticalCount">0</div>
                 </div>
-                <div class="bg-amber-50 rounded-lg p-3 border border-amber-200 text-center shadow-sm">
+                <div class="bg-amber-50 rounded-lg p-3 border border-amber-200 text-center shadow-sm cursor-pointer hover:shadow-md transition-shadow" onclick="filterAIRestockByPriority('warning')">
                     <div class="text-xs text-amber-500 uppercase">🟡 Sắp hết</div>
                     <div class="text-2xl font-bold text-amber-600" id="aiWarningCount">0</div>
                 </div>
@@ -14112,27 +14253,59 @@
                 </div>
             </div>
 
+            <!-- Toolbar: Search & Filter -->
+            <div class="px-6 py-3 bg-white border-b flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-3 flex-1 min-w-[300px]">
+                    <div class="relative flex-1">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" id="aiSearchInput" oninput="filterAIRestockTable()" 
+                            class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                            placeholder="Tìm nhanh theo tên vật tư hoặc mã...">
+                    </div>
+                    <select id="aiModuleFilter" onchange="filterAIRestockTable()" 
+                        class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="all">Tất cả loại</option>
+                        <option value="accessory">Phụ kiện</option>
+                        <option value="aluminum">Kho nhôm</option>
+                        <option value="glass">Kính</option>
+                        <option value="other">Vật tư phụ</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="aiSelectByPriority('critical')" class="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-xs font-bold hover:bg-red-200 transition-colors">
+                        Chọn hết mục "Hết hàng"
+                    </button>
+                    <button onclick="aiSelectByPriority('warning')" class="px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors">
+                        Chọn mục "Sắp hết"
+                    </button>
+                    <button onclick="applyMinStockToAll()" class="px-3 py-1.5 bg-teal-100 text-teal-700 rounded-lg text-xs font-bold hover:bg-teal-200 transition-colors">
+                        Lấy mức tối thiểu cho tất cả
+                    </button>
+                </div>
+            </div>
+
             <!-- Body: Table -->
             <div class="flex-1 overflow-y-auto px-6 py-4">
                 <div class="overflow-x-auto border rounded-lg">
                     <table class="w-full text-sm">
-                        <thead class="bg-gray-100 sticky top-0">
+                        <thead class="bg-gray-100 sticky top-0 z-20 shadow-sm">
                             <tr>
-                                <th class="px-3 py-2.5 text-center w-10">
+                                <th class="px-3 py-3 text-center w-10">
                                     <input type="checkbox" id="aiSelectAll" onchange="toggleAllAIItems()" checked
                                         class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
                                 </th>
-                                <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase">Mã</th>
-                                <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase">Tên vật tư</th>
-                                <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600 uppercase">Loại</th>
-                                <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600 uppercase">Kho</th>
-                                <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600 uppercase">Danh mục</th>
-                                <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600 uppercase">Hệ</th>
-                                <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600 uppercase">Ưu tiên</th>
-                                <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600 uppercase">Tồn hiện tại</th>
-                                <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-600 uppercase">Mức tối thiểu</th>
-                                <th class="px-3 py-2.5 text-center text-xs font-semibold text-indigo-700 uppercase bg-indigo-50">SL đề xuất nhập</th>
-                                <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 uppercase min-w-[200px]">Thông tin</th>
+                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-600 uppercase w-20">Mã</th>
+                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-600 uppercase min-w-[200px]">Tên vật tư</th>
+                                <th class="px-3 py-3 text-center text-xs font-bold text-gray-600 uppercase w-24">Phân loại</th>
+                                <th class="px-3 py-3 text-center text-xs font-bold text-gray-600 uppercase w-28">Kho</th>
+                                <th class="px-3 py-3 text-center text-xs font-bold text-gray-600 uppercase w-24">Danh mục</th>
+                                <th class="px-3 py-3 text-center text-xs font-bold text-gray-600 uppercase w-32">Trạng thái</th>
+                                <th class="px-3 py-3 text-center text-xs font-bold text-gray-600 uppercase w-24">Tồn kho</th>
+                                <th class="px-3 py-3 text-center text-xs font-bold text-indigo-700 uppercase bg-indigo-50 w-32">SL Đề xuất nhập</th>
+                                <th class="px-3 py-3 text-right text-xs font-bold text-emerald-700 uppercase bg-emerald-50 w-32">Thành tiền dự kiến</th>
+                                <th class="px-3 py-3 text-left text-xs font-bold text-gray-600 uppercase min-w-[150px]">Ghi chú</th>
                             </tr>
                         </thead>
                         <tbody id="aiRestockTableBody" class="divide-y divide-gray-100">
@@ -14153,18 +14326,26 @@
             </div>
 
             <!-- Footer -->
-            <div class="px-6 py-4 bg-gray-50 border-t flex justify-between items-center">
-                <div class="text-sm text-gray-500">
-                    Tổng SL đề xuất: <strong class="text-indigo-600" id="aiTotalSuggestQty">0</strong>
+            <div class="px-6 py-4 bg-white border-t flex justify-between items-center sticky bottom-0 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+                <div class="flex items-center gap-6">
+                    <div class="text-sm">
+                        <span class="text-gray-500">Tổng SL đề xuất:</span> 
+                        <strong class="text-indigo-600 text-lg ml-1" id="aiTotalSuggestQty">0</strong>
+                    </div>
+                    <div class="text-sm">
+                        <span class="text-gray-500">Ngân sách dự kiến:</span> 
+                        <strong class="text-emerald-600 text-lg ml-1" id="aiTotalEstimatedCost">0 ₫</strong>
+                    </div>
                 </div>
                 <div class="flex gap-3">
                     <button onclick="closeAIRestockModal()"
-                        class="px-5 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 font-medium">
-                        Hủy
+                        class="px-6 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 font-medium transition-colors">
+                        Hủy bỏ
                     </button>
                     <button onclick="confirmAIRestock()"
-                        class="px-6 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all shadow-md flex items-center gap-2">
-                         Xác nhận tạo phiếu nhập
+                        class="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-700 text-white rounded-xl font-bold hover:from-indigo-700 hover:to-purple-800 transition-all shadow-lg hover:shadow-indigo-200 flex items-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0">
+                         Xác nhận tạo phiếu nhập kho
+                         <i class="fas fa-arrow-right ml-1"></i>
                     </button>
                 </div>
             </div>

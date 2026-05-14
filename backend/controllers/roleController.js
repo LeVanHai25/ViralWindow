@@ -11,7 +11,12 @@ const db = require("../config/db");
 exports.getRoles = async (req, res) => {
     try {
         const [roles] = await db.query(`
-            SELECT r.*, 
+            SELECT r.id, 
+                   ANY_VALUE(r.name) as name, 
+                   ANY_VALUE(r.description) as description, 
+                   ANY_VALUE(r.is_active) as is_active, 
+                   ANY_VALUE(r.is_system) as is_system, 
+                   ANY_VALUE(r.created_at) as created_at,
                    COUNT(DISTINCT rp.permission_id) as permission_count,
                    COUNT(DISTINCT u.id) as user_count
             FROM roles r
@@ -19,7 +24,7 @@ exports.getRoles = async (req, res) => {
             LEFT JOIN users u ON r.id = u.role_id
             WHERE r.is_active = TRUE
             GROUP BY r.id
-            ORDER BY r.is_system DESC, r.name ASC
+            ORDER BY ANY_VALUE(r.is_system) DESC, ANY_VALUE(r.name) ASC
         `);
 
         res.json({

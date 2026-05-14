@@ -32,24 +32,24 @@ exports.getAggregatedStatistics = async () => {
         `);
 
         // 2. HỆ NHÔM (aluminum_systems)
-        // Tính tồn kho nhôm: giá trị = quantity (số cây/thanh) * unit_price (giá mỗi cây/thanh)
+        // Tính tồn kho nhôm: Tổng hợp từ tất cả các kho trong bảng aluminum_warehouse_stock
         let aluminumStats;
         try {
-            // Count unique profiles, not total bars
             [aluminumStats] = await db.query(`
                 SELECT 
-                    COUNT(*) as total_count,
-                    SUM(CASE WHEN COALESCE(quantity_m, 0) < 10 THEN 1 ELSE 0 END) as low_stock_count,
-                    SUM(CASE WHEN COALESCE(quantity, 0) > 0 OR COALESCE(quantity_m, 0) > 0 THEN 1 ELSE 0 END) as items_in_stock,
+                    COUNT(DISTINCT als.id) as total_count,
+                    SUM(CASE WHEN COALESCE(aws.quantity, 0) < 5 THEN 1 ELSE 0 END) as low_stock_count,
+                    SUM(CASE WHEN COALESCE(aws.quantity, 0) > 0 THEN 1 ELSE 0 END) as items_in_stock,
                     COALESCE(SUM(
                         CASE 
-                            WHEN quantity IS NOT NULL AND quantity > 0 AND unit_price IS NOT NULL AND unit_price > 0
-                            THEN quantity * unit_price
+                            WHEN aws.quantity > 0 AND als.unit_price > 0
+                            THEN aws.quantity * als.unit_price
                             ELSE 0
                         END
                     ), 0) as total_value
-                FROM aluminum_systems
-                WHERE is_active = 1
+                FROM aluminum_systems als
+                LEFT JOIN aluminum_warehouse_stock aws ON als.id = aws.aluminum_system_id
+                WHERE als.is_active = 1
             `);
         } catch (err) {
             console.warn('Error calculating aluminum stats:', err.message);
