@@ -1588,16 +1588,20 @@ exports.getStatistics = async (req, res) => {
         const productionOrdersCount = Math.max(orderRows[0]?.total_orders || 0, projectsInProduction[0]?.count || 0);
 
         // Get pending quotations count (from quotations table)
+        // 'draft' = đang soạn thảo, 'sent' = đã gửi chờ khách duyệt
         const [quotationRows] = await db.query(`
             SELECT COUNT(*) as pending_quotations_count
             FROM quotations
-            WHERE status IN ('pending', 'sent')
+            WHERE status IN ('pending', 'sent', 'draft')
         `);
 
         const stats = {
             ...projectRows[0],
             production_orders: productionOrdersCount,
-            pending_quotations: quotationRows[0].pending_quotations_count || projectRows[0].pending_quotations || 0
+            // Ưu tiên đếm từ quotations table (sent+draft), fallback sang project status
+            pending_quotations: (quotationRows[0]?.pending_quotations_count > 0)
+                ? quotationRows[0].pending_quotations_count
+                : (projectRows[0]?.pending_quotations || 0)
         };
 
         res.json({
