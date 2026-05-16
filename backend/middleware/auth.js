@@ -77,3 +77,28 @@ exports.requirePermission = (permissionCode) => {
     };
 };
 
+/**
+ * Optional authentication - allows requests without token to pass through
+ * Sets req.user to null if no token provided
+ */
+exports.optionalAuth = async (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+        req.user = null;
+        return next();
+    }
+
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        // Quick fetch for optional auth
+        const [users] = await db.query('SELECT id, username, full_name, role_id, user_type FROM users WHERE id = ?', [decoded.id]);
+        req.user = users[0] || null;
+        next();
+    } catch (err) {
+        req.user = null;
+        next();
+    }
+};
+

@@ -81,6 +81,10 @@ const routeAliases = {
     'stockDocument': ['/api/stock-documents'],
     'production-excel': ['/api/production'],
     'designWorkflow': ['/api/design'],
+    'projectMaterialRoutes': ['/api/project-materials'],
+    'warehouseExportRoutes': ['/api/warehouse-export'],
+    'exportSlipRoutes': ['/api/export-slips'],
+    'apiV2': ['/api/v2'],
 };
 
 fs.readdirSync(routesPath).forEach((file) => {
