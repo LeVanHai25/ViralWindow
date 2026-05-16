@@ -451,18 +451,14 @@ exports.getMonthlySummary = async (req, res) => {
                    COALESCE(SUM(ar.overtime_hours), 0) as total_overtime_hours
             FROM users u
             LEFT JOIN attendance_records ar ON u.id = ar.user_id 
-                AND MONTH(ar.date) = ? AND YEAR(ar.date) = ?
+                AND MONTH(ar.date) = ? AND YEAR(ar.date) = ?${agency_id ? ' AND ar.agency_id = ?' : ''}
             LEFT JOIN roles r ON u.role_id = r.id
             WHERE u.is_active = 1
             AND u.user_type != 'admin'
             AND (r.name IS NULL OR r.name NOT IN ('Super Admin', 'Admin', 'Giám đốc', 'Manager', 'Quản lý', 'Nhân sự'))
         `;
         const params = [m, y];
-
-        if (agency_id) {
-            query += ' AND (ar.agency_id = ?)';
-            params.push(agency_id);
-        }
+        if (agency_id) params.push(agency_id);
 
         query += ' GROUP BY u.id, u.full_name, u.avatar_url, u.email, r.name ORDER BY u.full_name ASC';
 

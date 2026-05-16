@@ -2,7 +2,8 @@
  * Controller for Attendance System UI
  */
 
-const API_BASE = window.API_BASE || '/api';
+const API_BASE = window.API_BASE || 'http://localhost:3001/api';
+console.log('[attendance.js] API_BASE:', API_BASE);
 let currentUser = null;
 let currentPos = { lat: null, lng: null, address: '', method: 'unknown' };
 

@@ -98,6 +98,16 @@
 
         // === BÁO CÁO (Reports) ===
         'reports.html': ['reports.view'],
+        'reports-ai.html': ['reports.view'],    // Báo Cáo AI Thông Minh
+
+        // === KẾ HOẠCH CÔNG VIỆC ===
+        'work-plan.html': [],                   // Mọi user đã đăng nhập đều xem được
+
+        // === TIN NHẮN (Chat) ===
+        'messages.html': [],                    // Chat nội bộ - tất cả user
+
+        // === CHẤM CÔNG ===
+        'attendance.html': [],                  // Chấm công - tất cả user
 
         // === QUẢN TRỊ (Admin) ===
         'admin-management.html': ['admin.users', 'admin.roles'],
@@ -105,7 +115,10 @@
         'role-management.html': ['admin.roles'],
         'settings.html': ['admin.settings'],
         'agencies.html': ['admin.agencies'],
-        'company.html': ['admin.settings']
+        'company.html': ['admin.settings'],
+
+        // === NHẬT KÝ HOẠT ĐỘNG ===
+        'activity-log.html': ['admin.users'],
     };
 
 

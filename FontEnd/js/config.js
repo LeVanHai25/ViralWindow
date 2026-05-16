@@ -5,7 +5,7 @@
     'use strict';
     const port = window.location.port;
     const isLocalDev = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-                       && (port === '5500' || port === '5501' || port === '5502');
+                       && (port === '5500' || port === '5501' || port === '5502' || port === '1500' || port === '1501');
 
     if (isLocalDev) {
         window.API_BASE    = 'http://localhost:3001/api';

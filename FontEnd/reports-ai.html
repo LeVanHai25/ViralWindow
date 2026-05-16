@@ -2,8 +2,10 @@
 <html lang="vi">
 <head>
     <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap&subset=vietnamese" rel="stylesheet">
-    <script src="js/auth-helper.js"></script>
+    <!-- 1. CONFIG FIRST — phải load trước mọi script sử dụng API_BASE -->
     <script src="js/config.js"></script>
+    <!-- 2. Auth & Core Helpers -->
+    <script src="js/auth-helper.js"></script>
     <script src="js/theme-manager.js"></script>
     <script src="js/vw-modal.js"></script>
     <script src="js/modal-system.js"></script>
@@ -476,7 +478,8 @@
     </div>
 
     <script>
-        const API_BASE = window.API_BASE || '/api';
+        const API_BASE = window.API_BASE || 'http://localhost:3001/api';
+        console.log('[reports-ai] API_BASE:', API_BASE);
         let selectedCategory = 'overview';
         let selectedTimeRange = 'week';
 
@@ -671,8 +674,12 @@
                 output.innerHTML = `<div style="text-align:center;padding:40px;color:#ef4444;">
                     <div style="margin-bottom:12px;display:flex;justify-content:center;"><i data-lucide="wifi-off" class="w-12 h-12 text-rose-500"></i></div>
                     <h3 style="margin:0 0 8px;font-size:16px;">Không thể kết nối máy chủ AI</h3>
-                    <p style="font-size:13px;">${error.message}</p>
-                    <button type="button" onclick="generateReport()" style="margin-top:16px;padding:10px 20px;border-radius:10px;border:1.5px solid #6366f1;background:white;color:#6366f1;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;"><i data-lucide="refresh-cw" class="w-4 h-4"></i> Thử lại</button>
+                    <p style="font-size:13px;margin-bottom:8px;">${error.message}</p>
+                    <p style="font-size:11px;color:#94a3b8;background:#f8fafc;padding:8px 12px;border-radius:8px;margin-bottom:16px;">
+                        <b>Địa chỉ API đang dùng:</b> <code>${API_BASE}</code><br>
+                        Hãy kiểm tra backend server đang chạy ở port 3001 và config.js nhận đúng port.
+                    </p>
+                    <button type="button" onclick="generateReport()" style="margin-top:4px;padding:10px 20px;border-radius:10px;border:1.5px solid #6366f1;background:white;color:#6366f1;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;"><i data-lucide="refresh-cw" class="w-4 h-4"></i> Thử lại</button>
                 </div>`;
                 status.innerHTML = '<i data-lucide="wifi-off" class="w-4 h-4 text-rose-500"></i> Lỗi kết nối';
             }
