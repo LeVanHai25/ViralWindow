@@ -25,12 +25,27 @@ async function migrate() {
             }
         }
 
-        // 2. Sửa bảng user_sessions - Bật AUTO_INCREMENT
+        // 2. Tạo / sửa bảng user_sessions
         try {
-            await db.query(`ALTER TABLE user_sessions MODIFY COLUMN id INT AUTO_INCREMENT`);
-            console.log('✅ Bảng user_sessions: Đã kích hoạt AUTO_INCREMENT');
+            // Tạo nếu chưa có (thay vì ALTER thẳng gây lỗi khi bảng không tồn tại)
+            await db.query(`
+                CREATE TABLE IF NOT EXISTS user_sessions (
+                    id          INT AUTO_INCREMENT PRIMARY KEY,
+                    user_id     INT NOT NULL,
+                    token       VARCHAR(512) NOT NULL,
+                    expires_at  DATETIME NOT NULL,
+                    ip_address  VARCHAR(45) NULL,
+                    user_agent  TEXT NULL,
+                    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    INDEX idx_user_id (user_id),
+                    INDEX idx_expires (expires_at)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+            `);
+            // Đảm bảo AUTO_INCREMENT nếu bảng đã cũ
+            await db.query(`ALTER TABLE user_sessions MODIFY COLUMN id INT AUTO_INCREMENT`).catch(() => {});
+            console.log('✅ Bảng user_sessions: Đã sẵn sàng');
         } catch (e) {
-            console.error('❌ Bảng user_sessions:', e.message);
+            console.warn('⚠️ user_sessions:', e.message);
         }
 
         // 3. Sửa bảng login_logs - Bật AUTO_INCREMENT
@@ -173,6 +188,48 @@ async function migrate() {
             console.log('✅ Bảng leave_requests: Đã sẵn sàng');
         } catch (e) {
             console.error('❌ Bảng leave_requests:', e.message);
+        }
+
+        // Bảng 4e: holidays (Ngày Nghỉ Lễ)
+        try {
+            await db.query(`
+                CREATE TABLE IF NOT EXISTS holidays (
+                    id          INT AUTO_INCREMENT PRIMARY KEY,
+                    name        VARCHAR(200) NOT NULL COMMENT 'Tên ngày lễ',
+                    date        DATE NOT NULL COMMENT 'Ngày nghỉ',
+                    is_recurring TINYINT(1) DEFAULT 1 COMMENT '1 = hàng năm',
+                    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE KEY uq_date (date)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+            `);
+            console.log('✅ Bảng holidays: Đã sẵn sàng');
+
+            // Seed ngày lễ Việt Nam nếu bảng rỗng
+            const [holCount] = await db.query('SELECT COUNT(*) as cnt FROM holidays');
+            if (holCount[0].cnt === 0) {
+                const year = new Date().getFullYear();
+                const holidays2026 = [
+                    [`Tết Dương Lịch`,         `${year}-01-01`],
+                    [`Tết Nguyên Đán (29 Tết)`,  `${year}-01-28`],
+                    [`Tết Nguyên Đán (Mồng 1)`,  `${year}-01-29`],
+                    [`Tết Nguyên Đán (Mồng 2)`,  `${year}-01-30`],
+                    [`Tết Nguyên Đán (Mồng 3)`,  `${year}-01-31`],
+                    [`Tết Nguyên Đán (Mồng 4)`,  `${year}-02-01`],
+                    [`Giỗ Tổ Hùng Vương`,        `${year}-04-07`],
+                    [`Ngày Giải Phóng miền Nam`, `${year}-04-30`],
+                    [`Ngày Quốc tế Lao động`,   `${year}-05-01`],
+                    [`Quốc Khánh`,                `${year}-09-02`],
+                ];
+                for (const [name, date] of holidays2026) {
+                    await db.query(
+                        'INSERT IGNORE INTO holidays (name, date, is_recurring) VALUES (?, ?, 1)',
+                        [name, date]
+                    );
+                }
+                console.log(`✅ Seed ${holidays2026.length} ngày lễ Việt Nam ${year} thành công`);
+            }
+        } catch (e) {
+            console.error('❌ Bảng holidays:', e.message);
         }
 
         // 5. Tạo bảng AI Brain nếu chưa có

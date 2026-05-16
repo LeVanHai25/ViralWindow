@@ -693,23 +693,23 @@
             const content = document.getElementById('reportOutput');
             if (!content) return;
             const win = window.open('', '_blank');
-            var h = '<html><head>
-    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap&subset=vietnamese" rel="stylesheet"><title>Báo cáo AI - ViralWindow<' + '/title><style>body{font-family:"Segoe UI",sans-serif;padding:32px;max-width:900px;margin:0 auto;}h2{color:#1e293b;}h3{color:#4f46e5;}ul{padding-left:20px;}li{margin:4px 0;color:#475569;line-height:1.6;}<' + '/style><' + '/head><body>' + content.innerHTML + '<' + '/body><' + '/html>';
+            var h = '<html><head><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap&subset=vietnamese" rel="stylesheet"><title>Báo cáo AI - ViralWindow<' + '/title><style>body{font-family:"Segoe UI",sans-serif;padding:32px;max-width:900px;margin:0 auto;}h2{color:#1e293b;}h3{color:#4f46e5;}ul{padding-left:20px;}li{margin:4px 0;color:#475569;line-height:1.6;}<' + '/style><' + '/head><body>' + content.innerHTML + '<' + '/body><' + '/html>';
             win.document.write(h);
             win.document.close();
             win.print();
         }
 
+
         function printReport() {
             const content = document.getElementById('reportOutput');
             if (!content) return;
             const printWindow = window.open('', '_blank');
-            var h = '<html><head>
-    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap&subset=vietnamese" rel="stylesheet"><title>Báo cáo AI - ViralWindow<' + '/title><style>body{font-family:"Segoe UI",sans-serif;padding:32px;max-width:900px;margin:0 auto;}h2{color:#1e293b;}h3{color:#4f46e5;}ul{padding-left:20px;}li{margin:4px 0;color:#475569;line-height:1.6;}@media print{body{padding:16px;}}<' + '/style><' + '/head><body>' + content.innerHTML + '<' + '/body><' + '/html>';
+            var h = '<html><head><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap&subset=vietnamese" rel="stylesheet"><title>Báo cáo AI - ViralWindow<' + '/title><style>body{font-family:"Segoe UI",sans-serif;padding:32px;max-width:900px;margin:0 auto;}h2{color:#1e293b;}h3{color:#4f46e5;}ul{padding-left:20px;}li{margin:4px 0;color:#475569;line-height:1.6;}@media print{body{padding:16px;}}<' + '/style><' + '/head><body>' + content.innerHTML + '<' + '/body><' + '/html>';
             printWindow.document.write(h);
             printWindow.document.close();
             printWindow.print();
         }
+
 
         // On change filter → update tags
         document.addEventListener('DOMContentLoaded', () => {
