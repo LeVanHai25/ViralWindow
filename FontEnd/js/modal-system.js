@@ -450,12 +450,12 @@
             });
         }
 
-        static confirm(title, message, options = {}) {
+        static confirm(message, options = {}) {
             const modal = new VWModal();
             return modal.createModal({
-                type: 'confirm',
-                title,
-                message,
+                type: options.type || 'confirm',
+                title: options.title || 'Xác nhận',
+                message: message,
                 confirmText: options.confirmText || 'Xác nhận',
                 cancelText: options.cancelText || 'Huỷ',
                 showCancel: true

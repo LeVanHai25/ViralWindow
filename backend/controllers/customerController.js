@@ -207,6 +207,9 @@ exports.create = async (req, res) => {
 // PUT update
 exports.update = async (req, res) => {
     try {
+        const { id } = req.params;
+        const { full_name, phone, email, address, tax_code, notes, customer_status, source, agency_id } = req.body;
+
         // Fetch old data for ChangeTracker
         const [oldRows] = await db.query("SELECT * FROM customers WHERE id = ?", [id]);
         const oldData = oldRows[0];
