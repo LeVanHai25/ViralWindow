@@ -4705,7 +4705,7 @@
                     let url = '';
                     switch (itemType) {
                         case 'accessory': url = `${API_BASE}/accessories`; break;
-                        case 'aluminum': url = `${API_BASE}/aluminum-systems`; break;
+                        case 'aluminum': url = `${API_BASE}/aluminum`; break;
                         case 'glass': url = `${API_BASE}/glass`; break;
                         case 'other': url = `${API_BASE}/inventory?type=other`; break;
                     }
@@ -8417,7 +8417,7 @@
                                 unitPrice = parseFloat(accResult.data.sale_price || accResult.data.purchase_price || 0);
                             }
                         } else if (materialType === 'aluminum') {
-                            const alumResponse = await fetch(`${API_BASE}/aluminum-systems/${id}`, {
+                            const alumResponse = await fetch(`${API_BASE}/aluminum/${id}`, {
                                 headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
                             });
                             const alumResult = await alumResponse.json();
@@ -10596,8 +10596,8 @@
                         }));
                     }
 
-                    // Load dữ liệu hệ nhôm từ aluminum-systems
-                    const aluminumResponse = await fetch(`${API_BASE}/aluminum-systems`);
+                    // Load dữ liệu hệ nhôm từ aluminum (Tổng kho nhôm)
+                    const aluminumResponse = await fetch(`${API_BASE}/aluminum`);
                     const aluminumResult = await aluminumResponse.json();
 
                     let aluminumItems = [];
@@ -11703,18 +11703,35 @@
 
             async function loadAluminumSystems(search = '') {
                 try {
-                    const url = search ? `${API_BASE}/aluminum-systems?search=${encodeURIComponent(search)}` : `${API_BASE}/aluminum-systems`;
-                    const response = await fetch(url);
-                    const result = await response.json();
+                    const token = sessionStorage.getItem('token') || localStorage.getItem('token') || '';
+                    const url = search ? `${API_BASE}/aluminum?search=${encodeURIComponent(search)}` : `${API_BASE}/aluminum`;
+                    const response = await fetch(url, {
+                        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                    });
 
+                    // Xử lý lỗi 401/403 — KHÔNG redirect login, chỉ báo lỗi nhẹ
+                    if (response.status === 401 || response.status === 403) {
+                        console.warn('[Kho Nhôm] Lỗi xác thực khi tải danh sách nhôm. Kiểm tra lại token.');
+                        const tbody = document.getElementById('aluminumTable');
+                        if (tbody) tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-yellow-600">⚠️ Phiên đăng nhập hết hạn. Vui lòng tải lại trang.</td></tr>';
+                        return;
+                    }
+
+                    if (!response.ok) {
+                        console.error('[Kho Nhôm] Lỗi server khi tải danh sách nhôm:', response.status);
+                        return;
+                    }
+
+                    const result = await response.json();
                     if (result.success) {
                         lastAluminumData = result.data || [];
                         displayAluminumSystems(lastAluminumData);
                     }
                 } catch (error) {
-                    console.error('Lỗi:', error);
+                    console.error('Lỗi loadAluminumSystems:', error);
                 }
             }
+
 
             // ========== ALUMINUM INTERACTIVE FILTERING ==========
             function toggleAluminumSystemFilter(systemName) {
@@ -12415,7 +12432,7 @@
                         return;
                     }
 
-                    const response = await fetch(`${API_BASE}/aluminum-systems/${id}`, {
+                    const response = await fetch(`${API_BASE}/aluminum/${id}`, {
                         headers: {
                             'Authorization': `Bearer ${token}`
                         }
@@ -12519,7 +12536,7 @@
                         return;
                     }
 
-                    const url = id ? `${API_BASE}/aluminum-systems/${id}` : `${API_BASE}/aluminum-systems`;
+                    const url = id ? `${API_BASE}/aluminum/${id}` : `${API_BASE}/aluminum`;
                     const method = id ? 'PUT' : 'POST';
 
                     let response;
@@ -12640,7 +12657,7 @@
                         return;
                     }
 
-                    const response = await fetch(`${API_BASE}/aluminum-systems/${id}`, {
+                    const response = await fetch(`${API_BASE}/aluminum/${id}`, {
                         method: 'DELETE',
                         headers: {
                             'Authorization': `Bearer ${token}`

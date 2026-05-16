@@ -135,12 +135,15 @@ exports.getAllProducts = async (req, res) => {
 
         res.json({ success: true, data });
     } catch (error) {
+        if (error.code === 'ER_NO_SUCH_TABLE') {
+            console.warn('[ProductCatalog] Bảng product_catalog chưa tồn tại, trả về rỗng.');
+            return res.json({ success: true, data: [] });
+        }
         console.error('Error fetching products:', error);
         res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });
     }
 };
 
-// POST /api/product-catalog/products
 exports.createProduct = async (req, res) => {
     try {
         console.log(`[DEBUG] Creating product:`, JSON.stringify(req.body, null, 2));

@@ -27,12 +27,15 @@ exports.getAll = async (req, res) => {
             count: rows.length
         });
     } catch (err) {
+        if (err.code === 'ER_NO_SUCH_TABLE') {
+            console.warn('[CatalogMaterials] Bảng catalog_materials chưa tồn tại, trả về rỗng.');
+            return res.json({ success: true, data: [], count: 0 });
+        }
         console.error(err);
         res.status(500).json({ success: false, message: "Lỗi server" });
     }
 };
 
-// GET by ID
 exports.getById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -47,6 +50,9 @@ exports.getById = async (req, res) => {
 
         res.json({ success: true, data: rows[0] });
     } catch (err) {
+        if (err.code === 'ER_NO_SUCH_TABLE') {
+            return res.status(404).json({ success: false, message: "Không tìm thấy vật tư" });
+        }
         console.error(err);
         res.status(500).json({ success: false, message: "Lỗi server" });
     }

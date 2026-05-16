@@ -5091,13 +5091,13 @@
             async function loadAluminumSystems() {
                 try {
                     const tkn = sessionStorage.getItem('token') || '';
-                    const response = await fetch(`${API_BASE}/aluminum-systems`, { headers: tkn ? { 'Authorization': `Bearer ${tkn}` } : {} });
+                    const response = await fetch(`${API_BASE}/aluminum`, { headers: tkn ? { 'Authorization': `Bearer ${tkn}` } : {} });
                     const result = await response.json();
                     if (result.success && result.data) {
                         const select = document.getElementById('aluminumSystem');
                         if (select) {
                             select.innerHTML = '<option value="">-- Chọn hệ nhôm --</option>' +
-                                result.data.map(system => `<option value="${system.id}">${system.name}</option>`).join('');
+                                result.data.map(system => `<option value="${system.id}">${system.code} - ${system.name}</option>`).join('');
                         }
                     }
                 } catch (error) {
@@ -8979,8 +8979,8 @@
 
                     const [accessoriesRes, aluminumRes, glassRes, vatTuPhuRes, inventoryRes] = await Promise.all([
                         fetch(`${API_BASE}/accessories`, { headers: authHeaders }).catch(e => ({ ok: false, json: () => ({ success: false, data: [] }) })),
-                        // ✅ FIX: Dùng cùng API với inventory.html để lấy đúng quantity
-                        fetch(`${API_BASE}/aluminum-systems`, { headers: authHeaders }).catch(e => ({ ok: false, json: () => ({ success: false, data: [] }) })),
+                        // ✅ FIX: Dùng /aluminum → đọc đúng bảng aluminum_systems với fields code, name, density, unit_price
+                        fetch(`${API_BASE}/aluminum`, { headers: authHeaders }).catch(e => ({ ok: false, json: () => ({ success: false, data: [] }) })),
                         // ✅ FIX: Dùng API tập trung để lấy đúng dữ liệu Kính từ bảng inventory
                         fetch(`${API_BASE}/project-materials/inventory/glass`, { headers: authHeaders }).catch(e => ({ ok: false, json: () => ({ success: false, data: [] }) })),
                         fetch(`${API_BASE}/project-materials/inventory/other`, { headers: authHeaders }).catch(e => ({ ok: false, json: () => ({ success: false, data: [] }) })), // ✅ Bổ sung: Vật tư phụ (Ke, Gioăng, Nhựa ốp, Keo, Khác)
@@ -9032,17 +9032,17 @@
                         });
                     });
 
-                    // 2. Nhôm từ bảng aluminum_systems
+                    // 2. Nhôm từ bảng aluminum_systems (qua /api/aluminum)
                     aluminumData.forEach(item => {
                         inventoryData.push({
                             item_code: item.code || item.item_code,
                             item_name: item.name || item.item_name,
                             item_type: 'aluminum',
-                            quantity: parseFloat(item.stock || item.quantity || item.quantity_m || 0),
-                            stock_quantity: parseFloat(item.stock || item.quantity || item.quantity_m || 0),
-                            unit: item.unit || 'm',
+                            quantity: parseFloat(item.total_quantity || item.quantity || item.quantity_m || 0),
+                            stock_quantity: parseFloat(item.total_quantity || item.quantity || item.quantity_m || 0),
+                            unit: item.unit || 'cây',
                             aluminum_system: item.aluminum_system,
-                            unit_price: parseFloat(item.price || 0)
+                            unit_price: parseFloat(item.unit_price || item.price || 0)
                         });
                     });
 
@@ -12665,24 +12665,61 @@
              */
             async function loadMaterialsCache() {
                 try {
-                    // Load Aluminum
+                    // Load Aluminum — Ưu tiên từ Tổng kho (inventory), fallback sang Hệ nhôm nếu kho rỗng
                     const authToken = sessionStorage.getItem('token') || '';
                     const authHeaders = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
-                    const nhomRes = await fetch(`${API_BASE}/project-materials/inventory/aluminum`, { headers: authHeaders });
-                    const nhomData = await nhomRes.json();
-                    if (nhomData.success && nhomData.data) {
-                        materialsCache.nhom = nhomData.data.map(item => ({
-                            id: item.id,
-                            code: item.code || '',
-                            name: item.name || '',
-                            unit: item.unit || 'cây',
-                            price: item.price || 0,
-                            stock: parseFloat(item.stock || 0),
-                            density: parseFloat(item.density) || 0,
-                            length: parseFloat(item.length_m) || 6
-                        }));
-                        console.log('✅ Loaded', materialsCache.nhom.length, 'aluminum items with density');
+
+                    let aluminumLoaded = false;
+                    try {
+                        const nhomRes = await fetch(`${API_BASE}/project-materials/inventory/aluminum`, { headers: authHeaders });
+                        if (nhomRes.ok) {
+                            const nhomData = await nhomRes.json();
+                            if (nhomData.success && nhomData.data && nhomData.data.length > 0) {
+                                materialsCache.nhom = nhomData.data.map(item => ({
+                                    id: item.id,
+                                    code: item.code || '',
+                                    name: item.name || '',
+                                    unit: item.unit || 'cây',
+                                    price: item.price || 0,
+                                    stock: parseFloat(item.stock || 0),
+                                    density: parseFloat(item.density) || 0,
+                                    length: parseFloat(item.length_m) || 6
+                                }));
+                                aluminumLoaded = true;
+                                console.log('✅ Loaded', materialsCache.nhom.length, 'aluminum items from Tổng Kho (inventory)');
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('⚠️ Không tải được từ inventory/aluminum:', e.message);
                     }
+
+                    // Fallback: Kho nhôm chưa có dữ liệu → Lấy từ aluminum-systems (Hệ nhôm)
+                    if (!aluminumLoaded) {
+                        try {
+                            console.log('🔄 Fallback: Đang tải từ /aluminum (Hệ nhôm catalog)...');
+                            const fallbackRes = await fetch(`${API_BASE}/aluminum`, { headers: authHeaders });
+                            if (fallbackRes.ok) {
+                                const fallbackData = await fallbackRes.json();
+                                if (fallbackData.success && fallbackData.data) {
+                                    materialsCache.nhom = fallbackData.data.map(item => ({
+                                        id: item.id,
+                                        code: item.code || '',
+                                        name: item.name || '',
+                                        unit: item.unit || 'cây',
+                                        price: item.unit_price || 0,
+                                        stock: parseFloat(item.quantity || item.quantity_m || 0),
+                                        density: parseFloat(item.density) || 0,
+                                        length: parseFloat(item.length_m) || 6
+                                    }));
+                                    console.log('✅ Fallback loaded', materialsCache.nhom.length, 'aluminum items from Hệ nhôm (aluminum-systems)');
+                                }
+                            }
+                        } catch (e) {
+                            console.error('❌ Fallback aluminum cũng thất bại:', e.message);
+                        }
+                    }
+
+
 
                     // Load Glass
                     const kinhRes = await fetch(`${API_BASE}/project-materials/inventory/glass`, { headers: authHeaders });
