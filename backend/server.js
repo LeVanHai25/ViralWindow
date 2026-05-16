@@ -93,6 +93,9 @@ const routeAliases = {
     'warehouseExportRoutes': ['/api/warehouse-export'],
     'exportSlipRoutes': ['/api/export-slips'],
     'apiV2': ['/api/v2'],
+    // ✅ RESTORED: Route này từng được đăng ký thủ công (commit 83804b2 line 274)
+    // Frontend inventory.html gọi /api/inventory-warehouses để lấy 3 kho: VIRAL, KOSO, YANGLY
+    'warehouses': ['/api/warehouses', '/api/inventory-warehouses'],
 };
 
 fs.readdirSync(routesPath).forEach((file) => {
