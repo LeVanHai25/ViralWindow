@@ -63,6 +63,10 @@ async function getCurrentStock(itemType, itemId, warehouseId = 1, connection = n
         qtyColumn = 'quantity'; // Bảng inventory dùng quantity cho tất cả (kính, vật tư phụ)
     } else if (itemType === 'accessory' || itemType === 'other') {
         qtyColumn = 'stock_quantity'; // Bảng accessories cũ dùng stock_quantity
+    } else if (itemType === 'scrap') {
+        // [FIX] aluminum_scraps không có cột quantity
+        // Mỗi record = 1 mảnh vật lý, dùng length_mm làm đơn vị đo (mm)
+        qtyColumn = 'length_mm';
     }
 
     const [rows] = await conn.query(`SELECT ${qtyColumn} as qty FROM ${table} WHERE id = ?`, [itemId]);
@@ -74,6 +78,25 @@ async function getCurrentStock(itemType, itemId, warehouseId = 1, connection = n
 // =====================================================
 async function updateItemStock(itemType, itemId, newQty, connection) {
     const table = getItemTable(itemType);
+
+    // [FIX] aluminum_scraps không có cột quantity — xử lý riêng
+    if (itemType === 'scrap') {
+        if (newQty <= 0) {
+            // Đề c đã xuất/dùng hết → đánh dấu đã sử dụng
+            await connection.query(
+                `UPDATE aluminum_scraps SET is_used = 1, status = 'used', length_mm = 0 WHERE id = ?`,
+                [itemId]
+            );
+        } else {
+            // Còn lại một phần → cập nhật length_mm (mm còn lại)
+            await connection.query(
+                `UPDATE aluminum_scraps SET length_mm = ? WHERE id = ?`,
+                [Math.round(newQty), itemId]
+            );
+        }
+        return; // Early return — không chạy logic update generic
+    }
+
     let qtyColumn = 'quantity';
 
     // Các bảng khác nhau dùng tên cột khác nhau
