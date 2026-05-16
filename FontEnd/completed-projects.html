@@ -673,7 +673,7 @@
     <!-- End Main Content -->
 
     <script>
-        const API_BASE = window.API_BASE || '/api';
+        const API_BASE = window.API_BASE || 'http://localhost:3001/api';
 
         // Load company logo
         async function loadCompanyLogo() {
@@ -823,8 +823,6 @@
             const token = sessionStorage.getItem('token') || localStorage.getItem('token');
             if (!token) { window.location.href = 'login.html'; return false; }
             if (!sessionStorage.getItem('token')) { sessionStorage.setItem('token', token); const u = localStorage.getItem('user'); if (u) sessionStorage.setItem('user', u); }
-            return true;
-        }
             return true;
         }
 
