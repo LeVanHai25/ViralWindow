@@ -8,16 +8,20 @@ async function migrate() {
     console.log('\n🚀 [AutoMigrate] Đang kiểm tra cấu trúc Database...');
     
     try {
-        // 1. Sửa bảng audit_logs - Thêm cột actor_role
-        try {
-            await db.query(`
-                ALTER TABLE audit_logs 
-                ADD COLUMN IF NOT EXISTS actor_role VARCHAR(50) AFTER actor_name
-            `);
-            console.log('✅ Bảng audit_logs: Đã đồng bộ cột actor_role');
-        } catch (e) {
-            if (!e.message.includes('Duplicate column')) {
-                console.error('❌ Bảng audit_logs:', e.message);
+        // 1. Đồng bộ bảng audit_logs
+        const auditLogsColumns = [
+            { name: 'actor_role', type: 'VARCHAR(50) AFTER actor_name' },
+            { name: 'metadata', type: 'LONGTEXT AFTER changed_fields' },
+            { name: 'ip_address', type: 'VARCHAR(45) AFTER reason' },
+            { name: 'user_agent', type: 'TEXT AFTER ip_address' }
+        ];
+
+        for (const col of auditLogsColumns) {
+            try {
+                await db.query(`ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS ${col.name} ${col.type}`);
+                console.log(`✅ Bảng audit_logs: Đã đồng bộ cột ${col.name}`);
+            } catch (e) {
+                // Ignore if column exists or other minor errors
             }
         }
 
@@ -29,12 +33,12 @@ async function migrate() {
             console.error('❌ Bảng user_sessions:', e.message);
         }
 
-        // 3. Sửa bảng login_logs (Nếu có) - Bật AUTO_INCREMENT
+        // 3. Sửa bảng login_logs - Bật AUTO_INCREMENT
         try {
             await db.query(`ALTER TABLE login_logs MODIFY COLUMN id INT AUTO_INCREMENT`);
             console.log('✅ Bảng login_logs: Đã kích hoạt AUTO_INCREMENT');
         } catch (e) {
-            // Bảng này có thể không tồn tại hoặc tên khác, không sao
+            // Ignore if not exists
         }
 
         console.log('🎊 [AutoMigrate] Hoàn tất quá trình đồng bộ!\n');

@@ -475,6 +475,52 @@
                 inputPlaceholder: placeholder
             });
         }
+
+        /**
+         * Toast notification helper
+         */
+        static toast(message, type = 'info', duration = 3000) {
+            // Create container if not exists
+            let container = document.getElementById('vw-toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'vw-toast-container';
+                container.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:999999;display:flex;flex-direction:column;gap:10px;pointer-events:none;';
+                document.body.appendChild(container);
+            }
+
+            const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+            const colors = { success: '#10b981', error: '#ef4444', warning: '#f59e0b', info: '#3b82f6' };
+
+            const toast = document.createElement('div');
+            toast.className = 'vw-toast-item';
+            toast.style.cssText = `
+                background:#1e293b; color:#fff; padding:12px 20px; border-radius:12px;
+                font-size:14px; font-weight:500; min-width:280px; box-shadow:0 10px 25px rgba(0,0,0,0.2);
+                display:flex; align-items:center; gap:12px; pointer-events:auto;
+                border-left:5px solid ${colors[type] || colors.info};
+                animation: vw-toast-in 0.3s ease forwards;
+            `;
+
+            toast.innerHTML = `<span style="font-size:18px">${icons[type] || 'ℹ️'}</span> <span>${message}</span>`;
+            container.appendChild(toast);
+
+            // Add animation keyframes if not exists
+            if (!document.getElementById('vw-toast-animations')) {
+                const style = document.createElement('style');
+                style.id = 'vw-toast-animations';
+                style.textContent = `
+                    @keyframes vw-toast-in { from{opacity:0;transform:translateX(30px)} to{opacity:1;transform:translateX(0)} }
+                    @keyframes vw-toast-out { from{opacity:1;transform:translateX(0)} to{opacity:0;transform:translateX(30px)} }
+                `;
+                document.head.appendChild(style);
+            }
+
+            setTimeout(() => {
+                toast.style.animation = 'vw-toast-out 0.3s ease forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
     }
 
     // Export to global
@@ -487,6 +533,7 @@
     window.vwError = VWModal.error;
     window.vwWarning = VWModal.warning;
     window.vwPrompt = VWModal.prompt;
+    window.vwToast = VWModal.toast;
 
     // ============================================
     // AUTO OVERRIDE NATIVE FUNCTIONS
