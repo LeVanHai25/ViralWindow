@@ -15,8 +15,13 @@ exports.authenticateToken = async (req, res, next) => {
         const decoded = jwt.verify(token, JWT_SECRET);
         
         // ARCHITECT OPTIMIZATION: Fetch user, role, and permissions in ONE query
+        // Using ANY_VALUE to be compatible with ONLY_FULL_GROUP_BY mode
         const [userData] = await db.query(`
-            SELECT u.id, u.username, u.full_name, u.role_id, u.user_type,
+            SELECT u.id, 
+                   ANY_VALUE(u.username) as username, 
+                   ANY_VALUE(u.full_name) as full_name, 
+                   ANY_VALUE(u.role_id) as role_id, 
+                   ANY_VALUE(u.user_type) as user_type,
                    GROUP_CONCAT(p.code) as permissions
             FROM users u
             LEFT JOIN role_permissions rp ON u.role_id = rp.role_id
