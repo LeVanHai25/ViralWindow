@@ -1,0 +1,184 @@
+<mxfile host="Electron" modified="2026-05-14T11:00:00.000Z" agent="Mozilla/5.0" version="21.0.0" type="device">
+  <diagram id="act_quote" name="Activity - Lập Báo Giá">
+    <mxGraphModel dx="1422" dy="832" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- LÀN 1: NGƯỜI DÙNG (Nhân viên kinh doanh) -->
+        <mxCell id="swimlane_user" value="Người dùng (Nhân viên Kinh doanh)" style="swimlane;whiteSpace=wrap;html=1;startSize=40;fillColor=#f1f8e9;strokeColor=#33691e;fontSize=16;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="150" y="40" width="450" height="920" as="geometry" />
+        </mxCell>
+
+        <!-- LÀN 2: HỆ THỐNG VIRALWINDOW -->
+        <mxCell id="swimlane_system" value="Hệ thống ViralWindow" style="swimlane;whiteSpace=wrap;html=1;startSize=40;fillColor=#e3f2fd;strokeColor=#1565c0;fontSize=16;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="600" y="40" width="500" height="920" as="geometry" />
+        </mxCell>
+
+        <!-- START NODE -->
+        <mxCell id="start_node" style="ellipse;whiteSpace=wrap;html=1;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="swimlane_user">
+          <mxGeometry x="210" y="60" width="30" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- CÁC BƯỚC TRONG LÀN USER -->
+        <mxCell id="user_req_quote" value="Yêu cầu tạo báo giá mới" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#33691e;strokeWidth=2;fontSize=14;fontStyle=1;" vertex="1" parent="swimlane_user">
+          <mxGeometry x="135" y="130" width="180" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="user_input_data" value="Nhập thông tin khách hàng &amp;amp; chọn mẫu cửa" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#33691e;strokeWidth=2;fontSize=14;fontStyle=1;" vertex="1" parent="swimlane_user">
+          <mxGeometry x="135" y="270" width="180" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="user_check_draft" value="Duyệt bản thảo báo giá" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#e65100;strokeWidth=2;fontSize=14;fontStyle=1;" vertex="1" parent="swimlane_user">
+          <mxGeometry x="135" y="520" width="180" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="user_adjust" value="Điều chỉnh chiết khấu / đơn giá" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#33691e;strokeWidth=2;fontSize=14;fontStyle=1;" vertex="1" parent="swimlane_user">
+          <mxGeometry x="135" y="640" width="180" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="user_confirm" value="Xác nhận &amp;amp; Lưu báo giá" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#33691e;strokeWidth=2;fontSize=14;fontStyle=1;" vertex="1" parent="swimlane_user">
+          <mxGeometry x="135" y="730" width="180" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- END NODE -->
+        <mxCell id="end_node" style="ellipse;whiteSpace=wrap;html=1;fillColor=#000000;strokeColor=#d32f2f;strokeWidth=4;" vertex="1" parent="swimlane_user">
+          <mxGeometry x="210" y="850" width="30" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- CÁC BƯỚC TRONG LÀN SYSTEM -->
+        <mxCell id="sys_show_form" value="Hiển thị form tạo báo giá" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1565c0;strokeWidth=2;fontSize=14;fontStyle=1;" vertex="1" parent="swimlane_system">
+          <mxGeometry x="160" y="200" width="180" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="sys_check_valid" value="Dữ liệu hợp lệ?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#e65100;strokeWidth=2;fontSize=14;fontStyle=1;" vertex="1" parent="swimlane_system">
+          <mxGeometry x="160" y="340" width="180" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="sys_show_err" value="Hiển thị thông báo lỗi" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffebee;strokeColor=#c62828;strokeWidth=2;fontSize=14;fontStyle=1;" vertex="1" parent="swimlane_system">
+          <mxGeometry x="360" y="270" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="sys_calc_price" value="Tính toán đơn giá dự toán theo m2 / theo bộ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1565c0;strokeWidth=2;fontSize=14;fontStyle=1;" vertex="1" parent="swimlane_system">
+          <mxGeometry x="160" y="450" width="180" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- FORK NODE -->
+        <mxCell id="sys_fork" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="swimlane_system">
+          <mxGeometry x="80" y="750" width="340" height="8" as="geometry" />
+        </mxCell>
+
+        <!-- CÁC HOẠT ĐỘNG SONG SONG CỦA HỆ THỐNG -->
+        <mxCell id="sys_save_db" value="Lưu báo giá vào CSDL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1565c0;strokeWidth=2;fontSize=13;" vertex="1" parent="swimlane_system">
+          <mxGeometry x="50" y="780" width="130" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="sys_export_pdf" value="Xuất file PDF báo giá" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1565c0;strokeWidth=2;fontSize=13;" vertex="1" parent="swimlane_system">
+          <mxGeometry x="190" y="780" width="130" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="sys_log" value="Ghi log thao tác" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1565c0;strokeWidth=2;fontSize=13;" vertex="1" parent="swimlane_system">
+          <mxGeometry x="330" y="780" width="130" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- JOIN NODE -->
+        <mxCell id="sys_join" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="swimlane_system">
+          <mxGeometry x="80" y="840" width="340" height="8" as="geometry" />
+        </mxCell>
+
+        <mxCell id="sys_success" value="Thông báo thành công" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#2e7d32;strokeWidth=2;fontSize=14;fontStyle=1;" vertex="1" parent="swimlane_system">
+          <mxGeometry x="160" y="865" width="180" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- EDGES & KẾT NỐI -->
+        <mxCell id="edge1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#424242;strokeWidth=2;" edge="1" parent="1" source="start_node" target="user_req_quote">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#424242;strokeWidth=2;" edge="1" parent="1" source="user_req_quote" target="sys_show_form">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#424242;strokeWidth=2;" edge="1" parent="1" source="sys_show_form" target="user_input_data">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#424242;strokeWidth=2;" edge="1" parent="1" source="user_input_data" target="sys_check_valid">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- KẾT QUẢ DECISION 1 -->
+        <mxCell id="edge_invalid" value="[Không hợp lệ]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#c62828;strokeWidth=2;fontStyle=1;fontSize=12;" edge="1" parent="1" source="sys_check_valid" target="sys_show_err">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_err_back" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#c62828;strokeWidth=2;" edge="1" parent="1" source="sys_show_err" target="user_input_data">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1020" y="335" />
+              <mxPoint x="1020" y="335" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_valid" value="[Hợp lệ]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#2e7d32;strokeWidth=2;fontStyle=1;fontSize=12;" edge="1" parent="1" source="sys_check_valid" target="sys_calc_price">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edge5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#424242;strokeWidth=2;" edge="1" parent="1" source="sys_calc_price" target="user_check_draft">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- KẾT QUẢ DECISION 2 -->
+        <mxCell id="edge_need_adj" value="[Cần sửa]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#e65100;strokeWidth=2;fontStyle=1;fontSize=12;" edge="1" parent="1" source="user_check_draft" target="user_adjust">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_adj_back" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#e65100;strokeWidth=2;" edge="1" parent="1" source="user_adjust" target="sys_calc_price">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="550" y="705" />
+              <mxPoint x="550" y="515" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_ok" value="[Đồng ý]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#2e7d32;strokeWidth=2;fontStyle=1;fontSize=12;" edge="1" parent="1" source="user_check_draft" target="user_confirm">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="220" y="710" />
+              <mxPoint x="375" y="710" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ĐẾN FORK HỆ THỐNG -->
+        <mxCell id="edge6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#424242;strokeWidth=2;" edge="1" parent="1" source="user_confirm" target="sys_fork">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- TỪ FORK RA 3 LUỒNG -->
+        <mxCell id="edge_f1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1565c0;strokeWidth=1.5;" edge="1" parent="1" source="sys_fork" target="sys_save_db">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_f2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1565c0;strokeWidth=1.5;" edge="1" parent="1" source="sys_fork" target="sys_export_pdf">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_f3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1565c0;strokeWidth=1.5;" edge="1" parent="1" source="sys_fork" target="sys_log">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- TỪ 3 LUỒNG VÀO JOIN -->
+        <mxCell id="edge_j1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1565c0;strokeWidth=1.5;" edge="1" parent="1" source="sys_save_db" target="sys_join">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_j2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1565c0;strokeWidth=1.5;" edge="1" parent="1" source="sys_export_pdf" target="sys_join">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_j3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1565c0;strokeWidth=1.5;" edge="1" parent="1" source="sys_log" target="sys_join">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- TỪ JOIN ĐẾN KẾT THÚC -->
+        <mxCell id="edge7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#424242;strokeWidth=2;" edge="1" parent="1" source="sys_join" target="sys_success">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#424242;strokeWidth=2;" edge="1" parent="1" source="sys_success" target="end_node">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

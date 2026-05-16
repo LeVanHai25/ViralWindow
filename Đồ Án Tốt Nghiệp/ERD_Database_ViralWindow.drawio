@@ -1,0 +1,302 @@
+<mxfile host="Electron" modified="2026-05-14T12:30:00.000Z" agent="Mozilla/5.0" version="21.0.0" type="device">
+  <diagram id="erd_big_text" name="ERD Chữ To Chuẩn Khóa Luận">
+    <mxGraphModel dx="1622" dy="932" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1750" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- BOUNDARY 1: QUẢN TRỊ & HỆ THỐNG -->
+        <mxCell id="subsys_rbac" value="Phân hệ Quản trị &amp;amp; Hệ thống (RBAC)" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=#f8f9fa;strokeColor=#cfd8dc;strokeWidth=2;stroke-dasharray:4 4;fontSize=18;fontStyle=1;spacingLeft=15;spacingTop=12;" vertex="1" parent="1">
+          <mxGeometry x="30" y="40" width="310" height="1260" as="geometry" />
+        </mxCell>
+
+        <!-- BOUNDARY 2: CRM & DỰ ÁN -->
+        <mxCell id="subsys_crm" value="Phân hệ Khách hàng &amp;amp; Dự án (CRM)" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=#f8f9fa;strokeColor=#cfd8dc;strokeWidth=2;stroke-dasharray:4 4;fontSize=18;fontStyle=1;spacingLeft=15;spacingTop=12;" vertex="1" parent="1">
+          <mxGeometry x="360" y="40" width="310" height="660" as="geometry" />
+        </mxCell>
+
+        <!-- BOUNDARY 3: SẢN PHẨM & BÓC TÁCH BOM -->
+        <mxCell id="subsys_bom" value="Phân hệ Kỹ thuật &amp;amp; Bóc tách BOM" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=#f8f9fa;strokeColor=#cfd8dc;strokeWidth=2;stroke-dasharray:4 4;fontSize=18;fontStyle=1;spacingLeft=15;spacingTop=12;" vertex="1" parent="1">
+          <mxGeometry x="690" y="40" width="320" height="1150" as="geometry" />
+        </mxCell>
+
+        <!-- BOUNDARY 4: BÁO GIÁ -->
+        <mxCell id="subsys_quote" value="Phân hệ Báo giá (Quotation)" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=#f8f9fa;strokeColor=#cfd8dc;strokeWidth=2;stroke-dasharray:4 4;fontSize=18;fontStyle=1;spacingLeft=15;spacingTop=12;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="40" width="300" height="660" as="geometry" />
+        </mxCell>
+
+        <!-- BOUNDARY 5: TÀI CHÍNH CÔNG NỢ -->
+        <mxCell id="subsys_fin" value="Phân hệ Tài chính &amp;amp; Kế toán" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=#f8f9fa;strokeColor=#cfd8dc;strokeWidth=2;stroke-dasharray:4 4;fontSize=18;fontStyle=1;spacingLeft=15;spacingTop=12;" vertex="1" parent="1">
+          <mxGeometry x="1350" y="40" width="300" height="850" as="geometry" />
+        </mxCell>
+
+        <!-- BOUNDARY 6: QUẢN LÝ KHO (SCM) -->
+        <mxCell id="subsys_scm" value="Phân hệ Quản lý Kho (SCM)" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=#f8f9fa;strokeColor=#cfd8dc;strokeWidth=2;stroke-dasharray:4 4;fontSize=18;fontStyle=1;spacingLeft=15;spacingTop=12;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="730" width="300" height="540" as="geometry" />
+        </mxCell>
+
+
+        <!-- ================= CỤM QUẢN TRỊ (x=50) ================= -->
+        <!-- 1. CHUC_VU -->
+        <mxCell id="t_role" value="CHUC_VU" style="swimlane;whiteSpace=wrap;html=1;startSize=35;fillColor=#1565c0;fontColor=#ffffff;strokeColor=#1565c0;fontSize=16;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="50" y="80" width="270" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="c_role" value="PK &amp;nbsp; id&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ten&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; mo_ta&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; la_he_thong&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ngay_tao" style="text;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontSize=15;spacingLeft=12;spacingTop=8;lineHeight=1.3;" vertex="1" parent="t_role">
+          <mxGeometry x="0" y="35" width="270" height="125" as="geometry" />
+        </mxCell>
+
+        <!-- 2. QUYEN_HAN -->
+        <mxCell id="t_perm" value="QUYEN_HAN" style="swimlane;whiteSpace=wrap;html=1;startSize=35;fillColor=#1565c0;fontColor=#ffffff;strokeColor=#1565c0;fontSize=16;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="50" y="270" width="270" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="c_perm" value="PK &amp;nbsp; id&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ma_code&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ten&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; module&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; thu_tu" style="text;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontSize=15;spacingLeft=12;spacingTop=8;lineHeight=1.3;" vertex="1" parent="t_perm">
+          <mxGeometry x="0" y="35" width="270" height="125" as="geometry" />
+        </mxCell>
+
+        <!-- 3. CHUC_VU_QUYEN -->
+        <mxCell id="t_role_perm" value="CHUC_VU_QUYEN" style="swimlane;whiteSpace=wrap;html=1;startSize=35;fillColor=#6a1b29;fontColor=#ffffff;strokeColor=#4a121b;fontSize=16;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="50" y="460" width="270" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="c_role_perm" value="PK,FK &amp;nbsp; ma_chuc_vu&lt;br&gt;PK,FK &amp;nbsp; ma_quyen" style="text;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontSize=15;spacingLeft=12;spacingTop=8;lineHeight=1.3;" vertex="1" parent="t_role_perm">
+          <mxGeometry x="0" y="35" width="270" height="75" as="geometry" />
+        </mxCell>
+
+        <!-- 4. NGUOI_DUNG -->
+        <mxCell id="t_user" value="NGUOI_DUNG" style="swimlane;whiteSpace=wrap;html=1;startSize=35;fillColor=#1565c0;fontColor=#ffffff;strokeColor=#1565c0;fontSize=16;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="50" y="600" width="270" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="c_user" value="PK &amp;nbsp; id&lt;br&gt;FK &amp;nbsp; ma_chuc_vu&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; email&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; mat_khau&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ho_ten&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; loai_tai_khoan&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; trang_thai&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ngay_tao" style="text;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontSize=15;spacingLeft=12;spacingTop=8;lineHeight=1.3;" vertex="1" parent="t_user">
+          <mxGeometry x="0" y="35" width="270" height="195" as="geometry" />
+        </mxCell>
+
+        <!-- 5. PHIEN_DANG_NHAP -->
+        <mxCell id="t_session" value="PHIEN_DANG_NHAP" style="swimlane;whiteSpace=wrap;html=1;startSize=35;fillColor=#1565c0;fontColor=#ffffff;strokeColor=#1565c0;fontSize=16;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="50" y="860" width="270" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="c_session" value="PK &amp;nbsp; id&lt;br&gt;FK &amp;nbsp; ma_nguoi_dung&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; token_phien&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; dang_hoat_dong&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; thoi_gian_dang_nhap&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; dia_chi_ip" style="text;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontSize=15;spacingLeft=12;spacingTop=8;lineHeight=1.3;" vertex="1" parent="t_session">
+          <mxGeometry x="0" y="35" width="270" height="155" as="geometry" />
+        </mxCell>
+
+        <!-- 6. THONG_BAO -->
+        <mxCell id="t_noti" value="THONG_BAO" style="swimlane;whiteSpace=wrap;html=1;startSize=35;fillColor=#455a64;fontColor=#ffffff;strokeColor=#37474f;fontSize=16;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="50" y="1080" width="270" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="c_noti" value="PK &amp;nbsp; id&lt;br&gt;FK &amp;nbsp; ma_nguoi_dung&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; tieu_de&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; noi_dung&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; da_doc&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ngay_tao" style="text;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontSize=15;spacingLeft=12;spacingTop=8;lineHeight=1.3;" vertex="1" parent="t_noti">
+          <mxGeometry x="0" y="35" width="270" height="155" as="geometry" />
+        </mxCell>
+
+
+        <!-- ================= CỤM CRM (x=380) ================= -->
+        <!-- 7. KHACH_HANG -->
+        <mxCell id="t_cust" value="KHACH_HANG" style="swimlane;whiteSpace=wrap;html=1;startSize=35;fillColor=#2e7d32;fontColor=#ffffff;strokeColor=#1b5e20;fontSize=16;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="380" y="80" width="270" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="c_cust" value="PK &amp;nbsp; id&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ma_khach_hang&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ho_ten&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; dien_thoai&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; email&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; dia_chi&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ma_so_thue&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; trang_thai_kh&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ngay_tao" style="text;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontSize=15;spacingLeft=12;spacingTop=8;lineHeight=1.3;" vertex="1" parent="t_cust">
+          <mxGeometry x="0" y="35" width="270" height="215" as="geometry" />
+        </mxCell>
+
+        <!-- 8. DU_AN -->
+        <mxCell id="t_proj" value="DU_AN" style="swimlane;whiteSpace=wrap;html=1;startSize=35;fillColor=#2e7d32;fontColor=#ffffff;strokeColor=#1b5e20;fontSize=16;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="380" y="370" width="270" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="c_proj" value="PK &amp;nbsp; id&lt;br&gt;FK &amp;nbsp; ma_khach_hang&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ma_du_an&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ten_du_an&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; trang_thai&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ngay_bat_dau&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; han_hoan_thanh&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; dia_chi_thi_cong&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ghi_chu&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ngay_tao" style="text;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontSize=15;spacingLeft=12;spacingTop=8;lineHeight=1.3;" vertex="1" parent="t_proj">
+          <mxGeometry x="0" y="35" width="270" height="245" as="geometry" />
+        </mxCell>
+
+
+        <!-- ================= CỤM KỸ THUẬT & BOM (x=710) ================= -->
+        <!-- 9. MAU_SAN_PHAM -->
+        <mxCell id="t_prod" value="MAU_SAN_PHAM" style="swimlane;whiteSpace=wrap;html=1;startSize=35;fillColor=#7b1fa2;fontColor=#ffffff;strokeColor=#4a148c;fontSize=16;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="710" y="80" width="280" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="c_prod" value="PK &amp;nbsp; id&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ma_code&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ten_san_pham&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; loai_san_pham&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; danh_muc&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; chieu_rong_mac_dinh&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; chieu_cao_mac_dinh&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; cau_truc_json&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; anh_dai_dien" style="text;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontSize=15;spacingLeft=12;spacingTop=8;lineHeight=1.3;" vertex="1" parent="t_prod">
+          <mxGeometry x="0" y="35" width="280" height="215" as="geometry" />
+        </mxCell>
+
+        <!-- 10. SAN_PHAM_DU_AN -->
+        <mxCell id="t_prod_proj" value="SAN_PHAM_DU_AN" style="swimlane;whiteSpace=wrap;html=1;startSize=35;fillColor=#7b1fa2;fontColor=#ffffff;strokeColor=#4a148c;fontSize=16;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="710" y="370" width="280" height="300" as="geometry" />
+        </mxCell>
+        <mxCell id="c_prod_proj" value="PK &amp;nbsp; id&lt;br&gt;FK &amp;nbsp; ma_du_an&lt;br&gt;FK &amp;nbsp; ma_mau_san_pham&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ten_rieng&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; so_luong&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; chieu_rong_tuy_chinh&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; chieu_cao_tuy_chinh&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; cau_hinh_snapshot&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; vi_tri_lap_dat&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; trang_thai&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ngay_tao" style="text;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontSize=15;spacingLeft=12;spacingTop=8;lineHeight=1.3;" vertex="1" parent="t_prod_proj">
+          <mxGeometry x="0" y="35" width="280" height="265" as="geometry" />
+        </mxCell>
+
+        <!-- 11. VAT_TU_BOM -->
+        <mxCell id="t_mat_bom" value="VAT_TU_BOM" style="swimlane;whiteSpace=wrap;html=1;startSize=35;fillColor=#7b1fa2;fontColor=#ffffff;strokeColor=#4a148c;fontSize=16;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="710" y="710" width="280" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="c_mat_bom" value="PK &amp;nbsp; id&lt;br&gt;FK &amp;nbsp; ma_san_pham_du_an&lt;br&gt;FK &amp;nbsp; ma_ton_kho&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; loai_vat_tu&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ma_code&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ten_vat_tu&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; chieu_dai_mm&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; so_luong&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; hao_hut_mm&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ngay_tao" style="text;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontSize=15;spacingLeft=12;spacingTop=8;lineHeight=1.3;" vertex="1" parent="t_mat_bom">
+          <mxGeometry x="0" y="35" width="280" height="245" as="geometry" />
+        </mxCell>
+
+
+        <!-- ================= CỤM BÁO GIÁ (x=1050) ================= -->
+        <!-- 12. BAO_GIA -->
+        <mxCell id="t_quote" value="BAO_GIA" style="swimlane;whiteSpace=wrap;html=1;startSize=35;fillColor=#c62828;fontColor=#ffffff;strokeColor=#b71c1c;fontSize=16;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="80" width="260" height="320" as="geometry" />
+        </mxCell>
+        <mxCell id="c_quote" value="PK &amp;nbsp; id&lt;br&gt;FK &amp;nbsp; ma_du_an&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ma_bao_gia&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ngay_bao_gia&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; phien_ban&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; trang_thai&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; phan_tram_loi_nhuan&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; phan_tram_vat&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; phi_van_chuyen&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; tong_tien_cuoi&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; so_tien_dat_coc&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ngay_tao" style="text;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontSize=15;spacingLeft=12;spacingTop=8;lineHeight=1.3;" vertex="1" parent="t_quote">
+          <mxGeometry x="0" y="35" width="260" height="285" as="geometry" />
+        </mxCell>
+
+        <!-- 13. CHI_TIET_BAO_GIA -->
+        <mxCell id="t_quote_dt" value="CHI_TIET_BAO_GIA" style="swimlane;whiteSpace=wrap;html=1;startSize=35;fillColor=#c62828;fontColor=#ffffff;strokeColor=#b71c1c;fontSize=16;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="430" width="260" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="c_quote_dt" value="PK &amp;nbsp; id&lt;br&gt;FK &amp;nbsp; ma_bao_gia&lt;br&gt;FK &amp;nbsp; ma_mau_san_pham&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ten_san_pham&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; chieu_rong&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; chieu_cao&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; so_luong&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; don_gia&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; thanh_tien" style="text;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontSize=15;spacingLeft=12;spacingTop=8;lineHeight=1.3;" vertex="1" parent="t_quote_dt">
+          <mxGeometry x="0" y="35" width="260" height="215" as="geometry" />
+        </mxCell>
+
+
+        <!-- ================= CỤM TÀI CHÍNH (x=1370) ================= -->
+        <!-- 14. GIAO_DICH_TAI_CHINH -->
+        <mxCell id="t_fin" value="GIAO_DICH_TAI_CHINH" style="swimlane;whiteSpace=wrap;html=1;startSize=35;fillColor=#e65100;fontColor=#ffffff;strokeColor=#bf360c;fontSize=16;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1370" y="80" width="260" height="300" as="geometry" />
+        </mxCell>
+        <mxCell id="c_fin" value="PK &amp;nbsp; id&lt;br&gt;FK &amp;nbsp; ma_du_an&lt;br&gt;FK &amp;nbsp; ma_bao_gia&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ngay_giao_dich&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; loai_giao_dich&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; danh_muc&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; so_tien&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; dien_giai&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; trang_thai&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; phuong_thuc_tt&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ngay_tao" style="text;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontSize=15;spacingLeft=12;spacingTop=8;lineHeight=1.3;" vertex="1" parent="t_fin">
+          <mxGeometry x="0" y="35" width="260" height="265" as="geometry" />
+        </mxCell>
+
+        <!-- 15. CHI_TIET_GIAO_DICH -->
+        <mxCell id="t_fin_dt" value="CHI_TIET_GIAO_DICH" style="swimlane;whiteSpace=wrap;html=1;startSize=35;fillColor=#e65100;fontColor=#ffffff;strokeColor=#bf360c;fontSize=16;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1370" y="410" width="260" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="c_fin_dt" value="PK &amp;nbsp; id&lt;br&gt;FK &amp;nbsp; ma_giao_dich&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ten_muc&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; so_luong&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; don_gia&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; thanh_tien" style="text;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontSize=15;spacingLeft=12;spacingTop=8;lineHeight=1.3;" vertex="1" parent="t_fin_dt">
+          <mxGeometry x="0" y="35" width="260" height="155" as="geometry" />
+        </mxCell>
+
+        <!-- 16. CONG_NO -->
+        <mxCell id="t_debt" value="CONG_NO" style="swimlane;whiteSpace=wrap;html=1;startSize=35;fillColor=#e65100;fontColor=#ffffff;strokeColor=#bf360c;fontSize=16;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1370" y="630" width="260" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="c_debt" value="PK &amp;nbsp; id&lt;br&gt;FK &amp;nbsp; ma_du_an&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; loai_cong_no&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; nha_cung_cap&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; tong_no&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; da_thanh_toan&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; trang_thai&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ngay_tao" style="text;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontSize=15;spacingLeft=12;spacingTop=8;lineHeight=1.3;" vertex="1" parent="t_debt">
+          <mxGeometry x="0" y="35" width="260" height="195" as="geometry" />
+        </mxCell>
+
+
+        <!-- ================= CỤM QUẢN LÝ KHO (x=1050, y=730) ================= -->
+        <!-- 17. TON_KHO -->
+        <mxCell id="t_stock" value="TON_KHO" style="swimlane;whiteSpace=wrap;html=1;startSize=35;fillColor=#00695c;fontColor=#ffffff;strokeColor=#004d40;fontSize=16;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="780" width="260" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="c_stock" value="PK &amp;nbsp; id&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ma_vat_tu&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ten_vat_tu&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; loai_vat_tu&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; don_vi&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; don_gia&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; nha_cung_cap&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; muc_canh_bao_ton" style="text;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontSize=15;spacingLeft=12;spacingTop=8;lineHeight=1.3;" vertex="1" parent="t_stock">
+          <mxGeometry x="0" y="35" width="260" height="195" as="geometry" />
+        </mxCell>
+
+        <!-- 18. GIAO_DICH_KHO -->
+        <mxCell id="t_stock_trans" value="GIAO_DICH_KHO" style="swimlane;whiteSpace=wrap;html=1;startSize=35;fillColor=#00695c;fontColor=#ffffff;strokeColor=#004d40;fontSize=16;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="1040" width="260" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="c_stock_trans" value="PK &amp;nbsp; id&lt;br&gt;FK &amp;nbsp; ma_ton_kho&lt;br&gt;FK &amp;nbsp; ma_du_an&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; loai_giao_dich&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; so_luong&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ghi_chu&lt;br&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; ngay_giao_dich" style="text;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontSize=15;spacingLeft=12;spacingTop=8;lineHeight=1.3;" vertex="1" parent="t_stock_trans">
+          <mxGeometry x="0" y="35" width="260" height="175" as="geometry" />
+        </mxCell>
+
+
+        <!-- ================= CÁC ĐƯỜNG LIÊN KẾT ================= -->
+
+        <!-- RBAC -->
+        <mxCell id="r1" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeColor=#1565c0;strokeWidth=2;" edge="1" parent="1" source="t_role" target="t_role_perm">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r2" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeColor=#1565c0;strokeWidth=2;" edge="1" parent="1" source="t_perm" target="t_role_perm">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r3" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeColor=#1565c0;strokeWidth=2;" edge="1" parent="1" source="t_role" target="t_user">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="15" y="160" />
+              <mxPoint x="15" y="715" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="r4" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeColor=#1565c0;strokeWidth=2;" edge="1" parent="1" source="t_user" target="t_session">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r5" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeColor=#1565c0;strokeWidth=2;" edge="1" parent="1" source="t_user" target="t_noti">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="15" y="715" />
+              <mxPoint x="15" y="1175" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- CRM -->
+        <mxCell id="r6" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeColor=#2e7d32;strokeWidth=2;" edge="1" parent="1" source="t_cust" target="t_proj">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r7" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeColor=#1565c0;strokeWidth=2;" edge="1" parent="1" source="t_user" target="t_proj">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- SẢN PHẨM & BOM -->
+        <mxCell id="r8" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeColor=#2e7d32;strokeWidth=2;" edge="1" parent="1" source="t_proj" target="t_prod_proj">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r9" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeColor=#7b1fa2;strokeWidth=2;" edge="1" parent="1" source="t_prod" target="t_prod_proj">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r10" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeColor=#7b1fa2;strokeWidth=2;" edge="1" parent="1" source="t_prod_proj" target="t_mat_bom">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r11" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeColor=#00695c;strokeWidth=2;" edge="1" parent="1" source="t_stock" target="t_mat_bom">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1010" y="895" />
+              <mxPoint x="1010" y="850" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- BÁO GIÁ -->
+        <mxCell id="r12" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeColor=#2e7d32;strokeWidth=2;" edge="1" parent="1" source="t_proj" target="t_quote">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r13" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeColor=#b71c1c;strokeWidth=2;" edge="1" parent="1" source="t_quote" target="t_quote_dt">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r14" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeColor=#7b1fa2;strokeWidth=2;" edge="1" parent="1" source="t_prod" target="t_quote_dt">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1010" y="205" />
+              <mxPoint x="1010" y="555" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- TÀI CHÍNH CÔNG NỢ -->
+        <mxCell id="r15" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeColor=#2e7d32;strokeWidth=2;" edge="1" parent="1" source="t_proj" target="t_fin">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r16" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeColor=#b71c1c;strokeWidth=2;" edge="1" parent="1" source="t_quote" target="t_fin">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r17" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeColor=#bf360c;strokeWidth=2;" edge="1" parent="1" source="t_fin" target="t_fin_dt">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r18" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeColor=#2e7d32;strokeWidth=2;" edge="1" parent="1" source="t_proj" target="t_debt">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="670" y="510" />
+              <mxPoint x="670" y="745" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- KHO SCM -->
+        <mxCell id="r19" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeColor=#00695c;strokeWidth=2;" edge="1" parent="1" source="t_stock" target="t_stock_trans">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r20" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=0;strokeColor=#2e7d32;strokeWidth=2;" edge="1" parent="1" source="t_proj" target="t_stock_trans">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="660" y="510" />
+              <mxPoint x="660" y="1145" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

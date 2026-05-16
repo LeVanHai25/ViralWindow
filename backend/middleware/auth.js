@@ -8,151 +8,72 @@ exports.authenticateToken = async (req, res, next) => {
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
     if (!token) {
-        return res.status(401).json({
-            success: false,
-            message: "Không có token xác thực"
-        });
+        return res.status(401).json({ success: false, message: "Không có token xác thực" });
     }
 
     try {
-        const user = jwt.verify(token, JWT_SECRET);
+        const decoded = jwt.verify(token, JWT_SECRET);
+        
+        // ARCHITECT OPTIMIZATION: Fetch user, role, and permissions in ONE query
+        const [userData] = await db.query(`
+            SELECT u.id, u.username, u.full_name, u.role_id, u.user_type,
+                   GROUP_CONCAT(p.code) as permissions
+            FROM users u
+            LEFT JOIN role_permissions rp ON u.role_id = rp.role_id
+            LEFT JOIN permissions p ON rp.permission_id = p.id
+            WHERE u.id = ?
+            GROUP BY u.id
+        `, [decoded.id]);
 
-        // Check if session is still active in database (non-blocking)
-        try {
-            const [sessions] = await db.query(
-                "SELECT id FROM user_sessions WHERE session_token = ? AND is_active = TRUE LIMIT 1",
-                [token]
-            );
-
-            // If session was terminated, check if it was explicitly revoked
-            if (sessions.length === 0) {
-                const [revokedSessions] = await db.query(
-                    "SELECT id FROM user_sessions WHERE session_token = ? AND is_active = FALSE LIMIT 1",
-                    [token]
-                );
-
-                // Only reject if this specific token was explicitly revoked
-                if (revokedSessions.length > 0) {
-                    return res.status(401).json({
-                        success: false,
-                        message: "Phiên đăng nhập đã hết hạn hoặc đã bị đăng xuất",
-                        code: "SESSION_EXPIRED"
-                    });
-                }
-                // If token not found in sessions table at all, allow through
-                // (login controller may not create session records)
-            }
-        } catch (sessionError) {
-            // If user_sessions table doesn't exist or query fails, skip session check
-            console.error("Session check error (non-critical):", sessionError.message);
+        if (userData.length === 0) {
+            return res.status(401).json({ success: false, message: "Người dùng không tồn tại" });
         }
 
-        req.user = user;
+        const user = userData[0];
+        req.user = {
+            ...user,
+            permissions: user.permissions ? user.permissions.split(',') : []
+        };
+
         next();
     } catch (err) {
-        return res.status(403).json({
-            success: false,
-            message: "Token không hợp lệ"
-        });
+        console.error("Auth Error:", err.message);
+        return res.status(403).json({ success: false, message: "Token không hợp lệ hoặc đã hết hạn" });
     }
 };
 
 exports.requireAdmin = (req, res, next) => {
-    if (req.user.user_type !== 'admin') {
-        return res.status(403).json({
-            success: false,
-            message: "Chỉ quản trị viên mới có quyền truy cập"
-        });
-    }
-    next();
-};
-
-/**
- * Optional authentication - allows requests without token to pass through
- * Sets req.user to null if no token provided
- */
-exports.optionalAuth = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) {
-        req.user = null;
+    if (!req.user) return res.status(401).json({ success: false, message: "Chưa xác thực" });
+    
+    if (req.user.user_type === 'admin' || parseInt(req.user.role_id) === 1 || parseInt(req.user.role_id) === 2) {
         return next();
     }
-
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) {
-            req.user = null;
-        } else {
-            req.user = user;
-        }
-        next();
-    });
+    return res.status(403).json({ success: false, message: "Chỉ quản trị viên mới có quyền truy cập" });
 };
 
 /**
- * Middleware kiểm tra quyền động
- * Sử dụng: requirePermission('projects.create')
- * @param {string} permissionCode - Mã quyền cần kiểm tra (vd: 'projects.view')
+ * Middleware kiểm tra quyền động (Optimized)
+ * Kiểm tra trực tiếp trong req.user.permissions (No DB hits!)
  */
 exports.requirePermission = (permissionCode) => {
-    return async (req, res, next) => {
-        try {
-            const db = require("../config/db");
-            const userId = req.user.id;
-
-            // Lấy thông tin user
-            const [users] = await db.query(
-                "SELECT role_id, user_type FROM users WHERE id = ?",
-                [userId]
-            );
-
-            if (users.length === 0) {
-                return res.status(403).json({
-                    success: false,
-                    message: "Không tìm thấy người dùng"
-                });
-            }
-
-            const user = users[0];
-
-            // Admin cũ (user_type = 'admin') có full quyền
-            if (user.user_type === 'admin') {
-                return next();
-            }
-
-            // Không có role = không có quyền
-            if (!user.role_id) {
-                return res.status(403).json({
-                    success: false,
-                    message: "Bạn không có quyền thực hiện hành động này"
-                });
-            }
-
-            // Kiểm tra permission trong role
-            const [result] = await db.query(`
-                SELECT 1 FROM role_permissions rp
-                INNER JOIN permissions p ON rp.permission_id = p.id
-                WHERE rp.role_id = ? AND p.code = ?
-                LIMIT 1
-            `, [user.role_id, permissionCode]);
-
-            if (result.length === 0) {
-                return res.status(403).json({
-                    success: false,
-                    message: "Bạn không có quyền thực hiện hành động này",
-                    requiredPermission: permissionCode
-                });
-            }
-
-            next();
-        } catch (err) {
-            console.error("Error checking permission:", err);
-            res.status(500).json({
-                success: false,
-                message: "Lỗi khi kiểm tra quyền"
-            });
+    return (req, res, next) => {
+        if (!req.user) {
+            return res.status(401).json({ success: false, message: "Chưa xác thực" });
         }
+
+        // Admin & Super Admin bypass
+        if (req.user.user_type === 'admin' || parseInt(req.user.role_id) === 1) {
+            return next();
+        }
+
+        if (req.user.permissions && req.user.permissions.includes(permissionCode)) {
+            return next();
+        }
+
+        return res.status(403).json({
+            success: false,
+            message: `Bạn không có quyền thực hiện hành động này (${permissionCode})`
+        });
     };
 };
 

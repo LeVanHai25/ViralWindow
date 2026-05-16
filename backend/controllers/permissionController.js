@@ -84,7 +84,7 @@ exports.getMyPermissions = async (req, res) => {
         const user = users[0];
 
         // Nếu là admin cũ (user_type = 'admin') hoặc Super Admin, trả về tất cả permissions
-        if (user.user_type === 'admin') {
+        if (user.user_type === 'admin' || parseInt(user.role_id) === 1) {
             const [allPermissions] = await db.query(
                 "SELECT code, name, module FROM permissions ORDER BY module, sort_order"
             );
@@ -167,7 +167,7 @@ async function checkUserPermission(userId, permissionCode) {
     const user = users[0];
 
     // Admin cũ hoặc Super Admin có full quyền
-    if (user.user_type === 'admin') return true;
+    if (user.user_type === 'admin' || parseInt(user.role_id) === 1) return true;
 
     // Không có role = không có quyền
     if (!user.role_id) return false;

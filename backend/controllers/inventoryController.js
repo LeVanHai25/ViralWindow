@@ -3,77 +3,68 @@ const { emitDataChange } = require('../services/socketService');
 const NotificationService = require("../services/notificationService");
 const NotificationEventService = require("../services/notificationEventService");
 const SystemNotifier = require("../services/SystemNotifier");
+const asyncHandler = require("../utils/asyncHandler");
 
-// GET all inventory items
-exports.getAllItems = async (req, res) => {
-    try {
-        const { item_type } = req.query;
-        let query = `SELECT 
-                        i.id, i.item_code, i.item_name, i.item_type, i.unit, 
-                        i.quantity,
-                        i.quantity as stock_quantity, 
-                        i.min_stock_level,
-                        i.max_stock_level,
-                        i.unit_price,
-                        i.image_url,
-                        i.notes,
-                        i.notes as description,
-                        i.supplier_id,
-                        s.name as supplier_name, 
-                        i.location,
-                        i.created_at, i.updated_at 
-                     FROM inventory i
-                     LEFT JOIN suppliers s ON i.supplier_id = s.id
-                     WHERE 1=1`;
-        let params = [];
+// GET all inventory items - Refactored with asyncHandler
+exports.getAllItems = asyncHandler(async (req, res) => {
+    const { item_type } = req.query;
+    let query = `SELECT 
+                    i.id, i.item_code, i.item_name, i.item_type, i.unit, 
+                    i.quantity,
+                    i.quantity as stock_quantity, 
+                    i.min_stock_level,
+                    i.max_stock_level,
+                    i.unit_price,
+                    i.image_url,
+                    i.notes,
+                    i.notes as description,
+                    i.supplier_id,
+                    s.name as supplier_name, 
+                    i.location,
+                    i.created_at, i.updated_at 
+                 FROM inventory i
+                 LEFT JOIN suppliers s ON i.supplier_id = s.id
+                 WHERE 1=1`;
+    let params = [];
 
-        if (item_type && item_type !== 'all') {
-            query += " AND i.item_type = ?";
-            params.push(item_type);
-        }
-
-        query += " ORDER BY i.item_name ASC";
-
-        const [rows] = await db.query(query, params);
-
-        // Tính stock_status và restock_quantity cho mỗi item
-        rows.forEach(row => {
-            row.quantity = parseFloat(row.quantity) || 0;
-            row.stock_quantity = parseFloat(row.quantity) || 0;
-            row.unit_price = parseFloat(row.unit_price) || 0;
-            row.min_stock_level = parseFloat(row.min_stock_level) || 0;
-            row.max_stock_level = parseFloat(row.max_stock_level) || 100;
-
-            // Calculate stock status
-            if (row.quantity === 0) {
-                row.stock_status = 'OUT_OF_STOCK';
-            } else if (row.quantity <= row.min_stock_level) {
-                row.stock_status = 'LOW_STOCK';
-            } else if (row.quantity > row.max_stock_level) {
-                row.stock_status = 'OVERSTOCK';
-            } else {
-                row.stock_status = 'NORMAL';
-            }
-
-            // Calculate restock quantity
-            row.restock_quantity = row.max_stock_level > row.quantity
-                ? Math.ceil(row.max_stock_level - row.quantity)
-                : 0;
-        });
-
-        res.json({
-            success: true,
-            data: rows,
-            count: rows.length
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({
-            success: false,
-            message: "Lỗi server"
-        });
+    if (item_type && item_type !== 'all') {
+        query += " AND i.item_type = ?";
+        params.push(item_type);
     }
-};
+
+    query += " ORDER BY i.item_name ASC";
+
+    const [rows] = await db.query(query, params);
+
+    // ARCHITECT TIP: Use map for cleaner transformation
+    const enrichedRows = rows.map(row => {
+        const quantity = parseFloat(row.quantity) || 0;
+        const minStock = parseFloat(row.min_stock_level) || 0;
+        const maxStock = parseFloat(row.max_stock_level) || 100;
+
+        let stock_status = 'NORMAL';
+        if (quantity === 0) stock_status = 'OUT_OF_STOCK';
+        else if (quantity <= minStock) stock_status = 'LOW_STOCK';
+        else if (quantity > maxStock) stock_status = 'OVERSTOCK';
+
+        return {
+            ...row,
+            quantity,
+            stock_quantity: quantity,
+            unit_price: parseFloat(row.unit_price) || 0,
+            min_stock_level: minStock,
+            max_stock_level: maxStock,
+            stock_status,
+            restock_quantity: maxStock > quantity ? Math.ceil(maxStock - quantity) : 0
+        };
+    });
+
+    res.json({
+        success: true,
+        data: enrichedRows,
+        count: enrichedRows.length
+    });
+});
 
 // GET transactions
 exports.getTransactions = async (req, res) => {
@@ -113,12 +104,12 @@ exports.getTransactions = async (req, res) => {
     }
 };
 
-// GET scraps - Enhanced with status filter (Phase 1)
+// GET scraps - Optimized with JOIN to prevent N+1 query issue
 exports.getScraps = async (req, res) => {
     try {
         const { is_used, status, system_id, min_length, limit = 100 } = req.query;
 
-        // Query using actual table columns - JOIN with stock_documents and projects to get names
+        // ARCHITECT OPTIMIZATION: Join with aluminum_systems directly to get profile info in one query
         let query = `
             SELECT s.id, s.scrap_code, s.profile_name, s.length_mm, s.is_used, 
                    s.status, s.system_id, s.aluminum_system_id, 
@@ -126,33 +117,32 @@ exports.getScraps = async (req, res) => {
                    s.note, s.notes, s.created_at,
                    sd.doc_no AS source_doc_no,
                    p.project_code AS source_project_code,
-                   p.project_name AS source_project_name
+                   p.project_name AS source_project_name,
+                   als.code AS profile_code,
+                   als.name AS system_name
             FROM aluminum_scraps s
             LEFT JOIN stock_documents sd ON sd.id = s.source_doc_id
             LEFT JOIN projects p ON p.id = s.source_project_id
+            LEFT JOIN aluminum_systems als ON als.id = COALESCE(s.aluminum_system_id, s.system_id)
             WHERE 1=1
         `;
         let params = [];
 
-        // Filter by status (new)
         if (status) {
             query += " AND s.status = ?";
             params.push(status);
         }
 
-        // Legacy filter by is_used (backwards compatible)
         if (is_used !== undefined && !status) {
             query += " AND s.is_used = ?";
             params.push(is_used === 'true' ? 1 : 0);
         }
 
-        // Filter by system
         if (system_id) {
             query += " AND (s.system_id = ? OR s.aluminum_system_id = ?)";
             params.push(parseInt(system_id), parseInt(system_id));
         }
 
-        // Filter by minimum length (in mm)
         if (min_length) {
             query += " AND s.length_mm >= ?";
             params.push(parseInt(min_length));
@@ -163,30 +153,11 @@ exports.getScraps = async (req, res) => {
 
         const [rows] = await db.query(query, params);
 
-        // Process each row: add computed fields for frontend
-        for (let row of rows) {
-            // Convert mm to cm for frontend display
+        // Process only computed fields
+        rows.forEach(row => {
             row.length_cm = row.length_mm ? Math.round(row.length_mm / 10) : 0;
-
-            // Get system info
-            const sysId = row.system_id || row.aluminum_system_id;
-            if (sysId) {
-                try {
-                    const [sys] = await db.query(
-                        'SELECT code, name FROM aluminum_systems WHERE id = ?',
-                        [sysId]
-                    );
-                    row.profile_code = sys[0]?.code || null;
-                    row.system_name = sys[0]?.name || null;
-                } catch (e) {
-                    row.profile_code = null;
-                    row.system_name = null;
-                }
-            }
-
-            // Merge notes fields
             row.note = row.note || row.notes || null;
-        }
+        });
 
         res.json({
             success: true,
@@ -194,11 +165,8 @@ exports.getScraps = async (req, res) => {
             count: rows.length
         });
     } catch (err) {
-        console.error('getScraps error:', err.message, err.sql);
-        res.status(500).json({
-            success: false,
-            message: "Lỗi server: " + err.message
-        });
+        console.error('getScraps error:', err.message);
+        res.status(500).json({ success: false, message: "Lỗi server" });
     }
 };
 
@@ -206,107 +174,103 @@ exports.getScraps = async (req, res) => {
 // ISSUE SCRAP - Xuất nhôm thừa cho dự án (Phase 3)
 // =====================================================
 exports.issueScrap = async (req, res) => {
+    let connection;
     try {
         const { id } = req.params;
         const { project_id, use_cm, note } = req.body;
         const user = req.user;
 
         if (!project_id) {
-            return res.status(400).json({
-                success: false,
-                message: 'Vui lòng chọn dự án'
-            });
+            return res.status(400).json({ success: false, message: 'Vui lòng chọn dự án' });
         }
 
         if (!use_cm || use_cm <= 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'Số cm sử dụng phải > 0'
-            });
+            return res.status(400).json({ success: false, message: 'Số cm sử dụng phải > 0' });
         }
 
-        // Get scrap
-        const [scraps] = await db.query(
-            'SELECT * FROM aluminum_scraps WHERE id = ?',
+        connection = await db.getConnection();
+        await connection.beginTransaction();
+
+        // Get scrap with lock
+        const [scraps] = await connection.query(
+            'SELECT * FROM aluminum_scraps WHERE id = ? FOR UPDATE',
             [id]
         );
 
         if (scraps.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: 'Không tìm thấy nhôm thừa'
-            });
+            throw new Error('Không tìm thấy nhôm thừa');
         }
 
         const scrap = scraps[0];
+        const currentLengthMm = parseInt(scrap.length_mm) || 0;
+        const useMm = parseInt(use_cm) * 10;
 
         if (scrap.status !== 'available') {
-            return res.status(400).json({
-                success: false,
-                message: `Nhôm thừa đang ở trạng thái: ${scrap.status}, không thể xuất`
-            });
+            throw new Error(`Nhôm thừa đang ở trạng thái: ${scrap.status}, không thể xuất`);
         }
 
-        if (use_cm > scrap.length_cm) {
-            return res.status(400).json({
-                success: false,
-                message: `Không đủ chiều dài. Tồn: ${scrap.length_cm}cm, Cần: ${use_cm}cm`
-            });
+        if (useMm > currentLengthMm) {
+            throw new Error(`Không đủ chiều dài. Tồn: ${currentLengthMm/10}cm, Cần: ${use_cm}cm`);
         }
 
-        const remainingCm = scrap.length_cm - use_cm;
+        const remainingMm = currentLengthMm - useMm;
 
-        if (remainingCm === 0) {
+        if (remainingMm <= 0) {
             // Dùng hết → mark as used
-            await db.query(`
+            await connection.query(`
                 UPDATE aluminum_scraps 
-                SET status = 'used', is_used = 1, 
-                    used_project_id = ?, used_at = NOW(), used_by = ?, note = ?
+                SET status = 'used', is_used = 1, length_mm = 0,
+                    used_project_id = ?, used_at = NOW(), used_by = ?, 
+                    note = CONCAT(IFNULL(note, ''), '\nXuất sạch cho dự án ', ?)
                 WHERE id = ?
-            `, [project_id, user?.id || null, note || null, id]);
+            `, [project_id, user?.id || null, project_id, id]);
         } else {
-            // Dùng một phần → giảm length_cm, vẫn available
-            await db.query(`
+            // Dùng một phần → giảm length_mm
+            await connection.query(`
                 UPDATE aluminum_scraps 
-                SET length_cm = ?, note = CONCAT(IFNULL(note, ''), '\nXuất ${use_cm}cm cho dự án ${project_id}')
+                SET length_mm = ?, 
+                    note = CONCAT(IFNULL(note, ''), '\nXuất ${use_cm}cm cho dự án ', ?)
                 WHERE id = ?
-            `, [remainingCm, id]);
+            `, [remainingMm, project_id, id]);
         }
 
-        // TODO: Write ledger entry for scrap usage
+        // ARCHITECT FIX: Write ledger entry for scrap usage
+        await connection.query(`
+            INSERT INTO stock_ledger 
+            (warehouse_id, item_type, item_id, qty_out, balance_after, user_id, note)
+            VALUES (?, 'scrap', ?, ?, ?, ?, ?)
+        `, [
+            1, // Default warehouse
+            id,
+            use_cm / 100, // Convert to meters for ledger standard
+            remainingMm / 1000, 
+            user?.id || null,
+            `Xuất cho dự dự án ID: ${project_id}. ${note || ''}`
+        ]);
 
-        // Thông báo Xuất nhôm thừa (Chuẩn hóa SystemNotifier)
-        try {
-            await SystemNotifier.notify('inventory.exported', {
-                entityName: scrap.profile_name || `Nhôm Đề C #${id}`,
-                entityId: parseInt(id),
-                actor: SystemNotifier.getActor(req),
-                afterData: {
-                    use_cm,
-                    remaining_cm: remainingCm,
-                    project_id: project_id
-                }
-            });
-        } catch (e) { }
+        await connection.commit();
+
+        // Background Notification (Don't await to block response)
+        SystemNotifier.notify('inventory.exported', {
+            entityName: scrap.profile_name || `Nhôm Đề C #${id}`,
+            entityId: parseInt(id),
+            actor: SystemNotifier.getActor(req),
+            afterData: { use_cm, remaining_cm: remainingMm / 10, project_id }
+        }).catch(e => console.error('Notification Error:', e.message));
 
         res.json({
             success: true,
-            message: remainingCm === 0
+            message: remainingMm === 0
                 ? `Đã dùng hết ${use_cm}cm nhôm thừa cho dự án`
-                : `Đã dùng ${use_cm}cm, còn lại ${remainingCm}cm`,
-            data: {
-                scrap_id: id,
-                use_cm,
-                remaining_cm: remainingCm,
-                project_id
-            }
+                : `Đã dùng ${use_cm}cm, còn lại ${remainingMm/10}cm`,
+            data: { scrap_id: id, remaining_cm: remainingMm / 10 }
         });
     } catch (err) {
+        if (connection) await connection.rollback();
         console.error('Error issuing scrap:', err);
-        res.status(500).json({
-            success: false,
-            message: 'Lỗi khi xuất nhôm thừa: ' + err.message
-        });
+        res.status(500).json({ success: false, message: err.message });
+    } finally {
+        if (connection) connection.release();
     }
 };
 

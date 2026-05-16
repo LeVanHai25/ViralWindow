@@ -107,6 +107,12 @@ async function autoIdQuery(queryFn, sql, params) {
                 const tableName = match[1];
                 const columns = match[2].split(',').map(c => c.trim().replace(/`/g, ''));
 
+                // ARCHITECT SECURITY: Validate tableName to prevent SQL Injection in dynamic queries
+                if (!/^[a-zA-Z0-0_]+$/.test(tableName)) {
+                    console.error(`[Security] Invalid table name detected in Auto-ID: ${tableName}`);
+                    return queryFn(sql, params);
+                }
+
                 // Skip if table is in exclusion list
                 if (EXCLUDED_TABLES.includes(tableName)) {
                     return queryFn(sql, params);
@@ -114,15 +120,19 @@ async function autoIdQuery(queryFn, sql, params) {
 
                 // If 'id' is not in the columns list, add it
                 if (!columns.includes('id')) {
+                    const startTime = Date.now();
                     try {
                         // FIX: Dùng FOR UPDATE để serialize việc lấy ID trong cùng transaction isolation
                         const [maxResult] = await queryFn(
                             `SELECT COALESCE(MAX(id), 0) + 1 AS nextId FROM \`${tableName}\` FOR UPDATE`
                         );
+                        
                         const nextId = maxResult[0].nextId;
+                        const duration = Date.now() - startTime;
 
-                        // Log để dễ debug khi có lỗi trùng lặp
-                        // console.log(`[AutoID] Generated ID ${nextId} for table "${tableName}"`);
+                        if (duration > 500) {
+                            console.warn(`[Performance] AutoID for "${tableName}" took ${duration}ms - Check index on ID column`);
+                        }
 
                         // Add 'id' to columns and nextId to values
                         const newSql = sql.replace(

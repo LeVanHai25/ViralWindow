@@ -183,10 +183,11 @@ exports.createUser = async (req, res) => {
         const nextId = maxIdResult[0].nextId;
 
         // Create user
+        const userType = parseInt(role_id) === 1 ? 'admin' : 'user';
         const [result] = await db.query(`
             INSERT INTO users (id, full_name, email, phone, password, role_id, address, user_type, is_active) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, 'user', 1)
-        `, [nextId, full_name, email, phone || null, hashedPassword, role_id || null, address || null]);
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+        `, [nextId, full_name, email, phone || null, hashedPassword, role_id || null, address || null, userType]);
 
         // Gửi thông báo tạo user
         try {
@@ -294,6 +295,8 @@ exports.updateUser = async (req, res) => {
         if (role_id !== undefined) {
             updates.push("role_id = ?");
             params.push(role_id || null);
+            updates.push("user_type = ?");
+            params.push(parseInt(role_id) === 1 ? 'admin' : 'user');
         }
 
         if (updates.length > 0) {

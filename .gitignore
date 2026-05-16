@@ -1,23 +1,15 @@
-node_modules/
-backend/uploads/
+ï»¿node_modules/
 .env
 *.log
 .DS_Store
-Thumbs.db
 temp_code.txt
 *.xlsx
 *.xls
 *.csv
-# Allow backend Excel templates (required for server-side export on Render)
 !backend/templates/*.xlsx
-
-# Gemini Antigravity
 .gemini/
-
-# SQL dump files (too large for git)
 viral_window_db*.sql
 tidb_fix_fk.sql
-# -- Utility & migration scripts (ch?a credentials - không commit lên git) --
 backend/fix_*.js
 backend/sync_*.js
 backend/seed_*.js
@@ -26,28 +18,18 @@ backend/test_*.js
 backend/reset_*.js
 backend/import_*.js
 backend/verify_*.js
-backend/ensure_*.js
-backend/check_*.js
-backend/list_*.js
-backend/full_sync*.js
-backend/auto_sync*.js
-backend/auto_backup.js
-backend/bidirectional_sync.js
-backend/health_check.js
-backend/cleanup_all_data.js
-
-# Backup files
-backup/
-*.sql.gz
-
-# ViralWindow startup scripts
-*.vbs
-bat-dau-backup-tu-dong.bat
-
+backend/create_*.js
 backend/debug_*.js
 backend/diagnose_*.js
 backend/analyze_*.js
 backend/architect_*.js
 backend/aiven_*.js
-backend/create_golden_backup.js
+backend/check_*.js
+backend/list_*.js
+backend/full_sync*.js
+backend/cleanup_all_data.js
 backend/final_restore.js
+backup/
+*.sql.gz
+*.vbs
+*.bat
