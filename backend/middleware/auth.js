@@ -98,7 +98,7 @@ exports.optionalAuth = async (req, res, next) => {
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
         // Quick fetch for optional auth
-        const [users] = await db.query('SELECT id, username, full_name, role_id, user_type FROM users WHERE id = ?', [decoded.id]);
+        const [users] = await db.query('SELECT id, email as username, full_name, role_id, user_type FROM users WHERE id = ?', [decoded.id]);
         req.user = users[0] || null;
         next();
     } catch (err) {

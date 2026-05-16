@@ -15,6 +15,10 @@ const path = require("path");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 require("dotenv").config();
+const autoMigrate = require("./auto_migrate");
+
+// Khởi chạy Auto-Migration (Async)
+autoMigrate().catch(err => console.error("Migration failed:", err));
 
 // Standardize timezone for whole app
 process.env.TZ = "Asia/Ho_Chi_Minh";
