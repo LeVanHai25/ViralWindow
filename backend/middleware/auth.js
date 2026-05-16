@@ -18,7 +18,7 @@ exports.authenticateToken = async (req, res, next) => {
         // Using ANY_VALUE to be compatible with ONLY_FULL_GROUP_BY mode
         const [userData] = await db.query(`
             SELECT u.id, 
-                   ANY_VALUE(u.username) as username, 
+                   ANY_VALUE(u.email) as username, 
                    ANY_VALUE(u.full_name) as full_name, 
                    ANY_VALUE(u.role_id) as role_id, 
                    ANY_VALUE(u.user_type) as user_type,
