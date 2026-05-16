@@ -18,16 +18,16 @@ exports.authenticateToken = async (req, res, next) => {
         // Using ANY_VALUE to be compatible with ONLY_FULL_GROUP_BY mode
         const [userData] = await db.query(`
             SELECT u.id, 
-                   ANY_VALUE(u.email) as username, 
-                   ANY_VALUE(u.full_name) as full_name, 
-                   ANY_VALUE(u.role_id) as role_id, 
-                   ANY_VALUE(u.user_type) as user_type,
+                   u.email as username, 
+                   u.full_name, 
+                   u.role_id, 
+                   u.user_type,
                    GROUP_CONCAT(p.code) as permissions
             FROM users u
             LEFT JOIN role_permissions rp ON u.role_id = rp.role_id
             LEFT JOIN permissions p ON rp.permission_id = p.id
             WHERE u.id = ?
-            GROUP BY u.id
+            GROUP BY u.id, u.email, u.full_name, u.role_id, u.user_type
         `, [decoded.id]);
 
         if (userData.length === 0) {
@@ -43,7 +43,11 @@ exports.authenticateToken = async (req, res, next) => {
         next();
     } catch (err) {
         console.error("Auth Error:", err.message);
-        return res.status(403).json({ success: false, message: "Token không hợp lệ hoặc đã hết hạn" });
+        return res.status(403).json({ 
+            success: false, 
+            message: "Token không hợp lệ",
+            code: "SESSION_EXPIRED" 
+        });
     }
 };
 

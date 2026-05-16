@@ -26,6 +26,11 @@ process.env.TZ = "Asia/Ho_Chi_Minh";
 const app = express();
 
 // ============================================
+// GLOBAL MIDDLEWARES (CORS MUST BE FIRST)
+// ============================================
+app.use(cors());
+
+// ============================================
 // SECURITY & LIMITERS
 // ============================================
 app.use(helmet({
@@ -35,7 +40,7 @@ app.use(helmet({
 
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 100,
+    max: 1000, // Tăng lên 1000 để thoải mái phát triển
     message: { success: false, message: "Quá nhiều yêu cầu, vui lòng thử lại sau." },
     standardHeaders: true,
     legacyHeaders: false,
@@ -44,7 +49,7 @@ app.use("/api/", apiLimiter);
 
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 15,
+    max: 50, // Tăng lên 50
     message: { success: false, message: "Thử đăng nhập quá nhiều lần. Vui lòng đợi 15 phút." }
 });
 app.use("/api/auth/login", loginLimiter);
@@ -53,7 +58,6 @@ const httpServer = http.createServer(app);
 const PORT = process.env.PORT || 3001;
 
 // Middlewares
-app.use(cors());
 app.use(express.json({ limit: '50mb' })); 
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
@@ -81,7 +85,7 @@ const routeAliases = {
     'auth': ['/api/auth', '/api/users'],
     'company-settings': ['/api/company-settings', '/api/settings'],
     'purchase-requests': ['/api/purchase-requests', '/api/material-requests'],
-    'aluminumSystemRoutes': ['/api/catalog/aluminum-systems'],
+    'aluminumSystemRoutes': ['/api/catalog/aluminum-systems', '/api/aluminum-systems'],
     'stockDocument': ['/api/stock-documents'],
     'production-excel': ['/api/production'],
     'designWorkflow': ['/api/design'],

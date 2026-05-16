@@ -25,10 +25,31 @@ module.exports = (err, req, res, next) => {
         message = 'Dữ liệu liên kết không tồn tại (Foreign Key Constraint)';
     }
 
+    // Standardize MySQL errors
+    if (err.code && err.code.startsWith('ER_')) {
+        console.error('💾 Database Error:', {
+            code: err.code,
+            errno: err.errno,
+            sqlMessage: err.sqlMessage,
+            sqlState: err.sqlState
+        });
+
+        if (err.code === 'ER_BAD_FIELD_ERROR') {
+            statusCode = 500;
+            message = `Lỗi dữ liệu hệ thống: Thiếu cột dữ liệu (${err.sqlMessage}). Vui lòng báo cho kỹ thuật.`;
+        } else if (err.code === 'ER_NO_SUCH_TABLE') {
+            statusCode = 500;
+            message = `Lỗi hệ thống: Không tìm thấy bảng dữ liệu (${err.sqlMessage}).`;
+        }
+    }
+
     res.status(statusCode).json({
         success: false,
         message: message,
-        // Chỉ hiện stack trace ở môi trường phát triển
-        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        error: process.env.NODE_ENV === 'development' ? {
+            message: err.message,
+            code: err.code,
+            stack: err.stack
+        } : undefined
     });
 };

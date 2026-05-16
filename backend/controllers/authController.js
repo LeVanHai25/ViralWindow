@@ -76,7 +76,7 @@ exports.register = async (req, res) => {
         // Generate token with role_id and role_name
         const token = jwt.sign(
             {
-                id: result.insertId,
+                id: nextId,
                 email,
                 full_name,
                 user_type: userType,
@@ -93,7 +93,7 @@ exports.register = async (req, res) => {
             data: {
                 token,
                 user: {
-                    id: result.insertId,
+                    id: nextId,
                     full_name,
                     email,
                     phone,

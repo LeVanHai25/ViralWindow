@@ -37,17 +37,26 @@ function createCustomerModalHTML() {
 
 // Initialize modal
 function initCustomerModal() {
-    if (document.getElementById('customerModalContainer')) return;
+    let container = document.getElementById('customerModalContainer');
+    
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'customerModalContainer';
+        container.className = 'fixed inset-0 z-[9999] hidden';
+        container.innerHTML = createCustomerModalHTML();
+        document.body.appendChild(container);
+    }
 
-    const modal = document.createElement('div');
-    modal.id = 'customerModalContainer';
-    modal.className = 'fixed inset-0 z-[9999] hidden';
-    modal.innerHTML = createCustomerModalHTML();
-    document.body.appendChild(modal);
-
-    // Add event listeners
-    document.getElementById('customerModalCloseBtn').addEventListener('click', closeCustomerInfoModal);
-    document.getElementById('customerModalBackdrop').addEventListener('click', closeCustomerInfoModal);
+    // Always re-bind or ensure events are bound
+    const closeBtn = document.getElementById('customerModalCloseBtn');
+    const backdrop = document.getElementById('customerModalBackdrop');
+    
+    if (closeBtn) {
+        closeBtn.onclick = closeCustomerInfoModal;
+    }
+    if (backdrop) {
+        backdrop.onclick = closeCustomerInfoModal;
+    }
 }
 
 // Close modal
@@ -230,7 +239,7 @@ async function showCustomerModal(customerId, customerName) {
 }
 
 // Export functions for global use
-window.showCustomerInfoModal = showCustomerInfoModal;
+window.showCustomerInfoModal = showCustomerModal;
 window.closeCustomerInfoModal = closeCustomerInfoModal;
 // Keep backward compat for showCustomerModal
 window.showCustomerModal = showCustomerModal;

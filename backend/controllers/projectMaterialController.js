@@ -1641,7 +1641,7 @@ exports.confirmExport = async (req, res) => {
             });
         }
 
-        // Chuyá»ƒn dá»± Ã¡n sang giai Ä‘oáº¡n Sáº£n xuáº¥t (60%) - CHá»ˆ KHI CÃ“ ÃT NHáº¤T 1 Váº¬T TÆ¯ ÄÃƒ XUáº¤T
+        // Chuyá»ƒn dá»± Ã¡n sang giai Ä‘oáº¡n Sáº£n xuáº¥t (60%) - CHá»ˆ KHI CÃ“ Ã T NHáº¤T 1 Váº¬T TÆ¯ Ä Ãƒ XUáº¤T
         if (exportedMaterials.length > 0) {
             const newProgress = 60;
 
@@ -1653,7 +1653,7 @@ exports.confirmExport = async (req, res) => {
                 [newProgress, projectId]
             );
 
-            message += `ðŸ“¦ Dá»± Ã¡n Ä‘Ã£ chuyá»ƒn sang giai Ä‘oáº¡n Sáº£n xuáº¥t (${newProgress}%).`;
+            message += `📦 Dá»± Ã¡n Ä‘Ã£ chuyá»ƒn sang giai Ä‘oáº¡n Sáº£n xuáº¥t (${newProgress}%).`;
         }
 
         await connection.commit();
@@ -1682,9 +1682,9 @@ exports.confirmExport = async (req, res) => {
     }
 };
 
-// GET /api/project-materials/check-export-requirement/:projectId - Kiá»ƒm tra Ä‘iá»u kiá»‡n xuáº¥t váº­t tÆ°
+// GET /api/project-materials/check-export-requirement/:projectId - Kiá»ƒm tra Ä‘iá» u kiá»‡n xuáº¥t váº­t tÆ°
 exports.checkExportRequirement = async (req, res) => {
-    console.log('ðŸ” checkExportRequirement Ä‘Æ°á»£c gá»i vá»›i projectId:', req.params.projectId);
+    console.log('⚙️ checkExportRequirement Ä‘Æ°á»£c gá» i vá»›i projectId:', req.params.projectId);
     try {
         const { projectId } = req.params;
 
@@ -1772,51 +1772,23 @@ exports.getInventoryByType = async (req, res) => {
                          ORDER BY created_at DESC`;
                 break;
             case 'aluminum':
-                // ✅ FIX: Hỗ trợ lọc theo kho cụ thể nếu có warehouse_id
-                if (warehouse_id && warehouse_id !== 'all' && warehouse_id !== 'total') {
-                    query = `SELECT s.id, 
-                             COALESCE(s.code, s.name) as code, 
-                             s.name, 
-                             s.aluminum_system, 
-                             'cây' as unit, 
-                             s.unit_price as price, 
-                             COALESCE(ws.quantity, 0) as stock,
-                             COALESCE(ws.quantity, 0) as quantity,
-                             s.quantity as total_stock_cay,
-                             s.quantity_m as total_stock_m,
-                             s.length_m,
-                             s.density
-                             FROM aluminum_systems s
-                             LEFT JOIN aluminum_warehouse_stock ws ON ws.aluminum_system_id = s.id AND ws.warehouse_id = ?
-                             WHERE s.is_active = 1 
-                             ORDER BY s.aluminum_system, s.name`;
-                    params.push(warehouse_id);
-                } else {
-                    // Mặc định (hoặc chọn 'tổng'): Tính tổng từ tất cả các kho
-                    query = `SELECT s.id, 
-                             COALESCE(s.code, s.name) as code, 
-                             s.name, 
-                             s.aluminum_system, 
-                             'cây' as unit, 
-                             s.unit_price as price, 
-                             COALESCE(
-                                (SELECT SUM(ws2.quantity) FROM aluminum_warehouse_stock ws2 WHERE ws2.aluminum_system_id = s.id),
-                                s.quantity, 
-                                0
-                             ) as stock,
-                             COALESCE(
-                                (SELECT SUM(ws2.quantity) FROM aluminum_warehouse_stock ws2 WHERE ws2.aluminum_system_id = s.id),
-                                s.quantity, 
-                                0
-                             ) as quantity,
-                             s.quantity as total_stock_cay,
-                             s.quantity_m as total_stock_m,
-                             s.length_m,
-                             s.density
-                             FROM aluminum_systems s
-                             WHERE s.is_active = 1 
-                             ORDER BY s.aluminum_system, s.name`;
-                }
+                // ✅ SWITCHED: Lấy từ Tổng kho nhôm (inventory) thay vì Hệ nhôm
+                query = `SELECT i.id, 
+                         i.item_code as code, 
+                         i.item_name as name, 
+                         s.aluminum_system, 
+                         i.unit, 
+                         i.unit_price as price, 
+                         COALESCE(i.quantity, 0) as stock,
+                         COALESCE(i.quantity, 0) as quantity,
+                         COALESCE(i.quantity, 0) as total_stock_cay,
+                         COALESCE(i.quantity * s.length_m, 0) as total_stock_m,
+                         s.length_m,
+                         s.density
+                         FROM inventory i
+                         LEFT JOIN aluminum_systems s ON i.item_code = s.code
+                         WHERE i.item_type = 'aluminum'
+                         ORDER BY i.item_name`;
                 break;
             case 'glass':
                 // ✅ FIX: Kính hiện tại được quản lý trong bảng inventory (item_type = 'glass')
@@ -1948,7 +1920,7 @@ exports.getExportedMaterials = async (req, res) => {
 
         // Aluminum prices & stock - has unit_price column
         try {
-            const [aluminum] = await db.query(`SELECT code, name, unit_price, quantity FROM aluminum_systems`);
+            const [aluminum] = await db.query("SELECT item_code as code, item_name as name, unit_price, quantity FROM inventory WHERE item_type = 'aluminum'");
             aluminum.forEach(alu => {
                 const price = parseFloat(alu.unit_price) || 0;
                 const stock = parseFloat(alu.quantity) || 0;

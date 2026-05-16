@@ -12668,18 +12668,18 @@
                     // Load Aluminum
                     const authToken = sessionStorage.getItem('token') || '';
                     const authHeaders = authToken ? { 'Authorization': `Bearer ${authToken}` } : {};
-                    const nhomRes = await fetch(`${API_BASE}/aluminum-systems`, { headers: authHeaders });
+                    const nhomRes = await fetch(`${API_BASE}/project-materials/inventory/aluminum`, { headers: authHeaders });
                     const nhomData = await nhomRes.json();
                     if (nhomData.success && nhomData.data) {
                         materialsCache.nhom = nhomData.data.map(item => ({
                             id: item.id,
-                            code: item.code || item.system_code || '',
-                            name: item.name || item.system_name || '',
+                            code: item.code || '',
+                            name: item.name || '',
                             unit: item.unit || 'cây',
-                            price: item.unit_price || 0,
-                            stock: parseFloat(item.stock || item.quantity || item.quantity_m || 0),
-                            density: parseFloat(item.density) || 0,  // Tỷ trọng (kg/m)
-                            length: parseFloat(item.length_m) || 6   // Mét dài mặc định
+                            price: item.price || 0,
+                            stock: parseFloat(item.stock || 0),
+                            density: parseFloat(item.density) || 0,
+                            length: parseFloat(item.length_m) || 6
                         }));
                         console.log('✅ Loaded', materialsCache.nhom.length, 'aluminum items with density');
                     }

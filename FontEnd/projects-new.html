@@ -3362,12 +3362,14 @@
                 document.getElementById('customerModalCloseBtn').addEventListener('click', function (e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    closeCustomerModal();
+                    const modal = document.getElementById('customerDetailModal');
+                    if (modal) modal.classList.add('hidden');
                 });
 
                 document.getElementById('customerModalBackdrop').addEventListener('click', function (e) {
                     e.preventDefault();
-                    closeCustomerModal();
+                    const modal = document.getElementById('customerDetailModal');
+                    if (modal) modal.classList.add('hidden');
                 });
             }
 
@@ -7857,6 +7859,9 @@
                             }
                         }
 
+                        // Populate customers dropdown
+                        await loadCustomersForEdit(project.customer_id);
+
                         document.getElementById('editProjectAddress').value = project.construction_address || '';
                         document.getElementById('editProjectNotes').value = project.notes || '';
 
@@ -7920,6 +7925,15 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Tên dự án <span class="text-red-500">*</span></label>
                             <input type="text" id="editProjectName" required
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <!-- Khách hàng -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Khách hàng <span class="text-red-500">*</span></label>
+                            <select id="editProjectCustomer" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">-- Đang tải danh sách... --</option>
+                            </select>
                         </div>
                         
                         <!-- Ngày bắt đầu -->
@@ -8070,6 +8084,7 @@
                     construction_province: document.getElementById('editProjectProvince').value || null,
                     construction_district: document.getElementById('editProjectDistrict').value || null,
                     construction_address: document.getElementById('editProjectAddress').value || null,
+                    customer_id: document.getElementById('editProjectCustomer').value,
                     notes: document.getElementById('editProjectNotes').value || null
                 };
 
@@ -8108,6 +8123,35 @@
                 } catch (error) {
                     console.error('Error saving project:', error);
                     VWModal.alert('Lỗi', 'Lỗi kết nối server: ' + error.message);
+                }
+            }
+            async function loadCustomersForEdit(selectedId = null) {
+                const select = document.getElementById('editProjectCustomer');
+                if (!select) return;
+
+                try {
+                    const token = sessionStorage.getItem('token');
+                    const response = await fetch(`${API_BASE}/customers`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        let html = '<option value="">-- Chọn khách hàng --</option>';
+                        const customers = result.data || [];
+                        
+                        // Sắp xếp theo tên
+                        customers.sort((a, b) => (a.full_name || '').localeCompare(b.full_name || ''));
+
+                        customers.forEach(c => {
+                            const isSelected = c.id == selectedId ? 'selected' : '';
+                            html += `<option value="${c.id}" ${isSelected}>${c.full_name} (${c.phone || 'N/A'})</option>`;
+                        });
+                        select.innerHTML = html;
+                    }
+                } catch (error) {
+                    console.error('Error loading customers for edit:', error);
+                    select.innerHTML = '<option value="">Lỗi tải danh sách</option>';
                 }
             }
         </script>
