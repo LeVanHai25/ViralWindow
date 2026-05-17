@@ -39,10 +39,16 @@ class StockDocumentExportService {
 
         worksheet.name = doc.doc_no || 'Phieu';
 
-        // Clear all rows to ensure professional layout
+        // ✅ FIX: Xóa merged cells từ template trước
+        const mergedCells = Object.keys(worksheet.model?.merges || {});
+        mergedCells.forEach(range => {
+            try { worksheet.unMergeCells(range); } catch (e) { }
+        });
+
+        // Clear all rows — includeEmpty: true để xóa cả cell có format nhưng không value
         for (let i = 1; i <= 300; i++) {
             const row = worksheet.getRow(i);
-            row.eachCell(cell => { cell.value = null; cell.style = {}; });
+            row.eachCell({ includeEmpty: true }, cell => { cell.value = null; cell.style = {}; });
             row.height = 20;
         }
 
@@ -50,6 +56,9 @@ class StockDocumentExportService {
         const isStocktake = doc.doc_type === 'stocktake';
         const maxCol = isStocktake ? 8 : 10;
         await StockDocumentExportService.addCompanyHeader(workbook, worksheet, maxCol);
+
+        // ✅ FIX: Freeze panes — header phiếu kho (Row 12) đứng yên khi cuộn
+        worksheet.views = [{ state: 'frozen', ySplit: 12 }];
 
 
         // 3. Grid Definition - Professional Accounting Standards

@@ -6807,14 +6807,16 @@
                         aluminum: 'Kho Nhôm',
                         accessory: 'Kho Phụ Kiện',
                         glass: 'Kho Kính',
-                        other: 'Kho Vật Tư Phụ'
+                        other: 'Kho Vật Tư Phụ',
+                        scraps: 'Nhôm Đề C'
                     };
                     const warehouseLabel = warehouseLabels[itemType] || itemType;
 
                     // Build URL with current filters
                     const searchInputId = itemType === 'accessory' ? 'searchAccessory' :
                         itemType === 'aluminum' ? 'searchAluminum' :
-                            itemType === 'glass' ? 'searchGlass' : 'searchOther';
+                            itemType === 'glass' ? 'searchGlass' :
+                                itemType === 'scraps' ? 'searchScraps' : 'searchOther';
                     const search = document.getElementById(searchInputId)?.value || '';
 
                     const categoryFilterId = itemType === 'accessory' ? 'accessoryCategoryFilter' : null;

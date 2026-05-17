@@ -291,6 +291,9 @@ exports.exportMonthlySummary = async (req, res) => {
         });
 
         let summaryRowIndex = 15;
+
+        // ✅ FIX: Freeze panes — header tổng hợp (Row 14) đứng yên khi cuộn
+        summarySheet.views = [{ state: 'frozen', ySplit: 14 }];
         summaryData.forEach((data, idx) => {
             const row = summarySheet.getRow(summaryRowIndex);
             row.values = [data.type, data.openingQty, data.inQty, data.outQty, data.closingQty, data.transactionCount];

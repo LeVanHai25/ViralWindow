@@ -64,7 +64,7 @@ exports.exportInventory = async (req, res) => {
                         max_stock_level,
                         purchase_price AS unit_price
                     FROM accessories
-                    WHERE 1=1
+                    WHERE is_active = 1
                 `;
                 if (search) {
                     sql += ` AND (code LIKE ? OR name LIKE ?)`;
@@ -85,7 +85,7 @@ exports.exportInventory = async (req, res) => {
                         i.item_code AS code,
                         i.item_name AS name,
                         s.name AS supplier_name,
-                        i.notes,
+                        i.unit,
                         i.quantity AS stock,
                         i.min_stock_level,
                         i.max_stock_level,
@@ -131,22 +131,23 @@ exports.exportInventory = async (req, res) => {
             case 'scraps':
                 sql = `
                     SELECT 
-                        scrap_code AS code,
-                        profile_name AS name,
-                        'Phế liệu nhôm' AS category,
-                        'đoạn' AS unit,
-                        length_mm / 1000 AS stock,
-                        0 as min_stock_level,
-                        0 as max_stock_level,
-                        0 as unit_price
-                    FROM aluminum_scraps
-                    WHERE is_used = 0
+                        s.scrap_code AS code,
+                        s.profile_name AS name,
+                        ROUND(s.length_mm / 10, 1) AS length_cm,
+                        CASE 
+                            WHEN s.status = 'available' THEN 'Còn dùng được'
+                            WHEN s.status = 'used' THEN 'Đã sử dụng'
+                            ELSE s.status 
+                        END AS status_label,
+                        DATE_FORMAT(s.created_at, '%d/%m/%Y') AS created_date
+                    FROM aluminum_scraps s
+                    WHERE s.is_used = 0
                 `;
                 if (search) {
-                    sql += ` AND (scrap_code LIKE ? OR profile_name LIKE ?)`;
+                    sql += ` AND (s.scrap_code LIKE ? OR s.profile_name LIKE ?)`;
                     params.push(`%${search}%`, `%${search}%`);
                 }
-                sql += ` ORDER BY created_at DESC`;
+                sql += ` ORDER BY s.created_at DESC`;
                 break;
         }
 
@@ -164,8 +165,9 @@ exports.exportInventory = async (req, res) => {
             return {
                 code: row.code,
                 name: row.name,
+                category: row.category || '',
                 aluminum_system: row.aluminum_system || '',
-                unit: row.unit,
+                unit: row.unit || '',
                 color: row.color,
                 supplier_name: row.supplier_name,
                 notes: row.notes,
@@ -176,7 +178,11 @@ exports.exportInventory = async (req, res) => {
                 max: max,
                 restock: max > stock ? (max - stock) : 0,
                 price: price,
-                totalValue: stock * price
+                totalValue: stock * price,
+                // Scraps-specific fields
+                length_cm: parseFloat(row.length_cm) || 0,
+                status_label: row.status_label || '',
+                created_date: row.created_date || ''
             };
         });
 
