@@ -52,6 +52,9 @@ class StockDocumentExportService {
             row.height = 20;
         }
 
+        // ✅ FIX: Xóa tất cả hình ảnh embedded từ template
+        if (worksheet._media) worksheet._media = [];
+
         // 2. Add Professional Branding (Company Info & Logo from DB)
         const isStocktake = doc.doc_type === 'stocktake';
         const maxCol = isStocktake ? 8 : 10;

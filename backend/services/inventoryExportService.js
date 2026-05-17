@@ -69,6 +69,9 @@ class InventoryExportService {
             r.height = 20;
         }
 
+        // ✅ FIX: Xóa tất cả hình ảnh embedded từ template
+        if (worksheet._media) worksheet._media = [];
+
         // ============================================================
         // 1. COMPANY HEADER (Rows 1-4)
         // ============================================================
