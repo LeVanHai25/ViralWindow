@@ -1756,7 +1756,7 @@ exports.getInventoryByType = async (req, res) => {
             case 'accessory':
                 // Phụ kiện: Lấy tất cả phụ kiện đang hoạt động (không lọc cứng danh mục để tránh bỏ sót)
                 query = `SELECT id, code, name, category, unit, 
-                         COALESCE(sale_price, purchase_price, 0) as price, 
+                         COALESCE(purchase_price, sale_price, 0) as price, 
                          stock_quantity as stock, min_stock_level
                          FROM accessories 
                          WHERE is_active = 1 
@@ -1816,7 +1816,7 @@ exports.getInventoryByType = async (req, res) => {
                         name, 
                         category, 
                         unit, 
-                        COALESCE(sale_price, purchase_price, 0) as price, 
+                        COALESCE(purchase_price, sale_price, 0) as price, 
                         stock_quantity as stock, 
                         min_stock_level,
                         'accessories' as source_table

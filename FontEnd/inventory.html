@@ -3660,6 +3660,16 @@
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             placeholder="Ghi chú thêm..."></textarea>
                     </div>
+
+                    <!-- Row 7: Status -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+                        <select id="supplierModalStatus"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="1">Hoạt động</option>
+                            <option value="0">Ngừng hoạt động</option>
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Footer -->
@@ -5881,6 +5891,7 @@
                 document.getElementById('supplierModalBankAccount').value = s.bank_account || '';
                 document.getElementById('supplierModalBankName').value = s.bank_name || '';
                 document.getElementById('supplierModalNote').value = s.note || '';
+                document.getElementById('supplierModalStatus').value = s.is_active !== undefined ? s.is_active : 1;
                 document.getElementById('supplierFormModal').classList.remove('hidden');
             }
 
@@ -5902,7 +5913,8 @@
                     address: document.getElementById('supplierModalAddress').value,
                     bank_account: document.getElementById('supplierModalBankAccount').value,
                     bank_name: document.getElementById('supplierModalBankName').value,
-                    note: document.getElementById('supplierModalNote').value
+                    note: document.getElementById('supplierModalNote').value,
+                    is_active: document.getElementById('supplierModalStatus').value
                 };
 
                 if (!data.code || !data.name) {
