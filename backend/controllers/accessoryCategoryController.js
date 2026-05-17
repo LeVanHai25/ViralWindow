@@ -128,14 +128,16 @@ exports.deleteCategory = async (req, res) => {
         const categoryName = rows[0].name;
 
         const [itemRows] = await pool.query(
-            "SELECT COUNT(*) as count FROM accessories WHERE category = ? AND is_active = 1",
+            // ✅ FIX: Bỏ AND is_active = 1 — đếm TẤT CẢ phụ kiện thuộc danh mục này
+            // Kể cả phụ kiện inactive, vẫn không cho xóa để tránh mất dữ liệu lịch sử
+            "SELECT COUNT(*) as count FROM accessories WHERE category = ?",
             [categoryName]
         );
 
         if (itemRows[0].count > 0) {
             return res.status(400).json({
                 success: false,
-                message: `Không thể xóa danh mục đang có ${itemRows[0].count} phụ kiện. Vui lòng chuyển các phụ kiện này sang danh mục khác trước.`
+                message: `Không thể xóa danh mục "${categoryName}" vì đang có ${itemRows[0].count} phụ kiện sử dụng. Vui lòng chuyển hoặc xóa các phụ kiện này trước.`
             });
         }
 

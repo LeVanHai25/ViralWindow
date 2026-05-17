@@ -9162,23 +9162,36 @@
             }
 
             async function deleteAccCat(id, name) {
-                if (await VWModal.confirm('Xác nhận xóa', `Bạn có chắc chắn muốn xóa danh mục "${name}"? Thao tác này không thể hoàn tác.`)) {
+                if (await VWModal.confirm('Xác nhận xóa', `Bạn có chắc chắn muốn xóa danh mục "${name}"?\nThao tác này không thể hoàn tác.`)) {
                     try {
                         const response = await fetch(`${API_BASE}/accessories/categories/${id}`, {
                             method: 'DELETE',
                             headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
                         });
-                        const result = await response.json();
+
+                        // ✅ FIX: Parse JSON trước, sau đó check success/error
+                        // (cả 200 và 400 đều trả về JSON body)
+                        let result;
+                        try {
+                            result = await response.json();
+                        } catch (parseErr) {
+                            // Server trả về non-JSON (hiếm gặp)
+                            VWModal.alert(`Lỗi server (HTTP ${response.status}). Vui lòng thử lại.`);
+                            return;
+                        }
+
                         if (result.success) {
-                            showSuccessNotification('Xóa danh mục thành công');
-                            loadAccessoryCategoryList();
-                            loadAccessoryCategories();
+                            showSuccessNotification('Xóa danh mục thành công!');
+                            // ✅ Reload cả modal list và sub-tabs
+                            await loadAccessoryCategoryList();
+                            await loadAccessoryCategories(); // Cập nhật tab bar ngay lập tức
                         } else {
-                            VWModal.alert(result.message || 'Không thể xóa danh mục');
+                            // ✅ Hiển thị đúng lý do từ backend (VD: "còn 3 phụ kiện sử dụng")
+                            VWModal.alert(result.message || 'Không thể xóa danh mục này.');
                         }
                     } catch (error) {
                         console.error('Lỗi khi xóa danh mục:', error);
-                        VWModal.alert('Lỗi server khi xóa danh mục');
+                        VWModal.alert('Mất kết nối server. Vui lòng kiểm tra và thử lại.');
                     }
                 }
             }
@@ -12861,14 +12874,15 @@
                 }
             }
 
-            function openGlassModal(id = null) {
+            async function openGlassModal(id = null) {
                 editingGlassId = id;
                 document.getElementById('glassModalTitle').textContent = id ? 'Chỉnh sửa kính' : 'Thêm kính mới';
                 document.getElementById('glassForm').reset();
                 document.getElementById('glassId').value = id || '';
 
-                // Load suppliers for dropdown
-                loadSuppliersForGlassModal();
+                // ✅ FIX Race Condition: await suppliers TRƯỜC để đảm bảo options đã sẵn sàng
+                // trước khi loadGlassForEdit() cố gán .value = supplier_id
+                await loadSuppliersForGlassModal();
 
                 // Xử lý input Tồn kho - chỉ cho phép chỉnh khi thêm mới, không cho phép khi edit
                 const stockInput = document.getElementById('glassStock');
@@ -12966,9 +12980,14 @@
                         // structure chứa thông tin kích thước, ví dụ: "8mm - 2.0m x 1.5m"
                         const structure = item.notes || ''; // Changed from item.structure to item.notes
 
-                        // Set supplier dropdown
+                        // ✅ FIX: Set supplier dropdown - suppliers đã được populate (nhờ await ở openGlassModal)
                         if (item.supplier_id) {
-                            document.getElementById('glassSupplier').value = item.supplier_id;
+                            const supplierSel = document.getElementById('glassSupplier');
+                            supplierSel.value = item.supplier_id;
+                            // Defensive check: nếu value chưa được ghi nhận, thử lại 1 lần
+                            if (String(supplierSel.value) !== String(item.supplier_id)) {
+                                setTimeout(() => { supplierSel.value = item.supplier_id; }, 150);
+                            }
                         }
 
                         // Tên kính
@@ -13502,9 +13521,11 @@
                         if (otherMaxStockEl) otherMaxStockEl.value = item.max_stock_level || 100;
                         document.getElementById('otherDescription').value = item.description || item.notes || ''; // Use notes for description
 
-                        // Hiển thị ảnh hiện có nếu có (inventory uses image_path)
-                        if (item.image_path) {
-                            setInventoryImagePreview('other', getImageUrl(item.image_path));
+                        // ✅ FIX: inventory API trả về 'image_url', KHÔNG phải 'image_path'
+                        // item.image_path luôn = undefined → form luôn hiển thị trống
+                        const imageValue = item.image_url || item.image_path;
+                        if (imageValue) {
+                            setInventoryImagePreview('other', getImageUrl(imageValue));
                         } else {
                             resetInventoryImagePreview('other');
                         }
@@ -13582,8 +13603,8 @@
                 if (imageInput && imageInput.files && imageInput.files[0]) {
                     formData.append('image', imageInput.files[0]);
                 } else if (imageUrlEl && imageUrlEl.value) {
-                    // Keep existing image path
-                    formData.append('image_path', imageUrlEl.value);
+                    // ✅ FIX: backend update() đọc 'image_url', không phải 'image_path'
+                    formData.append('image_url', imageUrlEl.value);
                 }
 
                 try {
