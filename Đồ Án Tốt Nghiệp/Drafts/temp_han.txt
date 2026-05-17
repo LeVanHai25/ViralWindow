@@ -1,0 +1,500 @@
+TRƯỜNG ĐẠI HỌC CÔNG NGHỆ THÔNG TIN VÀ TRUYỀN THÔNG
+KHOA KINH TẾ VÀ QUẢN TRỊ
+KHÓA LUẬN TỐT NGHIỆP ĐẠI HỌC
+CHUYÊN NGÀNH: HỆ THỐNG THÔNG TIN QUẢN LÝ
+ĐỀ TÀI:
+ỨNG DỤNG PHẦN MỀM HỆ THỐNG QUẢN LÝ GLASSFLOW TRONG QUẢN LÝ KHO VÀ VẬT TƯ NHẰM TỐI ƯU HÓA NGUỒN LỰC VÀ NÂNG CAO HIỆU QUẢ ĐIỀU HÀNH TẠI CÔNG TY VIRALWINDOW.
+GIẢNG VIÊN HƯỚNG DẪN : T.S TRƯƠNG THỊ VIỆT PHƯƠNG
+SINH VIÊN THỰC HIỆN:         PHẠM THỊ NGỌC HÂN
+LỚP:                                            HTTTQL-K21A
+Thái nguyên, tháng …. năm
+Mục lục
+LỜI CẢM ƠN
+LỜI CAM ĐOAN
+MỤC LỤC
+DANH MỤC HÌNH ẢNH
+LỜI MỞ ĐẦU
+CHƯƠNG 1: TỔNG QUAN LÝ THUYẾT VỀ HỆ THỐNG THÔNG TIN QUẢN LÝ, QUẢN LÝ KHO VÀ VẬT TƯ
+1.1.Tổng quan về hệ thống thông tin quản lý (MIS)
+1.2. Khái niệm, mục tiêu, ý nghĩa của quản lý kho và vật tư
+1.2.1. Khái niệm quản lý kho và vật tư
+1.1.2. Mục tiêu của quản lý kho và vật tư
+1.1.3. Vị trí của quản lý kho và vật tư
+1.3. Các xu thế và mô hình các yếu tố của công tác quản lý kho và vật tư
+1.3.1. Các xu thế quản lý kho và vật tư hiện đại
+1.3.2. Các yếu tố bên ngoài ảnh hưởng đến công tác quản lý kho và vật tư
+1.3.3. Mô hình các yếu tố của công tác quản lý kho và vật tư
+CHƯƠNG 2: THỰC TRẠNG QUẢN LÝ KHO VÀ VẬT TƯ TẠI CÔNG TY CỔ PHẦN VIRALWINDOW
+2.1. Giới thiệu chung về Công ty CP Viralwindow
+2.1.1. Sơ đồ cơ cấu tổ chức của công ty CP Viralwindow
+2.2 Thực trạng về hoạt động quản lý kho và vật tư tại Công ty CP Viralwindow
+2.2.1. Quản lý kho và vật tư
+2.2.2. Phân tích các nhân tố ảnh hưởng đến hoạt động quản lý của công ty
+2.3 Phân tích và thiết kế hệ thống quản lý kho và vật tư tại công ty CP Viralwindow
+2.3.1. Mô tả bài toán
+2.3.2. Sơ đồ phân cấp chức năng
+2.3.3. Sơ đồ phân luồng dữ liệu
+CHƯƠNG 3: THIẾT KẾ GIẢI PHÁP ỨNG DỤNG PHẦN MỀM GLASSFLOW TRONG QUẢN LÝ KHO VÀ VẬT TƯ
+3.1 Phân tích và thiết kế quy trình quản lý kho và vật tư mới dựa trên việc ứng dụng phần mềm Glassflow tại doanh nghiệp.
+3.1.1. Phân tích sự thay đổi trong luồng nghiệp vụ quản lý
+3.1.2. Thiết kế quy trình quản lý
+3.1.3. Thiết kế quy trình đồng bộ và quản lý tồn kho thông minh
+3.1.4. Thiết kế hệ thống báo cáo và đối soát tài chính
+3.2 Phân tích các tiêu chí đánh giá hiệu quả của hệ thống quản lý kho và vật tư khi áp dụng phần mềm Glassflow, từ đó đề xuất giải pháp phù hợp với hoạt động kinh doanh của công ty.
+3.2.1. Các tiêu chí đánh giá hiệu quả hệ thống
+3.2.2. Đề xuất giải pháp phù hợp với hoạt động kinh doanh của công ty
+CHƯƠNG 4: ỨNG DỤNG HỆ THỐNG GLASSFLOW VÀ ĐÁNH GIÁ HIỆU QUẢ TẠI CÔNG TY CỔ PHẦN VIRALWINDOW
+4.1. Tổng quan phần mềm hệ thống Glassflow
+4.1.1. Giới thiệu phần mềm
+4.1.2. Chức năng và ứng dụng của phần mềm Glassflow
+4.2. Các tính năng của hệ thống phần mềm Glassflow
+4.3. Ứng dụng hệ thống phần mềm Glassflow vào quản lý kho và vật ty tại Công ty CP Viralwindow
+4.3.1. Quản lý nhập xuất trong Glassflow
+4.3.2. Quản lý hệ thống
+4.4. Đánh giá hiệu quả phần mềm
+4.5. Hướng phát triển của phần mềm
+KẾT LUẬN
+TÀI LIỆU THAM KHẢO
+NHẬN XÉT CỦA GIÁO VIÊN HƯỚNG DẪN
+LỜI CẢM ƠN
+Để hoàn thành quá trình nghiên cứu và hoàn thành khóa luận tốt nghiệp này lời đầu tiên em xin gửi đến thầy, cô giáo trường Đại học Công nghệ Thông tin Truyền thông Thái Nguyên nói chung và thầy cô khoa Kinh tế & Quản trị nói riêng lời cảm ơn chân thành nhất đã dìu dắt, giảng dạy cho em những kiến thức và hành trang vững  chắc. Đặc biệt, em xin gửi tới Trương Thị Việt Phương người đã trực tiếp hướng dẫn và tận tình chỉ bảo em trong quá trình nghiên cứu và hoàn thành khóa luận tốt nghiệp này.
+Ngoài ra, Em xin gửi lời cảm ơn đến Công ty CP Viralwindow trong thời gian qua đã chỉ bảo, cũng cấp các số liệu, tài liệu quan trọng cho em. Đồng thời tạo điệu kiện thuận lợi cho em có thêm được những kinh nghiệm và trải nghiệm thực tế và trang bị kỹ lưỡng cho hành trang trong tương lai và hoàn thành quá trình nghiên cứu.
+Do kiến thức và hiểu biết của bản thân còn hạn chế, em khó tránh khỏi những thiếu sót trong quá trình trình bày và diễn đạt. Em kính mong nhận được những ý kiến đóng góp quý báu từ quý thầy cô, ban lãnh đạo cùng các anh chị tại Công Ty CP Viralwindow để bài báo cáo khóa luận tốt nghiệp của em được hoàn thiện và đạt kết quả tốt hơn.
+Cuối cùng em xin kính chúc quý thầy, cô dồi dào sức khỏe và thành công trong sự nghiệp. Đồng thời em xin gửi lời cảm ơn đến các anh chị tại tại Công Ty CP Viralwindow sức khỏe và ngày càng phát triển vững mạng hơn.
+Em xin chân thành cảm ơn!
+Thái Nguyên, ngày .... tháng .... năm 2026
+LỜI CAM ĐOAN
+Báo cáo này là thành quả từ quá trình nghiên cứu thực tế tại Công ty CP Viralwindow. Em xin khẳng định rằng toàn bộ nội dung và kết quả trong báo cáo đều được thực hiện một cách trung thực, minh bạch, không sao chép hay sử dụng thông tin từ bất kỳ nguồn nào mà chưa được trích dẫn rõ ràng.
+Em xin xác nhận rằng toàn bộ dữ liệu và thông tin trong báo cáo đều được trình bày một cách rõ ràng và chính xác. Các nội dung và phân tích trong bài đều được xây dựng dựa trên quá trình quan sát và nghiên cứu thực tế tại Công ty CP Viralwindow.
+Em sẵn sàng hoàn toàn chịu trách nhiệm về nội dung của báo cáo này và sẽ chấp nhận mọi hình thức xử lý từ hội đồng nếu có bất kỳ sai sót nào về thông tin hoặc vi phạm được phát hiện.
+DANH MỤC HÌNH ẢNH
+Hình 1: Logo Công ty Cổ phần ViralWindow
+Hình 2: Sơ đồ cơ cấu tổ chức Công ty Cổ phần ViralWindow
+Hình 3: Sơ đồ phân cấp chức năng
+Hình 4: Sơ đồ phân luồng dữ liệu
+Hình 5: Quy trình quản lý kho và vật tư
+Hình 6 : Giao diện giao diện trang đăng nhập
+Hình 7 : Giao diện chính
+LỜI MỞ ĐẦU
+1. Lý do chọn đề tài
+Trong bối cảnh nền kinh tế số hiện nay, ngành sản xuất và kinh doanh cửa nhôm, kính cường lực đang đối mặt với những thách thức lớn về quản trị vận hành. Việc kiểm soát chặt chẽ nguyên vật liệu, hàng tồn kho không chỉ giúp giảm thiểu lãng phí mà còn là yếu tố sống còn để duy trì sức cạnh tranh trên thị trường.
+Công ty Viralwindow là đơn vị tiên phong trong lĩnh vực giải pháp về cửa, luôn hướng đến sự chuyên nghiệp và tối ưu trong sản xuất. Tuy nhiên, với khối lượng vật tư đa dạng và quy trình kho phức tạp, việc quản lý thủ công hoặc sử dụng các công cụ rời rạc dần bộc lộ những hạn chế, gây khó khăn trong việc theo dõi thời gian thực và điều phối nguồn lực.
+Phần mềm GlassFlow là hệ thống quản lý chuyên biệt, được thiết kế tối ưu cho ngành kính và cửa. Công cụ này cung cấp các tính năng quản trị kho thông minh, từ khâu nhập kho, định mức vật tư đến xuất kho sản xuất, giúp lãnh đạo đưa ra các quyết định điều hành chính xác và kịp thời.
+Do đó, đề tài “Ứng dụng phần mềm hệ thống quản lý GlassFlow trong quản lý kho và vật tư nhằm tối ưu hóa nguồn lực và nâng cao hiệu quả điều hành tại Công ty Viralwindow” được lựa chọn nghiên cứu.
+2. Mục tiêu nghiên cứu
+Mục tiêu tổng quát: Ứng dụng phần mềm GlassFlow nhằm số hóa quy trình quản lý kho và vật tư giúp tối ưu hóa nguồn lực và nâng cao hiệu quả điều hành tại Công ty Viralwindow.
+Mục tiêu cụ thể:
+Làm rõ cơ sở về quản trị dự án và vai trò của phần mềm chuyên dụng trong ngành nhôm kính.
+Chỉ ra các điểm hạn chế trong quy trình quản lý kho và vật tư  hiện tại của công ty cổ phần Viralwindow.
+Thiết lập cấu hình và quy trình vận hành các phân hệ cốt lõi của GlassFlow (như: bóc tách vật tư tự động, lập lịch thi công, theo dõi trạng thái đơn hàng) sao cho phù hợp với đặc thù vận hành của Viralwindow.
+Triển khai áp dụng phần mềm vào một hoặc một số dự án thực tế để đo lường các chỉ số hiệu quả (ví dụ: giảm thời gian lập kế hoạch, giảm tỷ lệ nhôm vụn, tăng độ chính xác trong báo cáo tài chính dự án.
+3. Đối tượng và phạm vi nghiên cứu
+Đối tượng nghiên cứu:
+Quy trình quản lý kho, nhập - xuất và kiểm kê vật tư tại Công ty Viralwindow.
+Các tính năng và hiệu quả vận hành của hệ thống quản lý GlassFlow.
+Phạm vi nghiên cứu:
+Về nội dung: Tập trung vào các nghiệp vụ liên quan đến kho bãi, quản lý mã vật tư, định mức nguyên liệu sản xuất và phân tích dữ liệu điều hành.
+Về không gian: Thực hiện trực tiếp tại hệ thống kho bãi và bộ phận điều hành của Công ty Viralwindow.
+Về mục tiêu cuối cùng: Làm rõ các lợi ích về việc tiết kiệm nguồn lực (nhân sự, tài chính, thời gian) và cải thiện hiệu suất quản trị tổng thể của công ty.
+4. Câu hỏi nghiên cứu
+Việc ứng dụng phần mềm GlassFlow giúp giải quyết những nút thắt nào trong quản lý vật tư và đóng góp cụ thể như thế nào vào sự phát triển bền vững của Công ty Viralwindow?
+Việc tích hợp dữ liệu từ GlassFlow vào quy trình sản xuất thực tế có giúp giảm thiểu tỷ lệ sai hỏng và hao hụt nguyên vật liệu so với phương thức quản lý truyền thống hay không?
+Những rào cản về nhân sự và hệ thống khi triển khai GlassFlow tại Công ty Viralwindow là gì, và cần những giải pháp hỗ trợ nào để tối đa hóa hiệu quả của phần mềm này?
+5. Kết cấu
+Chương 1: Tổng quan lý thuyết về hệ thống thông tin quản lý, quản lý kho và vật tư
+Chương 2: Thực trạng quản lý kho và vật tư tại công ty cổ phần viralwindow
+Chương 3: Thiết kế giải pháp ứng dụng phần mềm Glassflow trong quản lý kho và vật tư
+Chương 4: Ứng dụng hệ thống glassflow và đánh giá hiệu quả tại công ty cổ phần viralwindow
+CHƯƠNG 1
+TỔNG QUAN LÝ THUYẾT VỀ HỆ THỐNG THÔNG TIN QUẢN LÝ, QUẢN LÝ KHO VÀ VẬT TƯ
+1.1. Tổng quan về hệ thống thông tin quản lý (MIS)
+Hệ thông tin quản trị doanh nghiệp - MIS (Management Information System) là khái niệm chung dành cho tất cả ứng dụng của con người, của công nghệ hỗ trợ việc giải quyết các vấn đề trong quản lý và điều hành trong tất cả các lĩnh vực của doanh nghiệp. MIS hướng tới hầu hết các vị trí trong doanh nghiệp, từ người công nhân phân xưởng, đến người quản lý cấp cao với mục đích hỗ trợ họ giúp đơn giản hóa công việc, nâng cao năng suất lao động và nâng cao hiệu quả quản lý.
+Ngày nay, với sự đa dạng của các hoạt động kinh doanh thì việc quản lý và điều hành các hoạt động kinh doanh đó càng trở nên phức tạp hơn, yêu cầu độ chính xác và tính hiệu quả cao hơn. Bạn không thể làm tốt mọi công việc của mình khi lượng thông tin cần xử lý ngày càng nhiêu, yêu cầu về độ chính xác và thời gian xử lý ngày càng cao. Ngay cả khi bạn là nhà quản lý những yêu cầu đó càng trở nên quan trọng hơn, công việc hàng ngày của bạn luôn đòi hỏi bạn phải làm việc với kế toán, tài chính, với vấn đề nhân sự - tiền lương hay việc điều hành sản xuất, tiếp thị.
+Với MIS, bạn và doanh nghiệp sẽ dần dần cảm nhận được sự thay đổi cho những đầu tư vào nó. Lượng công việc, lượng thông tin mà bạn bắt buộc phải xử lý trước đây sẽ giảm đi một cách đáng kinh ngạc khi bạn có MIS hay chỉ một phần nhỏ trong nó; Đơn giản vì mọi công việc phức tạp và tiêu tốn nhiều tài nguyên (thời gian, nhân lực, chi phí) của doanh nghiệp bạn sẽ được MIS giải quyết, khi đó hiệu quả hoạt động của mỗi cá nhân và của toàn doanh nghiệp bạn sẽ tăng lên rõ ràng.
+Các thành phần của MIS
+Việc xác định các thành phần thực sự của MIS tương đối đa dạng và phụ thuộc vào từng cách tiếp cận vấn đề của mỗi một doanh nghiệp trong việc ứng dụng MIS để giải quyết các bài toán của doanh nghiệp đó. Dưới đây là các thành phần của MIS cho cách tiếp cận rất phổ biến hiện nay trên thế giới, với cách tiếp cận này nó MIS sẽ gồm 4 thành phần chính, từng phần sẽ giúp bạn có cái nhìn cơ bản nhất, tổng quan nhất về hệ thông tin quản trị doanh nghiệp MIS.
+Nền tảng của hệ thống thông tin
+Trình bày những khái niệm, kiến thức cơ bản nhất về hệ thống thông tin, vai trò quan trọng của hệ thống thông tin trong các doanh nghiệp. Sự cần thiết đưa công nghệ thông tin vào ứng dụng trong các hoạt động quản lý, sản xuất, kinh doanh của các doanh nghiệp.
+Tổng quan về công nghệ thông tin và truyền thông
+Trình bày những khái niệm, kiến thức cơ bản về công nghệ thông tin; bao gồm cả những kiến thức kỹ thuật, thực tiễn về phần cứng, phần mềm, viễn thông, truyền thông, cấu trúc dữ liệu, hệ quản trị cơ sở dữ liệu.
+Với những kiến thức này, bạn sẽ một lần nữa rõ ràng khi hình dùng về những gì mà hệ quản trị thông tin doanh nghiệp sẽ làm.
+Các ứng dụng trong doanh nghiệp
+Đưa ra những lĩnh vực mà công nghệ thông tin và truyền thông áp dụng trong quản trị doanh nghiệp. Bao gồm:
+Hệ thống thông tin cộng tác và tính toán cho nhân viên; nói lên vai trò quan trọng của việc áp dụng các ứng dụng thông dụng cho các công việc văn phòng, thư điện tử nội bộ, soạn thảo văn bản, tính toán…v.v.
+Hệ thống thông tin trong quản lý sản xuất; nói lên vai trò trong quan trọng của việc áp dụng các ứng dụng hỗ trợ các công đoạn trong quá trình quản lý sản xuất (bán hàng, mua hàng, kho, tài chính, kế toán …)
+Hệ thống thông tin hỗ trợ và ra quyết định cho nhà quản lý; một bước tiến dài khi các hệ thống có khả năng phân tích và đánh giá thông tin nhắm đưa ra các dự báo hỗ trợ những quyết định quan trọng.
+Hệ thống thông tin cho “chiến lược phát triển doanh nghiệp”; đây là phần ứng dụng phức tạp, quan trọng và cũng nhiều ý nghĩa nhất, với việc tổng hợp các nguồn thông tin, dữ liệu từ các hệ thống đang áp dụng trong doanh nghiệp nó sẽ giúp bạn có được những chiến lược phát triển hợp lý trước các đối thủ.
+Quản lý công nghệ thông tin trong doanh nghiệp
+Nói lên ý nghĩa và tầm quan trọng của công nghệ thông tin trong doanh nghiệp. Từ đó nêu lên tầm quan trọng của việc định hướng, quản lý và phát triển công nghệ thông tin trong doanh nghiệp.
+Quản lý tài nguyên thông tin và công nghệ; nói lên ý nghĩa của việc đầu tư, quản lý tài nguyên về thông tin trong các doanh nghiệp.
+Lên kế hoạch và thực hiện các cơ hội cùng với công nghệ thông tin; nói lên ý nghĩa của việc doanh nghiệp lên kế hoặch để sẵn sàng thực hiện các cơ hội kinh doanh trong tương lai.
+Các chính sách bảo mật và quy chế tài nguyên công nghệ thông tin; thực hiện các qui định về bảo mật thông tin, các quy định về áp dụng công nghệ thông tin trong doanh nghiệp.
+Chức năng hỗ trợ các tùy chọn theo dõi sử dụng hàng trong kho/bán hàng ở các cấp và bộ thành phần, theo dõi việc sử dụng lao động dựa trên đơn đặt hàng nhiệm vụ hay hàng hóa được lắp ráp/làm việc theo quy trình.
+1.2. Khái niệm, mục tiêu, ý nghĩa của quản lý kho và vật tư
+1.2.1. Khái niệm quản lý kho và vật tư
+Quản lý kho (Warehouse Management) là quá trình tổ chức, kiểm soát và tối ưu hóa các hoạt động liên quan đến lưu trữ, di chuyển và xử lý hàng hóa trong kho. Mục tiêu chính của quản lý kho là đảm bảo hàng hóa được lưu trữ an toàn, dễ dàng truy xuất và vận chuyển hiệu quả, từ đó đáp ứng nhu cầu của khách hàng và giảm thiểu chi phí vận hành.
+Quản lý vật tư là một chuỗi các hoạt động nhằm đảm bảo và kiểm soát số lượng vật tư, hàng hóa trong kho. Điều này giúp đảm bảo hàng hóa đủ điều kiện cho các hoạt động sản xuất, cung cấp cũng như phân phối kịp thời, góp phần nâng cao hiệu suất làm việc cũng như tối ưu hóa các chi phí liên quan tới vật liệu.
+Quản lý kho vật tư là quá trình tổ chức, điều phối và giám sát các hoạt động liên quan đến việc lưu trữ, xử lý, và điều phối các nguồn lực vật tư của một tổ chức. Nguồn lực vật tư bao gồm các loại hàng hóa, nguyên liệu, thành phẩm; các tài sản khác mà tổ chức sử dụng trong quá trình sản xuất hoặc cung cấp dịch vụ.
+Quản lý kho vật tư nhằm mục đích đảm bảo rằng tổ chức có đủ nguồn lực cần thiết; đúng loại và số lượng, tại đúng thời điểm và địa điểm cần thiết. Đồng thời cũng giúp tối ưu hóa việc sử dụng nguồn lực và giảm thiểu lãng phí. Đây là một phần quan trọng của hoạt động kinh doanh và sản xuất của một tổ chức, ảnh hưởng đến hiệu suất và hiệu quả của công việc.
+1.1.2. Mục tiêu của quản lý kho và vật tư
+Hoạt động quản lý kho và vật tư đóng vai trò trung tâm trong việc đảm bảo sự vận hành trôi chảy và hiệu quả của mọi tổ chức. Khi vật tư luôn sẵn sàng ở đúng nơi, đúng lúc và với số lượng phù hợp, doanh nghiệp có thể tối ưu hóa quy trình, giảm thiểu lãng phí và nâng cao khả năng cạnh tranh trên thị trường.
+Việc quản lý kho vật tư không chỉ đơn thuần là cất trữ hàng hóa mà còn là một quy trình phức tạp, đòi hỏi sự tính toán và kiểm soát chặt chẽ. Mục tiêu cốt lõi là đảm bảo sự sẵn có của vật tư cần thiết để đáp ứng nhu cầu sản xuất, kinh doanh, đồng thời tối ưu hóa chi phí liên quan đến việc lưu trữ và luân chuyển hàng tồn kho. Điều này giúp ngăn ngừa tình trạng thiếu hụt gây ảnh hưởng đến tiến độ công việc, cũng như tránh tình trạng tồn kho quá mức dẫn đến lãng phí vốn và không gian.
+Một hệ thống quản lý kho vật tư hiệu quả sẽ góp phần quan trọng vào việc giảm thiểu rủi ro, tiết kiệm chi phí hoạt động và nâng cao năng suất tổng thể. Từ việc theo dõi sát sao số lượng, chất lượng đến việc đảm bảo vật tư luôn trong tình trạng tốt nhất, mọi khía cạnh của quản lý kho đều hướng đến mục tiêu chung là tối ưu hóa nguồn lực và hỗ trợ đắc lực cho hoạt động kinh doanh.
+1.1.3. Vị trí của quản lý kho và vật tư
+Vị trí của bộ phận quản lý kho và vật tư trong một doanh nghiệp là vô cùng quan trọng, thường được đặt ở một vị trí chiến lược để đảm bảo sự phối hợp nhịp nhàng với các bộ phận khác và hỗ trợ trực tiếp cho hoạt động cốt lõi.
+Về mặt tổ chức:
+Thuộc bộ phận Logistics hoặc Chuỗi cung ứng: Trong nhiều doanh nghiệp, đặc biệt là các công ty sản xuất, thương mại hoặc có quy mô lớn, bộ phận quản lý kho và vật tư thường nằm dưới sự quản lý của bộ phận Logistics hoặc Chuỗi cung ứng (Supply Chain). Điều này phản ánh vai trò của kho trong việc trung chuyển hàng hóa, nguyên vật liệu, đảm bảo dòng chảy liên tục từ nhà cung cấp đến khách hàng.
+Tương tác chặt chẽ với các bộ phận khác: Quản lý kho cần có mối liên hệ mật thiết với nhiều phòng ban khác như:
+Phòng Kế hoạch: Để nhận thông tin về nhu cầu vật tư, kế hoạch sản xuất, dự báo
+tồn kho.
+Phòng Mua hàng/Cung ứng: Để phối hợp về kế hoạch nhập hàng, số lượng, thời gian giao nhận
+Phòng Sản xuất: Để cung ứng kịp thời nguyên vật liệu, thành phẩm chodây chuyền sản xuất.
+Phòng Kinh doanh/Bán hàng: Để nắm bắt nhu cầu thị trường, kế hoạch xuất hàng, đảm bảo đủ hàng hóa cung ứng.
+Phòng Kế toán: Để đối chiếu số liệu, xử lý các chứng từ nhập xuất, quản lý giá trị hàng tồn kho.
+Phòng Vận tải: Để phối hợp cho hoạt động xuất nhập hàng hóa.
+Về mặt chức năng:
+Quản lý kho và vật tư đóng vai trò là trung tâm điều phối và lưu trữ, đảm bảo hàng hóa luôn sẵn sàng cho các hoạt động của doanh nghiệp. Vị trí này không chỉ đơn thuần là nơi cất giữ mà còn là điểm khởi đầu và kết thúc của nhiều quy trình quan trọng, ảnh hưởng trực tiếp đến hiệu quả hoạt động chung
+1.3. Các xu thế và mô hình các yếu tố của công tác quản lý kho và vật tư
+1.3.1. Các xu thế quản lý kho và vật tư hiện đại
+Những thay đổi nhanh chóng của thị trường và sự phát triển công nghệ đã tạo ra nhiều xu hướng mới trong quản lý kho và vật tư, giúp doanh nghiệp tối ưu hóa hoạt động, giảm chi phí và nâng cao khả năng cạnh tranh.
+Tự động hóa và trí tuệ nhân tạo (AI) trong hoạt động kho
+Tự động hóa đã trở thành yếu tố bắt buộc để nâng cao hiệu quả và giảm thiểu sai sót trong công tác quản lý kho. Các công nghệ phổ biến bao gồm: Robot di động tự động (AMR) và phương tiện dẫn đường tự động (AGV): Giúp vận chuyển hàng hóa, lấy hàng và xếp hàng một cách chính xác, nhanh chóng thay cho công sức con người, đặc biệt hiệu quả với các kho hàng có quy mô lớn. Hệ thống lưu trữ và truy xuất tự động (AS/RS): Tự động hóa toàn bộ quy trình cất và lấy hàng hóa trong kho, tối ưu hóa không gian lưu trữ và đảm bảo tính chính xác 100% về số lượng và vị trí hàng hóa. AI và phân tích dữ liệu: Dự đoán nhu cầu hàng hóa, tối ưu hóa lộ trình giao hàng, tự động điều chỉnh quy trình làm việc theo tình hình thực tế và đưa ra các đề xuất cải tiến dựa trên dữ liệu lịch sử.
+Quản lý kho dựa trên Internet of Things (IoT)
+Công nghệ IoT cho phép kết nối các thiết bị và cảm biến trong kho hàng để thu thập dữ liệu theo thời gian thực:Theo dõi vị trí, tình trạng và điều kiện lưu trữ của hàng hóa (nhiệt độ, độ ẩm, độ rung) để đảm bảo chất lượng hàng hóa, đặc biệt quan trọng với các hàng hóa dễ hư hỏng, thực phẩm hoặc dược phẩm. Cập nhật số lượng tồn kho liên tục, giúp nhà quản lý có cái nhìn tổng quan về hoạt động kho và ra quyết định chính xác, kịp thời. Giảm thiểu công việc thủ công, loại bỏ sai sót do nhập liệu tay và tiết kiệm thời gian cho nhân viên.
+Kho xanh và bền vững
+Xu hướng này ngày càng được chú trọng, giúp doanh nghiệp giảm chi phí và nâng cao hình ảnh thương hiệu:  Áp dụng các giải pháp tiết kiệm năng lượng như tấm pin mặt trời, hệ thống chiếu sáng LED, mái mát để giảm chi phí điện và giảm phát thải carbon.  Sử dụng vật liệu xây dựng xanh, thân thiện với môi trường cho cơ sở kho bãi. Tối ưu hóa quy trình làm việc để giảm thiểu lãng phí hàng hóa, tối đa hóa tái sử dụng và tái chế.  Xây dựng chuỗi cung ứng xanh, cam kết không phát thải hoặc giảm phát thải carbon theo mục tiêu dài hạn (như cam kết của DHL đến năm 2050).
+Tích hợp phần mềm quản lý kho chuyên dụng (WMS)
+Hệ thống quản lý kho WMS giúp tự động hóa và chuẩn hóa toàn bộ quy trình vận hành kho:  Dẫn dắt nhân viên thực hiện đúng các bước cho từng nghiệp vụ nhập, xuất, kiểm kê hàng hóa, loại bỏ sai sót do nhập liệu thủ công.  Cung cấp dữ liệu tồn kho theo thời gian thực, giúp nhà quản lý theo dõi tình hình kho mọi lúc mọi nơi. Tích hợp với các hệ thống khác như ERP, CRM, hệ thống thương mại điện tử để tạo ra một hệ thống quản lý doanh nghiệp toàn diện, đồng bộ dữ liệu giữa các bộ phận.
+Tối ưu hóa không gian kho và chiến lược tồn kho
+Với chi phí đất đai ngày càng cao, doanh nghiệp ngày càng chú trọng việc tối ưu hóa không gian lưu trữ:  Chọn ra chiến lược tồn kho phù hợp: Tập trung hàng tại một kho lớn để phân phối đa kênh, hoặc phân phối hàng tại nhiều điểm nhỏ hơn để gần hơn với thị trường khách hàng.  Sử dụng công nghệ xếp hàng thông minh để tận dụng tối đa không gian cao độ của kho bãi, thay vì chỉ sử dụng không gian sàn.  Xây dựng kế hoạch tồn kho linh hoạt, thích ứng với biến động nhu cầu thị trường, tránh tình trạng tồn kho quá mức hoặc thiếu hụt hàng hóa.
+Chuỗi cung ứng toàn cầu và hợp tác đa đối tác
+Sau đại dịch Covid-19 và các biến động địa chính trị, nhiều doanh nghiệp đã thay đổi chiến lược chuỗi cung ứng:  Tìm kiếm các đối tác nhà cung cấp và kho bãi tại nhiều thị trường khác nhau để giảm rủi ro gián đoạn chuỗi cung ứng.  Tập trung vào các mối quan hệ hợp tác dài hạn với đối tác toàn cầu thay vì đầu tư xây dựng kho bãi đơn lẻ tại một địa điểm. Tăng cường kết nối giữa các kho hàng trên toàn cầu để tạo ra một hệ thống quản lý tồn kho thống nhất, linh hoạt đáp ứng nhu cầu thị trường quốc tế.
+Quản lý kho theo quy trình chuẩn và cải tiến liên tục
+Doanh nghiệp ngày càng chú trọng xây dựng quy trình quản lý kho rõ ràng, đồng bộ và áp dụng các phương pháp cải tiến liên tục: Xác định các chỉ số KPI cụ thể để đánh giá hiệu quả hoạt động kho như thời gian chu kỳ đơn hàng, tỷ lệ sai sót kiểm kê, mức độ tận dụng không gian kho.  Áp dụng các phương pháp phân tích để tìm ra điểm yếu trong quy trình và cải tiến liên tục theo mô hình Kaizen.  Tổ chức đào tạo thường xuyên cho nhân viên về quy trình làm việc mới, công nghệ sử dụng và kỹ năng làm việc nhóm.
+1.3.2. Các yếu tố bên ngoài ảnh hưởng đến công tác quản lý kho và vật tư
+- Biến động Thị trường và Nhu cầu Khách hàng
+Đây là yếu tố có tác động trực tiếp và thường xuyên nhất: Xu hướng tiêu dùng thay đổi: Sự dịch chuyển nhanh chóng của xu hướng, sở thích của người tiêu dùng có thể khiến hàng hóa trở nên lỗi thời hoặc tăng/giảm đột ngột nhu cầu. Điều này đòi hỏi việc dự báo nhu cầu phải chính xác và khả năng điều chỉnh tồn kho linh hoạt. Tính thời vụ: Nhiều ngành hàng có nhu cầu biến động mạnh theo mùa vụ (ví dụ: quần áo mùa hè/mùa đông, hàng hóa dịp lễ tết). Việc quản lý kho phải tính toán đến các đỉnh điểm nhu cầu này để có kế hoạch nhập hàng và dự trữ phù hợp, tránh tình trạng thiếu hàng vào mùa cao điểm hoặc tồn kho ứ đọng sau mùa vụ. Hoạt động của đối thủ cạnh tranh: Các chương trình khuyến mãi, ra mắt sản phẩm mới, hoặc chiến lược định giá của đối thủ có thể ảnh hưởng trực tiếp đến doanh số và nhu cầu đối với sản phẩm của doanh nghiệp, từ đó tác động đến lượng hàng cần dự trữ.
+Tình hình Kinh tế Vĩ mô
+Các yếu tố kinh tế ở cấp độ quốc gia hoặc toàn cầu có ảnh hưởng lan tỏa đến mọi hoạt động của doanh nghiệp, bao gồm cả quản lý kho.Lạm phát: Khi lạm phát tăng cao, chi phí mua nguyên vật liệu, chi phí vận chuyển và chi phí lưu kho đều có xu hướng tăng. Điều này có thể khiến giá trị hàng tồn kho tăng lên, ảnh hưởng đến lợi nhuận và đòi hỏi doanh nghiệp phải xem xét lại chiến lược định giá và quản lý chi phí kho bãi. Tỷ giá hối đoái:Đối với các doanh nghiệp nhập khẩu nguyên liệu hoặc hàng hóa, biến động tỷ giá có thể làm tăng hoặc giảm đáng kể chi phí nhập khẩu. Điều này ảnh hưởng đến việc xác định thời điểm mua hàng tối ưu và mức tồn kho an toàn cần duy trì. Tăng trưởng kinh tế:Tình hình tăng trưởng kinh tế chung của đất nước hoặc khu vực ảnh hưởng đến sức mua của người tiêu dùng và khả năng đầu tư của doanh nghiệp, từ đó tác động đến nhu cầu về hàng hóa và vật tư. Chính sách tiền tệ, lãi suất: Lãi suất vay vốn cao có thể làm tăng chi phí tài chính cho việc duy trì hàng tồn kho, buộc doanh nghiệp phải tìm cách giảm thiểu lượng hàng lưu trữ.
+Chuỗi Cung ứng và Logistics
+Sự ổn định và hiệu quả của chuỗi cung ứng bên ngoài là yếu tố then chốt: Nhà cung cấp: Sự ổn định về chất lượng, năng lực cung ứng, thời gian giao hàng của nhà cung cấp là yếu tố quyết định đến lượng tồn kho tối thiểu mà doanh nghiệp cần duy trì. Các vấn đề như nhà cung cấp chậm trễ, thiếu hụt nguyên liệu, hoặc thay đổi chất lượng có thể gây gián đoạn nghiêm trọng cho hoạt động kho.  Vận tải và Logistics:Chi phí vận chuyển, thời gian giao hàng, sự sẵn có của phương tiện vận tải, và các quy định về vận chuyển (đặc biệt là vận chuyển quốc tế) ảnh hưởng trực tiếp đến thời gian luân chuyển hàng hóa và chi phí vận hành kho. Các gián đoạn trong chuỗi vận tải (do thiên tai, dịch bệnh, đình công) có thể gây ra tình trạng thiếu hụt hoặc tồn đọng hàng hóa. Chính sách hải quan và thương mại: Các quy định về xuất nhập khẩu, thuế quan, các rào cản thương mại có thể ảnh hưởng đến khả năng nhập hàng, chi phí và thời gian thông quan, đòi hỏi sự điều chỉnh trong kế hoạch quản lý tồn kho.
+Yếu tố Pháp lý và Quy định của Nhà nước
+Các quy định pháp luật thay đổi có thể tác động đến cách thức quản lý kho: Quy định về an toàn lao động, phòng cháy chữa cháy:Yêu cầu doanh nghiệp phải tuân thủ các tiêu chuẩn nghiêm ngặt về an toàn trong kho bãi, có thể đòi hỏi đầu tư vào cơ sở vật chất, trang thiết bị phòng cháy và đào tạo nhân viên. - Quy định về môi trường: Các tiêu chuẩn về xử lý chất thải, bảo vệ môi trường có thể ảnh hưởng đến việc lưu trữ một số loại vật tư (hóa chất, vật liệu nguy hại) và quy trình xử lý hàng hóa hết hạn sử dụng. - Chuẩn mực kế toán (ví dụ: VAS 02 về Hàng tồn kho): Các chuẩn mực này quy định cách thức ghi nhận, đánh giá và trình bày giá trị hàng tồn kho, ảnh hưởng đến việc tính toán chi phí và giá trị tài sản của doanh nghiệp.
+Yếu tố Công nghệ và Đổi mới
+Sự phát triển nhanh chóng của công nghệ bên ngoài có thể tạo ra cả cơ hội và thách thức:  Công nghệ mới:Các công nghệ như AI, IoT, Blockchain, robot hóa có thể tạo ra những phương pháp quản lý kho hiệu quả hơn. Doanh nghiệp cần theo dõi và đầu tư vào các công nghệ phù hợp để không bị tụt hậu. Rủi ro về an ninh mạng: Việc ứng dụng công nghệ trong quản lý kho cũng đi kèm với rủi ro về an ninh mạng, đòi hỏi các biện pháp bảo vệ dữ liệu và hệ thống khỏi các cuộc tấn công.
+Các Sự kiện Bất khả kháng
+Những sự kiện không lường trước được có thể gây ảnh hưởng nghiêm trọng:  Thiên tai: Bão, lũ lụt, động đất có thể phá hủy cơ sở kho bãi, làm hư hỏng hoặc mất mát hàng hóa, gây gián đoạn hoạt động trong thời gian dài.  Dịch bệnh:Các đại dịch (như COVID-19) có thể gây ra tình trạng thiếu hụt nhân lực, gián đoạn chuỗi cung ứng, đóng cửa biên giới, ảnh hưởng nặng nề đến mọi khía cạnh của quản lý kho. Bất ổn chính trị, xã hội: Xung đột, bất ổn trong nước hoặc quốc tế có thể ảnh hưởng đến nguồn cung, chi phí vận chuyển và an ninh của kho bãi.
+1.3.3. Mô hình các yếu tố của công tác quản lý kho và vật tư
+Mô hình 5 nhóm yếu tố cốt lõi theo hoạt động thực tế:
+Yếu tố con người: Là yếu tố quyết định mọi hoạt động: bao gồm kỹ năng làm việc, thái độ trách nhiệm, trình độ chuyên môn của nhân viên trực tiếp vận hành kho, quản lý bộ phận và các bộ phận liên quan như mua hàng, sản xuất, kế toán. Mức độ huấn luyện, sự gắn kết của đội ngũ nhân viên sẽ ảnh hưởng trực tiếp đến tốc độ và độ chính xác của công việc nhập, xuất, kiểm kê hàng hóa.
+Yếu tố tài sản vật chất: Bao gồm toàn bộ cơ sở vật chất phục vụ hoạt động kho: nhà kho, kệ chứa hàng, xe nâng, xe đẩy vận chuyển, máy quét mã vạch, hệ thống camera giám sát và các dụng cụ hỗ trợ làm việc khác. Việc bảo trì, cập nhật thiết bị sẽ giúp giảm thiểu sai sót và tăng hiệu suất làm việc.
+Yếu tố đối tượng quản lý:Là tất cả các loại vật tư, hàng hóa được lưu trữ: nguyên vật liệu đầu vào cho dây chuyền sản xuất, thành phẩm sẵn sàng bán, linh kiện bảo trì hoặc hàng dự trữ theo mùa vụ. Mỗi loại hàng sẽ có yêu cầu bảo quản, quản lý khác nhau tùy thuộc vào tính chất, hạn sử dụng và giá trị.
+Yếu tố quy trình làm việc: Là các bước chuẩn hóa, thống nhất cho từng khâu hoạt động: từ khi nhận yêu cầu nhập kho, kiểm tra chất lượng, ghi nhận số liệu, sắp xếp hàng cho đến khi xử lý đơn hàng xuất kho và thực hiện kiểm kê định kỳ. Quy trình rõ ràng sẽ giúp loại bỏ sai sót và tiết kiệm thời gian làm việc.
+Yếu tố công nghệ và thông tin: Bao gồm phần mềm quản lý kho, hệ thống theo dõi tồn kho theo thời gian thực, các công cụ phân tích dữ liệu để ra quyết định. Việc sử dụng công nghệ phù hợp sẽ giúp giảm thiểu công việc thủ công, đồng bộ dữ liệu giữa các bộ phận và cung cấp cái nhìn toàn diện về tình trạng kho hàng.
+Mô hình 3 tầng quản lý theo cấp bậc
+Tầng vận hành thực tế: Là nhóm nhân viên trực tiếp thực hiện công việc hàng ngày: nhận hàng, xếp hàng, lấy hàng theo đơn xuất kho, kiểm tra số lượng và báo cáo các sự cố phát sinh. Đây là tầng thực hiện trực tiếp các quy trình cơ bản của kho bãi.
+Tầng quản lý trung gian:Là trưởng bộ phận kho, người phụ trách giám sát hoạt động hàng ngày, điều chỉnh nhân công khi cần thiết, giải quyết các tranh chấp hoặc sai sót nhỏ và báo cáo tình hình kho cho cấp quản lý cao hơn.
+Tầng ra quyết định cấp cao: Là ban lãnh đạo doanh nghiệp, người sử dụng dữ liệu tồn kho để xây dựng chiến lược dài hạn: quyết định thời điểm mua hàng, mức tồn kho an toàn, mở rộng kho bãi hoặc thay đổi đối tác nhà cung cấp theo biến động thị trường.
+Mô hình phân loại yếu tố nội bộ và bên ngoài
+Yếu tối nội bộ: Là các yếu tố do doanh nghiệp kiểm soát được:Quy trình làm việc nội bộ, năng lực đội ngũ nhân viên, hệ thống công nghệ sử dụng, chi phí vận hành kho, chiến lược tồn kho và kế hoạch mua hàng.
+Yếu tố bên ngoài: Là các yếu tố doanh nghiệp không kiểm soát được nhưng phải thích ứng: Biến động nhu cầu thị trường, tình hình kinh tế vĩ mô, chất lượng và thời gian giao hàng của nhà cung cấp, chi phí vận chuyển, quy định pháp lý của nhà nước và các sự kiện bất khả kháng như thiên tai, dịch bệnh.
+Mô hình phân loại theo khối công việc cụ thể
+Bạn cũng có thể chia công tác quản lý kho thành 6 khối công việc chính, tương ứng với 6 nhóm yếu tố:
+Yếu tố lập kế hoạch: dự báo nhu cầu, xác định mức tồn kho an toàn và xây dựng kế hoạch mua hàng
+Yếu tố nhập kho: tiếp nhận, kiểm tra chất lượng, đối chiếu chứng từ và cập nhật dữ liệu khi hàng hóa về kho
+Yếu tố bảo quản: sắp xếp hàng hóa theo quy tắc, duy trì điều kiện lưu trữ phù hợp và thực hiện biện pháp an toàn phòng cháy chữa cháy
+Yếu tố xuất kho: xử lý đơn hàng, lấy hàng chính xác và giao cho bộ phận liên quan
+Yếu tố kiểm kê và báo cáo: đối chiếu số lượng thực tế với dữ liệu hệ thống, lập báo cáo tồn kho và xử lý các trường hợp hao hụt, lỗi thời
+Yếu tố phối hợp: giao tiếp và hợp tác với các bộ phận khác trong doanh nghiệp để đảm bảo luồng thông tin và vật tư trơn tru.
+CHƯƠNG 2
+THỰC TRẠNG QUẢN LÝ KHO VÀ VẬT TƯ TẠI CÔNG TY CỔ PHẦN VIRALWINDOW
+2.1. Giới thiệu chung về Công ty CP Viralwindow
+Tên tiếng Việt: Công ty Cổ phần ViralWindow.
+Tên tiếng Anh: ViralWindow Joint Stock Company.
+Tên viết tắt: ViralWindow.
+Địa chỉ trụ sở: Căn 12+14-B1, Khu đô thị mới Geleximco, Lê Trọng Tấn, Hà Đông,
+Hà Nội.
+Website: https://viralwindow.vn/
+Người hướng dẫn tại doanh nghiệp: Lâm Tuấn Phong
+Số điện thoại: 0982068785
+Email: Tuanphongsbqt@gmail.com
+Logo của công ty: với biểu tượng khung cửa cách điệu, tượng trưng cho sự vững chãi và độ chính xác tuyệt đối trong kỹ thuật thi công.
+Hình 1: Logo Công ty Cổ phần ViralWindow
+Công ty cổ phần Viralwindow được thành lập vào tháng 01/2021, với sự đúc kết của 15 năm kinh nghiệm trong ngành cửa. Đem đến dòng sản phẩm cửa nhôm cao cấp đồng bộ thương hiệu Việt Nam, với mọi quy trình đều theo tiêu chuẩn nghiêm ngặt và khắt khe của Châu Âu.
+Với tiêu chí Giải pháp – Đồng bộ – Chuyên nghiệp. Viralwindow xây dựng chiến lược phát triển và cho ra đời sản phẩm cửa nhôm cao cấp đồng bộ phụ kiện Viral, giúp tăng khả năng tương thích và vận hành của bộ cửa. Viralwindow chú trọng từng chi tiết nhỏ, từ những nghiên cứu về môi trường, thời tiết, khí hậu, lối sống và văn hóa. Với hệ thống chuỗi showroom trưng bày sản phẩm trên nhiều tỉnh thành, Viralwindow hứa hẹn sẽ mang đến cho khách hàng sự trải nghiệm tốt nhất.
+Hệ cửa nhôm Viralwindow đưa ra nhiều giải pháp phù hợp với các công trình nhà ở, biệt thự, khách sạn. Đặc biệt cửa nhôm sử dụng màu sơn KCC bảo hành 20 năm chống ăn mòn muối biển thích hợp với nhiều môi trường khí hậu khác nhau ở Việt Nam. Với phương châm “ chất lượng tạo nên giá trị, uy tín tạo nên sự thành công” Viralwindow luôn không ngừng sáng tạo ra những sản phẩm chất lượng và giải pháp tối ưu đáp ứng nhu cầu cửa khách hàng.” /:Viralwindow cũng luôn chú trọng và đáp ứng tốt nhất các dịch vụ trước và sau bán hàng.
+2.1.1. Sơ đồ cơ cấu tổ chức của công ty CP Viralwindow
+Hình 2: Sơ đồ cơ cấu tổ chức Công ty Cổ phần ViralWindow
+Sơ đồ trên thể hiện cơ cấu tổ chức quản lý của một doanh nghiệp theo mô hình phân cấp chức năng. Đây là mô hình tổ chức phổ biến trong các doanh nghiệp sản xuất và kinh doanh hiện nay, giúp phân chia nhiệm vụ rõ ràng giữa các bộ phận, đảm bảo hoạt động vận hành diễn ra hiệu quả và có sự phối hợp chặt chẽ giữa các phòng ban. Cơ cấu này được xây dựng theo hệ thống từ cấp lãnh đạo cao nhất đến các bộ phận chuyên môn, trong đó mỗi phòng ban đảm nhận một chức năng riêng nhưng vẫn có mối liên hệ hỗ trợ lẫn nhau nhằm hướng đến mục tiêu phát triển chung của doanh nghiệp.
+Đứng đầu cơ cấu tổ chức là Giám đốc. Đây là người giữ vai trò lãnh đạo cao nhất trong doanh nghiệp, chịu trách nhiệm điều hành toàn bộ hoạt động sản xuất, kinh doanh và quản trị công ty. Giám đốc là người đưa ra các chiến lược phát triển, định hướng hoạt động và quyết định các vấn đề quan trọng liên quan đến tài chính, nhân sự, thị trường cũng như kế hoạch mở rộng kinh doanh. Ngoài ra, giám đốc còn có nhiệm vụ giám sát tình hình hoạt động của các phòng ban, đánh giá hiệu quả công việc và đảm bảo doanh nghiệp vận hành đúng mục tiêu đã đề ra. Trong quá trình quản lý, giám đốc thường phối hợp với các phó giám đốc để điều hành và kiểm soát các lĩnh vực chuyên môn khác nhau nhằm giảm tải khối lượng công việc và nâng cao hiệu quả quản trị.
+Hỗ trợ cho giám đốc là hai Phó giám đốc. Đây là những người trực tiếp tham mưu và hỗ trợ giám đốc trong công tác điều hành doanh nghiệp. Mỗi phó giám đốc có thể phụ trách một nhóm chức năng hoặc lĩnh vực hoạt động riêng tùy theo cơ cấu quản lý của công ty. Vai trò của phó giám đốc là theo dõi tình hình hoạt động của các bộ phận được phân công quản lý, giải quyết các vấn đề phát sinh trong quá trình vận hành và báo cáo kết quả công việc lên giám đốc. Việc có hai phó giám đốc trong cơ cấu tổ chức giúp doanh nghiệp tăng tính linh hoạt trong quản lý, đồng thời đảm bảo các hoạt động sản xuất, kinh doanh và quản trị nội bộ được giám sát chặt chẽ hơn.
+Bên dưới ban lãnh đạo là các phòng ban chức năng, bao gồm phòng kinh doanh, phòng kỹ thuật, xưởng sản xuất, phòng kho, phòng tài chính và phòng hành chính – nhân sự. Đây là những bộ phận trực tiếp thực hiện các hoạt động chuyên môn nhằm duy trì và phát triển hoạt động của doanh nghiệp. Mỗi phòng ban có nhiệm vụ riêng biệt nhưng vẫn liên kết với nhau trong quá trình vận hành để đảm bảo doanh nghiệp hoạt động ổn định và hiệu quả.
+Đầu tiên là phòng kinh doanh. Đây là bộ phận giữ vai trò quan trọng trong việc tìm kiếm khách hàng, mở rộng thị trường và tạo ra doanh thu cho doanh nghiệp. Phòng kinh doanh chịu trách nhiệm thực hiện các hoạt động liên quan đến bán hàng, chăm sóc khách hàng và phát triển quan hệ đối tác. Trong sơ đồ, phòng kinh doanh bao gồm hai chức năng chính là tư vấn khách hàng và báo giá, hợp đồng. Bộ phận tư vấn khách hàng có nhiệm vụ tiếp nhận nhu cầu của khách hàng, giới thiệu sản phẩm hoặc dịch vụ của công ty, đồng thời hỗ trợ giải đáp các thắc mắc liên quan đến sản phẩm. Đây là bước quan trọng giúp doanh nghiệp xây dựng hình ảnh chuyên nghiệp và tạo dựng niềm tin với khách hàng. Sau quá trình tư vấn, bộ phận báo giá và hợp đồng sẽ tiến hành lập báo giá, thương lượng điều khoản và ký kết hợp đồng với khách hàng. Việc thực hiện đúng quy trình kinh doanh giúp doanh nghiệp tăng khả năng cạnh tranh trên thị trường và đảm bảo nguồn doanh thu ổn định.
+Tiếp theo là phòng kỹ thuật. Đây là bộ phận chịu trách nhiệm về các vấn đề kỹ thuật liên quan đến sản phẩm và quá trình sản xuất. Trong cơ cấu tổ chức, phòng kỹ thuật bao gồm hai nhiệm vụ chính là thiết kế sản phẩm và bóc tách vật tư. Bộ phận thiết kế sản phẩm có nhiệm vụ nghiên cứu, sáng tạo và xây dựng các mẫu thiết kế phù hợp với nhu cầu của khách hàng cũng như định hướng phát triển của doanh nghiệp. Quá trình thiết kế không chỉ đòi hỏi tính thẩm mỹ mà còn phải đảm bảo yếu tố kỹ thuật và khả năng sản xuất thực tế. Sau khi hoàn thành thiết kế, bộ phận bóc tách vật tư sẽ tiến hành xác định các loại nguyên vật liệu cần thiết để sản xuất sản phẩm. Đây là bước quan trọng nhằm tính toán chính xác số lượng vật tư, hạn chế lãng phí và hỗ trợ phòng kho trong việc chuẩn bị nguyên liệu phục vụ sản xuất.
+Xưởng sản xuất là bộ phận trực tiếp tạo ra sản phẩm cho doanh nghiệp. Đây được xem là trung tâm hoạt động chính trong các doanh nghiệp sản xuất. Trong sơ đồ, xưởng sản xuất đảm nhận hai chức năng gồm sản xuất sản phẩm và thi công, lắp đặt. Bộ phận sản xuất sản phẩm chịu trách nhiệm thực hiện các công đoạn gia công, chế tạo sản phẩm dựa trên bản thiết kế và yêu cầu kỹ thuật đã được phê duyệt. Quá trình sản xuất đòi hỏi sự phối hợp chặt chẽ giữa công nhân, máy móc và nguyên vật liệu nhằm đảm bảo sản phẩm đạt chất lượng theo tiêu chuẩn đề ra. Sau khi sản phẩm hoàn thiện, bộ phận thi công và lắp đặt sẽ thực hiện việc vận chuyển, lắp ráp hoặc triển khai sản phẩm tại địa điểm của khách hàng nếu cần thiết. Điều này giúp doanh nghiệp đảm bảo chất lượng dịch vụ và nâng cao sự hài lòng của khách hàng.
+Một bộ phận không thể thiếu trong cơ cấu tổ chức là phòng kho. Đây là nơi chịu trách nhiệm quản lý toàn bộ hoạt động nhập, xuất và lưu trữ hàng hóa, nguyên vật liệu của doanh nghiệp. Trong sơ đồ, phòng kho bao gồm hai chức năng chính là nhập, xuất kho và kiểm kê, vận chuyển. Bộ phận nhập – xuất kho có nhiệm vụ tiếp nhận hàng hóa từ nhà cung cấp, kiểm tra số lượng và chất lượng trước khi lưu trữ trong kho. Đồng thời, bộ phận này cũng thực hiện xuất vật tư hoặc thành phẩm phục vụ sản xuất và giao hàng cho khách hàng. Bên cạnh đó, hoạt động kiểm kê và vận chuyển giúp doanh nghiệp kiểm soát số lượng hàng tồn kho, phát hiện chênh lệch hoặc thất thoát và đảm bảo quá trình luân chuyển hàng hóa diễn ra đúng tiến độ. Công tác quản lý kho hiệu quả sẽ góp phần giảm chi phí lưu kho, hạn chế thất thoát và tối ưu hóa hoạt động sản xuất kinh doanh.
+Phòng tài chính là bộ phận phụ trách quản lý các hoạt động liên quan đến tài chính và kế toán của doanh nghiệp. Đây là bộ phận có vai trò quan trọng trong việc kiểm soát nguồn vốn, doanh thu và chi phí của công ty. Trong cơ cấu tổ chức, phòng tài chính bao gồm hai chức năng chính là thu chi, công nợ và báo cáo tài chính. Bộ phận thu chi, công nợ có nhiệm vụ theo dõi các khoản thu từ khách hàng, thanh toán cho nhà cung cấp và quản lý công nợ phát sinh trong quá trình kinh doanh. Việc kiểm soát tốt công nợ giúp doanh nghiệp duy trì dòng tiền ổn định và hạn chế rủi ro tài chính. Ngoài ra, bộ phận báo cáo tài chính sẽ tổng hợp số liệu kế toán, lập báo cáo doanh thu, chi phí, lợi nhuận và các báo cáo tài chính định kỳ để cung cấp cho ban lãnh đạo. Các báo cáo này là cơ sở quan trọng giúp giám đốc đánh giá hiệu quả hoạt động và đưa ra các quyết định quản trị phù hợp.
+Cuối cùng là phòng hành chính – nhân sự. Đây là bộ phận đảm nhận công tác quản lý nhân sự và các hoạt động hành chính trong doanh nghiệp. Trong sơ đồ, phòng hành chính – nhân sự gồm hai chức năng là hành chính tổng hợp và quản lý nhân sự. Bộ phận hành chính tổng hợp có nhiệm vụ quản lý văn thư, lưu trữ hồ sơ, tổ chức các hoạt động nội bộ và đảm bảo điều kiện làm việc cho nhân viên trong công ty. Trong khi đó, bộ phận quản lý nhân sự chịu trách nhiệm tuyển dụng, đào tạo, đánh giá nhân viên và thực hiện các chế độ chính sách cho người lao động. Đây là bộ phận góp phần xây dựng môi trường làm việc chuyên nghiệp, duy trì nguồn nhân lực ổn định và nâng cao hiệu quả làm việc của toàn doanh nghiệp.
+Nhìn chung, cơ cấu tổ chức trong sơ đồ được xây dựng theo hướng phân cấp rõ ràng và chuyên môn hóa theo từng chức năng. Mỗi phòng ban đảm nhận một nhiệm vụ riêng nhưng có sự liên kết và hỗ trợ lẫn nhau trong quá trình hoạt động. Mô hình này giúp doanh nghiệp nâng cao hiệu quả quản lý, tối ưu hóa nguồn lực và đảm bảo các hoạt động sản xuất kinh doanh được triển khai đồng bộ. Đồng thời, việc phân chia nhiệm vụ cụ thể cho từng bộ phận còn giúp nâng cao tính chuyên nghiệp, tăng khả năng kiểm soát công việc và hỗ trợ ban lãnh đạo trong quá trình điều hành doanh nghiệp.
+2.2 Thực trạng về hoạt động quản lý kho và vật tư tại Công ty CP Viralwindow
+2.2.1. Quản lý kho và vật tư
+Tại Công ty CP Viralwindow, hoạt động quản lý kho và vật tư được xác định là khâu then chốt, trực tiếp ảnh hưởng đến tiến độ sản xuất và giá thành sản phẩm cửa nhôm kính cao cấp. Thực trạng hiện nay cho thấy hệ thống kho bãi của công ty đang phải vận hành với một khối lượng danh mục hàng hóa vô cùng đa dạng và đặc thù. Cụ thể, các nhóm vật tư chính bao gồm thanh profile nhôm tiêu chuẩn châu Âu với nhiều hệ nhôm và màu sắc khác nhau, hệ thống phụ kiện kim khí đồng bộ có giá trị cao, cùng các loại vật tư phụ như kính, gioăng EPDM và keo chuyên dụng. Việc lưu trữ và bảo quản các loại vật tư này đòi hỏi sự tỉ mỉ và quy trình khắt khe để tránh tình trạng trầy xước bề mặt sơn hoặc biến dạng vật lý. Hiện tại, công tác quản lý tại Viralwindow đã được triển khai bài bản qua các khâu nhập – xuất – tồn, đảm bảo nguyên tắc nhập trước xuất trước (FIFO) để duy trì chất lượng vật tư. Tuy nhiên, việc ghi chép và đối soát số liệu vẫn còn dựa nhiều vào các công cụ bảng tính thủ công hoặc phần mềm kế toán chung, chưa có tính chuyên biệt hóa cao cho ngành sản xuất cửa.
+Sự thiếu hụt một hệ thống quản lý dữ liệu thời gian thực đã dẫn đến những khó khăn nhất định trong việc kiểm soát định mức vật tư và xử lý nhôm vụn sau sản xuất. Thông tin giữa bộ phận kho và xưởng sản xuất đôi khi chưa có sự đồng bộ tuyệt đối, gây áp lực cho nhân viên trong các kỳ kiểm kê định kỳ và làm giảm tốc độ phản ứng của hệ thống điều hành trước những đơn hàng gấp. Mặc dù đội ngũ quản lý kho của Viralwindow có chuyên môn tốt và nhiệt huyết, nhưng với quy mô sản xuất ngày càng mở rộng và yêu cầu khắt khe về độ chính xác của các dòng cửa nhôm hệ cao cấp, phương thức quản lý hiện tại đang dần bộc lộ những hạn chế về mặt tối ưu hóa nguồn lực. Điều này đặt ra yêu cầu cấp thiết về việc áp dụng một giải pháp công nghệ số chuyên sâu như hệ thống GlassFlow nhằm tự động hóa quy trình, giảm thiểu sai sót do yếu tố con người và nâng cao hiệu suất sử dụng vật tư trong toàn bộ chu kỳ sản xuất của doanh nghiệp.
+2.2.2. Phân tích các nhân tố ảnh hưởng đến hoạt động quản lý của công ty
+Hoạt động quản trị kho bãi tại Viralwindow không tồn tại độc lập mà chịu sự tác động đan xen từ nhiều yếu tố nội tại và khách quan. Việc nhận diện chính xác các nhân tố này là cơ sở quan trọng để doanh nghiệp tìm ra lời giải cho bài toán tối ưu hóa nguồn lực thông qua công nghệ.
+Thứ nhất, đặc thù của sản phẩm nhôm kính cao cấp và danh mục vật tư phức tạp. Khác với các ngành hàng tiêu dùng, vật tư ngành cửa đòi hỏi sự đồng bộ tuyệt đối. Một bộ cửa hoàn thiện cần sự kết hợp chính xác giữa thanh profile, hệ gioăng, kính và hàng chục loại phụ kiện kim khí đi kèm. Sự đa dạng về mã màu, độ dày và chủng loại (hệ VRE, VRA) tạo ra áp lực cực lớn lên công tác phân loại và sắp xếp. Chỉ cần một sai sót nhỏ trong việc nhầm lẫn mã phụ kiện hoặc trầy xước bề mặt nhôm do bảo quản không đúng cách cũng có thể dẫn đến đình trệ cả dây chuyền sản xuất và gia tăng chi phí hao hụt.
+Thứ hai, trình độ ứng dụng công nghệ thông tin và chuyển đổi số. Hiện nay, mức độ sẵn sàng về công nghệ của doanh nghiệp là nhân tố quyết định đến hiệu quả điều hành. Tại Viralwindow, dù đã có quy trình bài bản nhưng việc vẫn còn phụ thuộc vào các công cụ thủ công hoặc phần mềm chưa chuyên dụng khiến tốc độ luân chuyển thông tin bị chậm. Sự thiếu hụt một hệ thống tích hợp như GlassFlow làm hạn chế khả năng dự báo nhu cầu vật tư, dẫn đến tình trạng lúc thừa các mã hàng ít dùng, lúc lại thiếu hụt các linh kiện thiết yếu cho các dự án gấp.
+Thứ ba, yếu tố con người và quy trình phối hợp liên phòng ban. Năng lực chuyên môn và ý thức trách nhiệm của đội ngũ nhân viên kho đóng vai trò trực tiếp trong việc duy trì độ chính xác của số liệu tồn kho. Tuy nhiên, quản lý kho không chỉ là trách nhiệm của riêng bộ phận kho mà còn phụ thuộc vào sự phối hợp nhịp nhàng với bộ phận kinh doanh và xưởng sản xuất. Nếu thông tin về thay đổi thiết kế hoặc sản lượng đơn hàng không được cập nhật kịp thời xuống kho, sẽ tạo ra sự vênh dữ liệu, gây khó khăn cho công tác điều hành tổng thể của ban lãnh đạo.
+Cuối cùng, sự biến động của thị trường và chuỗi cung ứng vật tư. Viralwindow sử dụng nhiều nguyên vật liệu nhập khẩu và phụ kiện từ các đối tác quốc tế (như Cmech, Sobinco), do đó hoạt động quản lý kho chịu ảnh hưởng mạnh mẽ từ thời gian vận chuyển (lead-time) và sự biến động giá cả. Việc quản trị kho hiệu quả đòi hỏi công ty phải có chiến lược dự trữ linh hoạt để vừa đảm bảo không đứt gãy sản xuất, vừa không gây ứ đọng vốn lưu động quá lớn trong bối cảnh thị trường vật liệu xây dựng luôn biến động không ngừng.
+2.3 Phân tích và thiết kế hệ thống quản lý kho và vật tư tại công ty CP Viralwindow
+2.3.1. Mô tả bài toán
+Bài toán đặt ra cho Công ty CP Viralwindow là xây dựng một hệ thống quản lý kho thông minh (GlassFlow) nhằm thay thế các phương thức ghi chép rời rạc. Hệ thống cần giải quyết các yêu cầu sau:
+Quản lý danh mục: Số hóa toàn bộ mã nhôm (theo hệ, độ dày, màu sắc), mã phụ kiện và vật tư phụ.
+Quản lý quy trình: Kiểm soát chặt chẽ luồng đi của vật tư từ lúc nhập kho từ nhà cung cấp, lưu kho bảo quản, đến khi xuất kho phục vụ sản xuất dựa trên lệnh sản xuất (LSX).
+Tối ưu hóa phế liệu: Hệ thống phải tự động tính toán được lượng nhôm dư sau mỗi lần cắt (nhôm vụn) để ưu tiên xuất kho cho các đơn hàng sau, tránh lãng phí.
+Cảnh báo và báo cáo: Tự động cảnh báo khi tồn kho xuống dưới mức an toàn và xuất báo cáo tồn kho thời gian thực phục vụ ban điều hành.
+2.3.2. Sơ đồ phân cấp chức năng
+Hình 3: Sơ đồ phân cấp chức năng
+2.3.3. Sơ đồ phân luồng dữ liệu
+Hình 4: Sơ đồ phân luồng dữ liệu
+CHƯƠNG 3
+THIẾT KẾ GIẢI PHÁP ỨNG DỤNG PHẦN MỀM GLASSFLOW TRONG QUẢN LÝ KHO VÀ VẬT TƯ tại công ty CP Viralwindow
+3.1 Phân tích và thiết kế quy trình quản lý kho và vật tư mới dựa trên việc ứng dụng phần mềm Glassflow tại doanh nghiệp.
+3.1.1. Phân tích sự thay đổi trong luồng nghiệp vụ quản lý kho và vật tư
+Khi tiến hành so sánh giữa phương thức quản trị truyền thống và quy trình sau khi tích hợp Glassflow, sự khác biệt về hiệu quả vận hành được thể hiện rất rõ nét. Trước đây, các công đoạn quản lý thường mang tính rời rạc, dữ liệu vật tư được lưu trữ thủ công trên các file đơn lẻ dẫn đến việc theo dõi tổng thể gặp nhiều khó khăn.
+Hiện nay, việc ứng dụng Glassflow đã giúp tập trung hóa toàn bộ dữ liệu vào một nền tảng duy nhất. Thay vì phải kiểm tra chéo giữa nhiều bộ phận để xác định lượng vật tư còn lại, nhân viên chỉ cần truy cập hệ thống là có thể nắm bắt chính xác tình trạng kho theo thời gian thực. Sự thay đổi này không chỉ giúp đẩy nhanh tốc độ xử lý các phiếu nhập - xuất mà còn đảm bảo tính chính xác ngay cả khi khối lượng công việc tăng cao vào các mùa cao điểm sản xuất tại Viralwindow.
+3.1.2. Thiết kế quy trình quản lý kho và vật tư
+Hình 5: Quy trình quản lý kho và vật tư
+Sơ đồ trên mô tả quy trình quản lý kho và vật tư của doanh nghiệp thông qua phần mềm GlassFlow với sự liên kết chặt chẽ giữa nhiều bộ phận khác nhau như bộ phận mua hàng, nhà cung cấp, kho chính, kho tiếp nhận, kho chi nhánh, bộ phận bảo trì, sản xuất, đối tác – khách hàng và hệ thống báo cáo dữ liệu. Trong mô hình này, phần mềm GlassFlow đóng vai trò là trung tâm quản lý dữ liệu, giúp đồng bộ thông tin, theo dõi quá trình nhập – xuất – tồn kho và hỗ trợ doanh nghiệp trong việc phân tích dữ liệu cũng như lập báo cáo quản trị. Toàn bộ hoạt động của hệ thống được xây dựng theo hướng liên kết xuyên suốt giữa các bộ phận nhằm đảm bảo quá trình vận hành kho diễn ra hiệu quả, hạn chế thất thoát và nâng cao khả năng kiểm soát vật tư trong doanh nghiệp.
+Quy trình bắt đầu từ bộ phận mua hàng. Đây là bộ phận chịu trách nhiệm tạo đơn mua hàng dựa trên nhu cầu thực tế của doanh nghiệp hoặc yêu cầu phát sinh từ kho và sản xuất. Khi số lượng hàng hóa hoặc vật tư trong kho giảm xuống dưới mức quy định, bộ phận mua hàng sẽ tiến hành lập đơn đặt hàng gửi đến nhà cung cấp. Đồng thời, thông tin về đơn mua hàng cũng được cập nhật lên phần mềm GlassFlow để các bộ phận liên quan có thể theo dõi và phối hợp xử lý. Việc tích hợp dữ liệu lên hệ thống giúp doanh nghiệp dễ dàng kiểm soát tiến độ mua hàng, theo dõi trạng thái giao hàng cũng như hạn chế tình trạng thiếu hụt nguyên vật liệu trong quá trình hoạt động.
+Sau khi nhận được đơn đặt hàng, nhà cung cấp sẽ thực hiện quá trình giao hàng cho doanh nghiệp. Hàng hóa được chuyển đến kho tiếp nhận để kiểm tra và làm thủ tục nhập kho. Trong sơ đồ, nhà cung cấp có mối liên kết trực tiếp với bộ phận mua hàng, kho tiếp nhận và bộ phận sản xuất. Điều này cho thấy nhà cung cấp không chỉ cung cấp vật tư cho hoạt động lưu kho mà còn hỗ trợ trực tiếp cho quá trình sản xuất khi cần thiết. Việc kết nối giữa các bộ phận giúp doanh nghiệp chủ động hơn trong việc tiếp nhận hàng hóa và đảm bảo nguyên vật liệu luôn sẵn sàng phục vụ hoạt động sản xuất kinh doanh.
+Kho tiếp nhận là nơi đầu tiên thực hiện việc nhập hàng vào hệ thống kho của doanh nghiệp. Tại đây, nhân viên kho sẽ tiến hành kiểm tra số lượng, chất lượng và tình trạng hàng hóa trước khi xác nhận nhập kho. Sau khi hoàn tất kiểm tra, dữ liệu nhập kho sẽ được cập nhật lên phần mềm GlassFlow nhằm đồng bộ thông tin với kho chính và các bộ phận liên quan. Việc quản lý nhập kho thông qua phần mềm giúp hạn chế sai sót trong quá trình kiểm kê, đồng thời hỗ trợ doanh nghiệp dễ dàng truy xuất thông tin về nguồn gốc, thời gian nhập hàng và số lượng tồn kho hiện tại.
+Từ kho tiếp nhận, hàng hóa sẽ được chuyển đến kho chính hoặc kho tổng. Đây là khu vực trung tâm trong toàn bộ hệ thống quản lý kho của doanh nghiệp. Kho chính có chức năng lưu trữ hàng hóa, quản lý tồn kho tổng, điều phối và phân bổ vật tư đến các kho chi nhánh hoặc các bộ phận sử dụng. Kho chính đóng vai trò như một đầu mối trung gian giúp doanh nghiệp kiểm soát toàn bộ lượng hàng hóa trong hệ thống. Mọi hoạt động nhập – xuất – điều chuyển hàng hóa đều được cập nhật liên tục lên phần mềm GlassFlow để đảm bảo dữ liệu luôn chính xác và đồng bộ theo thời gian thực.
+Phần mềm GlassFlow giữ vai trò cốt lõi trong mô hình quản lý này. Hệ thống giúp quản lý dữ liệu tập trung, đồng bộ hóa thông tin giữa các phòng ban và hỗ trợ xử lý dữ liệu nhanh chóng. Nhờ phần mềm, doanh nghiệp có thể theo dõi chính xác lượng hàng tồn kho, lịch sử nhập xuất vật tư, tốc độ luân chuyển hàng hóa cũng như tình trạng sử dụng vật tư tại từng bộ phận. Ngoài ra, GlassFlow còn hỗ trợ phân tích dữ liệu nhằm đưa ra các báo cáo phục vụ công tác quản trị. Điều này giúp ban lãnh đạo doanh nghiệp dễ dàng đánh giá hiệu quả hoạt động của hệ thống kho và đưa ra các quyết định điều chỉnh phù hợp.
+Sau khi được lưu trữ tại kho chính, hàng hóa có thể được phân phối đến các kho chi nhánh tùy theo nhu cầu sử dụng. Kho chi nhánh có chức năng xuất vật tư hoặc hàng hóa phục vụ hoạt động kinh doanh, sản xuất hoặc cung cấp cho đối tác – khách hàng. Việc phân bổ hàng hóa từ kho chính xuống các kho chi nhánh giúp doanh nghiệp tối ưu hóa quá trình lưu trữ và nâng cao khả năng đáp ứng nhu cầu tại nhiều khu vực khác nhau. Các dữ liệu liên quan đến quá trình xuất kho cũng được cập nhật lên hệ thống nhằm đảm bảo tính minh bạch và khả năng kiểm soát.
+Một bộ phận quan trọng khác trong sơ đồ là bộ phận bảo trì. Bộ phận này có nhiệm vụ yêu cầu xuất vật tư để phục vụ công tác sửa chữa, bảo dưỡng máy móc và thiết bị trong doanh nghiệp. Khi phát sinh nhu cầu bảo trì, bộ phận này sẽ gửi yêu cầu đến kho để được cấp phát vật tư phù hợp. Quá trình cấp phát vật tư có thể thông qua kho tiếp nhận hoặc kho chi nhánh tùy thuộc vào tình hình thực tế. Việc quản lý vật tư bảo trì thông qua hệ thống phần mềm giúp doanh nghiệp theo dõi được số lượng vật tư đã sử dụng, chi phí bảo trì và mức độ tiêu hao nguyên vật liệu trong từng giai đoạn hoạt động.
+Bên cạnh đó, bộ phận sản xuất cũng có mối liên hệ chặt chẽ với hệ thống kho và bảo trì. Sản xuất là nơi trực tiếp sử dụng nguyên vật liệu để tạo ra sản phẩm. Khi cần nguyên vật liệu phục vụ sản xuất, bộ phận này sẽ nhận hàng từ kho hoặc từ nhà cung cấp tùy theo kế hoạch hoạt động. Đồng thời, trong trường hợp máy móc phát sinh sự cố, bộ phận sản xuất sẽ phối hợp với bảo trì để yêu cầu cấp phát vật tư sửa chữa nhằm đảm bảo hoạt động sản xuất không bị gián đoạn. Nhờ có sự kết nối giữa các bộ phận trên phần mềm GlassFlow, toàn bộ quy trình được thực hiện nhanh chóng và hạn chế tình trạng chậm trễ trong sản xuất.
+Đối với đối tác – khách hàng, đây là bộ phận nhận hàng hóa được xuất từ kho chi nhánh hoặc kho tổng của doanh nghiệp. Sau khi hàng được xuất kho, thông tin giao dịch sẽ được cập nhật lên hệ thống để theo dõi và lưu trữ. Điều này giúp doanh nghiệp kiểm soát được quá trình giao hàng, số lượng hàng đã xuất cũng như lịch sử giao dịch với khách hàng. Đồng thời, dữ liệu này còn hỗ trợ bộ phận báo cáo trong việc phân tích doanh thu, sản lượng tiêu thụ và hiệu quả kinh doanh của doanh nghiệp.
+Hệ thống báo cáo hoặc kho tổng HBP có chức năng theo dõi, phân tích dữ liệu và lập báo cáo quản trị. Bộ phận này tiếp nhận dữ liệu từ phần mềm GlassFlow cũng như các hoạt động xuất nhập hàng trong hệ thống kho. Thông qua việc tổng hợp dữ liệu, doanh nghiệp có thể xây dựng các báo cáo liên quan đến tình hình tồn kho, tốc độ luân chuyển hàng hóa, hiệu quả sử dụng vật tư và chi phí vận hành kho. Các báo cáo này đóng vai trò quan trọng trong việc hỗ trợ nhà quản lý đánh giá hiệu quả hoạt động và đưa ra chiến lược cải thiện phù hợp.
+Nhìn chung, sơ đồ trên thể hiện một hệ thống quản lý kho hiện đại với sự hỗ trợ của phần mềm GlassFlow nhằm tối ưu hóa hoạt động quản lý vật tư và hàng hóa trong doanh nghiệp. Các bộ phận trong hệ thống được kết nối chặt chẽ với nhau thông qua quy trình nhập – xuất – lưu trữ – phân phối dữ liệu đồng bộ. Nhờ đó, doanh nghiệp có thể nâng cao hiệu quả quản lý kho, giảm thiểu thất thoát hàng hóa, tối ưu chi phí vận hành và tăng khả năng đáp ứng nhu cầu của khách hàng. Đồng thời, việc ứng dụng công nghệ phần mềm trong quản lý kho còn giúp doanh nghiệp tăng tính minh bạch, cải thiện khả năng phân tích dữ liệu và hỗ trợ ra quyết định quản trị một cách chính xác và kịp thời.
+3.1.3. Thiết kế quy trình đồng bộ và quản lý tồn kho thông minh
+Một trong những điểm yếu lớn nhất của quy trình cũ là tình trạng lệch số liệu giữa thực tế và sổ sách do việc cập nhật chậm trễ. Với thiết kế mới, mọi biến động nhập-xuất sẽ được đồng bộ tức thì lên hệ thống Glassflow.
+Điểm quan trọng trong quy trình này là khả năng kết nối dữ liệu giữa kho nguyên vật liệu và bộ phận sản xuất. Khi có yêu cầu vật tư cho dự án mới, hệ thống sẽ tự động kiểm tra và phản hồi về khả năng đáp ứng của kho. Điều này giúp Viralwindow tránh được rủi ro bán hàng vượt quá khả năng cung ứng hoặc tình trạng thiếu hụt vật tư làm gián đoạn dây chuyền. Ngoài ra, việc điều chuyển vật tư giữa các khu vực kho cũng được thực hiện rõ ràng, giúp nhà quản trị điều phối nguồn lực hiệu quả mà không cần qua nhiều bước kiểm tra thủ công.
+3.1.4. Thiết kế hệ thống báo cáo và đối soát tài chính
+Một trong những hạn chế lớn nhất trong mô hình quản lý kho truyền thống tại Viralwindow là việc tổng hợp dữ liệu còn phụ thuộc nhiều vào thao tác thủ công. Thông tin nhập kho, xuất kho và kiểm kê thường được lưu trữ rời rạc thông qua sổ sách hoặc file Excel riêng lẻ giữa các bộ phận. Điều này dẫn đến tình trạng dữ liệu không đồng nhất, khó kiểm soát và mất nhiều thời gian để đối chiếu khi xảy ra sai lệch. Đặc biệt, trong môi trường doanh nghiệp sản xuất có khối lượng vật tư lớn và tần suất nhập – xuất liên tục như Viralwindow, việc chậm trễ trong cập nhật dữ liệu dễ gây ra các rủi ro như thiếu hụt nguyên vật liệu, thất thoát hàng hóa hoặc sai lệch giá trị tồn kho trên báo cáo tài chính.
+Để giải quyết những vấn đề trên, hệ thống Glassflow được thiết kế với vai trò là nền tảng quản lý dữ liệu tập trung, cho phép tự động hóa toàn bộ quá trình báo cáo và đối soát tài chính trong doanh nghiệp. Mọi giao dịch phát sinh liên quan đến vật tư như nhập kho, xuất kho, điều chuyển kho hoặc kiểm kê đều được cập nhật tức thời lên hệ thống. Nhờ đó, dữ liệu luôn được đồng bộ theo thời gian thực giữa bộ phận kho, kế toán, sản xuất và ban lãnh đạo.
+Điểm nổi bật của hệ thống báo cáo mới là khả năng tổng hợp dữ liệu đa chiều. Thay vì chỉ theo dõi số lượng vật tư tồn kho đơn thuần, hệ thống cho phép doanh nghiệp phân tích dữ liệu theo nhiều tiêu chí khác nhau như giá trị tồn kho, tốc độ luân chuyển vật tư, mức độ tiêu hao nguyên vật liệu và lịch sử biến động kho theo từng giai đoạn. Điều này giúp nhà quản lý có cái nhìn toàn diện hơn về hiệu quả vận hành của hệ thống kho và đưa ra quyết định chính xác hơn trong hoạt động sản xuất kinh doanh.
+Ngoài ra, hệ thống còn hỗ trợ truy xuất dữ liệu theo từng nhóm vật tư, từng dự án hoặc từng bộ phận sử dụng. Ví dụ, ban quản lý có thể dễ dàng kiểm tra lượng vật tư đã xuất cho một công trình cụ thể, tổng giá trị vật tư tiêu hao hoặc số lượng vật tư còn tồn trong kho tại từng thời điểm. Việc phân tích dữ liệu theo nhiều chiều giúp doanh nghiệp đánh giá chính xác hiệu quả sử dụng vật tư và kiểm soát tốt hơn chi phí sản xuất.
+Một chức năng quan trọng khác trong thiết kế hệ thống là cơ chế cảnh báo tồn kho thông minh. Khi số lượng vật tư giảm xuống dưới mức tối thiểu được thiết lập, hệ thống sẽ tự động gửi cảnh báo đến bộ phận kho hoặc bộ phận thu mua để kịp thời bổ sung hàng hóa. Điều này giúp doanh nghiệp tránh tình trạng gián đoạn sản xuất do thiếu vật tư, đồng thời hạn chế tồn kho dư thừa gây lãng phí chi phí lưu trữ.
+Bên cạnh việc hỗ trợ quản lý kho, Glassflow còn đóng vai trò quan trọng trong công tác đối soát tài chính. Trong mô hình cũ, việc đối chiếu số liệu giữa kho và kế toán thường mất nhiều thời gian do phải kiểm tra thủ công từng phiếu nhập xuất. Không ít trường hợp xảy ra sai lệch giữa số lượng hàng hóa thực tế và số liệu trên sổ sách, dẫn đến khó khăn trong quá trình lập báo cáo tài chính hoặc kiểm kê cuối kỳ.
+Với hệ thống mới, mọi giao dịch nhập – xuất đều được gắn kèm mã chứng từ và lưu trữ lịch sử thao tác trên hệ thống. Mỗi thay đổi dữ liệu đều được ghi nhận đầy đủ về thời gian thực hiện, người thao tác và nội dung thay đổi. Điều này giúp doanh nghiệp dễ dàng truy xuất và kiểm tra lại dữ liệu khi cần thiết. Đồng thời, việc lưu trữ lịch sử giao dịch còn góp phần nâng cao tính minh bạch và trách nhiệm của nhân viên trong quá trình quản lý kho.
+Hệ thống đối soát tài chính được thiết kế theo hướng liên kết trực tiếp giữa dữ liệu kho và dữ liệu kế toán. Khi phát sinh giao dịch nhập hoặc xuất vật tư, hệ thống sẽ tự động cập nhật giá trị hàng hóa tương ứng vào báo cáo tài chính. Điều này giúp doanh nghiệp kiểm soát chính xác giá trị tồn kho và hạn chế sai lệch giữa số liệu thực tế với số liệu kế toán.
+Ngoài ra, việc kết nối dữ liệu giữa kho và kế toán còn hỗ trợ doanh nghiệp theo dõi dòng vốn đang lưu trữ trong kho. Ban lãnh đạo có thể nhanh chóng đánh giá lượng vốn bị tồn đọng ở từng nhóm vật tư, từ đó đưa ra kế hoạch nhập hàng hoặc điều phối vật tư hợp lý hơn. Đây là yếu tố đặc biệt quan trọng đối với các doanh nghiệp sản xuất vì chi phí nguyên vật liệu thường chiếm tỷ trọng lớn trong tổng chi phí hoạt động.
+Không chỉ hỗ trợ quản lý tài chính, hệ thống báo cáo còn giúp doanh nghiệp nâng cao khả năng dự báo và lập kế hoạch sản xuất. Dựa trên dữ liệu tồn kho và tốc độ sử dụng vật tư, doanh nghiệp có thể dự đoán nhu cầu nguyên vật liệu trong các giai đoạn tiếp theo để xây dựng kế hoạch thu mua phù hợp. Điều này giúp giảm thiểu rủi ro thiếu hụt nguyên vật liệu hoặc tồn kho quá mức, góp phần tối ưu hóa dòng tiền và nâng cao hiệu quả sử dụng vốn.
+Nhìn chung, việc thiết kế hệ thống báo cáo và đối soát tài chính trên nền tảng Glassflow mang lại nhiều lợi ích cho Viralwindow. Hệ thống không chỉ giúp tự động hóa quy trình quản lý dữ liệu mà còn nâng cao độ chính xác của thông tin, tăng tính minh bạch trong quản lý và hỗ trợ ban lãnh đạo đưa ra quyết định nhanh chóng, hiệu quả hơn. Đây được xem là một bước quan trọng trong quá trình chuyển đổi số và hiện đại hóa hoạt động quản lý kho của doanh nghiệp.
+3.2. Phân tích các tiêu chí đánh giá hiệu quả của hệ thống quản lý kho và vật tư khi áp dụng phần mềm Glassflow, từ đó đề xuất giải pháp phù hợp với hoạt động kinh doanh của công ty
+3.2.1. Các tiêu chí đánh giá hiệu quả hệ thống
+Để đánh giá mức độ hiệu quả của hệ thống quản lý kho và vật tư sau khi áp dụng phần mềm Glassflow, Viralwindow cần xây dựng bộ tiêu chí đánh giá phù hợp với đặc thù hoạt động sản xuất kinh doanh của doanh nghiệp. Các tiêu chí này không chỉ giúp doanh nghiệp đo lường hiệu quả vận hành mà còn là cơ sở để cải tiến hệ thống trong tương lai.
+Tiêu chí đầu tiên là thời gian xử lý nghiệp vụ. Đây là chỉ số phản ánh tốc độ xử lý công việc từ khi phát sinh yêu cầu vật tư đến khi hoàn tất quá trình nhập hoặc xuất kho. Trong mô hình quản lý cũ, quá trình xử lý thường mất nhiều thời gian do phải thực hiện nhiều bước kiểm tra và ghi chép thủ công. Sau khi áp dụng Glassflow, các thao tác được thực hiện trực tiếp trên hệ thống nên thời gian xử lý được rút ngắn đáng kể. Điều này giúp doanh nghiệp tăng tốc độ phản hồi yêu cầu sản xuất và nâng cao hiệu quả phối hợp giữa các bộ phận.
+Tiêu chí thứ hai là mức độ chính xác của dữ liệu tồn kho. Đây được xem là yếu tố quan trọng nhất trong hoạt động quản lý vật tư. Một hệ thống hiệu quả phải đảm bảo dữ liệu tồn kho trên phần mềm phản ánh chính xác số lượng hàng hóa thực tế trong kho. Việc cập nhật dữ liệu theo thời gian thực giúp hạn chế tối đa sai lệch giữa thực tế và sổ sách, đồng thời hỗ trợ bộ phận thu mua đưa ra quyết định nhập hàng dựa trên số liệu chính xác.
+Tiêu chí tiếp theo là khả năng kiểm soát thất thoát và sai sót trong quản lý kho. Khi toàn bộ giao dịch đều được lưu trữ trên hệ thống cùng lịch sử thao tác chi tiết, doanh nghiệp có thể dễ dàng truy vết nguyên nhân khi xảy ra chênh lệch số liệu. Điều này giúp nâng cao tính minh bạch và hạn chế các rủi ro liên quan đến thất thoát vật tư hoặc gian lận nội bộ.
+Ngoài ra, khả năng tối ưu hóa chi phí cũng là tiêu chí quan trọng để đánh giá hiệu quả của hệ thống. Thông qua việc kiểm soát tồn kho chính xác, doanh nghiệp có thể giảm thiểu tình trạng tồn kho dư thừa hoặc vật tư bị hư hỏng do lưu kho quá lâu. Đồng thời, việc theo dõi tốc độ luân chuyển vật tư còn giúp doanh nghiệp xây dựng kế hoạch nhập hàng hợp lý hơn, từ đó tối ưu hóa dòng vốn lưu động.
+Một tiêu chí khác là khả năng hỗ trợ ra quyết định quản trị. Hệ thống Glassflow cung cấp nhiều báo cáo và dữ liệu phân tích giúp ban lãnh đạo đánh giá tình hình hoạt động kho theo thời gian thực. Nhờ đó, doanh nghiệp có thể nhanh chóng phát hiện các vấn đề phát sinh và đưa ra phương án xử lý kịp thời. Đây là lợi thế lớn so với phương pháp quản lý thủ công trước đây.
+3.2.2. Đề xuất giải pháp phù hợp với hoạt động kinh doanh của công ty
+Dựa trên quá trình phân tích thực trạng và khả năng ứng dụng của phần mềm Glassflow, Viralwindow cần xây dựng lộ trình triển khai phù hợp nhằm đảm bảo hiệu quả vận hành và hạn chế ảnh hưởng đến hoạt động sản xuất hiện tại.
+Giải pháp đầu tiên là chuẩn hóa hệ thống mã vật tư giữa các bộ phận. Hiện nay, việc sử dụng tên gọi hoặc mã vật tư không thống nhất có thể gây nhầm lẫn trong quá trình nhập liệu và quản lý kho. Do đó, doanh nghiệp cần xây dựng danh mục mã vật tư chuẩn và áp dụng đồng bộ trên toàn hệ thống nhằm tạo sự thống nhất trong quản lý dữ liệu.
+Tiếp theo, công ty nên triển khai công nghệ mã QR hoặc Bar-code trong quản lý kho thực tế. Việc sử dụng mã quét giúp nhân viên nhập – xuất hàng hóa nhanh chóng và chính xác hơn so với nhập liệu thủ công. Đồng thời, công nghệ này còn hỗ trợ kiểm kê kho hiệu quả và giảm thiểu sai sót trong quá trình quản lý vật tư.
+Một giải pháp quan trọng khác là xây dựng hệ thống báo cáo thông minh theo định kỳ. Ban lãnh đạo cần được cung cấp các báo cáo tổng hợp về tồn kho, tốc độ luân chuyển vật tư và tình trạng tiêu hao nguyên vật liệu hàng tuần hoặc hàng tháng. Điều này giúp doanh nghiệp chủ động điều chỉnh kế hoạch sản xuất và thu mua phù hợp với tình hình thực tế.
+Ngoài ra, công ty cần chú trọng đào tạo và nâng cao kỹ năng sử dụng hệ thống cho đội ngũ nhân sự kho. Việc chuyển đổi từ phương pháp quản lý truyền thống sang quản lý số hóa đòi hỏi nhân viên phải có khả năng sử dụng phần mềm thành thạo và hiểu rõ vai trò của dữ liệu trong hoạt động quản trị doanh nghiệp. Vì vậy, doanh nghiệp nên tổ chức các chương trình đào tạo định kỳ nhằm nâng cao năng lực cho nhân viên.
+Cuối cùng, Viralwindow cần xây dựng quy trình kiểm tra và đánh giá hệ thống định kỳ để đảm bảo dữ liệu luôn chính xác và hệ thống vận hành ổn định. Việc thường xuyên kiểm tra hiệu quả hoạt động sẽ giúp doanh nghiệp kịp thời phát hiện các vấn đề tồn tại và có phương án cải tiến phù hợp trong quá trình phát triển lâu dài.
+CHƯƠNG 4
+ỨNG DỤNG HỆ THỐNG GLASSFLOW VÀ ĐÁNH GIÁ HIỆU QUẢ TẠI CÔNG TY CỔ PHẦN VIRALWINDOW
+4.1. Tổng quan phần mềm hệ thống Glassflow
+4.1.1. Giới thiệu phần mềm
+Phần mềm Glassflow là hệ thống quản trị doanh nghiệp hợp nhất được thiết kế chuyên biệt cho ngành sản xuất và kinh doanh cửa nhôm, kính tại Công ty Cổ phần Viralwindow. Phần mềm đóng vai trò là "trung tâm điều hành số", giúp tối ưu hóa toàn bộ quy trình từ khâu kinh doanh đến sản xuất và hậu cần.
+Hình 6: Giao diện giao diện trang đăng nhập
+Hình 7: Giao diện chính
+4.1.2. Chức năng và ứng dụng của phần mềm Glassflow
+Chức năng :
+Quản trị Dashboard điều hành: Cung cấp giao diện tổng thể giúp theo dõi nhanh tình hình doanh nghiệp theo thời gian thực như: số lượng dự án đang chạy (02 dự án), lệnh sản xuất hiện tại (02 lệnh) và số lượng khách hàng.
+Kiểm soát Kho & Vật tư thông minh: Tự động hóa danh mục hàng hóa, hỗ trợ kiểm kê và phân loại vật tư. Đặc biệt là chức năng tự động lọc danh sách 279 mã vật tư đã hết và 14 mã vật tư sắp hết để cảnh báo người dùng.
+Hệ thống Cảnh báo rủi ro: Tự động phát hiện và hiển thị các sai lệch hoặc chậm trễ, tiêu biểu như thông báo 04 dự án đã quá hạn deadline để kịp thời xử lý.
+Tích hợp AI Assistant & Tiện ích: Hỗ trợ trợ lý ảo AI giải đáp nghiệp vụ và các công cụ thao tác nhanh (tạo báo giá, kiểm kho) ngay trên màn hình chính.
+Phân quyền & Bảo mật: Quản lý tài khoản theo chức năng (Super Admin, Sales, Kỹ thuật), đảm bảo tính bảo mật và chuyên môn hóa trong quá trình nhập liệu.
+Ứng dụng thực tế :
+Tối ưu hóa quy trình kinh doanh: Ứng dụng chức năng "Thao tác nhanh" để lập báo giá ngay trên hệ thống, giúp rút ngắn thời gian phản hồi khách hàng và đồng bộ dữ liệu với bộ phận sản xuất.
+Quản trị dựa trên dữ liệu thực (Data-driven): Ban lãnh đạo dựa vào các chỉ số trực quan trên màn hình (như nhiệt độ, thời gian và biểu đồ dự án) để điều hành sản xuất phù hợp với điều kiện thực tế.
+Chủ động trong khâu cung ứng: Nhờ các con số cảnh báo chính xác (như 279 vật tư hết kho), bộ phận thu mua có thể lên kế hoạch nhập hàng kịp thời, không để tình trạng thiếu nguyên liệu làm gián đoạn xưởng sản xuất.
+Kiểm soát chất lượng và tiến độ: Ứng dụng phân hệ "Thi công & Nghiệm thu" để đảm bảo mọi bộ cửa nhôm kính xuất xưởng đều đạt "Tiêu chuẩn Đức" và bàn giao đúng hẹn cho đối tác.
+Minh bạch hóa hoạt động nội bộ: Sử dụng mục "Hoạt động gần đây" để theo dõi lịch sử duyệt báo giá, hoàn thành sản xuất, giúp các phòng ban phối hợp nhịp nhàng, tránh chồng chéo công việc.
+Nâng cao năng suất lao động: Chuyển đổi từ quản lý sổ sách sang số hóa hoàn toàn trên Glassflow, giúp giảm 50-70% thời gian tìm kiếm dữ liệu và lập báo cáo thủ công.
+4.2. Các tính năng của hệ thống phần mềm Glassflow
+Quản lý Điều hành và Dự án
+Tổng quan: Cung cấp cái nhìn bao quát về toàn bộ hoạt động của doanh nghiệp thông qua các báo cáo và chỉ số nhanh.
+Theo dõi dự án: Giám sát tiến độ, trạng thái và các giai đoạn thực thi của từng dự án cụ thể.
+Kế hoạch công việc: Lập lịch trình, phân bổ nhiệm vụ và quản lý thời hạn hoàn thành công việc cho nhân sự.
+Quản lý Chuyên môn (Kinh doanh & Kỹ thuật)
+Kinh doanh: Quản lý quy trình bán hàng, từ tiếp cận khách hàng đến theo dõi đơn hàng và doanh thu.
+Kỹ thuật: Tập trung vào các nghiệp vụ chuyên môn, bản vẽ hoặc tiêu chuẩn kỹ thuật liên quan đến sản phẩm.
+Quản lý Kho và Vật tư
+Kho vật tư: Quản lý chi tiết danh mục hàng hóa, số lượng tồn kho và định mức vật tư.
+Xuất vật tư: Theo dõi và thực hiện các quy trình luân chuyển hàng hóa ra khỏi kho phục vụ sản xuất hoặc bán hàng.
+Thi công, Nghiệm thu và Tài chính
+Thi công & Nghiệm thu: Giám sát quá trình thực địa tại công trình và thực hiện các thủ tục xác nhận hoàn thành chất lượng.
+Tài chính: Quản lý dòng tiền, các khoản thu chi, công nợ và báo cáo lợi nhuận.
+Công nghệ và Tiện ích hỗ trợ
+AI Assistant: Trợ lý trí tuệ nhân tạo hỗ trợ giải đáp, xử lý dữ liệu hoặc tự động hóa các tác vụ thông minh.
+Tin nhắn: Hệ thống liên lạc nội bộ giúp trao đổi công việc nhanh chóng giữa các thành viên.
+Chấm công: Theo dõi thời gian làm việc và sự hiện diện của nhân viên.
+Quản trị: Thiết lập hệ thống, phân quyền người dùng và cấu hình các thông số vận hành chung.
+4.3. Ứng dụng hệ thống phần mềm Glassflow vào quản lý kho và vật ty tại Công ty CP Viralwindow
+4.3.1. Quản lý nhập xuất trong Glassflow
+Hình 8: Giao diện quản lý kho
+Sau khi nhập các thông tin sản phẩm vào kho và xuất ra file excel ta có kết quả thu được như sau:
+Hình 9: Báo cáo tồn kho phụ kiện
+Báo cáo thể hiện chi tiết các thông tin như mã phụ kiện, tên vật tư, đơn vị tính, số lượng tồn kho, định mức tồn tối thiểu – tối đa, số lượng cần nhập và tổng giá trị tồn kho.
+Dữ liệu trong báo cáo giúp doanh nghiệp kiểm soát chính xác tình trạng vật tư hiện có, theo dõi các mặt hàng sắp hết hoặc tồn kho nhiều để đưa ra kế hoạch nhập hàng phù hợp. Ngoài ra, báo cáo còn hỗ trợ bộ phận kho và kế toán trong việc kiểm kê, đối chiếu số liệu và tính toán giá trị hàng tồn kho.
+Việc sử dụng báo cáo Excel giúp doanh nghiệp dễ dàng lưu trữ, tra cứu và tổng hợp dữ liệu, đồng thời nâng cao hiệu quả quản lý kho và hạn chế sai sót trong quá trình quản lý vật tư.
+Các bước thao tác trong quản lý kho:
+Hình 10: Quản lý danh mục phụ kiện
+Chức năng này cho phép người dùng tạo mới, chỉnh sửa và quản lý các nhóm danh mục phụ kiện trong hệ thống như bản lề, bánh xe ray trượt, keo dán, phụ kiện cửa cuốn, phụ kiện cửa kính và các loại phụ kiện khác.
+Việc phân loại phụ kiện theo từng danh mục giúp doanh nghiệp dễ dàng quản lý, tìm kiếm và kiểm soát vật tư trong kho một cách khoa học hơn. Ngoài ra, hệ thống còn hỗ trợ thêm mới danh mục trực tiếp trên giao diện phần mềm, giúp việc cập nhật dữ liệu nhanh chóng và thuận tiện.
+Chức năng này góp phần nâng cao hiệu quả quản lý kho, hạn chế nhầm lẫn giữa các loại vật tư và hỗ trợ quá trình nhập kho, xuất kho cũng như kiểm kê hàng hóa chính xác hơn.
+Nếu bạn muốn thêm phụ kiện vào kho hãy ấn hình bánh xe bên góc phải màn hình, thư mục quản lý danh mục phụ kiện hiện ra. Hãy nhập tên phụ kiện mà bạn mong muốn.
+Hình 11: Giao diện nhập kho
+Nếu bạn muốn thêm các phụ kiện hoặc linh kiện nhôm kính hãy ấn vào Nhập kho trong mục quản lý kho sẽ hiện ra giao diện như trên. Sau đó bạn ấn vào tạo phiếu nhập.
+Hình 12: Giao diện tạo phiếu nhập kho
+Trong giao diện này bao gồm các thông tin sau: mã phiếu, khi nhập, nhà cung cấp, ngày nhập và các thông tin phụ như ghi chú …Sau khi điền xong thông tin bạn hãy ấn vào chữ thêm sau đó lưu vào hoặc bạn có thể để nó ở bản nháp nếu chưa muốn hạch toán.
+Bước 1: Truy cập chức năng Nhập kho
+Tại thanh menu phía trên, người dùng chọn mục “NHẬP KHO”.
+Hệ thống sẽ hiển thị danh sách các phiếu nhập kho đã có trước đó.
+Bước 2: Tạo phiếu nhập mới
+Nhấn nút “+ Tạo phiếu nhập” ở góc phải màn hình.
+Một cửa sổ “Tạo Phiếu Nhập Kho” sẽ xuất hiện.
+Bước 3: Nhập thông tin phiếu nhập
+Người dùng tiến hành điền các thông tin cơ bản gồm:
+1. Mã phiếu
+Hệ thống tự động sinh mã phiếu nhập.
+Ví dụ: NK-2026-008.
+2. Kho nhập
+Chọn kho cần nhập vật tư vào.
+Ví dụ: Kho VIRAL.
+3. Nhà cung cấp
+Chọn nhà cung cấp từ danh sách có sẵn.
+Nếu chưa chọn, hệ thống hiển thị:-- Chọn NCC --.
+4. Ngày nhập
+Chọn ngày thực hiện nhập kho.
+Có thể nhập trực tiếp hoặc chọn từ lịch.
+5. Ghi chú
+Nhập thông tin bổ sung nếu cần.
+Ví dụ:“Hàng ưu tiên giao tới kho A”.
+Bước 4: Thêm vật tư vào phiếu nhập
+Trong phần “Thêm vật tư”, người dùng thực hiện:
+1. Chọn loại vật tư
+Chọn nhóm vật tư từ danh sách.
+Ví dụ:
+Phụ kiện
+Kính
+Khôm
+Vật tư phụ
+2. Tìm kiếm vật tư
+Nhập mã hoặc tên vật tư vào ô tìm kiếm.
+3. Nhập số lượng
+Điền số lượng cần nhập kho.
+4. Thêm vào danh sách
+Nhấn nút “+ Thêm”.
+Hệ thống sẽ đưa vật tư xuống bảng danh sách bên dưới.
+Bước 5: Kiểm tra thông tin vật tư
+Sau khi thêm vật tư, hệ thống hiển thị các thông tin:
+Mã vật tư
+Tên vật tư
+Loại
+Số lượng trước nhập
+Số lượng nhập
+Số lượng sau nhập
+Thông tin bổ sung
+Người dùng kiểm tra lại để đảm bảo dữ liệu chính xác.
+Bước 6: Kiểm tra tổng giá trị phiếu nhập
+Hệ thống tự động tính “Tổng cộng” ở cuối bảng.
+Người dùng kiểm tra tổng số lượng hoặc tổng giá trị nhập kho.
+Bước 7: Lưu phiếu nhập
+Người dùng có thể chọn một trong các chức năng sau:
+1. Hủy
+Hủy thao tác tạo phiếu nhập.
+2. Lưu nháp
+Lưu phiếu ở trạng thái nháp.
+Chưa cập nhật tồn kho.
+3. Lưu & Hạch toán
+Lưu phiếu chính thức.
+Đồng thời cập nhật số lượng tồn kho trong hệ thống.
+Bước 8: Hoàn tất nhập kho
+Sau khi hạch toán thành công:
+Phiếu nhập được lưu vào hệ thống.
+Tồn kho được cập nhật.
+Phiếu xuất hiện trong danh sách quản lý nhập kho.
+Ví dụ như sau:
+Hình 13: Tạo phiếu nhập kho
+Phiếu xuất kho cũng tương tự như phiếu nhập kho:
+Hình 14: Giao diện tạo phiếu xuất kho
+Bước 1: Truy cập chức năng Xuất kho
+Tại giao diện quản lý kho, người dùng chọn mục “XUẤT KHO” trên thanh chức năng.
+Hệ thống hiển thị danh sách các phiếu xuất kho đã được tạo trước đó.
+Bước 2: Tạo phiếu xuất mới
+Nhấn nút “+ Tạo phiếu xuất” ở góc phải màn hình.
+Hệ thống mở cửa sổ “Tạo Phiếu Xuất Kho”.
+Bước 3: Nhập thông tin phiếu xuất
+Người dùng điền các thông tin cơ bản của phiếu xuất gồm:
+1. Mã phiếu
+Mã phiếu được hệ thống tự động tạo.
+Ví dụ: XK-2026-010.
+2. Kho xuất
+Chọn kho cần xuất vật tư.
+Ví dụ: Kho VIRAL.
+3. Dự án
+Chọn dự án hoặc bộ phận sử dụng vật tư.
+Ví dụ:
+Công trình
+Dự án thi công
+Bộ phận sản xuất
+4. Ngày xuất
+Chọn ngày thực hiện xuất kho.
+5. Ghi chú
+Nhập nội dung bổ sung liên quan đến phiếu xuất.
+Ví dụ:“Xuất vật tư phục vụ thi công”.
+Bước 4: Thêm vật tư cần xuất
+Trong phần “Thêm vật tư xuất”, người dùng thực hiện các thao tác sau:
+1. Chọn loại vật tư
+Chọn nhóm vật tư cần xuất.
+Ví dụ:
+Phụ kiện
+Kính
+Khôm
+Vật tư phụ
+2. Tìm kiếm vật tư
+Nhập tên hoặc mã vật tư vào ô tìm kiếm.
+3. Nhập số lượng xuất
+Điền số lượng cần xuất kho.
+4. Nhập thông tin ghi chú
+Có thể nhập ghi chú riêng cho từng vật tư.
+5. Thêm vật tư
+Nhấn nút “+ Thêm” để đưa vật tư vào danh sách xuất kho.
+Bước 5: Kiểm tra danh sách vật tư xuất
+Sau khi thêm vật tư, hệ thống hiển thị bảng thông tin gồm:
+Mã vật tư
+Tên vật tư
+Loại vật tư
+Số lượng tồn trước xuất
+Số lượng xuất
+Số lượng còn lại sau xuất
+Thông tin ghi chú
+Người dùng kiểm tra lại để đảm bảo:
+Xuất đúng vật tư
+Đúng số lượng
+Không vượt quá tồn kho cho phép
+Bước 6: Kiểm tra tổng số lượng xuất
+Hệ thống tự động tính phần “Tổng xuất” phía dưới bảng danh sách vật tư.
+Người dùng kiểm tra lại tổng số lượng vật tư đã xuất.
+Bước 7: Lưu phiếu xuất
+Người dùng lựa chọn một trong các chức năng sau:
+1. Đóng
+Hủy thao tác tạo phiếu xuất.

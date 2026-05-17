@@ -3,7 +3,7 @@
  * ViralWindow - Management Calendar & Tasks
  */
 
-const API_BASE = window.API_BASE || '/api';
+const API_BASE = window.API_BASE || 'http://localhost:3001/api';
 const SOCKET_URL = '';
 
 const WorkPlanModule = {
@@ -83,6 +83,8 @@ const WorkPlanModule = {
         await this.loadProjects();   // Added
         await this.loadTypes();
         await this.loadPlans();
+        // Set initial view MỘT LẦN DUY NHẤT tại đây — loadPlans() không bao giờ switch view
+        this.switchMainView('dashboard');
         this.initSocket();
     },
 
@@ -200,9 +202,18 @@ const WorkPlanModule = {
         document.getElementById('view-' + viewName).classList.add('active');
 
         if (viewName === 'calendar' && this.calendar) {
-            setTimeout(() => this.calendar.render(), 50);
-        }
-        if (viewName !== 'detail') {
+            // [FIX FullCalendar v6] Thứ tự đúng: render() TRƯỚC, addEventSource SAU
+            // Bước 1: Cập nhật sidebar stats/counts ngay lập tức (không phụ thuộc calendar render)
+            this.renderAllViews();
+            // Bước 2: Sau 150ms (đủ để container visible), mount calendar TRƯỚC
+            // rồi add events SAU — FullCalendar v6 chỉ hiển thị events khi đã được mount
+            setTimeout(() => {
+                this.calendar.render();
+                // Re-add events SAU khi calendar đã mounted → đảm bảo hiển thị đúng
+                const filtered = this.getFilteredPlans();
+                this.updateCalendarData(filtered);
+            }, 150);
+        } else if (viewName !== 'detail') {
             this.renderAllViews();
         }
     },
@@ -322,6 +333,8 @@ const WorkPlanModule = {
         });
     },
 
+    // [REFACTORED] loadPlans() là hàm THUẦN DATA — KHÔNG BAO GIỜ switch view
+    // View chỉ được set bởi: init() (lần đầu), tab click (user action), openDetailPanel (user click)
     loadPlans: async function() {
         try {
             const token = window.AuthHelper.getToken();
@@ -334,8 +347,10 @@ const WorkPlanModule = {
             console.error('Lỗi tải kế hoạch:', e);
         } finally {
             this.renderAllViews();
-            if(this.selectedPlanId) this.openDetailPanel(this.selectedPlanId, true);
-            else this.switchMainView('dashboard');
+            // Nếu đang xem detail panel, cập nhật lại nội dung (không switch view)
+            if (this.selectedPlanId && this.currentView === 'detail') {
+                this.openDetailPanel(this.selectedPlanId, true);
+            }
         }
     },
 
@@ -1661,7 +1676,7 @@ const WorkPlanModule = {
                         this.loadChecklist(this.selectedPlanId);
                     }
                 }
-                // Always refresh plans to update main views (Dashboard, List, Calendar) without interrupting the user
+                // loadPlans() giờ là hàm thuần data — an toàn gọi bất cứ lúc nào
                 this.loadPlans();
             }
         });

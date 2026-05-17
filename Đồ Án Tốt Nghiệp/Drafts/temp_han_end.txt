@@ -1,0 +1,41 @@
+2. Lưu nháp
+Lưu phiếu ở trạng thái nháp.
+Chưa trừ tồn kho thực tế.
+3. Lưu & Hạch toán
+Lưu phiếu chính thức.
+Đồng thời hệ thống cập nhật giảm số lượng tồn kho.
+Bước 8: Hoàn tất xuất kho
+Sau khi hạch toán:
+Phiếu xuất được lưu vào hệ thống.
+Tồn kho được cập nhật tự động.
+Dữ liệu xuất kho được đồng bộ vào lịch sử quản lý kho.
+Hình 15: Tạo phiếu xuất kho
+Lịch sử nhập xuất kho đều được ghi lại trong hệ thống phàn mềm
+Hình 16: Lịch sử giao dịch kho
+Hình ảnh trên thể hiện chức năng Lịch sử giao dịch kho trong phần mềm quản lý kho của doanh nghiệp. Đây là nơi lưu trữ và theo dõi toàn bộ các hoạt động nhập kho, xuất kho và điều chỉnh vật tư phát sinh trong hệ thống. Phần mềm cho phép quản lý dữ liệu tập trung, giúp doanh nghiệp kiểm soát chính xác số lượng hàng hóa và tình trạng tồn kho theo thời gian thực.
+Giao diện hiển thị các thông tin quan trọng như tổng số hàng hóa, số lượng tồn kho thấp, giá trị tồn kho và danh sách các giao dịch đã thực hiện. Mỗi giao dịch đều được lưu lại với các thông tin như thời gian thực hiện, mã phiếu, số lượng thay đổi, trạng thái giao dịch và người thao tác. Điều này giúp doanh nghiệp dễ dàng kiểm tra, truy xuất và đối chiếu dữ liệu khi cần thiết.
+Ngoài ra, hệ thống còn hỗ trợ chức năng lọc dữ liệu theo loại giao dịch, vật tư và thời gian, giúp việc tìm kiếm thông tin nhanh chóng và thuận tiện hơn. Phần mềm cũng cho phép xuất dữ liệu ra Excel để phục vụ công tác báo cáo, lưu trữ và kiểm kê kho. Việc ứng dụng phần mềm quản lý lịch sử giao dịch giúp doanh nghiệp nâng cao hiệu quả quản lý kho, giảm sai sót trong nhập xuất hàng hóa và tăng tính minh bạch trong quá trình vận hành.
+Hình 17: Giao diện các vật tư đã xuất trong dự án
+Hệ thống giúp theo dõi toàn bộ vật tư đã được cấp phát cho từng công trình hoặc dự án cụ thể trong quá trình sản xuất và thi công.
+Mỗi dự án đều được hiển thị với các thông tin quan trọng như mã dự án, tên công trình, khách hàng, tiến độ thực hiện và tổng giá trị vật tư đã xuất. Ngoài ra, hệ thống còn cho phép xem chi tiết danh sách vật tư đã sử dụng trong từng dự án, giúp doanh nghiệp dễ dàng kiểm soát số lượng vật tư đã cấp phát và chi phí thực tế của công trình.
+Phần mềm cũng hỗ trợ tìm kiếm và lọc dự án theo trạng thái nhằm giúp người dùng tra cứu dữ liệu nhanh chóng hơn. Việc quản lý vật tư theo từng dự án giúp doanh nghiệp hạn chế thất thoát nguyên vật liệu, kiểm soát chi phí hiệu quả và theo dõi tiến độ sử dụng vật tư trong quá trình thi công. Đồng thời, dữ liệu này còn hỗ trợ bộ phận quản lý đánh giá hiệu quả hoạt động của từng dự án và đưa ra kế hoạch điều phối vật tư phù hợp.
+4.3.2. Quản lý hệ thống
+Hệ thống chia quyền quản lý cho các phòng ban, mỗi phòng ban sẽ được phép truy cập vào vị trí mình quản lý, không phải vị trí mình quản lý sẽ không truy cập vào được. Vì vậy tính bảo mật của hệ thống vô cùng cao.
+Hình 18: Giao diện quản lý hệ thống chức vụ
+Hệ thống cho phép tạo và quản lý các chức vụ như Super Admin, Kế toán, Kho, Kinh doanh, Sản xuất, Thiết kế, Lắp đặt và Quản lý.
+Mỗi chức vụ được phân quyền riêng theo nhiệm vụ của từng bộ phận, đồng thời hiển thị số lượng quyền và số người dùng đang sử dụng vai trò đó. Ngoài ra, hệ thống còn hỗ trợ thêm, sửa và xóa chức vụ để doanh nghiệp dễ dàng quản lý tài khoản và kiểm soát quyền truy cập.
+Chức năng này giúp phân chia trách nhiệm rõ ràng giữa các phòng ban, tăng tính bảo mật dữ liệu và đảm bảo người dùng chỉ được truy cập vào các chức năng phù hợp với công việc của mình.
+Hình 19: Giao diện quản lý hệ thống người dùng
+Chức năng này giúp quản lý danh sách tài khoản nhân viên đang sử dụng hệ thống, bao gồm các thông tin như họ tên, email, chức vụ, trạng thái hoạt động và thời gian đăng nhập gần nhất.
+Mỗi người dùng được phân quyền theo vị trí công việc như Super Admin, Kế toán, Kinh doanh, Thiết kế, Sản xuất, Lắp đặt hoặc Quản lý. Hệ thống cũng hiển thị trạng thái hoạt động của tài khoản như “Hoạt động” hoặc “Vô hiệu hóa” để hỗ trợ kiểm soát người dùng dễ dàng hơn.
+Ngoài ra, phần mềm cho phép thực hiện các thao tác như thêm mới, chỉnh sửa, đổi mật khẩu, khóa hoặc xóa tài khoản người dùng. Chức năng này giúp doanh nghiệp quản lý nhân sự trên hệ thống hiệu quả, tăng tính bảo mật dữ liệu và đảm bảo việc phân quyền đúng theo nhiệm vụ của từng bộ phận.
+Hình 20: Giáo diện quản lý đại lý/Chi nhánh
+Đây là một chức năng quan trọng giúp công ty quản lý tập trung toàn bộ hệ thống đại lý và chi nhánh tại nhiều khu vực khác nhau, đồng thời hỗ trợ theo dõi hiệu suất hoạt động của từng đơn vị trực thuộc.
+Giao diện hệ thống được thiết kế theo dạng thẻ thông tin, mỗi thẻ đại diện cho một chi nhánh hoặc đại lý riêng biệt như Bắc Ninh, Hà Nam, Lạng Sơn, Lào Cai, Nam Định, Ninh Bình, Phú Thọ, Quảng Ninh, Quỳ Hợp và nhiều khu vực khác. Trên mỗi thẻ, hệ thống hiển thị đầy đủ các thông tin cơ bản bao gồm tên chi nhánh, mã đại lý, trạng thái hoạt động, khu vực quản lý và các số liệu liên quan đến khách hàng, dự án và tổng số đại lý trực thuộc.
+Một trong những điểm nổi bật của chức năng này là khả năng theo dõi tình trạng hoạt động của từng chi nhánh theo thời gian thực. Các chi nhánh đang vận hành sẽ được hiển thị trạng thái “Hoạt động”, giúp ban quản lý dễ dàng kiểm soát tình hình kinh doanh của toàn hệ thống. Điều này hỗ trợ doanh nghiệp nhanh chóng phát hiện các đơn vị hoạt động kém hiệu quả hoặc cần điều chỉnh chiến lược quản lý phù hợp.
+Ngoài ra, hệ thống còn cung cấp các chỉ số thống kê quan trọng như số lượng khách hàng, số dự án đang triển khai và tổng số đại lý của từng khu vực. Thông qua các dữ liệu này, ban lãnh đạo có thể đánh giá quy mô hoạt động cũng như hiệu quả kinh doanh của từng chi nhánh. Ví dụ, những chi nhánh có số lượng khách hàng hoặc dự án cao sẽ được xem là khu vực có tiềm năng phát triển mạnh, từ đó doanh nghiệp có thể tập trung nguồn lực để mở rộng hoạt động kinh doanh.
+Hệ thống cũng hỗ trợ chức năng tìm kiếm và lọc dữ liệu theo tên đại lý, mã đại lý, khu vực hoặc trạng thái hoạt động. Điều này giúp người dùng dễ dàng tra cứu thông tin nhanh chóng khi số lượng chi nhánh ngày càng tăng. Bên cạnh đó, phần mềm còn tích hợp các chức năng quản trị như xem Dashboard, chỉnh sửa thông tin, quản lý khách hàng và xóa chi nhánh trực tiếp trên giao diện.
+Việc ứng dụng hệ thống quản lý đại lý và chi nhánh giúp Viralwindow xây dựng mô hình quản lý tập trung và chuyên nghiệp hơn. Toàn bộ dữ liệu của các chi nhánh được đồng bộ trên cùng một nền tảng, giúp ban lãnh đạo dễ dàng theo dõi hoạt động kinh doanh, kiểm soát dữ liệu khách hàng và đánh giá hiệu quả vận hành của từng khu vực.
+Ngoài ra, chức năng này còn hỗ trợ doanh nghiệp trong việc mở rộng thị trường và phát triển hệ thống phân phối. Khi dữ liệu được quản lý tập trung, công ty có thể dễ dàng xây dựng kế hoạch kinh doanh, phân bổ nguồn lực và triển khai chiến lược phát triển phù hợp cho từng khu vực. Điều này góp phần nâng cao hiệu quả quản trị, tăng tính liên kết giữa trụ sở chính và các chi nhánh, đồng thời cải thiện khả năng cạnh tranh của doanh nghiệp trên thị trường.
+4.4. Đánh giá hiệu quả phần mềm
+4.5. Hướng phát triển của phần mềm
