@@ -22,8 +22,8 @@ exports.getAggregatedStatistics = async () => {
                 SUM(CASE WHEN stock_quantity > 0 THEN 1 ELSE 0 END) as items_in_stock,
                 COALESCE(SUM(
                     CASE 
-                        WHEN stock_quantity > 0 AND (sale_price > 0 OR purchase_price > 0)
-                        THEN stock_quantity * COALESCE(sale_price, purchase_price, 0)
+                        WHEN stock_quantity > 0 AND (purchase_price > 0 OR sale_price > 0)
+                        THEN stock_quantity * COALESCE(purchase_price, sale_price, 0)
                         ELSE 0
                     END
                 ), 0) as total_value
@@ -228,8 +228,8 @@ exports.getLowStockItems = async () => {
                 stock_quantity as quantity,
                 min_stock_level,
                 unit,
-                COALESCE(sale_price, purchase_price, 0) as unit_price,
-                (stock_quantity * COALESCE(sale_price, purchase_price, 0)) as total_value
+                COALESCE(purchase_price, sale_price, 0) as unit_price,
+                (stock_quantity * COALESCE(purchase_price, sale_price, 0)) as total_value
             FROM accessories
             WHERE is_active = 1 
             AND stock_quantity <= min_stock_level
@@ -430,8 +430,8 @@ exports.getAllItems = async () => {
                 stock_quantity as quantity,
                 min_stock_level,
                 unit,
-                COALESCE(sale_price, purchase_price, 0) as unit_price,
-                (stock_quantity * COALESCE(sale_price, purchase_price, 0)) as total_value,
+                COALESCE(purchase_price, sale_price, 0) as unit_price,
+                (stock_quantity * COALESCE(purchase_price, sale_price, 0)) as total_value,
                 CASE WHEN stock_quantity <= min_stock_level THEN 1 ELSE 0 END as is_low_stock
             FROM accessories
             WHERE is_active = 1

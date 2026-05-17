@@ -1,4 +1,24 @@
 const db = require("../config/db");
+
+/**
+ * ✅ Helper: Sanitize image path — luôn lưu RELATIVE path vào DB.
+ * Loại bỏ domain prefix nếu có (VD: http://localhost:3001 hay https://example.com)
+ * Input:  'http://localhost:3001/uploads/accessories/xxx.jpg'
+ * Output: '/uploads/accessories/xxx.jpg'
+ */
+function sanitizeImagePath(imagePath) {
+    if (!imagePath) return imagePath;
+    try {
+        // Nếu là URL đầy đủ có domain, chỉ lấy pathname
+        if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+            const url = new URL(imagePath);
+            return url.pathname; // trả về '/uploads/accessories/xxx.jpg'
+        }
+    } catch (e) {
+        // Nếu URL parse lỗi, giữ nguyên giá trị gốc
+    }
+    return imagePath;
+}
 const { emitDataChange } = require('../services/socketService');
 
 // GET all accessories
@@ -162,6 +182,9 @@ exports.update = async (req, res) => {
         let image_path = req.body.image_path; // Keep existing if no new upload
         if (req.file) {
             image_path = '/uploads/accessories/' + req.file.filename;
+        } else if (image_path) {
+            // Sanitize: strip domain prefix neu frontend gui nham full URL
+            image_path = sanitizeImagePath(image_path);
         }
 
         let query, params;
