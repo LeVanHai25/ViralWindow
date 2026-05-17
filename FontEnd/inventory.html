@@ -797,7 +797,7 @@
                                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">DANH MỤC</th>
                                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ĐƠN VỊ</th>
                                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">HÌNH ẢNH</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">GIÁ</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">GIÁ NHẬP</th>
                                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">TỒN KHO</th>
                                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">MIN</th>
                                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">MAX</th>
@@ -10586,7 +10586,7 @@
                             unit: acc.unit,
                             stock_quantity: acc.stock_quantity || 0,
                             min_stock_level: acc.min_stock_level || 10,
-                            unit_price: acc.sale_price || acc.purchase_price || 0,
+                            unit_price: acc.purchase_price || acc.sale_price || 0,
                             description: acc.description,
                             category: acc.category,
                             location: null,
@@ -10927,7 +10927,7 @@
                     const stockQty = parseFloat(accessory.stock_quantity || 0);
                     const minStock = parseFloat(accessory.min_stock_level || 10);
                     const maxStock = parseFloat(accessory.max_stock_level || 100);
-                    const price = parseFloat(accessory.sale_price || accessory.purchase_price || 0);
+                    const price = parseFloat(accessory.purchase_price || 0); // ✅ Hiển thị giá nhập (giá vốn)
                     const totalValue = stockQty * price;
                     const imageUrl = getImageUrl(accessory.image_path);
 
@@ -11014,7 +11014,7 @@
                     const stockQty = parseFloat(accessory.stock_quantity) || 0;
                     const minStock = parseFloat(accessory.min_stock_level) || 10;
                     const isLowStock = stockQty < minStock;
-                    const unitPrice = parseFloat(accessory.sale_price || accessory.purchase_price) || 0;
+                    const unitPrice = parseFloat(accessory.purchase_price) || 0; // ✅ Hiển thị giá nhập (giá vốn)
                     const value = stockQty * unitPrice;
 
                     return `
