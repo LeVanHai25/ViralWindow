@@ -266,11 +266,11 @@ exports.getDashboardStats = async (req, res) => {
         const runningProjects = parseInt(projectsRows[0]?.count) || 0;
 
         // 2. Báo giá chờ duyệt (quotations pending/sent)
-        // Bao gồm: pending, sent, revision_requested, draft
+        // Bao gồm: draft, pending, sent, revision_requested, approved
         const [quotationsRows] = await db.query(`
             SELECT COALESCE(COUNT(*), 0) as count
             FROM quotations
-            WHERE status IN ('pending', 'sent', 'revision_requested', 'draft')
+            WHERE status IN ('draft', 'pending', 'sent', 'revision_requested', 'approved')
         `);
         const pendingQuotations = parseInt(quotationsRows[0]?.count) || 0;
 

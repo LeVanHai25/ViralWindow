@@ -1,4 +1,4 @@
-const db = require("../config/db");
+﻿const db = require("../config/db");
 const { emitDataChange } = require('../services/socketService');
 const NotificationService = require("../services/notificationService");
 const NotificationEventService = require("../services/notificationEventService");
@@ -1646,9 +1646,9 @@ exports.confirmDeposit = async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Check if quotation exists and is approved - lấy thêm thông tin project và customer
+        // Lấy thông tin báo giá kèm thông tin project và customer
         const [quotations] = await db.query(
-            `SELECT q.id, q.quotation_code, q.status, q.deposit_paid, q.total_amount,
+            `SELECT q.id, q.quotation_code, q.status, q.deposit_paid, q.total_amount, q.subtotal,
                     q.project_id, q.customer_id, c.full_name AS customer_name, p.project_name
              FROM quotations q
              LEFT JOIN customers c ON q.customer_id = c.id
@@ -1658,142 +1658,51 @@ exports.confirmDeposit = async (req, res) => {
         );
 
         if (quotations.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: 'Không tìm thấy báo giá'
-            });
+            return res.status(404).json({ success: false, message: 'Không tìm thấy báo giá' });
         }
 
         const quotation = quotations[0];
 
+        // Chỉ xác nhận đặt cọc khi báo giá đã được chốt
         if (quotation.status !== 'approved') {
             return res.status(400).json({
                 success: false,
-                message: 'Chỉ có thể xác nhận đặt cọc khi báo giá đã được chốt'
+                message: 'Chỉ có thể xác nhận đặt cọc khi báo giá đã được chốt (Approved)'
             });
         }
 
         if (quotation.deposit_paid) {
             return res.status(400).json({
                 success: false,
-                message: 'Đã xác nhận đặt cọc trước đó'
+                message: 'Đặt cọc đã được xác nhận trước đó'
             });
         }
 
-        // Get deposit amount from request body (hoặc tính 40% mặc định từ subtotal)
+        // Tính số tiền đặt cọc (ưu tiên từ request body, fallback 40% tổng tiền)
         const { deposit_amount } = req.body;
-        // ✅ FIX: Dùng subtotal (chưa VAT) để tính đặt cọc mặc định
-        const baseAmount = parseFloat(quotation.subtotal) || parseFloat(quotation.total_amount) || 0;
+        const baseAmount = parseFloat(quotation.total_amount) || parseFloat(quotation.subtotal) || 0;
         const depositValue = deposit_amount ? parseFloat(deposit_amount) : Math.round(baseAmount * 0.4);
 
-        // Update deposit_paid và deposit_amount
+        // ============================================================
+        // CHỈ CẬP NHẬT deposit_paid = TRUE trong bảng quotations.
+        // Việc ghi sổ phiếu thu (posted) là trách nhiệm của kế toán
+        // thực hiện thủ công qua module Tài chính → Phiếu thu.
+        // ============================================================
         await db.query(
             'UPDATE quotations SET deposit_paid = TRUE, deposit_amount = ? WHERE id = ?',
             [depositValue, id]
         );
 
-        // ============================================================
-        // TỰ ĐỘNG TẠO PHIẾU THU (REVENUE TRANSACTION) KHI XÁC NHẬN ĐẶT CỌC
-        // ============================================================
-        let transactionCreated = false;
-        let transactionCode = null;
-
-        try {
-            const refNumber = `DEPOSIT-${id}`;
-            console.log(`🔍 [confirmDeposit] Đang kiểm tra phiếu thu cho báo giá ID=${id}, refNumber=${refNumber}`);
-
-            // Kiểm tra xem đã có phiếu thu cho đặt cọc này chưa
-            const [existingTrans] = await db.query(
-                "SELECT id FROM financial_transactions WHERE reference_number = ?",
-                [refNumber]
-            );
-
-            console.log(`🔍 [confirmDeposit] Kết quả kiểm tra: ${existingTrans.length} phiếu thu đã tồn tại`);
-
-            if (existingTrans.length === 0) {
-                // Generate unique transaction code
-                const year = new Date().getFullYear();
-                const prefix = 'THU';
-                let maxAttempts = 10;
-                let attempt = 0;
-
-                while (attempt < maxAttempts) {
-                    const [maxCodeRows] = await db.query(`
-                        SELECT transaction_code 
-                        FROM financial_transactions 
-                        WHERE transaction_code LIKE ? AND transaction_type = 'revenue'
-                        ORDER BY CAST(SUBSTRING(transaction_code, 9) AS UNSIGNED) DESC
-                        LIMIT 1
-                    `, [`${prefix}-${year}-%`]);
-
-                    let nextNumber = 1;
-                    if (maxCodeRows.length > 0 && maxCodeRows[0].transaction_code) {
-                        const match = maxCodeRows[0].transaction_code.match(/THU-\d+-(\d+)/);
-                        if (match) {
-                            nextNumber = parseInt(match[1], 10) + 1;
-                        }
-                    }
-
-                    transactionCode = `${prefix}-${year}-${String(nextNumber).padStart(4, '0')}`;
-
-                    // Kiểm tra xem code đã tồn tại chưa
-                    const [checkExisting] = await db.query(
-                        "SELECT id FROM financial_transactions WHERE transaction_code = ?",
-                        [transactionCode]
-                    );
-
-                    if (checkExisting.length === 0) {
-                        break;
-                    }
-
-                    nextNumber++;
-                    attempt++;
-                }
-
-                if (attempt >= maxAttempts) {
-                    const timestamp = Date.now().toString().slice(-6);
-                    transactionCode = `${prefix}-${year}-${timestamp}`;
-                }
-
-                console.log(`🔍 [confirmDeposit] Tạo phiếu thu mới: transactionCode=${transactionCode}, amount=${depositValue}`);
-
-                // Tạo phiếu thu với status = 'draft' để người dùng có thể kiểm tra
-                const today = new Date().toISOString().split('T')[0];
-                const insertResult = await db.query(`
-                    INSERT INTO financial_transactions
-                    (transaction_code, transaction_date, transaction_type, category, 
-                     amount, description, project_id, customer_id, reference_number, status)
-                    VALUES (?, ?, 'revenue', 'Tiền đặt cọc', ?, ?, ?, ?, ?, 'draft')
-                `, [
-                    transactionCode,
-                    today,
-                    depositValue,
-                    `Nhận tiền đặt cọc từ báo giá ${quotation.quotation_code} - ${quotation.customer_name || 'Khách hàng'} - Dự án: ${quotation.project_name || 'N/A'}`,
-                    quotation.project_id || null,
-                    quotation.customer_id || null,
-                    refNumber
-                ]);
-
-                console.log(`✅ Đã tạo phiếu thu ${transactionCode} cho đặt cọc báo giá ${quotation.quotation_code}, insertId=${insertResult[0]?.insertId}`);
-                transactionCreated = true;
-            } else {
-                console.log(`ℹ️ [confirmDeposit] Phiếu thu đã tồn tại, bỏ qua tạo mới`);
-            }
-        } catch (transError) {
-            console.error('❌ Lỗi khi tạo phiếu thu tự động:', transError.message, transError.stack);
-            // Không fail việc xác nhận đặt cọc nếu lỗi tạo phiếu thu
-        }
+        console.log(`✅ [confirmDeposit] Đã xác nhận đặt cọc BG ${quotation.quotation_code}, amount=${depositValue}`);
 
         res.json({
             success: true,
-            message: 'Đã xác nhận khách hàng thanh toán đặt cọc 40%' + (transactionCreated ? ` và tạo phiếu thu ${transactionCode}` : ''),
+            message: `Đã xác nhận khách hàng đã thanh toán tiền đặt cọc cho báo giá ${quotation.quotation_code}`,
             data: {
                 id: quotation.id,
                 quotation_code: quotation.quotation_code,
                 deposit_paid: true,
-                deposit_amount: depositValue,
-                transaction_code: transactionCode,
-                transaction_created: transactionCreated
+                deposit_amount: depositValue
             }
         });
     } catch (err) {
@@ -1804,5 +1713,3 @@ exports.confirmDeposit = async (req, res) => {
         });
     }
 };
-
-

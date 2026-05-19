@@ -615,9 +615,9 @@ exports.getDashboardAlertsSummary = async () => {
         // 4. Báo giá chờ duyệt / Sắp hết hạn
         const [quotationStats] = await db.query(`
             SELECT 
-                SUM(CASE WHEN status IN ('pending', 'draft') THEN 1 ELSE 0 END) as pending_count,
-                SUM(CASE WHEN status IN ('pending', 'draft') AND DATE_ADD(quotation_date, INTERVAL COALESCE(validity_days, 30) DAY) < DATE_ADD(NOW(), INTERVAL 7 DAY) AND DATE_ADD(quotation_date, INTERVAL COALESCE(validity_days, 30) DAY) >= NOW() THEN 1 ELSE 0 END) as expiring_soon,
-                SUM(CASE WHEN status IN ('pending', 'draft') AND DATE_ADD(quotation_date, INTERVAL COALESCE(validity_days, 30) DAY) < NOW() THEN 1 ELSE 0 END) as expired_count
+                SUM(CASE WHEN status IN ('draft', 'pending', 'sent', 'revision_requested', 'approved') THEN 1 ELSE 0 END) as pending_count,
+                SUM(CASE WHEN status IN ('draft', 'pending', 'sent', 'revision_requested', 'approved') AND DATE_ADD(quotation_date, INTERVAL COALESCE(validity_days, 30) DAY) < DATE_ADD(NOW(), INTERVAL 7 DAY) AND DATE_ADD(quotation_date, INTERVAL COALESCE(validity_days, 30) DAY) >= NOW() THEN 1 ELSE 0 END) as expiring_soon,
+                SUM(CASE WHEN status IN ('draft', 'pending', 'sent', 'revision_requested', 'approved') AND DATE_ADD(quotation_date, INTERVAL COALESCE(validity_days, 30) DAY) < NOW() THEN 1 ELSE 0 END) as expired_count
             FROM quotations
         `);
 

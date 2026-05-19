@@ -2754,11 +2754,9 @@
                     return status !== 'completed' && status !== 'handover' && status !== 'cancelled' && status !== 'paused' && progress < 100;
                 }).length;
 
-                const pending = projects.filter(p => {
-                    const status = (p.status || '').toLowerCase();
-                    return status === 'pending' || status === 'quotation_pending' || status === 'waiting_quotation';
-                }).length;
-
+                // Loại bỏ logic đếm Project, vì thẻ màu hồng là "Báo giá chờ duyệt" nên phải đếm số lượng Báo giá
+                // Sẽ dùng API riêng ở dưới
+                
                 const completed = projects.filter(p => {
                     const status = (p.status || '').toLowerCase();
                     const progress = parseFloat(p.progress_percent) || 0;
@@ -2771,11 +2769,26 @@
                 const completedEl = document.querySelector('[data-projects-kpi="completed"]');
 
                 if (runningEl) runningEl.textContent = running;
-                if (pendingEl) pendingEl.textContent = pending;
                 if (completedEl) completedEl.textContent = completed;
 
-                // Fetch cancelled projects count from separate API
                 const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                
+                // Fetch pending quotations count (để hiển thị đúng số Báo giá thay vì số Dự án)
+                if (pendingEl && token) {
+                    fetch(`${API_BASE}/quotations/pending`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    })
+                        .then(res => res.json())
+                        .then(result => {
+                            if (result.success) {
+                                // Lấy tổng số lượng từ API (phải khớp 100% với trang pending-quotations.html)
+                                pendingEl.textContent = result.stats?.totalPending || result.data?.length || 0;
+                            }
+                        })
+                        .catch(err => console.warn('Could not fetch pending quotations count:', err));
+                }
+
+                // Fetch cancelled projects count from separate API
                 if (cancelledEl && token) {
                     fetch(`${API_BASE}/projects/cancelled`, {
                         headers: { 'Authorization': `Bearer ${token}` }
@@ -4246,19 +4259,31 @@
                         // Parse số liệu, đảm bảo là số nguyên
                         const total = parseInt(stats.total) || 0;
                         const approved = parseInt(stats.approved) || 0;
-                        const pending = parseInt(stats.pending) || 0;
-                        const sent = parseInt(stats.sent) || 0;
                         const rejected = parseInt(stats.rejected) || 0;
 
                         // Tổng báo giá
                         document.getElementById('statTotal').textContent = total;
                         // Đã chốt (approved)
                         document.getElementById('statApproved').textContent = approved;
-                        // Chờ duyệt (pending + sent)
-                        const pendingCount = pending + sent;
-                        document.getElementById('statPending').textContent = pendingCount;
                         // Từ chối (rejected)
                         document.getElementById('statRejected').textContent = rejected;
+                        
+                        // Lấy chuẩn xác số lượng Báo giá chờ duyệt (draft, pending, sent, revision_requested, approved)
+                        // từ API báo giá chờ duyệt để đồng bộ với thẻ màu hồng và trang danh sách
+                        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                        if (token) {
+                            try {
+                                const pendingRes = await fetch(`${API_BASE}/quotations/pending`, {
+                                    headers: { 'Authorization': `Bearer ${token}` }
+                                });
+                                const pendingData = await pendingRes.json();
+                                if (pendingData.success) {
+                                    document.getElementById('statPending').textContent = pendingData.stats?.totalPending || pendingData.data?.length || 0;
+                                }
+                            } catch (e) {
+                                console.warn('Could not fetch exact pending quotations for stats:', e);
+                            }
+                        }
                     } else {
                         // Nếu API trả về lỗi, hiển thị 0
                         document.getElementById('statTotal').textContent = '0';

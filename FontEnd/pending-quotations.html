@@ -1962,95 +1962,75 @@
         // Xác nhận khách hàng đã thanh toán tiền đặt cọc
         async function confirmDepositPayment(quotationId, checkbox) {
             const quotation = allQuotations.find(q => q.id == quotationId);
+            if (!quotation) { if (checkbox) checkbox.checked = false; return; }
 
             // ============================================================
             // KIỂM TRA PHIẾU THU ĐÃ GHI SỔ CHƯA TRƯỚC KHI XÁC NHẬN
+            // Tìm kiếm song song cả 2 format reference (mới + legacy)
             // ============================================================
             try {
-                // Tìm phiếu thu đặt cọc theo:
-                // 1. reference_number = DEPOSIT-{quotationId}
-                // 2. hoặc description chứa mã báo giá
-                const refNumber = `DEPOSIT-${quotationId}`;
-                const quotationCode = quotation?.quotation_code || '';
+                const newRef    = `DEPOSIT-${quotationId}`;
+                const legacyRef = `QUO-ADV-${quotationId}`;
+                const quotationCode = quotation.quotation_code || '';
 
-                // Bước 1: Thử tìm theo reference_number trước
-                let checkResponse = await fetch(`${API_BASE}/financial/transactions?referenceNumber=${refNumber}`, {
-                    headers: getAuthHeaders()
-                });
-                let checkResult = await checkResponse.json();
-                let receipts = (checkResult.success && Array.isArray(checkResult.data)) ? checkResult.data : [];
+                // Tìm song song cả 2 format
+                const [res1, res2] = await Promise.all([
+                    fetch(`${API_BASE}/financial/transactions?referenceNumber=${encodeURIComponent(newRef)}`, { headers: getAuthHeaders() }),
+                    fetch(`${API_BASE}/financial/transactions?referenceNumber=${encodeURIComponent(legacyRef)}`, { headers: getAuthHeaders() })
+                ]);
+                const [data1, data2] = await Promise.all([res1.json(), res2.json()]);
 
-                // Bước 2: Nếu không tìm thấy, tìm theo description chứa mã báo giá
-                if (receipts.length === 0 && quotationCode) {
-                    checkResponse = await fetch(`${API_BASE}/financial/transactions?type=revenue`, {
-                        headers: getAuthHeaders()
-                    });
-                    checkResult = await checkResponse.json();
+                // Gộp kết quả từ cả 2 format
+                const receipts = [
+                    ...((data1.success && Array.isArray(data1.data)) ? data1.data : []),
+                    ...((data2.success && Array.isArray(data2.data)) ? data2.data : [])
+                ];
 
-                    if (checkResult.success && Array.isArray(checkResult.data)) {
-                        // Lọc phiếu thu có description chứa mã báo giá
-                        // KHÔNG filter theo category vì có thể là "Tiền đặt cọc", "Tiền cọc báo giá", "Sản phẩm", v.v.
-                        receipts = checkResult.data.filter(t =>
-                            t.description &&
-                            t.description.includes(quotationCode)
-                        );
+                console.log(`🔍 [confirmDeposit] ${receipts.length} phiếu thu cho BG ${quotationCode}`,
+                    receipts.map(r => ({ code: r.transaction_code, status: r.status })));
 
-                        console.log('🔍 Found receipts by description:', receipts.map(f => ({
-                            code: f.transaction_code,
-                            category: f.category,
-                            status: f.status
-                        })));
-                    }
-                }
-
-                console.log('🔍 Checking deposit receipt:', {
-                    quotationId,
-                    quotationCode,
-                    found: receipts.length,
-                    receipts: receipts.map(r => ({ code: r.transaction_code, status: r.status, ref: r.reference_number }))
-                });
-
-                // Bước 3: Kiểm tra kết quả sau tất cả các bước tìm kiếm
+                // Không tìm thấy phiếu thu nào
                 if (receipts.length === 0) {
-                    checkbox.checked = false;
+                    if (checkbox) checkbox.checked = false;
                     await VWModal.error(
                         `Không tìm thấy phiếu thu đặt cọc cho báo giá <b>${quotationCode}</b>.<br><br>` +
-                        'Vui lòng tạo phiếu thu đặt cọc trước khi xác nhận thanh toán.<br><br>' +
-                        '<a href="finance-payments.html" class="text-blue-600 underline">Đi đến Phiếu thu</a>',
+                        'Hệ thống tạo phiếu thu tự động khi báo giá được chốt (Approved).<br>' +
+                        'Nếu chưa có, vui lòng tạo thủ công trong module Tài chính.<br><br>' +
+                        '<a href="finance-payments.html" class="text-blue-600 underline font-medium">→ Đi đến Phiếu thu</a>',
                         { title: 'Chưa có phiếu thu đặt cọc!' }
                     );
                     return;
                 }
 
-                // Bước 4: Ưu tiên phiếu đã ghi sổ (posted), fallback sang phiếu đầu tiên
+                // Ưu tiên phiếu đã ghi sổ (posted)
                 const postedReceipt = receipts.find(r => r.status === 'posted');
                 const depositReceipt = postedReceipt || receipts[0];
 
-                // ✅ FIX: Luôn kiểm tra depositReceipt tồn tại trước khi truy cập .status
+                // Phiếu chưa ghi sổ → CHẶN và hướng dẫn cụ thể mã phiếu
                 if (!depositReceipt || depositReceipt.status !== 'posted') {
-                    checkbox.checked = false;
-                    const receiptCode = depositReceipt?.transaction_code || 'không xác định';
-                    const receiptStatus = depositReceipt?.status === 'draft' ? 'Nháp' : (depositReceipt?.status || 'Không rõ');
+                    if (checkbox) checkbox.checked = false;
+                    const receiptCode = depositReceipt?.transaction_code || 'N/A';
+                    const statusLabel = depositReceipt?.status === 'draft' ? 'Nháp (chưa ghi sổ)' : (depositReceipt?.status || 'Không rõ');
                     await VWModal.error(
-                        `Phiếu thu <b>${receiptCode}</b> đang ở trạng thái "<b>${receiptStatus}</b>".<br><br>` +
-                        'Vui lòng ghi sổ phiếu thu trước khi xác nhận thanh toán đặt cọc.<br><br>' +
-                        '<a href="finance-receipts.html" class="text-blue-600 underline">Đi đến Phiếu thu để ghi sổ</a>',
-                        { title: 'Phiếu thu chưa được ghi sổ!' }
+                        `Phiếu thu <b>${receiptCode}</b> đang ở trạng thái "<b>${statusLabel}</b>".<br><br>` +
+                        `Vui lòng vào <b>Tài chính → Phiếu thu</b>, tìm phiếu <b>${receiptCode}</b> và bấm <b>[Ghi sổ]</b> để xác nhận đã nhận tiền thực tế.<br><br>` +
+                        `<a href="finance-payments.html" class="text-blue-600 underline font-medium">→ Đến Phiếu thu → Ghi sổ ${receiptCode}</a>`,
+                        { title: '⚠️ Phiếu thu chưa được ghi sổ!' }
                     );
                     return;
                 }
 
-                console.log('✅ Deposit receipt found and posted:', depositReceipt.transaction_code);
+                console.log(`✅ Phiếu thu ${depositReceipt.transaction_code} đã posted → cho phép xác nhận`);
+
             } catch (checkError) {
                 console.error('Error checking deposit receipt:', checkError);
-                // Tiếp tục nếu không kiểm tra được (để không block workflow)
+                // Tiếp tục nếu không kiểm tra được (không block workflow)
             }
 
-            // Lấy số tiền đặt cọc từ input số tiền (ưu tiên) hoặc tính từ %
+            // Lấy số tiền đặt cọc từ input
             const depositAmountInput = document.getElementById(`depositAmountInput-${quotationId}`);
             const percentInput = document.getElementById(`depositPercent-${quotationId}`);
-            // ✅ FIX: Dùng subtotal (chưa VAT) để tính % đặt cọc
-            const baseAmount = parseFloat(quotation?.subtotal) || parseFloat(quotation?.total_amount) || 0;
+            const baseAmount = parseFloat(quotation.subtotal) || parseFloat(quotation.total_amount) || 0;
 
             let depositAmount;
             if (depositAmountInput) {
@@ -2066,7 +2046,7 @@
                 `Xác nhận khách hàng đã thanh toán tiền đặt cọc <strong>${percent}%</strong> = <strong>${formatCurrency(depositAmount)}</strong>?<br><br><em>Sau khi xác nhận sẽ không thể hoàn tác.</em>`
             );
             if (!confirmed) {
-                checkbox.checked = false;
+                if (checkbox) checkbox.checked = false;
                 return;
             }
 
@@ -2080,16 +2060,14 @@
 
                 if (result.success) {
                     showSuccessNotification('Đã xác nhận thanh toán tiền đặt cọc!');
-
-                    // Reload để refresh UI - ẩn input fields vì deposit_paid = true
                     loadPendingQuotations();
                 } else {
-                    checkbox.checked = false;
+                    if (checkbox) checkbox.checked = false;
                     VWModal.error(result.message || 'Không thể xác nhận đặt cọc');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                checkbox.checked = false;
+                if (checkbox) checkbox.checked = false;
                 VWModal.error('Lỗi khi xác nhận đặt cọc');
             }
         }

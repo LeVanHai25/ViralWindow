@@ -214,7 +214,6 @@ async function createFinancialTransaction(options) {
  */
 async function createDepositReceiptFromQuotation(quotation, quotationItems = [], connection = null) {
     // ✅ FIX: Dùng total_amount (giá cuối cùng) làm căn cứ tính đặt cọc
-    // Nếu không có total_amount mới dùng subtotal
     const baseAmount = parseFloat(quotation.total_amount) || parseFloat(quotation.subtotal) || 0;
     const depositPercent = quotation.deposit_percent || 40;
     const depositAmount = quotation.deposit_amount || Math.round(baseAmount * depositPercent / 100);
@@ -226,6 +225,31 @@ async function createDepositReceiptFromQuotation(quotation, quotationItems = [],
         depositPercent,
         depositAmount
     });
+
+    // ✅ FIX: Kiểm tra CÙNG LÚC cả 2 reference format (legacy + new)
+    // để tránh tạo phiếu thu trùng lặp trong DB
+    const newRef = `DEPOSIT-${quotation.id}`;
+    const legacyRef = `QUO-ADV-${quotation.id}`;
+    const dbConn = connection || db;
+
+    try {
+        const [existingByRef] = await dbConn.query(
+            'SELECT id, transaction_code FROM financial_transactions WHERE reference_number IN (?, ?)',
+            [newRef, legacyRef]
+        );
+        if (existingByRef.length > 0) {
+            console.log(`ℹ️ [FinancialHelper] Deposit receipt already exists: ${existingByRef[0].transaction_code}`);
+            return {
+                success: false,
+                alreadyExists: true,
+                transactionId: existingByRef[0].id,
+                transactionCode: existingByRef[0].transaction_code,
+                message: 'Phiếu thu đặt cọc đã tồn tại'
+            };
+        }
+    } catch (checkErr) {
+        console.warn('[FinancialHelper] Could not pre-check duplicate, proceeding:', checkErr.message);
+    }
 
     // Chuẩn bị items
     const items = quotationItems.map(item => ({
@@ -252,7 +276,7 @@ async function createDepositReceiptFromQuotation(quotation, quotationItems = [],
         description,
         projectId: quotation.project_id,
         customerId: quotation.customer_id,
-        referenceNumber: `DEPOSIT-${quotation.id}`,
+        referenceNumber: newRef,
         status: 'draft',
         items,
         connection
