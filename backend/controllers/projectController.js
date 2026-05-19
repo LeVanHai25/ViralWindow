@@ -4089,7 +4089,7 @@ exports.getCancelledProjects = async (req, res) => {
             params.push(searchTerm, searchTerm, searchTerm);
         }
 
-        query += " ORDER BY p.cancelled_at DESC";
+        query += " ORDER BY COALESCE(p.cancelled_at, p.updated_at, p.created_at) DESC";
 
         const [rows] = await db.query(query, params);
 

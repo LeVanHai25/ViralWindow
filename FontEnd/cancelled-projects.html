@@ -833,8 +833,6 @@
             if (!sessionStorage.getItem('token')) { sessionStorage.setItem('token', token); const u = localStorage.getItem('user'); if (u) sessionStorage.setItem('user', u); }
             return true;
         }
-            return true;
-        }
 
         // Load user info
         async function loadUserInfo() {

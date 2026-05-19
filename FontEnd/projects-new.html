@@ -7960,13 +7960,36 @@
             function cancelProject(projectId) {
                 VWModal.prompt('Nhập lý do', 'Vui lòng nhập lý do hủy đơn / đóng dự án:').then(reason => {
                     if (reason && reason.trim()) {
-                        VWModal.confirm('Xác nhận hủy dự án', 'Bạn chắc chắn muốn HỦY ĐƠN / ĐÓNG dự án này?\n\nLý do: ' + reason + '\n\n(Dự án sẽ được lưu lại để truy vết)', { confirmText: 'Hủy dự án', cancelText: 'Không' }).then(confirmed => {
+                        VWModal.confirm('Xác nhận hủy dự án',
+                            'Bạn chắc chắn muốn HỦY ĐƠN / ĐÓNG dự án này?\n\nLý do: ' + reason +
+                            '\n\n(Dự án sẽ được lưu lại trong mục "Dự án đã hủy" để truy vết)',
+                            { confirmText: 'Hủy dự án', cancelText: 'Không' }
+                        ).then(async confirmed => {
                             if (confirmed) {
-                                // TODO: Cập nhật status = 'cancelled'
-                                // Lưu lý do hủy
-                                // Ghi nhật ký
-                                VWModal.success('Đã đóng dự án!\n\n(Tính năng đang phát triển - Soft Delete)');
-                                console.log('Cancelling project:', projectId, 'Reason:', reason);
+                                try {
+                                    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+                                    const response = await fetch(`${API_BASE}/projects/${projectId}/cancel`, {
+                                        method: 'PATCH',
+                                        headers: {
+                                            'Authorization': `Bearer ${token}`,
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: JSON.stringify({ reason: reason.trim() })
+                                    });
+                                    const result = await response.json();
+
+                                    if (result.success) {
+                                        VWModal.success('Đã hủy dự án thành công!\n\nDự án đã được chuyển vào mục "Dự án đã hủy".');
+                                        // Reload danh sách và cập nhật KPI
+                                        if (typeof loadProjectCards === 'function') loadProjectCards();
+                                        else if (typeof loadProjects === 'function') loadProjects();
+                                    } else {
+                                        VWModal.error('Không thể hủy dự án:\n' + (result.message || 'Lỗi không xác định'));
+                                    }
+                                } catch (err) {
+                                    console.error('Error cancelling project:', err);
+                                    VWModal.error('Lỗi kết nối server. Vui lòng thử lại.');
+                                }
                             }
                         });
                     } else if (reason !== null && reason !== false) {

@@ -4053,10 +4053,24 @@
                         tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-gray-500">
                             Chưa có phiếu nhập nào. Nhấn "Tạo phiếu nhập" để bắt đầu.
                         </td></tr>`;
+                        const pagC = document.getElementById('importPagination');
+                        if (pagC) pagC.style.display = 'none';
                         return;
                     }
 
-                    tbody.innerHTML = result.data.map(doc => `
+                    allImportDocs = result.data;
+                    invPag.import.page = 1;
+                    renderImportPage();
+                } catch (error) {
+                    console.error('Error loading import documents:', error);
+                }
+            }
+
+            function renderImportPage() {
+                const tbody = document.getElementById('importDocsTable');
+                if (!tbody || !allImportDocs.length) return;
+                const pageData = applyInvPagination('import', allImportDocs);
+                tbody.innerHTML = pageData.map(doc => `
                         <tr class="hover:bg-gray-50">
                             <td class="px-4 py-3 font-medium text-teal-600">${doc.doc_no}</td>
                             <td class="px-4 py-3">${new Date(doc.created_at).toLocaleDateString('vi-VN')}</td>
@@ -4077,9 +4091,11 @@
                             </td>
                         </tr>
                     `).join('');
-                } catch (error) {
-                    console.error('Error loading import documents:', error);
+                if (!document.getElementById('importPagination')) {
+                    tbody.closest('table').insertAdjacentHTML('afterend', createInvPaginationHTML('import'));
                 }
+                const p = invPag.import;
+                renderInvPagination('import', allImportDocs.length, (p.page-1)*p.size, Math.min(p.page*p.size, allImportDocs.length));
             }
 
             // Load export documents (Phiếu xuất)
@@ -4106,10 +4122,24 @@
                         tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-gray-500">
                             Chưa có phiếu xuất nào. Nhấn "Tạo phiếu xuất" để bắt đầu.
                         </td></tr>`;
+                        const pagC = document.getElementById('exportPagination');
+                        if (pagC) pagC.style.display = 'none';
                         return;
                     }
 
-                    tbody.innerHTML = result.data.map(doc => `
+                    allExportDocs = result.data;
+                    invPag.export.page = 1;
+                    renderExportPage();
+                } catch (error) {
+                    console.error('Error loading export documents:', error);
+                }
+            }
+
+            function renderExportPage() {
+                const tbody = document.getElementById('exportDocsTable');
+                if (!tbody || !allExportDocs.length) return;
+                const pageData = applyInvPagination('export', allExportDocs);
+                tbody.innerHTML = pageData.map(doc => `
                         <tr class="hover:bg-gray-50">
                             <td class="px-4 py-3 font-medium text-blue-600 cursor-pointer hover:underline" 
                                 onclick="viewDocument(${doc.id})">${doc.doc_no}</td>
@@ -4131,9 +4161,11 @@
                             </td>
                         </tr>
                     `).join('');
-                } catch (error) {
-                    console.error('Error loading export documents:', error);
+                if (!document.getElementById('exportPagination')) {
+                    tbody.closest('table').insertAdjacentHTML('afterend', createInvPaginationHTML('export'));
                 }
+                const p = invPag.export;
+                renderInvPagination('export', allExportDocs.length, (p.page-1)*p.size, Math.min(p.page*p.size, allExportDocs.length));
             }
 
             // ==================== EXPORT DOCUMENT MODAL ====================
@@ -4871,10 +4903,24 @@
                         tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-gray-500">
                             Chưa có phiếu kiểm kho nào. Nhấn "Tạo phiếu kiểm kho" để bắt đầu.
                         </td></tr>`;
+                        const pagC = document.getElementById('stocktakePagination');
+                        if (pagC) pagC.style.display = 'none';
                         return;
                     }
 
-                    tbody.innerHTML = result.data.map(doc => `
+                    allStocktakeDocs = result.data;
+                    invPag.stocktake.page = 1;
+                    renderStocktakePage();
+                } catch (error) {
+                    console.error('Error loading stocktake documents:', error);
+                }
+            }
+
+            function renderStocktakePage() {
+                const tbody = document.getElementById('stocktakeDocsTable');
+                if (!tbody || !allStocktakeDocs.length) return;
+                const pageData = applyInvPagination('stocktake', allStocktakeDocs);
+                tbody.innerHTML = pageData.map(doc => `
                         <tr class="hover:bg-gray-50">
                             <td class="px-4 py-3 font-medium text-orange-600">${doc.doc_no}</td>
                             <td class="px-4 py-3">${new Date(doc.created_at).toLocaleDateString('vi-VN')}</td>
@@ -4894,9 +4940,11 @@
                             </td>
                         </tr>
                     `).join('');
-                } catch (error) {
-                    console.error('Error loading stocktake documents:', error);
+                if (!document.getElementById('stocktakePagination')) {
+                    tbody.closest('table').insertAdjacentHTML('afterend', createInvPaginationHTML('stocktake'));
                 }
+                const p = invPag.stocktake;
+                renderInvPagination('stocktake', allStocktakeDocs.length, (p.page-1)*p.size, Math.min(p.page*p.size, allStocktakeDocs.length));
             }
 
             // Load transaction history (Lịch sử từ ledger)
@@ -4928,7 +4976,19 @@
                         return;
                     }
 
-                    tbody.innerHTML = result.data.map(log => `
+                    allHistoryDocs = result.data;
+                    invPag.history.page = 1;
+                    renderHistoryPage();
+                } catch (error) {
+                    console.error('Error loading transaction history:', error);
+                }
+            }
+
+            function renderHistoryPage() {
+                const tbody = document.getElementById('historyTable');
+                if (!tbody || !allHistoryDocs.length) return;
+                const pageData = applyInvPagination('history', allHistoryDocs);
+                tbody.innerHTML = pageData.map(log => `
                         <tr class="hover:bg-gray-50">
                             <td class="px-4 py-3 text-sm">${new Date(log.transaction_at).toLocaleString('vi-VN')}</td>
                             <td class="px-4 py-3">${getDocTypeBadge(log.doc_type)}</td>
@@ -4944,9 +5004,11 @@
                             </td>
                         </tr>
                     `).join('');
-                } catch (error) {
-                    console.error('Error loading transaction history:', error);
+                if (!document.getElementById('historyPagination')) {
+                    tbody.closest('table').insertAdjacentHTML('afterend', createInvPaginationHTML('history'));
                 }
+                const p = invPag.history;
+                renderInvPagination('history', allHistoryDocs.length, (p.page-1)*p.size, Math.min(p.page*p.size, allHistoryDocs.length));
             }
 
             // Helper: Get status badge
@@ -10171,7 +10233,11 @@
             }
 
 
-            let allTransactions = []; // Lưu tất cả transactions để search
+            let allTransactions = [];
+            let allImportDocs = [];
+            let allExportDocs = [];
+            let allStocktakeDocs = [];
+            let allHistoryDocs = []; // Lưu tất cả transactions để search
 
             function displayTransactions(transactions) {
                 const tbody = document.getElementById('transactionsTable');
@@ -10201,10 +10267,14 @@
 
                 if (filtered.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">Chưa có giao dịch nào</td></tr>';
+                    const pagC = document.getElementById('exportTxPagination');
+                    if (pagC) pagC.style.display = 'none';
                     return;
                 }
 
-                filtered.forEach(trans => {
+                // Pagination slice
+                const paginatedTx = applyInvPagination('exportTx', filtered);
+                paginatedTx.forEach(trans => {
                     // Debug log - chỉ log khi có project_id nhưng không có project data
                     if (trans.project_id && !trans.project_code && !trans.project_name) {
                         console.warn('⚠️ Transaction has project_id but no project data:', {
@@ -10244,10 +10314,18 @@
                 `;
                     tbody.innerHTML += row;
                 });
+
+                // Inject pagination bar if not exists
+                if (!document.getElementById('exportTxPagination')) {
+                    tbody.closest('table').insertAdjacentHTML('afterend', createInvPaginationHTML('exportTx'));
+                }
+                const pTx = invPag.exportTx;
+                renderInvPagination('exportTx', filtered.length, (pTx.page-1)*pTx.size, Math.min(pTx.page*pTx.size, filtered.length));
             }
 
             function searchTransactions() {
                 // Sử dụng dữ liệu đã load để search, không cần load lại
+                if (invPag) invPag.exportTx.page = 1;
                 if (allTransactions.length > 0) {
                     displayTransactions(allTransactions);
                 } else {
@@ -10883,18 +10961,30 @@
                 accessory: { page: 1, size: 20, total: 1 },
                 aluminum:  { page: 1, size: 20, total: 1 },
                 glass:     { page: 1, size: 20, total: 1 },
-                other:     { page: 1, size: 20, total: 1 }
+                other:     { page: 1, size: 20, total: 1 },
+                // Stock document tabs
+                import:    { page: 1, size: 15, total: 1 },
+                export:    { page: 1, size: 15, total: 1 },
+                stocktake: { page: 1, size: 15, total: 1 },
+                history:   { page: 1, size: 15, total: 1 },
+                exportTx:  { page: 1, size: 15, total: 1 }
             };
 
             function goToInvPage(tab, page) {
                 const p = invPag[tab];
                 if (!p || page < 1 || page > p.total) return;
                 p.page = page;
-                // Re-display using cached data
+                // Inventory stock tabs
                 if (tab === 'accessory' && allAccessoriesData) displayAccessories(allAccessoriesData);
                 else if (tab === 'aluminum' && lastAluminumData) displayAluminumSystems(lastAluminumData);
                 else if (tab === 'glass' && allGlassData) displayGlassItems(allGlassData);
                 else if (tab === 'other' && allOtherData) displayOtherItems(allOtherData);
+                // Stock document tabs
+                else if (tab === 'import') renderImportPage();
+                else if (tab === 'export') renderExportPage();
+                else if (tab === 'stocktake') renderStocktakePage();
+                else if (tab === 'history') renderHistoryPage();
+                else if (tab === 'exportTx' && allTransactions) displayTransactions(allTransactions);
             }
 
             function changeInvPageSize(tab) {
@@ -10948,11 +11038,12 @@
             }
 
             function createInvPaginationHTML(tab) {
+                const defaultSize = ['import','export','stocktake','history','exportTx'].includes(tab) ? 15 : 20;
                 return `<div id="${tab}Pagination" class="inv-pagination-bar" style="display:none;">
                     <div class="pag-info">Hiển thị <strong><span class="pag-from">0</span>–<span class="pag-to">0</span></strong> / <strong><span class="pag-total">0</span></strong> mục</div>
                     <div class="pag-controls">
                         <select id="${tab}PageSizeSelect" onchange="changeInvPageSize('${tab}')" class="inv-pag-select">
-                            <option value="10">10</option><option value="20" selected>20</option><option value="50">50</option><option value="100">100</option>
+                            <option value="10">10</option><option value="15" ${defaultSize===15?'selected':''}>15</option><option value="20" ${defaultSize===20?'selected':''}>20</option><option value="50">50</option><option value="100">100</option>
                         </select>
                         <button onclick="goToInvPage('${tab}',1)" class="inv-pag-btn nav btn-first" title="Trang đầu">«</button>
                         <button onclick="goToInvPage('${tab}',invPag['${tab}'].page-1)" class="inv-pag-btn nav btn-prev" title="Trước">‹</button>
