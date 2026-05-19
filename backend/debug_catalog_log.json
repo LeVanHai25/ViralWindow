@@ -188,3 +188,36 @@
     "changedRows": 1
   }
 },
+{
+  "timestamp": "2026-05-19T09:21:03.967Z",
+  "action": "createProduct",
+  "body": {
+    "code": "VRA_VR001ee",
+    "group_code": "VK_CD",
+    "group_name": "VÁCH KÍNH CỐ ĐỊNH",
+    "name": "eeeeee",
+    "accessory": "Viralwindow",
+    "accessory_price": 1200000,
+    "accessories": [
+      {
+        "name": "Viralwindow",
+        "price": 1200000
+      },
+      {
+        "name": "Cmech",
+        "price": 122222
+      }
+    ],
+    "prices": {}
+  },
+  "sanitizedAccessories": [
+    {
+      "name": "Viralwindow",
+      "price": 1200000
+    },
+    {
+      "name": "Cmech",
+      "price": 122222
+    }
+  ]
+},
