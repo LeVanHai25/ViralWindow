@@ -74,8 +74,17 @@ async function getStockOnHand(connection, materialType, materialId, materialName
             );
         }
         if (rows.length > 0) {
-            stockOnHand = parseFloat(rows[0].stock) || 0;
             foundId = rows[0].id;
+            // Lấy từ kho động (aluminum_warehouse_stock) để đồng bộ với UI Hệ Nhôm
+            const [stockRows] = await connection.query(
+                `SELECT SUM(quantity) as total_stock FROM aluminum_warehouse_stock WHERE aluminum_system_id = ?`,
+                [foundId]
+            );
+            if (stockRows.length > 0 && stockRows[0].total_stock !== null) {
+                stockOnHand = parseFloat(stockRows[0].total_stock) || 0;
+            } else {
+                stockOnHand = parseFloat(rows[0].stock) || 0;
+            }
         }
     } else if (materialType === 'glass' || materialType === 'other') {
         let rows = [];
@@ -128,6 +137,30 @@ async function deductStock(connection, materialType, foundId, qty) {
             return 0;
     }
 
+    if (materialType === 'aluminum') {
+        // Trừ kho động (aluminum_warehouse_stock) - ưu tiên kho có số lượng lớn nhất
+        const [warehouses] = await connection.query(
+            `SELECT id, quantity FROM aluminum_warehouse_stock WHERE aluminum_system_id = ? AND quantity > 0 ORDER BY quantity DESC`,
+            [foundId]
+        );
+        let remainingToDeduct = qty;
+        for (let wh of warehouses) {
+            if (remainingToDeduct <= 0) break;
+            const deduct = Math.min(wh.quantity, remainingToDeduct);
+            await connection.query(
+                `UPDATE aluminum_warehouse_stock SET quantity = quantity - ? WHERE id = ?`,
+                [deduct, wh.id]
+            );
+            remainingToDeduct -= deduct;
+        }
+        // Trừ fallback bảng aluminum_systems
+        await connection.query(
+            `UPDATE aluminum_systems SET quantity = GREATEST(0, quantity - ?) WHERE id = ?`,
+            [qty, foundId]
+        );
+        return 1;
+    }
+
     const [result] = await connection.query(
         `UPDATE ${tableName} SET ${stockColumn} = GREATEST(0, ${stockColumn} - ?) WHERE id = ?`,
         [qty, foundId]
@@ -157,9 +190,15 @@ exports.getProjectMaterialsClassified = async (req, res) => {
                 COALESCE(pm.required_qty, pm.quantity, 0) as required_qty,
                 COALESCE(pm.exported_qty, 0) as exported_qty,
                 pm.unit,
-                pm.unit_price,
                 pm.notes,
-                pm.created_at
+                pm.created_at,
+                -- Ưu tiên lấy giá bán (sale_price) mới nhất thay vì giá nhập (cost_price) lưu ở project_materials
+                CASE 
+                    WHEN pm.material_type = 'accessory' THEN COALESCE((SELECT sale_price FROM accessories WHERE id = pm.material_id), (SELECT sale_price FROM accessories WHERE code = pm.material_code LIMIT 1), pm.unit_price)
+                    WHEN pm.material_type = 'aluminum' THEN COALESCE((SELECT unit_price FROM aluminum_systems WHERE id = pm.material_id), (SELECT unit_price FROM aluminum_systems WHERE code = pm.material_code LIMIT 1), pm.unit_price)
+                    WHEN pm.material_type IN ('glass', 'other') THEN COALESCE((SELECT unit_price FROM inventory WHERE id = pm.material_id), (SELECT unit_price FROM inventory WHERE item_code = pm.material_code LIMIT 1), pm.unit_price)
+                    ELSE pm.unit_price
+                END as unit_price
              FROM project_materials pm
              WHERE pm.project_id = ?
              ORDER BY pm.created_at DESC`,

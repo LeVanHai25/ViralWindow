@@ -216,7 +216,16 @@ exports.getByProject = async (req, res) => {
                         );
                         if (alumRows.length > 0) {
                             materialId = alumRows[0].id; // Cáº­p nháº­t material_id Ä‘á»ƒ dÃ¹ng sau nÃ y
-                            availableStock = parseFloat(alumRows[0].stock) || 0;
+                            // Lấy từ kho động (aluminum_warehouse_stock) để đồng bộ tồn kho
+                            const [stockRows] = await db.query(
+                                `SELECT SUM(quantity) as total_stock FROM aluminum_warehouse_stock WHERE aluminum_system_id = ?`,
+                                [materialId]
+                            );
+                            if (stockRows.length > 0 && stockRows[0].total_stock !== null) {
+                                availableStock = parseFloat(stockRows[0].total_stock) || 0;
+                            } else {
+                                availableStock = parseFloat(alumRows[0].stock) || 0;
+                            }
                             stockPrice = parseFloat(alumRows[0].price) || 0;
                             foundInStock = true;
                             foundInInventory = true;
@@ -1535,8 +1544,17 @@ exports.confirmExport = async (req, res) => {
                         );
                     }
                     if (alumRows.length > 0) {
-                        availableStock = parseFloat(alumRows[0].stock) || 0;
                         foundMaterialId = alumRows[0].id;
+                        // Lấy từ kho động (aluminum_warehouse_stock) để đồng bộ tồn kho
+                        const [stockRows] = await connection.query(
+                            `SELECT SUM(quantity) as total_stock FROM aluminum_warehouse_stock WHERE aluminum_system_id = ?`,
+                            [foundMaterialId]
+                        );
+                        if (stockRows.length > 0 && stockRows[0].total_stock !== null) {
+                            availableStock = parseFloat(stockRows[0].total_stock) || 0;
+                        } else {
+                            availableStock = parseFloat(alumRows[0].stock) || 0;
+                        }
                         stockTable = 'aluminum_systems';
                         stockColumn = 'quantity';
                     }
@@ -1588,12 +1606,38 @@ exports.confirmExport = async (req, res) => {
                 // BÆ¯á»šC 3: Äá»¦ KHO - TIáº¾N HÃ€NH TRá»ª
                 console.log(`âœ… Äá»§ kho: ${material_name} (cáº§n: ${qty}, cÃ³: ${availableStock}) â†’ Äang trá»«...`);
 
-                const [updateResult] = await connection.query(
-                    `UPDATE ${stockTable} SET ${stockColumn} = ${stockColumn} - ? WHERE id = ?`,
-                    [qty, foundMaterialId]
-                );
+                let deductSuccess = false;
+                if (stockTable === 'aluminum_systems') {
+                    // Trừ kho động (aluminum_warehouse_stock) - ưu tiên kho có số lượng lớn nhất
+                    const [warehouses] = await connection.query(
+                        `SELECT id, quantity FROM aluminum_warehouse_stock WHERE aluminum_system_id = ? AND quantity > 0 ORDER BY quantity DESC`,
+                        [foundMaterialId]
+                    );
+                    let remainingToDeduct = qty;
+                    for (let wh of warehouses) {
+                        if (remainingToDeduct <= 0) break;
+                        const deduct = Math.min(wh.quantity, remainingToDeduct);
+                        await connection.query(
+                            `UPDATE aluminum_warehouse_stock SET quantity = quantity - ? WHERE id = ?`,
+                            [deduct, wh.id]
+                        );
+                        remainingToDeduct -= deduct;
+                    }
+                    // Trừ fallback bảng aluminum_systems
+                    const [updateResult] = await connection.query(
+                        `UPDATE aluminum_systems SET quantity = GREATEST(0, quantity - ?) WHERE id = ?`,
+                        [qty, foundMaterialId]
+                    );
+                    deductSuccess = updateResult.affectedRows > 0;
+                } else {
+                    const [updateResult] = await connection.query(
+                        `UPDATE ${stockTable} SET ${stockColumn} = ${stockColumn} - ? WHERE id = ?`,
+                        [qty, foundMaterialId]
+                    );
+                    deductSuccess = updateResult.affectedRows > 0;
+                }
 
-                if (updateResult.affectedRows > 0) {
+                if (deductSuccess) {
                     // Trá»« thÃ nh cÃ´ng - Ä‘Ã¡nh dáº¥u stock_deducted = 1
                     await connection.query(
                         `UPDATE project_materials SET stock_deducted = 1 WHERE id = ?`,
@@ -1754,9 +1798,9 @@ exports.getInventoryByType = async (req, res) => {
 
         switch (type) {
             case 'accessory':
-                // Phụ kiện: Lấy tất cả phụ kiện đang hoạt động (không lọc cứng danh mục để tránh bỏ sót)
+                // Phụ kiện: Ưu tiên sale_price làm giá chính cho bán hàng/xuất kho
                 query = `SELECT id, code, name, category, unit, 
-                         COALESCE(purchase_price, sale_price, 0) as price, 
+                         COALESCE(sale_price, purchase_price, 0) as price, 
                          stock_quantity as stock, min_stock_level
                          FROM accessories 
                          WHERE is_active = 1 
@@ -1772,17 +1816,17 @@ exports.getInventoryByType = async (req, res) => {
                          ORDER BY created_at DESC`;
                 break;
             case 'aluminum':
-                // ✅ SWITCHED: Lấy từ Tổng kho nhôm (inventory) thay vì Hệ nhôm
+                // ✅ SWITCHED: Lấy từ Tổng kho nhôm (inventory) nhưng đồng bộ với kho động aluminum_warehouse_stock
                 query = `SELECT i.id, 
                          i.item_code as code, 
                          i.item_name as name, 
                          s.aluminum_system, 
                          i.unit, 
                          i.unit_price as price, 
-                         COALESCE(i.quantity, 0) as stock,
-                         COALESCE(i.quantity, 0) as quantity,
-                         COALESCE(i.quantity, 0) as total_stock_cay,
-                         COALESCE(i.quantity * s.length_m, 0) as total_stock_m,
+                         COALESCE((SELECT SUM(quantity) FROM aluminum_warehouse_stock WHERE aluminum_system_id = s.id), i.quantity, 0) as stock,
+                         COALESCE((SELECT SUM(quantity) FROM aluminum_warehouse_stock WHERE aluminum_system_id = s.id), i.quantity, 0) as quantity,
+                         COALESCE((SELECT SUM(quantity) FROM aluminum_warehouse_stock WHERE aluminum_system_id = s.id), i.quantity, 0) as total_stock_cay,
+                         COALESCE(COALESCE((SELECT SUM(quantity) FROM aluminum_warehouse_stock WHERE aluminum_system_id = s.id), i.quantity, 0) * s.length_m, 0) as total_stock_m,
                          s.length_m,
                          s.density
                          FROM inventory i
@@ -1816,7 +1860,7 @@ exports.getInventoryByType = async (req, res) => {
                         name, 
                         category, 
                         unit, 
-                        COALESCE(purchase_price, sale_price, 0) as price, 
+                        COALESCE(sale_price, purchase_price, 0) as price, 
                         stock_quantity as stock, 
                         min_stock_level,
                         'accessories' as source_table
