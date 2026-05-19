@@ -3195,7 +3195,7 @@
                         <div class="flex-shrink-0">
                             <select id="stocktakeCategoryFilter"
                                 class="px-3 py-2 border border-orange-300 rounded-lg text-sm font-semibold text-orange-700 bg-orange-50 min-w-[180px]"
-                                onchange="renderStocktakeItems()">
+                                onchange="inventoryAuditCurrentPage=1; renderStocktakeItems()">
                                 <option value="">-- Tất cả danh mục --</option>
                             </select>
                         </div>
@@ -3209,7 +3209,7 @@
                             </span>
                             <input type="text" id="stocktakeSearchInput"
                                 class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500 text-sm"
-                                placeholder="Tìm kiếm theo mã hoặc tên vật tư..." onkeyup="renderStocktakeItems()">
+                                placeholder="Tìm kiếm theo mã hoặc tên vật tư..." onkeyup="inventoryAuditCurrentPage=1; renderStocktakeItems()">
                         </div>
                     </div>
 
@@ -3238,6 +3238,8 @@
                             </tbody>
                         </table>
                     </div>
+                    <!-- Pagination UI -->
+                    <div id="inventoryAuditPaginationContainer" class="mt-4 flex items-center justify-between pt-4 hidden"></div>
 
                     <!-- Summary -->
                     <div class="mt-4 grid grid-cols-3 gap-4">
@@ -6447,8 +6449,82 @@
             let stocktakeItems = [];
             let editingStocktakeDocId = null; // null = tạo mới, number = đang sửa
 
+            const INVENTORY_AUDIT_ITEMS_PER_PAGE = 20;
+            let inventoryAuditCurrentPage = 1;
+            const inventoryAuditInputCache = {};
+
+            function paginateInventoryAuditData(data) {
+                const startIndex = (inventoryAuditCurrentPage - 1) * INVENTORY_AUDIT_ITEMS_PER_PAGE;
+                const endIndex = startIndex + INVENTORY_AUDIT_ITEMS_PER_PAGE;
+                return data.slice(startIndex, endIndex);
+            }
+
+            function goToInventoryAuditPage(page) {
+                inventoryAuditCurrentPage = page;
+                renderStocktakeItems(); 
+            }
+
+            function renderInventoryAuditPagination(totalItems) {
+                const totalPages = Math.ceil(totalItems / INVENTORY_AUDIT_ITEMS_PER_PAGE) || 1;
+                const paginationContainer = document.getElementById('inventoryAuditPaginationContainer');
+                
+                if (!paginationContainer) return;
+                
+                if (totalItems <= INVENTORY_AUDIT_ITEMS_PER_PAGE) {
+                    paginationContainer.innerHTML = '';
+                    paginationContainer.classList.add('hidden');
+                    return;
+                }
+                
+                paginationContainer.classList.remove('hidden');
+                
+                const startIndex = (inventoryAuditCurrentPage - 1) * INVENTORY_AUDIT_ITEMS_PER_PAGE + (totalItems > 0 ? 1 : 0);
+                const endIndex = Math.min(inventoryAuditCurrentPage * INVENTORY_AUDIT_ITEMS_PER_PAGE, totalItems);
+                
+                let html = `
+                    <div class="flex items-center justify-between w-full">
+                        <div class="text-sm text-gray-500">
+                            Hiển thị <span class="font-bold text-gray-900">${startIndex}-${endIndex}</span> / tổng <span class="font-bold text-gray-900">${totalItems}</span> vật tư
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button onclick="goToInventoryAuditPage(${inventoryAuditCurrentPage - 1})" ${inventoryAuditCurrentPage <= 1 ? 'disabled' : ''} class="px-3 py-1.5 rounded border border-gray-200 text-sm font-medium transition-colors ${inventoryAuditCurrentPage <= 1 ? 'text-gray-300 cursor-not-allowed bg-gray-50' : 'text-gray-600 hover:bg-gray-50 hover:text-orange-600 border-gray-300'}">Previous</button>
+                `;
+                
+                const maxV = 5;
+                let sp = Math.max(1, inventoryAuditCurrentPage - Math.floor(maxV / 2));
+                let ep = Math.min(totalPages, sp + maxV - 1);
+                if (ep - sp < maxV - 1) sp = Math.max(1, ep - maxV + 1);
+
+                if (sp > 1) {
+                    html += `<button onclick="goToInventoryAuditPage(1)" class="w-8 h-8 flex items-center justify-center rounded text-sm font-medium text-gray-600 hover:bg-orange-50 hover:text-orange-600 transition-colors">1</button>`;
+                    if (sp > 2) html += `<span class="px-1 text-gray-400">...</span>`;
+                }
+                
+                for (let i = sp; i <= ep; i++) {
+                    const activeClass = i === inventoryAuditCurrentPage 
+                        ? 'bg-orange-500 text-white shadow-sm border border-orange-500' 
+                        : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600 border border-transparent';
+                    html += `<button onclick="goToInventoryAuditPage(${i})" class="w-8 h-8 flex items-center justify-center rounded text-sm font-medium transition-colors ${activeClass}">${i}</button>`;
+                }
+                
+                if (ep < totalPages) {
+                    if (ep < totalPages - 1) html += `<span class="px-1 text-gray-400">...</span>`;
+                    html += `<button onclick="goToInventoryAuditPage(${totalPages})" class="w-8 h-8 flex items-center justify-center rounded text-sm font-medium text-gray-600 hover:bg-orange-50 hover:text-orange-600 transition-colors">${totalPages}</button>`;
+                }
+                
+                html += `
+                            <button onclick="goToInventoryAuditPage(${inventoryAuditCurrentPage + 1})" ${inventoryAuditCurrentPage >= totalPages ? 'disabled' : ''} class="px-3 py-1.5 rounded border border-gray-200 text-sm font-medium transition-colors ${inventoryAuditCurrentPage >= totalPages ? 'text-gray-300 cursor-not-allowed bg-gray-50' : 'text-gray-600 hover:bg-gray-50 hover:text-orange-600 border-gray-300'}">Next</button>
+                        </div>
+                    </div>
+                `;
+                
+                paginationContainer.innerHTML = html;
+            }
+
             // Open Stocktake Modal (Create mode)
             function openStocktakeModal() {
+                inventoryAuditCurrentPage = 1;
+                for (let key in inventoryAuditInputCache) delete inventoryAuditInputCache[key];
                 editingStocktakeDocId = null;
                 stocktakeItems = [];
                 const docNoEl = document.getElementById('stocktakeDocNo');
@@ -6464,6 +6540,8 @@
 
             // Open Stocktake Modal (Edit mode)
             async function openEditStocktake(docId) {
+                inventoryAuditCurrentPage = 1;
+                for (let key in inventoryAuditInputCache) delete inventoryAuditInputCache[key];
                 try {
                     const response = await fetch(`${STOCK_DOC_API}/${docId}`, {
                         headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
@@ -6527,6 +6605,7 @@
 
             // Load items for stocktake
             async function loadStocktakeItems() {
+                inventoryAuditCurrentPage = 1;
                 const itemType = document.getElementById('stocktakeItemType').value;
                 const warehouseId = document.getElementById('stocktakeWarehouseId').value;
                 const tbody = document.getElementById('stocktakeItemsTable');
@@ -6601,6 +6680,11 @@
 
                 // Calculate totals for ALL items (not just filtered)
                 stocktakeItems.forEach(item => {
+                    const key = `${item.item_type}_${item.item_id}`;
+                    if (inventoryAuditInputCache[key] !== undefined) {
+                        item.qty_actual = inventoryAuditInputCache[key];
+                        item.qty_diff = item.qty_actual - item.qty_system;
+                    }
                     const diff = (item.qty_actual !== null) ? (item.qty_actual - item.qty_system) : 0;
                     if (diff < 0) totalMissing += Math.abs(diff);
                     if (diff > 0) totalExtra += diff;
@@ -6620,8 +6704,12 @@
 
                 if (filteredItems.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-6 text-center text-gray-400">Không tìm thấy vật tư phù hợp</td></tr>`;
+                    renderInventoryAuditPagination(0);
                 } else {
-                    tbody.innerHTML = filteredItems.map((item) => {
+                    const paginatedItems = paginateInventoryAuditData(filteredItems);
+                    renderInventoryAuditPagination(filteredItems.length);
+
+                    tbody.innerHTML = paginatedItems.map((item) => {
                         const originalIdx = stocktakeItems.indexOf(item);
                         const diff = (item.qty_actual !== null) ? (item.qty_actual - item.qty_system) : 0;
                         const diffClass = diff > 0 ? 'text-green-600' : diff < 0 ? 'text-red-600' : 'text-gray-600';
@@ -6652,10 +6740,20 @@
             }
 
             function updateStocktakeActual(idx, value) {
-                stocktakeItems[idx].qty_actual = value !== '' ? parseFloat(value) : null;
+                const actualVal = value !== '' ? parseFloat(value) : null;
+                stocktakeItems[idx].qty_actual = actualVal;
                 stocktakeItems[idx].qty_diff = stocktakeItems[idx].qty_actual !== null
                     ? stocktakeItems[idx].qty_actual - stocktakeItems[idx].qty_system
                     : 0;
+                
+                const item = stocktakeItems[idx];
+                const key = `${item.item_type}_${item.item_id}`;
+                if (actualVal !== null) {
+                    inventoryAuditInputCache[key] = actualVal;
+                } else {
+                    delete inventoryAuditInputCache[key];
+                }
+
                 renderStocktakeItems();
             }
 
