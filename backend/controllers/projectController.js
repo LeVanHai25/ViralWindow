@@ -1566,7 +1566,7 @@ exports.getStatistics = async (req, res) => {
                 SUM(CASE WHEN status = 'quotation_pending' THEN 1 ELSE 0 END) as pending_quotations,
                 SUM(CASE WHEN status IN ('in_production', 'cutting', 'welding', 'gluing', 'accessories', 'finishing', 'packaging', 'installation') THEN 1 ELSE 0 END) as in_production,
                 SUM(CASE WHEN status = 'completed' OR progress_percent >= 100 THEN 1 ELSE 0 END) as completed,
-                SUM(CASE WHEN status NOT IN ('completed') AND (progress_percent IS NULL OR progress_percent < 100) THEN 1 ELSE 0 END) as running_projects
+                SUM(CASE WHEN status NOT IN ('completed', 'cancelled') AND (progress_percent IS NULL OR progress_percent < 100) THEN 1 ELSE 0 END) as running_projects
             FROM projects
         `);
 

@@ -260,7 +260,7 @@ exports.getDashboardStats = async (req, res) => {
         const [projectsRows] = await db.query(`
             SELECT COALESCE(COUNT(*), 0) as count
             FROM projects
-            WHERE (status IS NULL OR status != 'completed')
+            WHERE (status IS NULL OR status NOT IN ('completed', 'cancelled'))
               AND (progress_percent IS NULL OR progress_percent < 100)
         `);
         const runningProjects = parseInt(projectsRows[0]?.count) || 0;
