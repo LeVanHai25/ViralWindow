@@ -55,6 +55,9 @@ router.post('/:id/post', auth, stockDocumentController.post);
 // Cancel (Hủy)
 router.post('/:id/cancel', auth, stockDocumentController.cancel);
 
+// Restore (Khôi phục phiếu đã hủy về trạng thái Nháp)
+router.post('/:id/restore', auth, stockDocumentController.restore);
+
 // Update (Sửa phiếu nháp)
 router.put('/:id', auth, stockDocumentController.update);
 

@@ -1878,11 +1878,135 @@ exports.getMaterialCostReport = async (req, res) => {
             ORDER BY p.id DESC, pm.created_at DESC
         `, params);
 
-        // Group by project
+        // Process rows in parallel to perform dynamic price lookups if saved unit_price is 0
+        const processedRows = await Promise.all(rows.map(async (row) => {
+            let unitPrice = parseFloat(row.unit_price) || 0;
+            const type = row.material_type;
+            const name = (row.material_name || '').trim();
+            const code = (row.material_code || '').trim();
+
+            if (unitPrice === 0 && name) {
+                let resolvedPrice = 0;
+
+                try {
+                    // Look up by material type
+                    if (type === 'accessory' || type === 'phukien') {
+                        // Accessor/Phụ kiện: prioritize sale_price (giá bán) then purchase_price
+                        const [accRows] = await db.query(
+                            `SELECT COALESCE(sale_price, purchase_price, 0) as price 
+                             FROM accessories 
+                             WHERE (code = ? OR name = ? OR name LIKE ?) AND is_active = 1
+                             ORDER BY CASE WHEN code = ? THEN 0 WHEN name = ? THEN 1 ELSE 2 END
+                             LIMIT 1`,
+                            [code || name, name, `%${name}%`, code || name, name]
+                        );
+                        if (accRows.length > 0) {
+                            resolvedPrice = parseFloat(accRows[0].price) || 0;
+                        }
+                    } else if (type === 'aluminum') {
+                        // Aluminum
+                        const [alumRows] = await db.query(
+                            `SELECT unit_price as price 
+                             FROM aluminum_systems 
+                             WHERE (code = ? OR name = ? OR name LIKE ?) AND is_active = 1
+                             ORDER BY CASE WHEN code = ? THEN 0 WHEN name = ? THEN 1 ELSE 2 END
+                             LIMIT 1`,
+                            [code || name, name, `%${name}%`, code || name, name]
+                        );
+                        if (alumRows.length > 0) {
+                            resolvedPrice = parseFloat(alumRows[0].price) || 0;
+                        }
+                    } else if (type === 'glass') {
+                        // Glass
+                        const [glassRows] = await db.query(
+                            `SELECT price 
+                             FROM glass_items 
+                             WHERE (code = ? OR name = ? OR name LIKE ?)
+                             ORDER BY CASE WHEN code = ? THEN 0 WHEN name = ? THEN 1 ELSE 2 END
+                             LIMIT 1`,
+                            [code || name, name, `%${name}%`, code || name, name]
+                        );
+                        if (glassRows.length > 0) {
+                            resolvedPrice = parseFloat(glassRows[0].price) || 0;
+                        }
+                    } else if (type === 'other') {
+                        // Other
+                        const [invRows] = await db.query(
+                            `SELECT unit_price as price 
+                             FROM inventory 
+                             WHERE (item_code = ? OR item_name = ? OR item_name LIKE ?)
+                             ORDER BY CASE WHEN item_code = ? THEN 0 WHEN item_name = ? THEN 1 ELSE 2 END
+                             LIMIT 1`,
+                            [code || name, name, `%${name}%`, code || name, name]
+                        );
+                        if (invRows.length > 0) {
+                            resolvedPrice = parseFloat(invRows[0].price) || 0;
+                        }
+                    }
+
+                    // Universal Fallback search across all tables if still 0 or not found
+                    if (resolvedPrice <= 0) {
+                        // 1. Try Accessories (selling price)
+                        const [accFallback] = await db.query(
+                            `SELECT COALESCE(sale_price, purchase_price, 0) as price 
+                             FROM accessories 
+                             WHERE name LIKE ? AND is_active = 1 LIMIT 1`,
+                            [`%${name}%`]
+                        );
+                        if (accFallback.length > 0 && parseFloat(accFallback[0].price) > 0) {
+                            resolvedPrice = parseFloat(accFallback[0].price);
+                        }
+
+                        // 2. Try Aluminum Systems
+                        if (resolvedPrice <= 0) {
+                            const [alumFallback] = await db.query(
+                                `SELECT unit_price as price 
+                                 FROM aluminum_systems 
+                                 WHERE name LIKE ? AND is_active = 1 LIMIT 1`,
+                                [`%${name}%`]
+                            );
+                            if (alumFallback.length > 0 && parseFloat(alumFallback[0].price) > 0) {
+                                resolvedPrice = parseFloat(alumFallback[0].price);
+                            }
+                        }
+
+                        // 3. Try Inventory (glass or other)
+                        if (resolvedPrice <= 0) {
+                            const [invFallback] = await db.query(
+                                `SELECT unit_price as price 
+                                 FROM inventory 
+                                 WHERE item_name LIKE ? LIMIT 1`,
+                                [`%${name}%`]
+                            );
+                            if (invFallback.length > 0 && parseFloat(invFallback[0].price) > 0) {
+                                resolvedPrice = parseFloat(invFallback[0].price);
+                            }
+                        }
+                    }
+                } catch (dbErr) {
+                    console.error(`Lỗi tra cứu giá động cho ${name}:`, dbErr.message);
+                }
+
+                if (resolvedPrice > 0) {
+                    unitPrice = resolvedPrice;
+                }
+            }
+
+            const quantity = parseFloat(row.quantity) || 0;
+            const totalCost = quantity * unitPrice;
+
+            return {
+                ...row,
+                unit_price: unitPrice,
+                total_cost: totalCost
+            };
+        }));
+
+        // Group by project and sum costs
         const projectMap = new Map();
         let grandTotal = 0;
 
-        rows.forEach(row => {
+        processedRows.forEach(row => {
             if (!projectMap.has(row.project_id)) {
                 projectMap.set(row.project_id, {
                     project_id: row.project_id,
@@ -1895,7 +2019,6 @@ exports.getMaterialCostReport = async (req, res) => {
             }
 
             const project = projectMap.get(row.project_id);
-            const cost = parseFloat(row.total_cost) || 0;
             
             project.items.push({
                 type: row.material_type,
@@ -1904,12 +2027,12 @@ exports.getMaterialCostReport = async (req, res) => {
                 quantity: row.quantity,
                 unit: row.unit,
                 unit_price: row.unit_price,
-                total_cost: cost,
+                total_cost: row.total_cost,
                 date: row.export_date
             });
 
-            project.total_material_cost += cost;
-            grandTotal += cost;
+            project.total_material_cost += row.total_cost;
+            grandTotal += row.total_cost;
         });
 
         res.json({

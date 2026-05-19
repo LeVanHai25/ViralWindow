@@ -1005,6 +1005,43 @@ exports.post = async (req, res) => {
             throw new Error('Phiếu đã bị hủy');
         }
 
+        // =====================================================
+        // BUSINESS RULE: For import documents, check payment voucher (phiếu chi) status first
+        // =====================================================
+        if (doc.doc_type === 'import' && parseFloat(doc.total_value) > 0) {
+            let [payments] = await connection.query(
+                'SELECT id, transaction_code, status FROM financial_transactions WHERE reference_number = ?',
+                [`STOCK-${doc.doc_no}`]
+            );
+
+            // Robust Fallback: Check if a transaction exists with the document number in the description
+            if (payments.length === 0) {
+                const [fallbackPayments] = await connection.query(
+                    'SELECT id, transaction_code, status FROM financial_transactions WHERE transaction_type = "expense" AND description LIKE ?',
+                    [`%${doc.doc_no}%`]
+                );
+
+                if (fallbackPayments.length > 0) {
+                    payments = fallbackPayments;
+                    // Auto-heal: Update reference_number in DB so it is properly linked
+                    await connection.query(
+                        'UPDATE financial_transactions SET reference_number = ? WHERE id = ?',
+                        [`STOCK-${doc.doc_no}`, fallbackPayments[0].id]
+                    );
+                    console.log(`[Auto-Heal] Linked payment voucher ${fallbackPayments[0].transaction_code} to stock doc ${doc.doc_no} via reference_number.`);
+                }
+            }
+
+            if (payments.length === 0) {
+                throw new Error(`Phiếu chi thanh toán cho phiếu nhập kho này (mã tham chiếu STOCK-${doc.doc_no}) chưa được tạo! Vui lòng nhấn nút "Chi" ở dòng phiếu nhập để tạo phiếu chi nháp trước.`);
+            }
+
+            const payment = payments[0];
+            if (payment.status !== 'posted') {
+                throw new Error(`Phiếu chi ${payment.transaction_code} tương ứng chưa được ghi sổ! Vui lòng vào mục Tài chính > Phiếu chi để "Ghi sổ" phiếu chi này trước khi hạch toán phiếu nhập.`);
+            }
+        }
+
         console.log(`[DEBUG] POSTing document ID: ${id}, type: ${doc.doc_type}`);
 
         // Get lines
@@ -1813,5 +1850,59 @@ exports.getByProject = async (req, res) => {
     } catch (error) {
         console.error('Error getting materials by project:', error);
         res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+/**
+ * Khôi phục phiếu đã hủy về trạng thái Nháp (Draft)
+ */
+exports.restore = async (req, res) => {
+    let connection;
+
+    try {
+        const { id } = req.params;
+        const user = req.user;
+
+        connection = await db.getConnection();
+        await connection.beginTransaction();
+
+        // Get document
+        const [docs] = await connection.query(
+            'SELECT * FROM stock_documents WHERE id = ? FOR UPDATE',
+            [id]
+        );
+
+        if (docs.length === 0) {
+            throw new Error('Không tìm thấy phiếu');
+        }
+
+        const doc = docs[0];
+
+        if (doc.status !== 'cancelled') {
+            throw new Error('Chỉ có thể khôi phục phiếu đã bị hủy');
+        }
+
+        // Update status back to draft
+        await connection.query(`
+            UPDATE stock_documents 
+            SET status = 'draft', cancelled_by = NULL, cancelled_at = NULL, 
+                cancel_reason = NULL, row_version = row_version + 1
+            WHERE id = ?
+        `, [id]);
+
+        await connection.commit();
+
+        res.json({
+            success: true,
+            message: `Đã khôi phục thành công phiếu ${doc.doc_no} về trạng thái Nháp!`,
+            data: { id: doc.id, doc_no: doc.doc_no, status: 'draft' }
+        });
+
+    } catch (error) {
+        if (connection) await connection.rollback();
+        console.error('Error restoring stock document:', error);
+        res.status(500).json({ success: false, message: error.message });
+    } finally {
+        if (connection) connection.release();
     }
 };

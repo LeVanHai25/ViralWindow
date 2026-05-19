@@ -4083,12 +4083,16 @@
                             <td class="px-4 py-3">
                                 <div class="flex gap-1">
                                     <button onclick="viewDocument(${doc.id})" class="bg-teal-500 text-white px-2 py-1 rounded text-xs hover:bg-teal-600">Xem</button>
-                                    <button onclick="createPaymentFromImport(${doc.id})" class="bg-orange-500 text-white px-2 py-1 rounded text-xs hover:bg-orange-600">Chi</button>
-                                    ${doc.status === 'draft' ? `
-                                        <button onclick="openEditImportDoc(${doc.id})" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600">Sửa</button>
-                                        <button onclick="postDocument(${doc.id})" class="bg-green-500 text-white px-2 py-1 rounded text-xs hover:bg-green-600">Hạch toán</button>
-                                        <button onclick="showCancelReasonModal(${doc.id})" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">Hủy</button>
-                                    ` : ''}
+                                    ${doc.status === 'cancelled' ? `
+                                        <button onclick="restoreDocument(${doc.id}, 'import')" class="bg-indigo-500 text-white px-2 py-1 rounded text-xs hover:bg-indigo-600">Khôi phục</button>
+                                    ` : `
+                                        <button onclick="createPaymentFromImport(${doc.id})" class="bg-orange-500 text-white px-2 py-1 rounded text-xs hover:bg-orange-600">Chi</button>
+                                        ${doc.status === 'draft' ? `
+                                            <button onclick="openEditImportDoc(${doc.id})" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600">Sửa</button>
+                                            <button onclick="postDocument(${doc.id})" class="bg-green-500 text-white px-2 py-1 rounded text-xs hover:bg-green-600">Hạch toán</button>
+                                            <button onclick="showCancelReasonModal(${doc.id})" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">Hủy</button>
+                                        ` : ''}
+                                    `}
                                 </div>
                             </td>
                         </tr>
@@ -4153,12 +4157,16 @@
                             <td class="px-4 py-3">
                                 <div class="flex gap-1">
                                     <button onclick="viewDocument(${doc.id})" class="bg-teal-500 text-white px-2 py-1 rounded text-xs hover:bg-teal-600">Xem</button>
-                                    <button onclick="createPaymentFromExport(${doc.id})" class="bg-orange-500 text-white px-2 py-1 rounded text-xs hover:bg-orange-600">Chi</button>
-                                    ${doc.status === 'draft' ? `
-                                        <button onclick="openEditExportDoc(${doc.id})" class="bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-blue-700">Sửa</button>
-                                        <button onclick="postDocument(${doc.id})" class="bg-green-500 text-white px-2 py-1 rounded text-xs hover:bg-green-600">Hạch toán</button>
-                                        <button onclick="showCancelReasonModal(${doc.id})" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">Hủy</button>
-                                    ` : ''}
+                                    ${doc.status === 'cancelled' ? `
+                                        <button onclick="restoreDocument(${doc.id}, 'export')" class="bg-indigo-500 text-white px-2 py-1 rounded text-xs hover:bg-indigo-600">Khôi phục</button>
+                                    ` : `
+                                        <button onclick="createPaymentFromExport(${doc.id})" class="bg-orange-500 text-white px-2 py-1 rounded text-xs hover:bg-orange-600">Chi</button>
+                                        ${doc.status === 'draft' ? `
+                                            <button onclick="openEditExportDoc(${doc.id})" class="bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-blue-700">Sửa</button>
+                                            <button onclick="postDocument(${doc.id})" class="bg-green-500 text-white px-2 py-1 rounded text-xs hover:bg-green-600">Hạch toán</button>
+                                            <button onclick="showCancelReasonModal(${doc.id})" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">Hủy</button>
+                                        ` : ''}
+                                    `}
                                 </div>
                             </td>
                         </tr>
@@ -4939,11 +4947,15 @@
                             <td class="px-4 py-3">
                                 <div class="flex gap-2">
                                     <button onclick="viewStocktakeDocument(${doc.id})" class="bg-teal-500 text-white px-2 py-1 rounded text-xs hover:bg-teal-600">Xem</button>
-                                    ${doc.status === 'draft' ? `
-                                        <button onclick="openEditStocktake(${doc.id})" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600">Sửa</button>
-                                        <button onclick="postDocument(${doc.id})" class="bg-orange-500 text-white px-2 py-1 rounded text-xs hover:bg-orange-600">Cân bằng</button>
-                                        <button onclick="cancelDocument(${doc.id})" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">Xóa</button>
-                                    ` : ''}
+                                    ${doc.status === 'cancelled' ? `
+                                        <button onclick="restoreDocument(${doc.id}, 'stocktake')" class="bg-indigo-500 text-white px-2 py-1 rounded text-xs hover:bg-indigo-600">Khôi phục</button>
+                                    ` : `
+                                        ${doc.status === 'draft' ? `
+                                            <button onclick="openEditStocktake(${doc.id})" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600">Sửa</button>
+                                            <button onclick="postDocument(${doc.id})" class="bg-orange-500 text-white px-2 py-1 rounded text-xs hover:bg-orange-600">Cân bằng</button>
+                                            <button onclick="cancelDocument(${doc.id})" class="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600">Xóa</button>
+                                        ` : ''}
+                                    `}
                                 </div>
                             </td>
                         </tr>
@@ -5576,6 +5588,38 @@
             // Legacy function - redirect to modal
             async function cancelDocument(docId) {
                 showCancelReasonModal(docId);
+            }
+
+            // Restore document from cancelled to draft
+            async function restoreDocument(docId, docType) {
+                const confirmed = await confirm('Bạn có chắc chắn muốn khôi phục phiếu đã hủy này về trạng thái Nháp không?');
+                if (!confirmed) return;
+
+                try {
+                    const response = await fetch(`${STOCK_DOC_API}/${docId}/restore`, {
+                        method: 'POST',
+                        headers: { 
+                            'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        alert(' Khôi phục phiếu thành công về trạng thái Nháp!');
+                        if (docType === 'import') {
+                            loadImportDocuments();
+                        } else if (docType === 'export') {
+                            loadExportDocuments();
+                        } else if (docType === 'stocktake') {
+                            loadStocktakeDocuments();
+                        }
+                    } else {
+                        alert('❌ Lỗi: ' + result.message);
+                    }
+                } catch (error) {
+                    alert('❌ Lỗi: ' + error.message);
+                }
             }
 
             // ==================== IMPORT DOCUMENT MODAL ====================
