@@ -315,6 +315,114 @@
         .kpi-card:hover .icon-square {
             transform: scale(1.1) rotate(5deg);
         }
+
+        /* ====== PAGINATION STYLES ====== */
+        .pagination-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid #e5e7eb;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .pagination-info {
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .pagination-info strong {
+            color: #1e293b;
+            font-weight: 700;
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pagination-btn {
+            min-width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1.5px solid #e2e8f0;
+            background: #fff;
+            color: #475569;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 0 4px;
+        }
+
+        .pagination-btn:hover:not(:disabled):not(.active) {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            color: #1e293b;
+            transform: translateY(-1px);
+        }
+
+        .pagination-btn.active {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #fff;
+            border-color: #3b82f6;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .pagination-btn.nav-btn {
+            background: #f8fafc;
+            font-size: 16px;
+        }
+
+        .pagination-btn.nav-btn:hover:not(:disabled) {
+            background: #e2e8f0;
+        }
+
+        .pagination-ellipsis {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 36px;
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .pagination-select {
+            padding: 6px 28px 6px 10px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #475569;
+            background: #fff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 6px center;
+            background-size: 16px;
+        }
+
+        .pagination-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
     </style>
     <script src="js/permission-guard.js"></script>
 </head>
@@ -785,6 +893,26 @@
 
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="customersList">
                                 <!-- Customer cards will be loaded here -->
+                            </div>
+
+                            <!-- Pagination Bar -->
+                            <div id="customersPagination" class="pagination-bar" style="display:none;">
+                                <div class="pagination-info">
+                                    Hiển thị <strong><span id="paginationFrom">0</span>–<span id="paginationTo">0</span></strong> / <strong><span id="paginationTotal">0</span></strong> khách hàng
+                                </div>
+                                <div class="pagination-controls">
+                                    <select id="pageSizeSelect" onchange="changePageSize()" class="pagination-select">
+                                        <option value="9">9 / trang</option>
+                                        <option value="12" selected>12 / trang</option>
+                                        <option value="24">24 / trang</option>
+                                        <option value="48">48 / trang</option>
+                                    </select>
+                                    <button onclick="goToPage(1)" id="btnFirst" class="pagination-btn nav-btn" title="Trang đầu">«</button>
+                                    <button onclick="goToPage(currentPage-1)" id="btnPrev" class="pagination-btn nav-btn" title="Trang trước">‹</button>
+                                    <div id="pageNumbers" style="display:inline-flex;gap:4px;"></div>
+                                    <button onclick="goToPage(currentPage+1)" id="btnNext" class="pagination-btn nav-btn" title="Trang sau">›</button>
+                                    <button onclick="goToPage(totalPages)" id="btnLast" class="pagination-btn nav-btn" title="Trang cuối">»</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -3565,6 +3693,11 @@
             let currentAgencyId = 'all';
             let allCustomers = [];
 
+            // ========== PAGINATION STATE ==========
+            let currentPage = 1;
+            let pageSize = 12;
+            let totalPages = 1;
+
             // Load Agencies from API
             async function loadAgencies() {
                 try {
@@ -3622,6 +3755,7 @@
             // Filter by Agency
             function filterByAgency(agencyId, btn) {
                 currentAgencyId = agencyId;
+                currentPage = 1; // Reset về trang 1 khi đổi filter
 
                 // Update active state
                 document.querySelectorAll('.agency-tab').forEach(t => {
@@ -3648,7 +3782,7 @@
                 displayCustomersFiltered();
             }
 
-            // Display customers filtered by agency
+            // Display customers filtered by agency (with pagination)
             function displayCustomersFiltered() {
                 let filtered = allCustomers;
                 const search = document.getElementById('searchCustomer')?.value?.toLowerCase() || '';
@@ -3671,13 +3805,99 @@
                 const countEl = document.getElementById('customerCount');
                 if (countEl) countEl.textContent = `(${filtered.length})`;
 
-                displayCustomers(filtered);
+                // ===== PAGINATION LOGIC =====
+                totalPages = Math.ceil(filtered.length / pageSize) || 1;
+                if (currentPage > totalPages) currentPage = totalPages;
+                if (currentPage < 1) currentPage = 1;
+                const start = (currentPage - 1) * pageSize;
+                const end = Math.min(start + pageSize, filtered.length);
+                const pageData = filtered.slice(start, end);
+
+                displayCustomers(pageData);
+                renderPagination(filtered.length, start, end);
                 renderAgencyTabs(); // Update counts
             }
 
             function searchCustomers() {
+                currentPage = 1; // Reset về trang 1 khi tìm kiếm
                 displayCustomersFiltered();
             }
+
+            // ========== PAGINATION FUNCTIONS ==========
+            function goToPage(page) {
+                if (page < 1 || page > totalPages) return;
+                currentPage = page;
+                displayCustomersFiltered();
+                // Scroll lên đầu danh sách
+                const listEl = document.getElementById('customersList');
+                if (listEl) listEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            function changePageSize() {
+                const select = document.getElementById('pageSizeSelect');
+                if (select) {
+                    pageSize = parseInt(select.value) || 12;
+                    currentPage = 1;
+                    displayCustomersFiltered();
+                }
+            }
+
+            function renderPagination(totalItems, start, end) {
+                const container = document.getElementById('customersPagination');
+                if (!container) return;
+
+                // Ẩn pagination nếu không có dữ liệu
+                if (totalItems <= 0) {
+                    container.style.display = 'none';
+                    return;
+                }
+                container.style.display = '';
+
+                // Cập nhật thông tin hiển thị
+                document.getElementById('paginationFrom').textContent = totalItems > 0 ? start + 1 : 0;
+                document.getElementById('paginationTo').textContent = end;
+                document.getElementById('paginationTotal').textContent = totalItems;
+
+                // Đồng bộ page size select
+                const pageSizeSelect = document.getElementById('pageSizeSelect');
+                if (pageSizeSelect) pageSizeSelect.value = pageSize;
+
+                // Enable/disable navigation buttons
+                document.getElementById('btnFirst').disabled = currentPage <= 1;
+                document.getElementById('btnPrev').disabled = currentPage <= 1;
+                document.getElementById('btnNext').disabled = currentPage >= totalPages;
+                document.getElementById('btnLast').disabled = currentPage >= totalPages;
+
+                // Render page numbers với ellipsis
+                const pageNumbersEl = document.getElementById('pageNumbers');
+                if (!pageNumbersEl) return;
+
+                let pagesHtml = '';
+                const maxVisible = 5;
+                let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+                let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+
+                if (endPage - startPage < maxVisible - 1) {
+                    startPage = Math.max(1, endPage - maxVisible + 1);
+                }
+
+                if (startPage > 1) {
+                    pagesHtml += '<button onclick="goToPage(1)" class="pagination-btn">1</button>';
+                    if (startPage > 2) pagesHtml += '<span class="pagination-ellipsis">\u2026</span>';
+                }
+
+                for (let i = startPage; i <= endPage; i++) {
+                    pagesHtml += '<button onclick="goToPage(' + i + ')" class="pagination-btn ' + (i === currentPage ? 'active' : '') + '">' + i + '</button>';
+                }
+
+                if (endPage < totalPages) {
+                    if (endPage < totalPages - 1) pagesHtml += '<span class="pagination-ellipsis">\u2026</span>';
+                    pagesHtml += '<button onclick="goToPage(' + totalPages + ')" class="pagination-btn">' + totalPages + '</button>';
+                }
+
+                pageNumbersEl.innerHTML = pagesHtml;
+            }
+
 
             // Transfer Customer Modal
             async function openTransferModal(customerId) {

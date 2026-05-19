@@ -61,6 +61,11 @@ const WorkPlanModule = {
         const calEl = document.getElementById('calendar');
         this.calendar = new FullCalendar.Calendar(calEl, {
             initialView: 'dayGridMonth',
+            height: '100%',
+            expandRows: true,
+            stickyHeaderDates: true,
+            handleWindowResize: true,
+            windowResizeDelay: 100,
             headerToolbar: {
                 left: 'title',
                 right: 'prev,next today dayGridMonth,timeGridWeek'
@@ -75,7 +80,13 @@ const WorkPlanModule = {
                 this.openCreateModal(info.dateStr);
             },
             eventTimeFormat: { hour: '2-digit', minute: '2-digit', meridiem: false, hour12: false },
-            eventContent: this.renderCalendarEvent.bind(this)
+            eventContent: this.renderCalendarEvent.bind(this),
+            // Khi user bấm Tháng/Tuần trên toolbar → recalculate size
+            viewDidMount: () => {
+                if (this.calendar) {
+                    setTimeout(() => this.calendar.updateSize(), 50);
+                }
+            }
         });
         
         await this.loadUsers();
@@ -202,17 +213,16 @@ const WorkPlanModule = {
         document.getElementById('view-' + viewName).classList.add('active');
 
         if (viewName === 'calendar' && this.calendar) {
-            // [FIX FullCalendar v6] Thứ tự đúng: render() TRƯỚC, addEventSource SAU
-            // Bước 1: Cập nhật sidebar stats/counts ngay lập tức (không phụ thuộc calendar render)
-            this.renderAllViews();
-            // Bước 2: Sau 150ms (đủ để container visible), mount calendar TRƯỚC
-            // rồi add events SAU — FullCalendar v6 chỉ hiển thị events khi đã được mount
-            setTimeout(() => {
-                this.calendar.render();
-                // Re-add events SAU khi calendar đã mounted → đảm bảo hiển thị đúng
-                const filtered = this.getFilteredPlans();
-                this.updateCalendarData(filtered);
-            }, 150);
+            // [FIX] Thứ tự đúng cho FullCalendar v6:
+            // 1. Container đã visible (class 'active' đã được add ở trên)
+            // 2. Gọi render() ngay — calendar mount vào DOM
+            this.calendar.render();
+            // 3. Sau khi DOM paint xong, updateSize + load events
+            requestAnimationFrame(() => {
+                this.calendar.updateSize();
+                // 4. renderAllViews sẽ gọi updateCalendarData (chỉ 1 lần duy nhất)
+                this.renderAllViews();
+            });
         } else if (viewName !== 'detail') {
             this.renderAllViews();
         }
@@ -393,7 +403,10 @@ const WorkPlanModule = {
             if(cEl) cEl.textContent = counts[k] || 0;
         });
 
-        this.updateCalendarData(filtered);
+        // Chỉ update calendar events khi calendar view đang active VÀ đã render
+        if (this.currentView === 'calendar' && this.calendar) {
+            this.updateCalendarData(filtered);
+        }
 
         if (this.currentView === 'dashboard') {
             this.renderDashboard(filtered, total);
@@ -1245,7 +1258,9 @@ const WorkPlanModule = {
     // ===================================
     updateCalendarData: function(plans) {
         if (!this.calendar) return;
-        this.calendar.removeAllEvents();
+        // [FIX] Dùng removeAllEventSources() thay vì removeAllEvents()
+        // để xóa sạch cả event sources, tránh duplicate khi addEventSource lại
+        this.calendar.removeAllEventSources();
         const events = plans.map(p => {
             return {
                 id: p.id,

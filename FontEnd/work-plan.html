@@ -49,6 +49,8 @@
         /* View Panel Routing */
         .view-panel { display: none; }
         .view-panel.active { display: block; animation: fadeIn 0.2s ease-out; }
+        /* Calendar view cần flex layout để FullCalendar tính đúng height */
+        #view-calendar.active { display: flex; flex-direction: column; }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
@@ -202,7 +204,7 @@
 
                 <!-- CALENDAR VIEW -->
                 <div id="view-calendar" class="view-panel h-full w-full">
-                    <div id="calendar" class="w-full h-full p-4 bg-white"></div>
+                    <div id="calendar" class="w-full p-4 bg-white" style="flex:1; min-height:0;"></div>
                 </div>
 
                 <!-- LIST VIEW -->
