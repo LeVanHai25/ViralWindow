@@ -4479,7 +4479,7 @@
                             price = parseFloat(item.price) || parseFloat(item.sale_price) || parseFloat(item.purchase_price) || parseFloat(item.unit_price) || 0;
                             stock = parseFloat(item.stock) || parseInt(item.stock_quantity) || parseInt(item.quantity) || 0;
                         }
-                        return { id: item.id, code, name, price, length_m, stock, length_cm, is_scrap: itemType === 'scrap' };
+                        return { id: item.id, code, name, price, length_m, stock, length_cm, is_scrap: itemType === 'scrap', source_table: item.source_table };
                     });
 
                     renderExportItemDropdown(exportItemsList, itemType);
@@ -4509,7 +4509,7 @@
                         const isScrap = item.is_scrap ? 1 : 0;
                         return `
                             <div class="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm border-b last:border-b-0" 
-                                 onclick="selectExportItem(${item.id}, '${item.code.replace(/'/g, "\\'")}', '${item.name.replace(/'/g, "\\'")}', ${item.price}, ${item.length_m}, ${item.stock}, ${lengthCm}, ${isScrap})">
+                                 onclick="selectExportItem(${item.id}, '${item.code.replace(/'/g, "\\'")}', '${item.name.replace(/'/g, "\\'")}', ${item.price}, ${item.length_m}, ${item.stock}, ${lengthCm}, ${isScrap}, '${item.source_table || ''}')">
                                 ${label}
                             </div>
                         `;
@@ -4565,8 +4565,8 @@
                 }
             }
 
-            function selectExportItem(id, code, name, price, length_m = 6, stock = 0, length_cm = 0, is_scrap = 0) {
-                selectedExportItem = { id, code, name, price, length_m, stock, length_cm, is_scrap: is_scrap === 1 };
+            function selectExportItem(id, code, name, price, length_m = 6, stock = 0, length_cm = 0, is_scrap = 0, sourceTable = '') {
+                selectedExportItem = { id, code, name, price, length_m, stock, length_cm, is_scrap: is_scrap === 1, source_table: sourceTable };
                 document.getElementById('exportItemId').value = id;
                 document.getElementById('exportItemSearch').value = `${code} - ${name}`;
                 if (document.getElementById('exportLineNote')) document.getElementById('exportLineNote').value = '';
@@ -4622,12 +4622,18 @@
                     return;
                 }
 
+                // Determine final item_type based on source_table
+                let finalItemType = itemType;
+                if (itemType === 'other' && selectedExportItem.source_table === 'accessories') {
+                    finalItemType = 'accessory';
+                }
+
                 // For aluminum/scrap: get meters_used and validate
                 let meters_used = 0;
                 let length_per_bar_m = 6;
                 let length_cm = 0;
 
-                if (itemType === 'aluminum') {
+                if (finalItemType === 'aluminum') {
                     meters_used = parseFloat(document.getElementById('exportMetersUsed')?.value) || 0;
                     length_per_bar_m = selectedExportItem.length_m || 6;
                     const maxMeters = qty * length_per_bar_m;
@@ -4645,7 +4651,7 @@
                         alert(`Không đủ tồn kho! Tồn: ${selectedExportItem.stock} cây, yêu cầu: ${qty} cây`);
                         return;
                     }
-                } else if (itemType === 'scrap') {
+                } else if (finalItemType === 'scrap') {
                     // Scrap validation
                     meters_used = parseFloat(document.getElementById('exportMetersUsed')?.value) || 0;
                     length_cm = selectedExportItem.length_cm || 0;
@@ -4673,12 +4679,12 @@
                 }
 
                 // Check if already exists (scrap cannot be duplicated)
-                const existing = exportLines.findIndex(l => l.item_type === itemType && l.item_id == itemId);
+                const existing = exportLines.findIndex(l => l.item_type === finalItemType && l.item_id == itemId);
                 if (existing >= 0) {
-                    if (itemType === 'scrap') {
+                    if (finalItemType === 'scrap') {
                         alert('Nhôm Đề C này đã được thêm vào danh sách!');
                         return;
-                    } else if (itemType === 'aluminum') {
+                    } else if (finalItemType === 'aluminum') {
                         // For aluminum, add qty bars and meters_used
                         exportLines[existing].qty += qty;
                         exportLines[existing].meters_used += meters_used;
@@ -4687,7 +4693,7 @@
                     }
                 } else {
                     const lineData = {
-                        item_type: itemType,
+                        item_type: finalItemType,
                         item_id: itemId,
                         item_code: selectedExportItem.code,
                         item_name: selectedExportItem.name,
@@ -4696,10 +4702,10 @@
                         note: note,
                         unit_price: 0 // No price fields in export modal input
                     };
-                    if (itemType === 'aluminum') {
+                    if (finalItemType === 'aluminum') {
                         lineData.meters_used = meters_used;
                         lineData.length_per_bar_m = length_per_bar_m;
-                    } else if (itemType === 'scrap') {
+                    } else if (finalItemType === 'scrap') {
                         lineData.meters_used = meters_used;
                         lineData.length_cm = length_cm;
                         lineData.is_scrap = true;
@@ -6161,7 +6167,7 @@
 
                         let stock = parseFloat(item.stock_quantity) || parseFloat(item.stock) || parseFloat(item.quantity) || 0;
 
-                        return { id: item.id, code, name, price, stock };
+                        return { id: item.id, code, name, price, stock, source_table: item.source_table };
                     });
 
                     // Render dropdown
@@ -6182,7 +6188,7 @@
 
                 dropdown.innerHTML = items.slice(0, 50).map(item => `
                     <div class="px-3 py-2 hover:bg-teal-50 cursor-pointer text-sm border-b border-gray-100 flex justify-between"
-                         onclick="selectImportItem(${item.id}, '${item.code.replace(/'/g, "\\'")}', '${item.name.replace(/'/g, "\\'")}', ${item.price}, ${item.stock || 0})">
+                         onclick="selectImportItem(${item.id}, '${item.code.replace(/'/g, "\\'")}', '${item.name.replace(/'/g, "\\'")}', ${item.price}, ${item.stock || 0}, '${item.source_table || ''}')">
                         <span><strong class="text-teal-600">${item.code}</strong> - ${item.name}</span>
                         <span class="text-gray-400 text-xs">${item.price > 0 ? formatCurrency(item.price) : ''}</span>
                     </div>
@@ -6218,8 +6224,8 @@
             }
 
             // Select item from dropdown
-            function selectImportItem(id, code, name, price, stock = 0) {
-                selectedImportItem = { id, code, name, price, stock };
+            function selectImportItem(id, code, name, price, stock = 0, sourceTable = '') {
+                selectedImportItem = { id, code, name, price, stock, source_table: sourceTable };
                 document.getElementById('importItemId').value = id;
                 document.getElementById('importItemSearch').value = code + ' - ' + name;
                 document.getElementById('importItemSelected').textContent = '✓ Đã chọn: ' + code;
@@ -6260,14 +6266,20 @@
                 const name = selectedImportItem.name;
                 const price = selectedImportItem.price || 0;
 
+                // Determine final item_type based on source_table
+                let finalItemType = itemType;
+                if (itemType === 'other' && selectedImportItem.source_table === 'accessories') {
+                    finalItemType = 'accessory';
+                }
+
                 // Check if already exists
-                const existingIndex = importDocLines.findIndex(l => l.item_id == itemId && l.item_type == itemType);
+                const existingIndex = importDocLines.findIndex(l => l.item_id == itemId && l.item_type == finalItemType);
                 if (existingIndex >= 0) {
                     importDocLines[existingIndex].qty += qty;
                     importDocLines[existingIndex].line_total = importDocLines[existingIndex].qty * importDocLines[existingIndex].unit_price;
                 } else {
                     importDocLines.push({
-                        item_type: itemType,
+                        item_type: finalItemType,
                         item_id: parseInt(itemId),
                         item_code: code,
                         item_name: name,
@@ -6643,8 +6655,14 @@
                             itemCategory = (item.category || '').trim();
                         }
 
+                        // Determine final item_type based on source_table
+                        let finalItemType = itemType;
+                        if (itemType === 'other' && item.source_table === 'accessories') {
+                            finalItemType = 'accessory';
+                        }
+
                         return {
-                            item_type: itemType,
+                            item_type: finalItemType,
                             item_id: item.id,
                             item_code: itemCode,
                             item_name: item.name || item.product_name || item.item_name || '',
