@@ -213,16 +213,24 @@ async function createFinancialTransaction(options) {
  * @returns {Object} - Kết quả tạo phiếu
  */
 async function createDepositReceiptFromQuotation(quotation, quotationItems = [], connection = null) {
-    // ✅ FIX: Dùng total_amount (giá cuối cùng) làm căn cứ tính đặt cọc
+    // Tính số tiền làm căn cứ (total_amount ưu tiên, fallback subtotal)
     const baseAmount = parseFloat(quotation.total_amount) || parseFloat(quotation.subtotal) || 0;
-    const depositPercent = quotation.deposit_percent || 40;
-    const depositAmount = quotation.deposit_amount || Math.round(baseAmount * depositPercent / 100);
+
+    // ✅ FIX: MySQL trả DECIMAL dưới dạng string "0.00" → truthy trong JS!
+    // Phải parseFloat trước khi dùng || để tránh "0.00" || ... luôn trả "0.00"
+    const depositPercent = parseFloat(quotation.deposit_percent) || 40;
+    const parsedDepositAmount = parseFloat(quotation.deposit_amount) || 0;
+    const depositAmount = parsedDepositAmount > 0
+        ? parsedDepositAmount
+        : Math.round(baseAmount * depositPercent / 100);
 
     console.log(`📊 [FinancialHelper] Deposit calculation:`, {
         subtotal: quotation.subtotal,
         total_amount: quotation.total_amount,
         baseAmount,
         depositPercent,
+        raw_deposit_amount: quotation.deposit_amount,
+        parsedDepositAmount,
         depositAmount
     });
 
