@@ -10857,6 +10857,124 @@
                 }
             }
 
+            // ==================== INVENTORY PAGINATION ====================
+            // Inject pagination CSS
+            (function(){
+                const s = document.createElement('style');
+                s.textContent = `
+                    .inv-pagination-bar { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-top:1px solid #e5e7eb; flex-wrap:wrap; gap:10px; margin-top:8px; }
+                    .inv-pagination-bar .pag-info { font-size:13px; color:#64748b; font-weight:500; }
+                    .inv-pagination-bar .pag-info strong { color:#1e293b; font-weight:700; }
+                    .inv-pagination-bar .pag-controls { display:flex; align-items:center; gap:5px; }
+                    .inv-pag-btn { min-width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center; border:1.5px solid #e2e8f0; background:#fff; color:#475569; border-radius:7px; font-size:12px; font-weight:600; cursor:pointer; transition:all .2s; padding:0 3px; }
+                    .inv-pag-btn:hover:not(:disabled):not(.active) { background:#f1f5f9; border-color:#cbd5e1; transform:translateY(-1px); }
+                    .inv-pag-btn.active { background:linear-gradient(135deg,#0d9488,#14b8a6); color:#fff; border-color:#0d9488; box-shadow:0 2px 8px rgba(13,148,136,.35); }
+                    .inv-pag-btn:disabled { opacity:.4; cursor:not-allowed; }
+                    .inv-pag-btn.nav { background:#f8fafc; font-size:14px; }
+                    .inv-pag-btn.nav:hover:not(:disabled) { background:#e2e8f0; }
+                    .inv-pag-ellipsis { display:inline-flex; align-items:center; justify-content:center; width:24px; height:32px; color:#94a3b8; font-size:13px; font-weight:700; }
+                    .inv-pag-select { padding:5px 26px 5px 8px; border:1.5px solid #e2e8f0; border-radius:7px; font-size:12px; font-weight:500; color:#475569; background:#fff; cursor:pointer; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 5px center; background-size:14px; }
+                    .inv-pag-select:focus { outline:none; border-color:#0d9488; box-shadow:0 0 0 3px rgba(13,148,136,.15); }
+                `;
+                document.head.appendChild(s);
+            })();
+
+            const invPag = {
+                accessory: { page: 1, size: 20, total: 1 },
+                aluminum:  { page: 1, size: 20, total: 1 },
+                glass:     { page: 1, size: 20, total: 1 },
+                other:     { page: 1, size: 20, total: 1 }
+            };
+
+            function goToInvPage(tab, page) {
+                const p = invPag[tab];
+                if (!p || page < 1 || page > p.total) return;
+                p.page = page;
+                // Re-display using cached data
+                if (tab === 'accessory' && allAccessoriesData) displayAccessories(allAccessoriesData);
+                else if (tab === 'aluminum' && lastAluminumData) displayAluminumSystems(lastAluminumData);
+                else if (tab === 'glass' && allGlassData) displayGlassItems(allGlassData);
+                else if (tab === 'other' && allOtherData) displayOtherItems(allOtherData);
+            }
+
+            function changeInvPageSize(tab) {
+                const sel = document.getElementById(tab + 'PageSizeSelect');
+                if (sel) {
+                    invPag[tab].size = parseInt(sel.value) || 20;
+                    invPag[tab].page = 1;
+                    goToInvPage(tab, 1);
+                }
+            }
+
+            function renderInvPagination(tab, totalItems, start, end) {
+                const container = document.getElementById(tab + 'Pagination');
+                if (!container) return;
+                if (totalItems <= 0) { container.style.display = 'none'; return; }
+                container.style.display = '';
+                const p = invPag[tab];
+
+                container.querySelector('.pag-from').textContent = totalItems > 0 ? start + 1 : 0;
+                container.querySelector('.pag-to').textContent = end;
+                container.querySelector('.pag-total').textContent = totalItems;
+
+                const pageSizeSelect = document.getElementById(tab + 'PageSizeSelect');
+                if (pageSizeSelect) pageSizeSelect.value = p.size;
+
+                container.querySelector('.btn-first').disabled = p.page <= 1;
+                container.querySelector('.btn-prev').disabled = p.page <= 1;
+                container.querySelector('.btn-next').disabled = p.page >= p.total;
+                container.querySelector('.btn-last').disabled = p.page >= p.total;
+
+                const pageNumbersEl = container.querySelector('.page-numbers');
+                if (!pageNumbersEl) return;
+                let html = '';
+                const maxV = 5;
+                let sp = Math.max(1, p.page - Math.floor(maxV / 2));
+                let ep = Math.min(p.total, sp + maxV - 1);
+                if (ep - sp < maxV - 1) sp = Math.max(1, ep - maxV + 1);
+
+                if (sp > 1) {
+                    html += '<button onclick="goToInvPage(\'' + tab + '\',1)" class="inv-pag-btn">1</button>';
+                    if (sp > 2) html += '<span class="inv-pag-ellipsis">\u2026</span>';
+                }
+                for (let i = sp; i <= ep; i++) {
+                    html += '<button onclick="goToInvPage(\'' + tab + '\',' + i + ')" class="inv-pag-btn ' + (i === p.page ? 'active' : '') + '">' + i + '</button>';
+                }
+                if (ep < p.total) {
+                    if (ep < p.total - 1) html += '<span class="inv-pag-ellipsis">\u2026</span>';
+                    html += '<button onclick="goToInvPage(\'' + tab + '\',' + p.total + ')" class="inv-pag-btn">' + p.total + '</button>';
+                }
+                pageNumbersEl.innerHTML = html;
+            }
+
+            function createInvPaginationHTML(tab) {
+                return `<div id="${tab}Pagination" class="inv-pagination-bar" style="display:none;">
+                    <div class="pag-info">Hiển thị <strong><span class="pag-from">0</span>–<span class="pag-to">0</span></strong> / <strong><span class="pag-total">0</span></strong> mục</div>
+                    <div class="pag-controls">
+                        <select id="${tab}PageSizeSelect" onchange="changeInvPageSize('${tab}')" class="inv-pag-select">
+                            <option value="10">10</option><option value="20" selected>20</option><option value="50">50</option><option value="100">100</option>
+                        </select>
+                        <button onclick="goToInvPage('${tab}',1)" class="inv-pag-btn nav btn-first" title="Trang đầu">«</button>
+                        <button onclick="goToInvPage('${tab}',invPag['${tab}'].page-1)" class="inv-pag-btn nav btn-prev" title="Trước">‹</button>
+                        <div class="page-numbers" style="display:inline-flex;gap:3px;"></div>
+                        <button onclick="goToInvPage('${tab}',invPag['${tab}'].page+1)" class="inv-pag-btn nav btn-next" title="Sau">›</button>
+                        <button onclick="goToInvPage('${tab}',invPag['${tab}'].total)" class="inv-pag-btn nav btn-last" title="Cuối">»</button>
+                    </div>
+                </div>`;
+            }
+
+            function applyInvPagination(tab, dataArray) {
+                const p = invPag[tab];
+                p.total = Math.ceil(dataArray.length / p.size) || 1;
+                if (p.page > p.total) p.page = p.total;
+                if (p.page < 1) p.page = 1;
+                const start = (p.page - 1) * p.size;
+                const end = Math.min(start + p.size, dataArray.length);
+                const pageData = dataArray.slice(start, end);
+                renderInvPagination(tab, dataArray.length, start, end);
+                return pageData;
+            }
+
             // ==================== SWITCH STOCK SUB-TAB ====================
             function switchStockSubTab(tabName, buttonEl) {
                 // Ẩn tất cả tab content
@@ -10885,15 +11003,19 @@
                 // Load dữ liệu tương ứng
                 switch (tabName) {
                     case 'accessory':
+                        if (invPag) invPag.accessory.page = 1;
                         loadAccessories();
                         break;
                     case 'aluminum':
+                        if (invPag) invPag.aluminum.page = 1;
                         loadAluminumSystems();
                         break;
                     case 'glass':
+                        if (invPag) invPag.glass.page = 1;
                         loadGlassItems();
                         break;
                     case 'other':
+                        if (invPag) invPag.other.page = 1;
                         loadOtherItems();
                         break;
                     case 'scraps':
@@ -10955,10 +11077,15 @@
                 if (sorted.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="12" class="px-4 py-8 text-center text-gray-500">Chưa có phụ kiện nào</td></tr>';
                     updateAccessoryStats(accessories);
+                    const pagC = document.getElementById('accessoryPagination');
+                    if (pagC) pagC.style.display = 'none';
                     return;
                 }
 
-                sorted.forEach(accessory => {
+                // Pagination
+                const paginated = applyInvPagination('accessory', sorted);
+
+                paginated.forEach(accessory => {
                     const stockQty = parseFloat(accessory.stock_quantity || 0);
                     const minStock = parseFloat(accessory.min_stock_level || 10);
                     const maxStock = parseFloat(accessory.max_stock_level || 100);
@@ -11026,6 +11153,12 @@
                 `;
                     tbody.innerHTML += row;
                 });
+
+                // Inject pagination bar if not exists
+                if (!document.getElementById('accessoryPagination')) {
+                    tbody.closest('table').insertAdjacentHTML('afterend', createInvPaginationHTML('accessory'));
+                }
+                renderInvPagination('accessory', sorted.length, (invPag.accessory.page-1)*invPag.accessory.size, Math.min(invPag.accessory.page*invPag.accessory.size, sorted.length));
 
                 // Cập nhật số liệu thống kê từ dữ liệu gốc (không lọc)
                 updateAccessoryStats(accessories);
@@ -11127,6 +11260,7 @@
 
             function filterAccessory() {
                 // Sử dụng dữ liệu đã load để filter, không cần load lại từ server
+                if (invPag) invPag.accessory.page = 1;
                 if (allAccessoriesData.length > 0) {
                     displayAccessories(allAccessoriesData);
                 } else {
@@ -11518,7 +11652,10 @@
                 let totalValue = 0;
                 let totalBars = 0;
 
-                const rows = sortedSystems.map(system => {
+                // Pagination slice
+                const paginatedAlu = applyInvPagination('aluminum', sortedSystems);
+
+                const rows = paginatedAlu.map(system => {
                     const systemName = (system.aluminum_system || system.system_type || 'Khác').trim();
                     let quantity = 0;
                     if (currentAluminumWarehouseId === 'total') {
@@ -11611,6 +11748,13 @@
                 });
 
                 tbody.innerHTML = rows.join('');
+
+                // Inject pagination bar if not exists
+                if (!document.getElementById('aluminumPagination')) {
+                    tbody.closest('table').insertAdjacentHTML('afterend', createInvPaginationHTML('aluminum'));
+                }
+                renderInvPagination('aluminum', sortedSystems.length, (invPag.aluminum.page-1)*invPag.aluminum.size, Math.min(invPag.aluminum.page*invPag.aluminum.size, sortedSystems.length));
+
                 updateAluminumSummaryCards(totalWeight, totalValue, totalBars, systemStats);
                 displayAluminumStock(filteredSystems);
                 /* Cập nhật các summary cards cho kho nhôm */
@@ -11737,6 +11881,7 @@
             }
 
             function filterAluminum() {
+                if (invPag) invPag.aluminum.page = 1;
                 const searchTerm = document.getElementById('searchAluminum').value;
                 loadAluminumSystems(searchTerm);
             }
@@ -12767,12 +12912,17 @@
 
                 if (filtered.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="10" class="px-4 py-8 text-center text-gray-500">Chưa có dữ liệu</td></tr>';
+                    const pagC = document.getElementById('glassPagination');
+                    if (pagC) pagC.style.display = 'none';
                     return;
                 }
 
                 // Sắp xếp
                 const sorted = getSortedData(filtered, 'glass', currentSorts.glass);
-                const rows = sorted.map(item => {
+
+                // Pagination slice
+                const paginatedGlass = applyInvPagination('glass', sorted);
+                const rows = paginatedGlass.map(item => {
                     // Backend trả về notes as description, nên dùng description hoặc notes
                     const notes = item.notes || item.description || '';
                     const dimensions = getGlassDimensions(item);
@@ -12828,6 +12978,12 @@
                 });
                 tbody.innerHTML = rows.join('');
 
+                // Inject pagination bar if not exists
+                if (!document.getElementById('glassPagination')) {
+                    tbody.closest('table').insertAdjacentHTML('afterend', createInvPaginationHTML('glass'));
+                }
+                renderInvPagination('glass', sorted.length, (invPag.glass.page-1)*invPag.glass.size, Math.min(invPag.glass.page*invPag.glass.size, sorted.length));
+
                 // Hiển thị tồn kho kính
                 if (typeof displayGlassStock === 'function') {
                     displayGlassStock(items);
@@ -12840,6 +12996,7 @@
             }
 
             function filterGlass() {
+                if (invPag) invPag.glass.page = 1;
                 displayGlassItems(allGlassData);
             }
 
@@ -13249,13 +13406,17 @@
 
                 if (filtered.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="12" class="px-4 py-8 text-center text-gray-500">Chưa có dữ liệu</td></tr>';
+                    const pagC = document.getElementById('otherPagination');
+                    if (pagC) pagC.style.display = 'none';
                     return;
                 }
 
                 // Sắp xếp
                 const sorted = getSortedData(filtered, 'other', currentSorts.other);
-                
-                const rows = sorted.map(item => {
+
+                // Pagination slice
+                const paginatedOther = applyInvPagination('other', sorted);
+                const rows = paginatedOther.map(item => {
                     const stockQty = parseFloat(item.quantity || 0);
                     const unitPrice = parseFloat(item.unit_price || 0);
                     const totalValue = stockQty * unitPrice;
@@ -13332,9 +13493,16 @@
                 `;
                 });
                 tbody.innerHTML = rows.join('');
+
+                // Inject pagination bar if not exists
+                if (!document.getElementById('otherPagination')) {
+                    tbody.closest('table').insertAdjacentHTML('afterend', createInvPaginationHTML('other'));
+                }
+                renderInvPagination('other', sorted.length, (invPag.other.page-1)*invPag.other.size, Math.min(invPag.other.page*invPag.other.size, sorted.length));
             }
 
             function filterOther() {
+                if (invPag) invPag.other.page = 1;
                 displayOtherItems(allOtherData);
             }
 
