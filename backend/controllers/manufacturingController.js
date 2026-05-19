@@ -75,14 +75,47 @@ function calculateOverallProgress(mfgData) {
  * Trả về null nếu đã xuất đủ, hoặc một chuỗi thông tin chi tiết các vật tư còn thiếu nếu có thiếu hụt.
  */
 async function checkProjectMaterialsComplete(projectId) {
-    const [bomRows] = await db.query(
-        `SELECT id, material_code, material_name, COALESCE(required_qty, quantity, 0) as required_qty, COALESCE(exported_qty, 0) as exported_qty, unit 
+    let [bomRows] = await db.query(
+        `SELECT id, material_code, material_name, 
+                COALESCE(CASE WHEN required_qty > 0 THEN required_qty ELSE quantity END, 0) as required_qty, 
+                COALESCE(exported_qty, 0) as exported_qty, unit 
          FROM project_materials 
-         WHERE project_id = ? AND material_type IN ('aluminum', 'glass', 'accessory', 'phukien')`,
+         WHERE project_id = ? AND material_type IN ('aluminum', 'glass', 'accessory', 'phukien', 'other')`,
         [projectId]
     );
 
-    // Nếu dự án không có vật tư nào được định nghĩa trong BOM, coi như đã xuất đủ
+    // ✅ FALLBACK: Nếu project_materials trống, đọc từ bom_items qua door_designs giống như getBOMData
+    if (bomRows.length === 0) {
+        const [fallbackRows] = await db.query(
+            `SELECT 
+                bi.item_type,
+                bi.item_code,
+                bi.item_name,
+                bi.profile_code,
+                bi.unit,
+                SUM(bi.quantity) as quantity
+             FROM bom_items bi
+             INNER JOIN door_designs dd ON dd.id = bi.design_id
+             WHERE dd.project_id = ?
+             GROUP BY bi.item_type, bi.item_code, bi.item_name, bi.profile_code, bi.unit`,
+            [projectId]
+        );
+
+        bomRows = fallbackRows.map(row => {
+            const code = row.profile_code || row.item_code || '';
+            const name = row.item_name || row.profile_code || '';
+            return {
+                id: null,
+                material_code: code,
+                material_name: name,
+                required_qty: parseFloat(row.quantity) || 0,
+                exported_qty: 0,
+                unit: row.unit || 'đơn vị'
+            };
+        });
+    }
+
+    // Nếu vẫn không có vật tư nào được định nghĩa trong BOM, coi như đã xuất đủ
     if (bomRows.length === 0) return null;
 
     // Truy vấn tất cả các dòng chứng từ xuất kho đã hạch toán của dự án
