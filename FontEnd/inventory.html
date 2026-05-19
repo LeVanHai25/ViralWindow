@@ -9837,8 +9837,79 @@
             // AI ĐỀ XUẤT NHẬP KHO - Functions
             // =====================================================
             let aiRestockData = []; // Store fetched suggestions
+            const ITEMS_PER_PAGE = 20;
+            let currentPage = 1;
+
+            function paginateAIRestockData(data) {
+                const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+                const endIndex = startIndex + ITEMS_PER_PAGE;
+                return data.slice(startIndex, endIndex);
+            }
+
+            function goToAIRestockPage(page) {
+                currentPage = page;
+                renderAIRestockTable(); 
+            }
+
+            function renderAIRestockPagination(totalItems) {
+                const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE) || 1;
+                const paginationContainer = document.getElementById('aiRestockPaginationContainer');
+                
+                if (!paginationContainer) return;
+                
+                if (totalItems <= ITEMS_PER_PAGE) {
+                    paginationContainer.innerHTML = '';
+                    paginationContainer.classList.add('hidden');
+                    return;
+                }
+                
+                paginationContainer.classList.remove('hidden');
+                
+                const startIndex = (currentPage - 1) * ITEMS_PER_PAGE + (totalItems > 0 ? 1 : 0);
+                const endIndex = Math.min(currentPage * ITEMS_PER_PAGE, totalItems);
+                
+                let html = `
+                    <div class="flex items-center justify-between w-full">
+                        <div class="text-sm text-gray-500">
+                            Hiển thị <span class="font-bold text-gray-900">${startIndex}-${endIndex}</span> / tổng <span class="font-bold text-gray-900">${totalItems}</span> vật tư
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button onclick="goToAIRestockPage(${currentPage - 1})" ${currentPage <= 1 ? 'disabled' : ''} class="px-3 py-1.5 rounded border border-gray-200 text-sm font-medium transition-colors ${currentPage <= 1 ? 'text-gray-300 cursor-not-allowed bg-gray-50' : 'text-gray-600 hover:bg-gray-50 hover:text-purple-600 border-gray-300'}">Previous</button>
+                `;
+                
+                const maxV = 5;
+                let sp = Math.max(1, currentPage - Math.floor(maxV / 2));
+                let ep = Math.min(totalPages, sp + maxV - 1);
+                if (ep - sp < maxV - 1) sp = Math.max(1, ep - maxV + 1);
+
+                if (sp > 1) {
+                    html += `<button onclick="goToAIRestockPage(1)" class="w-8 h-8 flex items-center justify-center rounded text-sm font-medium text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition-colors">1</button>`;
+                    if (sp > 2) html += `<span class="px-1 text-gray-400">...</span>`;
+                }
+                
+                for (let i = sp; i <= ep; i++) {
+                    const activeClass = i === currentPage 
+                        ? 'bg-purple-600 text-white shadow-sm border border-purple-600' 
+                        : 'text-gray-600 hover:bg-purple-50 hover:text-purple-600 border border-transparent';
+                    html += `<button onclick="goToAIRestockPage(${i})" class="w-8 h-8 flex items-center justify-center rounded text-sm font-medium transition-colors ${activeClass}">${i}</button>`;
+                }
+                
+                if (ep < totalPages) {
+                    if (ep < totalPages - 1) html += `<span class="px-1 text-gray-400">...</span>`;
+                    html += `<button onclick="goToAIRestockPage(${totalPages})" class="w-8 h-8 flex items-center justify-center rounded text-sm font-medium text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition-colors">${totalPages}</button>`;
+                }
+                
+                html += `
+                            <button onclick="goToAIRestockPage(${currentPage + 1})" ${currentPage >= totalPages ? 'disabled' : ''} class="px-3 py-1.5 rounded border border-gray-200 text-sm font-medium transition-colors ${currentPage >= totalPages ? 'text-gray-300 cursor-not-allowed bg-gray-50' : 'text-gray-600 hover:bg-gray-50 hover:text-purple-600 border-gray-300'}">Next</button>
+                        </div>
+                    </div>
+                `;
+                
+                paginationContainer.innerHTML = html;
+            }
 
             async function openAIRestockModal() {
+                currentPage = 1;
                 const modal = document.getElementById('aiRestockModal');
                 modal.classList.remove('hidden');
 
@@ -9908,6 +9979,7 @@
                             </div>
                         </td></tr>`;
                     updateAISelectedCount();
+                    renderAIRestockPagination(0);
                     return;
                 }
 
@@ -9918,7 +9990,10 @@
                     'other': 'bg-orange-100 text-orange-700'
                 };
 
-                tbody.innerHTML = filteredData.map((item) => {
+                const paginatedData = paginateAIRestockData(filteredData);
+                renderAIRestockPagination(filteredData.length);
+
+                tbody.innerHTML = paginatedData.map((item) => {
                     const idx = aiRestockData.findIndex(d => d.id === item.id && d.module_type === item.module_type && d.warehouse_id === item.warehouse_id);
                     
                     const priorityBadge = item.priority === 'critical'
@@ -9985,15 +10060,18 @@
 
             let currentAIPriorityFilter = 'all';
             function filterAIRestockByPriority(priority) {
+                currentPage = 1;
                 currentAIPriorityFilter = (currentAIPriorityFilter === priority) ? 'all' : priority;
                 renderAIRestockTable();
             }
 
             function filterAIRestockTable() {
+                currentPage = 1;
                 renderAIRestockTable();
             }
 
             function resetAIRestockFilters() {
+                currentPage = 1;
                 document.getElementById('aiSearchInput').value = '';
                 document.getElementById('aiModuleFilter').value = 'all';
                 currentAIPriorityFilter = 'all';
@@ -10001,6 +10079,7 @@
             }
 
             function aiSelectByPriority(priority) {
+                currentPage = 1;
                 // Reset all selections first for clear priority selection
                 aiRestockData.forEach(item => {
                     item.selected = (item.priority === priority);
@@ -10074,7 +10153,7 @@
                     return;
                 }
 
-                if (!confirm(`Xác nhận tạo phiếu nhập kho nháp với ${selectedItems.length} vật tư?`)) {
+                if (!await confirm(`Xác nhận tạo phiếu nhập kho nháp với ${selectedItems.length} vật tư?`)) {
                     return;
                 }
 
@@ -12280,7 +12359,7 @@
             }
 
             async function deleteWarehouse(id) {
-                if (!confirm('Bạn có chắc muốn xóa kho này? Lưu ý: Tồn kho của các mặt hàng tại kho này sẽ không còn hiển thị.')) return;
+                if (!await confirm('Bạn có chắc muốn xóa kho này? Lưu ý: Tồn kho của các mặt hàng tại kho này sẽ không còn hiển thị.')) return;
 
                 try {
                     const token = sessionStorage.getItem('token');
@@ -14627,8 +14706,8 @@
             </div>
 
             <!-- Body: Table -->
-            <div class="flex-1 overflow-y-auto px-6 py-4">
-                <div class="overflow-x-auto border rounded-lg">
+            <div class="flex-1 overflow-y-auto px-6 py-4 flex flex-col">
+                <div class="overflow-x-auto border rounded-lg flex-1">
                     <table class="w-full text-sm">
                         <thead class="bg-gray-100 sticky top-0 z-20 shadow-sm">
                             <tr>
@@ -14663,6 +14742,8 @@
                         </tbody>
                     </table>
                 </div>
+                <!-- Pagination UI -->
+                <div id="aiRestockPaginationContainer" class="mt-4 flex items-center justify-between border-t border-gray-100 pt-4 hidden"></div>
             </div>
 
             <!-- Footer -->
