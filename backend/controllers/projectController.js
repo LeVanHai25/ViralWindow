@@ -1037,6 +1037,14 @@ exports.update = async (req, res) => {
                 } catch (e) {
                     console.error('Error creating completion notification:', e);
                 }
+
+                // [Senior Architect] Tự động tạo phiếu thu nháp cho số tiền còn lại chưa thanh toán
+                try {
+                    const projectFinanceService = require('../services/projectFinanceService');
+                    await projectFinanceService.createRemainingReceiptSlip(id);
+                } catch (financeErr) {
+                    console.error('Error generating remaining receipt slip:', financeErr);
+                }
             }
         } else {
             // Náº¿u chÆ°a thay Ä‘á»•i status nhÆ°ng cÃ³ update thÃ´ng tin khÃ¡c

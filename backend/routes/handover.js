@@ -264,6 +264,10 @@ router.put('/:id/complete', async (req, res) => {
             id
         ]);
 
+        // [Senior Architect] Tự động tạo phiếu thu nháp cho số tiền còn lại chưa thanh toán
+        const projectFinanceService = require('../services/projectFinanceService');
+        await projectFinanceService.createRemainingReceiptSlip(id);
+
         res.json({
             success: true,
             message: 'Đã hoàn thành bàn giao dự án'
@@ -295,6 +299,10 @@ router.post('/projects/:id/complete', async (req, res) => {
         `;
 
         await db.query(query, [id]);
+
+        // [Senior Architect] Tự động tạo phiếu thu nháp cho số tiền còn lại chưa thanh toán
+        const projectFinanceService = require('../services/projectFinanceService');
+        await projectFinanceService.createRemainingReceiptSlip(id);
 
         res.json({
             success: true,
