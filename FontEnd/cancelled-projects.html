@@ -1281,94 +1281,112 @@
         }
 
         // Xác nhận và xóa dự án đã hoàn thành
-        async function confirmDeleteCompletedProject(projectId, projectCode, projectName) {
-            if (!confirm(`Bạn có chắc chắn muốn xóa dự án "${projectName}" (${projectCode})?\n\nDự án này sẽ bị xóa vĩnh viễn và không thể khôi phục.`)) {
-                return;
-            }
+        function confirmDeleteCompletedProject(projectId, projectCode, projectName) {
+            const msg = `Bạn có chắc chắn muốn XÓA VĨNH VIỄN dự án "${projectName}" (${projectCode})?\n\nDự án này sẽ bị xóa vĩnh viễn và không thể khôi phục.`;
 
-            try {
-                const token = sessionStorage.getItem('token');
-                if (!token) {
-                    alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
-                    window.location.href = 'login.html';
-                    return;
-                }
-
-                const response = await fetch(`${API_BASE}/projects/${projectId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
+            const doDelete = async () => {
+                try {
+                    const token = sessionStorage.getItem('token');
+                    if (!token) {
+                        alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                        window.location.href = 'login.html';
+                        return;
                     }
-                });
 
-                const result = await response.json();
+                    const response = await fetch(`${API_BASE}/projects/${projectId}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
 
-                if (result.success) {
-                    // Xóa dự án khỏi danh sách local
-                    cancelledProjects = cancelledProjects.filter(p => p.id !== projectId);
-                    projectsData = projectsData.filter(p => p.id !== projectId);
+                    const result = await response.json();
 
-                    // Cập nhật UI
-                    updateKPIs();
-                    renderProjects();
-
-                    // Hiển thị thông báo thành công
-                    showSuccessNotification('Đã xóa dự án thành công!');
-                } else {
-                    // Hiển thị thông báo lỗi chi tiết hơn
-                    const errorMessage = result.message || 'Không thể xóa dự án';
-                    alert('Lỗi: ' + errorMessage);
-                    console.error('Delete project error:', result);
+                    if (result.success) {
+                        cancelledProjects = cancelledProjects.filter(p => p.id !== projectId);
+                        projectsData = projectsData.filter(p => p.id !== projectId);
+                        updateKPIs();
+                        renderProjects();
+                        showSuccessNotification('Đã xóa dự án thành công!');
+                    } else {
+                        const errorMessage = result.message || 'Không thể xóa dự án';
+                        if (window.VWModal) VWModal.error('Lỗi: ' + errorMessage);
+                        else alert('Lỗi: ' + errorMessage);
+                        console.error('Delete project error:', result);
+                    }
+                } catch (error) {
+                    console.error('Error deleting project:', error);
+                    if (window.VWModal) VWModal.error('Lỗi kết nối server: ' + error.message);
+                    else alert('Lỗi kết nối server: ' + error.message);
                 }
-            } catch (error) {
-                console.error('Error deleting project:', error);
-                alert('Lỗi kết nối server: ' + error.message);
+            };
+
+            if (window.VWModal && typeof VWModal.confirm === 'function') {
+                VWModal.confirm('Xác nhận xóa vĩnh viễn', msg, {
+                    confirmText: 'Xóa vĩnh viễn',
+                    cancelText: 'Hủy'
+                }).then(confirmed => {
+                    if (confirmed) doDelete();
+                });
+            } else {
+                if (confirm(msg)) doDelete();
             }
         }
 
         // Khôi phục dự án đã hủy
-        async function restoreProject(projectId, projectCode, projectName) {
-            if (!confirm(`Bạn có chắc chắn muốn KHÔI PHỤC dự án "${projectName}" (${projectCode})?\n\nDự án sẽ được chuyển về danh sách dự án hoạt động.`)) {
-                return;
-            }
+        function restoreProject(projectId, projectCode, projectName) {
+            // Dùng VWModal.confirm() thay vì native confirm() để tránh auto-confirm bug
+            const msg = `Bạn có chắc chắn muốn KHÔI PHỤC dự án "${projectName}" (${projectCode})?\n\nDự án sẽ được chuyển về danh sách dự án hoạt động.`;
 
-            try {
-                const token = sessionStorage.getItem('token');
-                if (!token) {
-                    alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
-                    window.location.href = 'login.html';
-                    return;
-                }
-
-                const response = await fetch(`${API_BASE}/projects/${projectId}/restore`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
+            const doRestore = async () => {
+                try {
+                    const token = sessionStorage.getItem('token');
+                    if (!token) {
+                        alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                        window.location.href = 'login.html';
+                        return;
                     }
-                });
 
-                const result = await response.json();
+                    const response = await fetch(`${API_BASE}/projects/${projectId}/restore`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
 
-                if (result.success) {
-                    // Xóa dự án khỏi danh sách cancelled
-                    cancelledProjects = cancelledProjects.filter(p => p.id !== projectId);
-                    projectsData = projectsData.filter(p => p.id !== projectId);
+                    const result = await response.json();
 
-                    // Cập nhật UI
-                    updateKPIs();
-                    renderProjects();
+                    if (result.success) {
+                        // Xóa dự án khỏi danh sách cancelled local
+                        cancelledProjects = cancelledProjects.filter(p => p.id !== projectId);
+                        projectsData = projectsData.filter(p => p.id !== projectId);
 
-                    // Hiển thị thông báo thành công
-                    showSuccessNotification('Đã khôi phục dự án thành công!');
-                } else {
-                    const errorMessage = result.message || 'Không thể khôi phục dự án';
-                    alert('Lỗi: ' + errorMessage);
-                    console.error('Restore project error:', result);
+                        // Cập nhật UI
+                        updateKPIs();
+                        renderProjects();
+                        showSuccessNotification('Đã khôi phục dự án thành công!');
+                    } else {
+                        const errorMessage = result.message || 'Không thể khôi phục dự án';
+                        if (window.VWModal) VWModal.error('Lỗi: ' + errorMessage);
+                        else alert('Lỗi: ' + errorMessage);
+                        console.error('Restore project error:', result);
+                    }
+                } catch (error) {
+                    console.error('Error restoring project:', error);
+                    if (window.VWModal) VWModal.error('Lỗi kết nối server: ' + error.message);
+                    else alert('Lỗi kết nối server: ' + error.message);
                 }
-            } catch (error) {
-                console.error('Error restoring project:', error);
-                alert('Lỗi kết nối server: ' + error.message);
+            };
+
+            // Ưu tiên dùng VWModal nếu có, fallback về native confirm()
+            if (window.VWModal && typeof VWModal.confirm === 'function') {
+                VWModal.confirm('Xác nhận khôi phục dự án', msg, {
+                    confirmText: 'Khôi phục',
+                    cancelText: 'Hủy'
+                }).then(confirmed => {
+                    if (confirmed) doRestore();
+                });
+            } else {
+                if (confirm(msg)) doRestore();
             }
         }
 
