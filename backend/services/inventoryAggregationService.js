@@ -586,7 +586,7 @@ exports.getDashboardAlertsSummary = async () => {
             // Accessories
             db.query("SELECT COUNT(*) as count FROM accessories WHERE is_active = 1 AND stock_quantity <= 0"),
             // Aluminum
-            db.query("SELECT COUNT(*) as count FROM aluminum_systems WHERE is_active = 1 AND (quantity_m <= 0 OR quantity_m IS NULL)"),
+            db.query("SELECT COUNT(DISTINCT aws.aluminum_system_id) as count FROM aluminum_warehouse_stock aws JOIN aluminum_systems als ON aws.aluminum_system_id = als.id WHERE als.is_active = 1 AND aws.quantity <= 0"),
             // Glass
             db.query("SELECT COUNT(*) as count FROM inventory WHERE item_type = 'glass' AND quantity <= 0"),
             // Other
@@ -599,7 +599,7 @@ exports.getDashboardAlertsSummary = async () => {
         // 2. Tính số lượng sắp hết hàng (Low Stock)
         const lowStockQueries = [
             db.query("SELECT COUNT(*) as count FROM accessories WHERE is_active = 1 AND stock_quantity > 0 AND stock_quantity <= min_stock_level"),
-            db.query("SELECT COUNT(*) as count FROM aluminum_systems WHERE is_active = 1 AND quantity_m > 0 AND quantity_m < 10"),
+            db.query("SELECT COUNT(DISTINCT aws.aluminum_system_id) as count FROM aluminum_warehouse_stock aws JOIN aluminum_systems als ON aws.aluminum_system_id = als.id WHERE als.is_active = 1 AND aws.quantity > 0 AND aws.quantity < COALESCE(als.min_stock_level, 5)"),
             db.query("SELECT COUNT(*) as count FROM inventory WHERE item_type = 'glass' AND quantity > 0 AND quantity <= min_stock_level"),
             db.query("SELECT COUNT(*) as count FROM inventory WHERE (item_type NOT IN ('glass', 'aluminum') OR item_type IS NULL) AND quantity > 0 AND quantity <= min_stock_level")
         ];
@@ -615,9 +615,9 @@ exports.getDashboardAlertsSummary = async () => {
         // 4. Báo giá chờ duyệt / Sắp hết hạn
         const [quotationStats] = await db.query(`
             SELECT 
-                SUM(CASE WHEN status IN ('draft', 'pending', 'sent', 'revision_requested', 'approved') THEN 1 ELSE 0 END) as pending_count,
-                SUM(CASE WHEN status IN ('draft', 'pending', 'sent', 'revision_requested', 'approved') AND DATE_ADD(quotation_date, INTERVAL COALESCE(validity_days, 30) DAY) < DATE_ADD(NOW(), INTERVAL 7 DAY) AND DATE_ADD(quotation_date, INTERVAL COALESCE(validity_days, 30) DAY) >= NOW() THEN 1 ELSE 0 END) as expiring_soon,
-                SUM(CASE WHEN status IN ('draft', 'pending', 'sent', 'revision_requested', 'approved') AND DATE_ADD(quotation_date, INTERVAL COALESCE(validity_days, 30) DAY) < NOW() THEN 1 ELSE 0 END) as expired_count
+                SUM(CASE WHEN status IN ('draft', 'pending', 'sent', 'revision_requested') THEN 1 ELSE 0 END) as pending_count,
+                SUM(CASE WHEN status IN ('draft', 'pending', 'sent', 'revision_requested') AND DATE_ADD(quotation_date, INTERVAL COALESCE(validity_days, 30) DAY) < DATE_ADD(NOW(), INTERVAL 7 DAY) AND DATE_ADD(quotation_date, INTERVAL COALESCE(validity_days, 30) DAY) >= NOW() THEN 1 ELSE 0 END) as expiring_soon,
+                SUM(CASE WHEN status IN ('draft', 'pending', 'sent', 'revision_requested') AND DATE_ADD(quotation_date, INTERVAL COALESCE(validity_days, 30) DAY) < NOW() THEN 1 ELSE 0 END) as expired_count
             FROM quotations
         `);
 
