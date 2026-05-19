@@ -158,6 +158,100 @@
         .fade-in {
             animation: fadeIn 0.3s ease-out;
         }
+
+        /* ====== PAGINATION STYLES ====== */
+        .pagination-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            border-top: 1px solid #e5e7eb;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .pagination-info {
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 500;
+        }
+        .pagination-info strong {
+            color: #1e293b;
+            font-weight: 700;
+        }
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .pagination-btn {
+            min-width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1.5px solid #e2e8f0;
+            background: #fff;
+            color: #475569;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 0 4px;
+        }
+        .pagination-btn:hover:not(:disabled):not(.active) {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+        .pagination-btn.active {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #fff;
+            border-color: #3b82f6;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
+        }
+        .pagination-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .pagination-btn.nav-btn {
+            background: #f8fafc;
+            font-size: 16px;
+        }
+        .pagination-btn.nav-btn:hover:not(:disabled) {
+            background: #e2e8f0;
+        }
+        .pagination-ellipsis {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 36px;
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: 700;
+        }
+        .pagination-select {
+            padding: 6px 28px 6px 10px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #475569;
+            background: #fff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 6px center;
+            background-size: 16px;
+        }
+        .pagination-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
     </style>
     <script src="js/permission-guard.js"></script>
 </head>
@@ -686,6 +780,26 @@
             </div>
         </div>
 
+        <!-- Quotations Pagination Bar -->
+        <div id="quotationsPagination" class="pagination-bar" style="display:none;margin:0 16px;">
+            <div class="pagination-info">
+                Hiển thị <strong><span id="qPaginationFrom">0</span>–<span id="qPaginationTo">0</span></strong> / <strong><span id="qPaginationTotal">0</span></strong> báo giá
+            </div>
+            <div class="pagination-controls">
+                <select id="qPageSizeSelect" onchange="changeQuotationPageSize()" class="pagination-select">
+                    <option value="5" selected>5 / trang</option>
+                    <option value="10">10 / trang</option>
+                    <option value="20">20 / trang</option>
+                    <option value="50">50 / trang</option>
+                </select>
+                <button onclick="goToQuotationPage(1)" id="qBtnFirst" class="pagination-btn nav-btn" title="Trang đầu">«</button>
+                <button onclick="goToQuotationPage(qCurrentPage-1)" id="qBtnPrev" class="pagination-btn nav-btn" title="Trang trước">‹</button>
+                <div id="qPageNumbers" style="display:inline-flex;gap:4px;"></div>
+                <button onclick="goToQuotationPage(qCurrentPage+1)" id="qBtnNext" class="pagination-btn nav-btn" title="Trang sau">›</button>
+                <button onclick="goToQuotationPage(qTotalPages)" id="qBtnLast" class="pagination-btn nav-btn" title="Trang cuối">»</button>
+            </div>
+        </div>
+
         <!-- MODAL: Chi tiết báo giá -->
         <div id="quotationDetailModal"
             class="hidden fixed inset-0 bg-black bg-opacity-50 z-[2000] flex items-center justify-center p-4">
@@ -958,8 +1072,14 @@
             correctionRequests: 0
         };
 
+
         // Current tab: 'pending' or 'approved'
         let currentTab = 'pending';
+
+        // ========== PAGINATION STATE ==========
+        let qCurrentPage = 1;
+        let qPageSize = 5;
+        let qTotalPages = 1;
 
         // Switch tab
         function switchTab(tab) {
@@ -981,6 +1101,7 @@
                 pendingBtn.classList.add('bg-white', 'border-2', 'border-gray-300', 'text-gray-700');
             }
 
+            qCurrentPage = 1;
             applyFiltersAndDisplay();
         }
 
@@ -1046,16 +1167,19 @@
                 activeBtn.classList.add('active', 'bg-blue-500', 'text-white');
             }
 
+            qCurrentPage = 1;
             applyFiltersAndDisplay();
         }
 
         function handleSearch() {
             searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            qCurrentPage = 1;
             applyFiltersAndDisplay();
         }
 
         function handleSort() {
             currentSort = document.getElementById('sortSelect').value;
+            qCurrentPage = 1;
             applyFiltersAndDisplay();
         }
 
@@ -1118,7 +1242,73 @@
                 }
             });
 
-            displayQuotations(filtered);
+            // Pagination
+            qTotalPages = Math.ceil(filtered.length / qPageSize) || 1;
+            if (qCurrentPage > qTotalPages) qCurrentPage = qTotalPages;
+            if (qCurrentPage < 1) qCurrentPage = 1;
+            const start = (qCurrentPage - 1) * qPageSize;
+            const end = Math.min(start + qPageSize, filtered.length);
+            const pageData = filtered.slice(start, end);
+
+            displayQuotations(pageData);
+            renderQuotationPagination(filtered.length, start, end);
+        }
+
+        function goToQuotationPage(page) {
+            if (page < 1 || page > qTotalPages) return;
+            qCurrentPage = page;
+            applyFiltersAndDisplay();
+            const container = document.getElementById('quotationsList');
+            if (container) container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function changeQuotationPageSize() {
+            const sel = document.getElementById('qPageSizeSelect');
+            if (sel) {
+                qPageSize = parseInt(sel.value) || 5;
+                qCurrentPage = 1;
+                applyFiltersAndDisplay();
+            }
+        }
+
+        function renderQuotationPagination(totalItems, start, end) {
+            const container = document.getElementById('quotationsPagination');
+            if (!container) return;
+            if (totalItems <= 0) { container.style.display = 'none'; return; }
+            container.style.display = '';
+
+            document.getElementById('qPaginationFrom').textContent = totalItems > 0 ? start + 1 : 0;
+            document.getElementById('qPaginationTo').textContent = end;
+            document.getElementById('qPaginationTotal').textContent = totalItems;
+
+            const pageSizeSelect = document.getElementById('qPageSizeSelect');
+            if (pageSizeSelect) pageSizeSelect.value = qPageSize;
+
+            document.getElementById('qBtnFirst').disabled = qCurrentPage <= 1;
+            document.getElementById('qBtnPrev').disabled = qCurrentPage <= 1;
+            document.getElementById('qBtnNext').disabled = qCurrentPage >= qTotalPages;
+            document.getElementById('qBtnLast').disabled = qCurrentPage >= qTotalPages;
+
+            const pageNumbersEl = document.getElementById('qPageNumbers');
+            if (!pageNumbersEl) return;
+            let pagesHtml = '';
+            const maxVisible = 5;
+            let startPage = Math.max(1, qCurrentPage - Math.floor(maxVisible / 2));
+            let endPage = Math.min(qTotalPages, startPage + maxVisible - 1);
+            if (endPage - startPage < maxVisible - 1) startPage = Math.max(1, endPage - maxVisible + 1);
+
+            if (startPage > 1) {
+                pagesHtml += '<button onclick="goToQuotationPage(1)" class="pagination-btn">1</button>';
+                if (startPage > 2) pagesHtml += '<span class="pagination-ellipsis">\u2026</span>';
+            }
+            for (let i = startPage; i <= endPage; i++) {
+                pagesHtml += '<button onclick="goToQuotationPage(' + i + ')" class="pagination-btn ' + (i === qCurrentPage ? 'active' : '') + '">' + i + '</button>';
+            }
+            if (endPage < qTotalPages) {
+                if (endPage < qTotalPages - 1) pagesHtml += '<span class="pagination-ellipsis">\u2026</span>';
+                pagesHtml += '<button onclick="goToQuotationPage(' + qTotalPages + ')" class="pagination-btn">' + qTotalPages + '</button>';
+            }
+            pageNumbersEl.innerHTML = pagesHtml;
         }
 
         function displayQuotations(quotations) {

@@ -1046,6 +1046,26 @@
                 <div data-projects-list class="space-y-4">
                     <p class="text-center text-gray-500 py-8">Đang tải dữ liệu...</p>
                 </div>
+
+                <!-- Projects Pagination Bar -->
+                <div id="projectsPagination" class="pagination-bar" style="display:none;">
+                    <div class="pagination-info">
+                        Hiển thị <strong><span id="projPaginationFrom">0</span>–<span id="projPaginationTo">0</span></strong> / <strong><span id="projPaginationTotal">0</span></strong> dự án
+                    </div>
+                    <div class="pagination-controls">
+                        <select id="projPageSizeSelect" onchange="changeProjectPageSize()" class="pagination-select">
+                            <option value="5">5 / trang</option>
+                            <option value="10" selected>10 / trang</option>
+                            <option value="20">20 / trang</option>
+                            <option value="50">50 / trang</option>
+                        </select>
+                        <button onclick="goToProjectPage(1)" id="projBtnFirst" class="pagination-btn nav-btn" title="Trang đầu">«</button>
+                        <button onclick="goToProjectPage(projCurrentPage-1)" id="projBtnPrev" class="pagination-btn nav-btn" title="Trang trước">‹</button>
+                        <div id="projPageNumbers" style="display:inline-flex;gap:4px;"></div>
+                        <button onclick="goToProjectPage(projCurrentPage+1)" id="projBtnNext" class="pagination-btn nav-btn" title="Trang sau">›</button>
+                        <button onclick="goToProjectPage(projTotalPages)" id="projBtnLast" class="pagination-btn nav-btn" title="Trang cuối">»</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -2163,6 +2183,12 @@
                 }
             };
 
+            // ========== PROJECT PAGINATION STATE ==========
+            let allProjects = [];
+            let projCurrentPage = 1;
+            let projPageSize = 10;
+            let projTotalPages = 1;
+
             // Load projects in tab
             async function loadProjectsInTab() {
                 try {
@@ -2196,15 +2222,18 @@
                         projects = projects.filter(p => {
                             const progress = parseFloat(p.progress_percent) || 0;
                             const status = (p.status || '').toLowerCase();
-                            // Bỏ các dự án đã hoàn thành 100% hoặc status = 'completed' hoặc 'handover'
                             return progress < 100 && status !== 'completed' && status !== 'handover';
                         });
 
                         // Update KPI (use all projects for KPI calculation)
                         updateProjectsKPI(result.data || []);
 
-                        // Render projects (only non-completed)
-                        renderProjectsInTab(projects);
+                        // Store all projects for pagination/filtering
+                        allProjects = projects;
+                        projCurrentPage = 1;
+
+                        // Render with pagination
+                        displayProjectsFiltered();
                     } else {
                         container.innerHTML = '<p class="text-center text-red-500 py-8">Lỗi khi tải dữ liệu dự án</p>';
                     }
@@ -2252,10 +2281,13 @@
                 if (completedEl) completedEl.textContent = completed;
             }
 
-            // Render projects in tab
-            function renderProjectsInTab(projects) {
+            // Render projects in tab (accepts paginated data)
+            function renderProjectsInTab(projects, totalCount) {
                 const container = document.querySelector('[data-projects-list]');
                 if (!container) return;
+
+                // totalCount is the count of ALL filtered projects (before pagination)
+                const displayCount = typeof totalCount === 'number' ? totalCount : projects.length;
 
                 if (projects.length === 0) {
                     container.innerHTML = '<p class="text-center text-gray-500 py-8">Chưa có dự án nào. Hãy tạo dự án mới!</p>';
@@ -2276,10 +2308,10 @@
                     }
                 });
 
-                // Update heading
+                // Update heading with total count (not just current page)
                 const heading = document.querySelector('[data-projects-heading]');
                 if (heading) {
-                    heading.innerHTML = `Dự án đang triển khai <span class="text-blue-600">(${projects.length})</span>`;
+                    heading.innerHTML = `Dự án đang triển khai <span class="text-blue-600">(${displayCount})</span>`;
                 }
             }
 
@@ -2498,8 +2530,9 @@
                 return card;
             }
 
-            // Filter projects in tab
-            function filterProjectsInTab() {
+            // ========== PROJECT FILTER + PAGINATION ==========
+            // Central function: filter allProjects data, paginate, render
+            function displayProjectsFiltered() {
                 const searchInput = document.querySelector('[data-projects-search="input"]');
                 const statusFilter = document.querySelector('[data-projects-filter="status"]');
                 const progressFilter = document.querySelector('[data-projects-filter="progress"]');
@@ -2508,25 +2541,23 @@
                 const statusValue = statusFilter?.value || 'all';
                 const progressValue = progressFilter?.value || 'all';
 
-                const projectCards = document.querySelectorAll('[data-projects-list] .project-card');
-                let visibleCount = 0;
+                // Filter on data array (not DOM)
+                let filtered = allProjects.filter(p => {
+                    const name = (p.project_name || '').toLowerCase();
+                    const customer = (p.customer_name || '').toLowerCase();
+                    const phone = (p.customer_phone || '').toLowerCase();
+                    const code = (p.project_code || '').toLowerCase();
+                    const status = (p.status || '').toLowerCase();
+                    const progress = parseFloat(p.progress_percent) || 0;
 
-                projectCards.forEach(card => {
-                    const name = card.getAttribute('data-name') || '';
-                    const customer = card.getAttribute('data-customer') || '';
-                    const phone = card.getAttribute('data-phone') || '';
-                    const code = card.getAttribute('data-code') || '';
-                    const status = card.getAttribute('data-status') || '';
-                    const progress = parseInt(card.getAttribute('data-progress') || 0);
-
-                    // Search filter
+                    // Search
                     const matchesSearch = !searchTerm ||
                         name.includes(searchTerm) ||
                         customer.includes(searchTerm) ||
                         phone.includes(searchTerm) ||
                         code.includes(searchTerm);
 
-                    // Status filter
+                    // Status
                     let matchesStatus = true;
                     if (statusValue !== 'all') {
                         if (statusValue === 'approved') {
@@ -2538,7 +2569,7 @@
                         }
                     }
 
-                    // Progress filter
+                    // Progress
                     let matchesProgress = true;
                     if (progressValue !== 'all') {
                         if (progressValue === '0-25') {
@@ -2552,21 +2583,95 @@
                         }
                     }
 
-                    // Show/hide card
-                    if (matchesSearch && matchesStatus && matchesProgress) {
-                        card.style.display = '';
-                        visibleCount++;
-                    } else {
-                        card.style.display = 'none';
-                    }
+                    return matchesSearch && matchesStatus && matchesProgress;
                 });
 
-                // Update heading
-                const heading = document.querySelector('[data-projects-heading]');
-                if (heading) {
-                    heading.innerHTML = `Dự án đang triển khai <span class="text-blue-600">(${visibleCount})</span>`;
+                // Pagination
+                projTotalPages = Math.ceil(filtered.length / projPageSize) || 1;
+                if (projCurrentPage > projTotalPages) projCurrentPage = projTotalPages;
+                if (projCurrentPage < 1) projCurrentPage = 1;
+                const start = (projCurrentPage - 1) * projPageSize;
+                const end = Math.min(start + projPageSize, filtered.length);
+                const pageData = filtered.slice(start, end);
+
+                renderProjectsInTab(pageData, filtered.length);
+                renderProjectPagination(filtered.length, start, end);
+            }
+
+            // Called by search/filter onchange - resets to page 1
+            function filterProjectsInTab() {
+                projCurrentPage = 1;
+                displayProjectsFiltered();
+            }
+
+            function goToProjectPage(page) {
+                if (page < 1 || page > projTotalPages) return;
+                projCurrentPage = page;
+                displayProjectsFiltered();
+                const listEl = document.querySelector('[data-projects-list]');
+                if (listEl) listEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            function changeProjectPageSize() {
+                const select = document.getElementById('projPageSizeSelect');
+                if (select) {
+                    projPageSize = parseInt(select.value) || 10;
+                    projCurrentPage = 1;
+                    displayProjectsFiltered();
                 }
             }
+
+            function renderProjectPagination(totalItems, start, end) {
+                const container = document.getElementById('projectsPagination');
+                if (!container) return;
+
+                if (totalItems <= 0) {
+                    container.style.display = 'none';
+                    return;
+                }
+                container.style.display = '';
+
+                document.getElementById('projPaginationFrom').textContent = totalItems > 0 ? start + 1 : 0;
+                document.getElementById('projPaginationTo').textContent = end;
+                document.getElementById('projPaginationTotal').textContent = totalItems;
+
+                const pageSizeSelect = document.getElementById('projPageSizeSelect');
+                if (pageSizeSelect) pageSizeSelect.value = projPageSize;
+
+                document.getElementById('projBtnFirst').disabled = projCurrentPage <= 1;
+                document.getElementById('projBtnPrev').disabled = projCurrentPage <= 1;
+                document.getElementById('projBtnNext').disabled = projCurrentPage >= projTotalPages;
+                document.getElementById('projBtnLast').disabled = projCurrentPage >= projTotalPages;
+
+                const pageNumbersEl = document.getElementById('projPageNumbers');
+                if (!pageNumbersEl) return;
+
+                let pagesHtml = '';
+                const maxVisible = 5;
+                let startPage = Math.max(1, projCurrentPage - Math.floor(maxVisible / 2));
+                let endPage = Math.min(projTotalPages, startPage + maxVisible - 1);
+
+                if (endPage - startPage < maxVisible - 1) {
+                    startPage = Math.max(1, endPage - maxVisible + 1);
+                }
+
+                if (startPage > 1) {
+                    pagesHtml += '<button onclick="goToProjectPage(1)" class="pagination-btn">1</button>';
+                    if (startPage > 2) pagesHtml += '<span class="pagination-ellipsis">\u2026</span>';
+                }
+
+                for (let i = startPage; i <= endPage; i++) {
+                    pagesHtml += '<button onclick="goToProjectPage(' + i + ')" class="pagination-btn ' + (i === projCurrentPage ? 'active' : '') + '">' + i + '</button>';
+                }
+
+                if (endPage < projTotalPages) {
+                    if (endPage < projTotalPages - 1) pagesHtml += '<span class="pagination-ellipsis">\u2026</span>';
+                    pagesHtml += '<button onclick="goToProjectPage(' + projTotalPages + ')" class="pagination-btn">' + projTotalPages + '</button>';
+                }
+
+                pageNumbersEl.innerHTML = pagesHtml;
+            }
+
 
             // View project details in tab
             function viewProjectDetailsInTab(projectId) {

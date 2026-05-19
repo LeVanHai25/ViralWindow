@@ -532,6 +532,101 @@
             padding: 60px 20px;
             color: #94a3b8;
         }
+
+        /* ====== PAGINATION STYLES ====== */
+        .pagination-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding: 14px 0 0;
+            border-top: 1px solid #e5e7eb;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .pagination-info {
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 500;
+        }
+        .pagination-info strong {
+            color: #1e293b;
+            font-weight: 700;
+        }
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .pagination-btn {
+            min-width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1.5px solid #e2e8f0;
+            background: #fff;
+            color: #475569;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 0 4px;
+        }
+        .pagination-btn:hover:not(:disabled):not(.active) {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+        .pagination-btn.active {
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            color: #fff;
+            border-color: #4f46e5;
+            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.35);
+        }
+        .pagination-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .pagination-btn.nav-btn {
+            background: #f8fafc;
+            font-size: 15px;
+        }
+        .pagination-btn.nav-btn:hover:not(:disabled) {
+            background: #e2e8f0;
+        }
+        .pagination-ellipsis {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 34px;
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: 700;
+        }
+        .pagination-select {
+            padding: 6px 28px 6px 10px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #475569;
+            background: #fff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 6px center;
+            background-size: 16px;
+        }
+        .pagination-select:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+        }
     </style>
     <script src="js/permission-guard.js"></script>
 </head>
@@ -922,6 +1017,26 @@
                     <tbody id="productsTableBody"></tbody>
                 </table>
             </div>
+
+            <!-- Products Pagination Bar -->
+            <div id="productsPagination" class="pagination-bar" style="display:none;">
+                <div class="pagination-info">
+                    Hiển thị <strong><span id="prodPaginationFrom">0</span>–<span id="prodPaginationTo">0</span></strong> / <strong><span id="prodPaginationTotal">0</span></strong> sản phẩm
+                </div>
+                <div class="pagination-controls">
+                    <select id="prodPageSizeSelect" onchange="changeProductPageSize()" class="pagination-select">
+                        <option value="12" selected>12 / trang</option>
+                        <option value="24">24 / trang</option>
+                        <option value="48">48 / trang</option>
+                        <option value="96">96 / trang</option>
+                    </select>
+                    <button onclick="goToProductPage(1)" id="prodBtnFirst" class="pagination-btn nav-btn" title="Trang đầu">«</button>
+                    <button onclick="goToProductPage(prodCurrentPage-1)" id="prodBtnPrev" class="pagination-btn nav-btn" title="Trang trước">‹</button>
+                    <div id="prodPageNumbers" style="display:inline-flex;gap:4px;"></div>
+                    <button onclick="goToProductPage(prodCurrentPage+1)" id="prodBtnNext" class="pagination-btn nav-btn" title="Trang sau">›</button>
+                    <button onclick="goToProductPage(prodTotalPages)" id="prodBtnLast" class="pagination-btn nav-btn" title="Trang cuối">»</button>
+                </div>
+            </div>
         </div>
 
         <!-- Tab 2: Groups -->
@@ -1228,8 +1343,14 @@
     `).join('');
         }
 
-        // PRODUCTS
-        function filterProducts() {
+        // PRODUCTS - PAGINATION STATE
+        let prodCurrentPage = 1;
+        let prodPageSize = 12;
+        let prodTotalPages = 1;
+        let prodStartIndex = 0;
+
+        function filterProducts(resetPage = true) {
+            if (resetPage) prodCurrentPage = 1;
             const search = document.getElementById('searchProducts').value.toLowerCase();
             const sort = document.getElementById('sortProducts').value;
             const groupFilter = document.getElementById('filterProductGroup') ? document.getElementById('filterProductGroup').value : '';
@@ -1247,7 +1368,74 @@
                 return 0;
             });
 
-            renderProducts(filtered);
+            // Pagination
+            prodTotalPages = Math.ceil(filtered.length / prodPageSize) || 1;
+            if (prodCurrentPage > prodTotalPages) prodCurrentPage = prodTotalPages;
+            if (prodCurrentPage < 1) prodCurrentPage = 1;
+            const start = (prodCurrentPage - 1) * prodPageSize;
+            const end = Math.min(start + prodPageSize, filtered.length);
+            prodStartIndex = start;
+            const pageData = filtered.slice(start, end);
+
+            renderProducts(pageData);
+            renderProductPagination(filtered.length, start, end);
+        }
+
+        function goToProductPage(page) {
+            if (page < 1 || page > prodTotalPages) return;
+            prodCurrentPage = page;
+            filterProducts(false);
+            const grid = document.getElementById('productsGrid');
+            if (grid) grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function changeProductPageSize() {
+            const sel = document.getElementById('prodPageSizeSelect');
+            if (sel) {
+                prodPageSize = parseInt(sel.value) || 12;
+                prodCurrentPage = 1;
+                filterProducts();
+            }
+        }
+
+        function renderProductPagination(totalItems, start, end) {
+            const container = document.getElementById('productsPagination');
+            if (!container) return;
+            if (totalItems <= 0) { container.style.display = 'none'; return; }
+            container.style.display = '';
+
+            document.getElementById('prodPaginationFrom').textContent = totalItems > 0 ? start + 1 : 0;
+            document.getElementById('prodPaginationTo').textContent = end;
+            document.getElementById('prodPaginationTotal').textContent = totalItems;
+
+            const pageSizeSelect = document.getElementById('prodPageSizeSelect');
+            if (pageSizeSelect) pageSizeSelect.value = prodPageSize;
+
+            document.getElementById('prodBtnFirst').disabled = prodCurrentPage <= 1;
+            document.getElementById('prodBtnPrev').disabled = prodCurrentPage <= 1;
+            document.getElementById('prodBtnNext').disabled = prodCurrentPage >= prodTotalPages;
+            document.getElementById('prodBtnLast').disabled = prodCurrentPage >= prodTotalPages;
+
+            const pageNumbersEl = document.getElementById('prodPageNumbers');
+            if (!pageNumbersEl) return;
+            let pagesHtml = '';
+            const maxVisible = 5;
+            let startPage = Math.max(1, prodCurrentPage - Math.floor(maxVisible / 2));
+            let endPage = Math.min(prodTotalPages, startPage + maxVisible - 1);
+            if (endPage - startPage < maxVisible - 1) startPage = Math.max(1, endPage - maxVisible + 1);
+
+            if (startPage > 1) {
+                pagesHtml += '<button onclick="goToProductPage(1)" class="pagination-btn">1</button>';
+                if (startPage > 2) pagesHtml += '<span class="pagination-ellipsis">\u2026</span>';
+            }
+            for (let i = startPage; i <= endPage; i++) {
+                pagesHtml += '<button onclick="goToProductPage(' + i + ')" class="pagination-btn ' + (i === prodCurrentPage ? 'active' : '') + '">' + i + '</button>';
+            }
+            if (endPage < prodTotalPages) {
+                if (endPage < prodTotalPages - 1) pagesHtml += '<span class="pagination-ellipsis">\u2026</span>';
+                pagesHtml += '<button onclick="goToProductPage(' + prodTotalPages + ')" class="pagination-btn">' + prodTotalPages + '</button>';
+            }
+            pageNumbersEl.innerHTML = pagesHtml;
         }
 
         let currentView = 'grid';
@@ -1311,8 +1499,9 @@
         function renderProductsTable(data) {
             document.getElementById('productsTableBody').innerHTML = data.map((p, i) => {
                 const firstPrice = p.prices && p.prices['0-0.25'] ? p.prices['0-0.25'] : null;
+                const stt = prodStartIndex + i + 1;
                 return `<tr style="background:${i%2===0?'#f8fafc':'white'}">
-                    <td style="text-align:center;color:#94a3b8;font-weight:600">${i+1}</td>
+                    <td style="text-align:center;color:#94a3b8;font-weight:600">${stt}</td>
                     <td><span style="font-weight:700;color:#4f46e5">${p.code}</span></td>
                     <td style="font-size:13px;color:#334155">${(p.name||'').split('\n')[0]}</td>
                     <td>
