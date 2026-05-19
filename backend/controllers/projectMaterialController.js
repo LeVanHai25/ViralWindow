@@ -2010,38 +2010,34 @@ exports.getExportedMaterials = async (req, res) => {
         for (const project of projectRows) {
             const projectId = project.id;
 
-            // âœ… Use exact same query as getBOMData (line 2228-2232)
-            const [bomRows] = await db.query(
-                `SELECT * FROM project_materials 
-                 WHERE project_id = ? 
-                 AND material_type IN ('aluminum', 'glass', 'accessory', 'phukien')
-                 ORDER BY material_type, created_at`,
+            // Truy vấn trực tiếp các dòng chứng từ xuất kho đã hạch toán thực tế của dự án
+            const [exportLines] = await db.query(
+                `SELECT sdl.item_code, sdl.item_name, sdl.qty, sdl.unit_price, COALESCE(sdl.line_total, 0) as line_total
+                 FROM stock_document_lines sdl
+                 JOIN stock_documents sd ON sdl.document_id = sd.id
+                 WHERE sd.project_id = ? AND sd.status = 'posted' AND sd.doc_type = 'export'`,
                 [projectId]
             );
 
             let totalCost = 0;
-            let materialsCount = bomRows.length;
+            const uniqueItems = new Set();
 
-            // Calculate total cost using inventory prices (same logic as frontend detail view)
-            bomRows.forEach(row => {
-                const code = (row.material_code || '').toLowerCase();
-                const name = (row.material_name || '').toLowerCase();
-                const codeUpper = (row.material_code || '').toUpperCase();
-                const qty = parseFloat(row.quantity) || 0;
-
-                // Try to find price from inventory (try multiple lookups)
-                const priceByCode = priceMap[code] || priceMap[codeUpper] || 0;
-                const priceByName = priceMap[name] || 0;
-                const priceFromDB = parseFloat(row.unit_price) || 0;
-                const price = priceByCode || priceByName || priceFromDB;
-
-                const itemCost = qty * price;
-                totalCost += itemCost;
+            exportLines.forEach(line => {
+                const qty = parseFloat(line.qty) || 0;
+                const price = parseFloat(line.unit_price) || 0;
+                const lineTotal = parseFloat(line.line_total) || (qty * price);
+                
+                totalCost += lineTotal;
+                
+                const itemKey = (line.item_code || line.item_name || '').trim().toUpperCase();
+                if (itemKey) {
+                    uniqueItems.add(itemKey);
+                }
             });
 
             projectSummaries[projectId] = {
                 total_cost: totalCost,
-                materials_count: materialsCount
+                materials_count: uniqueItems.size
             };
         }
 

@@ -71,6 +71,74 @@ function calculateOverallProgress(mfgData) {
 }
 
 /**
+ * Helper kiểm tra xem tất cả các vật tư trong BOM dự án đã được xuất kho đầy đủ chưa.
+ * Trả về null nếu đã xuất đủ, hoặc một chuỗi thông tin chi tiết các vật tư còn thiếu nếu có thiếu hụt.
+ */
+async function checkProjectMaterialsComplete(projectId) {
+    const [bomRows] = await db.query(
+        `SELECT id, material_code, material_name, COALESCE(required_qty, quantity, 0) as required_qty, COALESCE(exported_qty, 0) as exported_qty, unit 
+         FROM project_materials 
+         WHERE project_id = ? AND material_type IN ('aluminum', 'glass', 'accessory', 'phukien')`,
+        [projectId]
+    );
+
+    // Nếu dự án không có vật tư nào được định nghĩa trong BOM, coi như đã xuất đủ
+    if (bomRows.length === 0) return null;
+
+    // Truy vấn tất cả các dòng chứng từ xuất kho đã hạch toán của dự án
+    const [exportLines] = await db.query(
+        `SELECT sdl.item_code, sdl.item_name, sdl.qty
+         FROM stock_document_lines sdl
+         JOIN stock_documents sd ON sdl.document_id = sd.id
+         WHERE sd.project_id = ? AND sd.status = 'posted' AND sd.doc_type = 'export'`,
+        [projectId]
+    );
+
+    // Gom nhóm lượng xuất kho thực tế theo mã hoặc tên vật tư
+    const exportMap = {};
+    exportLines.forEach(line => {
+        const code = (line.item_code || '').trim().toUpperCase();
+        const name = (line.item_name || '').trim().toUpperCase();
+        const qty = parseFloat(line.qty) || 0;
+        if (code) {
+            exportMap[code] = (exportMap[code] || 0) + qty;
+        }
+        if (name) {
+            exportMap[name] = (exportMap[name] || 0) + qty;
+        }
+    });
+
+    // Đối chiếu từng dòng vật tư
+    const missingItems = [];
+    bomRows.forEach(row => {
+        const required = parseFloat(row.required_qty) || 0;
+        if (required <= 0) return;
+
+        const code = (row.material_code || '').trim().toUpperCase();
+        const name = (row.material_name || '').trim().toUpperCase();
+
+        const expCode = code ? (exportMap[code] || 0) : 0;
+        const expName = name ? (exportMap[name] || 0) : 0;
+        const expRow = parseFloat(row.exported_qty) || 0;
+
+        // Ưu tiên lượng xuất lớn nhất ghi nhận được ở cả 2 nguồn
+        const exported = Math.max(expCode, expName, expRow);
+
+        if (exported < required) {
+            missingItems.push(
+                `• ${row.material_name} (${row.material_code || 'Không có mã'}): Đã xuất ${exported}/${required} ${row.unit || 'đơn vị'}`
+            );
+        }
+    });
+
+    if (missingItems.length > 0) {
+        return `Không thể hoàn thành sản xuất vì dự án chưa xuất kho đầy đủ vật tư. Danh sách các vật tư còn thiếu:\n\n${missingItems.join('\n')}`;
+    }
+
+    return null;
+}
+
+/**
  * GET /api/manufacturing/projects
  * Get all manufacturing projects with smart status
  */
@@ -659,6 +727,17 @@ exports.updateProductionInfo = async (req, res) => {
             production_photos
         } = req.body;
 
+        // Ràng buộc điều kiện xuất đủ vật tư khi hoàn thành sản xuất
+        if (production_step === 'completed') {
+            const shortageMessage = await checkProjectMaterialsComplete(projectId);
+            if (shortageMessage) {
+                return res.status(400).json({
+                    success: false,
+                    message: shortageMessage
+                });
+            }
+        }
+
         // Ensure columns exist
         try {
             await db.query(`ALTER TABLE projects ADD COLUMN production_started_at DATETIME NULL`);
@@ -728,6 +807,17 @@ exports.updateProductionStep = async (req, res) => {
                 success: false,
                 message: 'Trạng thái không hợp lệ'
             });
+        }
+
+        // Ràng buộc điều kiện xuất đủ vật tư khi hoàn thành sản xuất
+        if (step === 'completed') {
+            const shortageMessage = await checkProjectMaterialsComplete(projectId);
+            if (shortageMessage) {
+                return res.status(400).json({
+                    success: false,
+                    message: shortageMessage
+                });
+            }
         }
 
         // Ensure columns exist

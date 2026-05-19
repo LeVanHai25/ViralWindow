@@ -841,7 +841,7 @@
                                 <p class="text-xs text-orange-500">vật tư</p>
                             </div>
                             <div class="bg-blue-50 rounded-lg p-3 text-center">
-                                <p class="text-sm text-blue-600 font-medium">Tổng giá trị</p>
+                                <p class="text-sm text-blue-600 font-medium">Tổng giá trị đã xuất</p>
                                 <p class="text-xl font-bold text-blue-700" id="statExportedValue">0 ₫</p>
                             </div>
                             <div class="bg-purple-50 rounded-lg p-3 text-center">
@@ -1332,9 +1332,9 @@
                                 <p class="text-sm text-gray-500">Tiến độ: ${project.progress_percent || 0}%</p>
                             </div>
                             <div class="text-right">
-                                <p class="text-sm text-gray-600 mb-1">Tổng giá trị vật tư</p>
+                                <p class="text-sm text-gray-600 mb-1">Tổng giá trị đã xuất</p>
                                 <p class="text-2xl font-bold text-indigo-600">${formatCurrency(projectTotalCost)}</p>
-                                <p class="text-xs text-gray-500 mt-1">${materialsCount} vật tư</p>
+                                <p class="text-xs text-gray-500 mt-1">${materialsCount} vật tư đã xuất</p>
                             </div>
                         </div>
 
@@ -1755,8 +1755,8 @@
                         } else {
                             stats.other.exported++;
                         }
-                        // Cộng giá trị
-                        totalExportedValue += parseFloat(mat.total_cost || 0);
+                        // Cộng giá trị thực tế ĐÃ XUẤT (exported_qty * unit_price)
+                        totalExportedValue += parseFloat(mat.exported_qty || 0) * parseFloat(mat.unit_price || 0);
                     });
 
                     // Đếm vật tư chưa xuất theo loại
